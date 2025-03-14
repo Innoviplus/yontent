@@ -1,4 +1,3 @@
-
 import { useState, useEffect } from 'react';
 import { Link } from 'react-router-dom';
 import { Star, Award, ArrowUpRight, ChevronRight, Camera } from 'lucide-react';
@@ -144,57 +143,6 @@ const Index = () => {
             <div className="py-2 px-4 bg-brand-slate/10 rounded-lg inline-flex items-center gap-2 animate-fade-up" style={{ animationDelay: '400ms' }}>
               <Award className="h-5 w-5 text-brand-slate" />
               <span className="text-sm font-medium text-brand-slate">Over 10,000 members already earning rewards</span>
-            </div>
-          </div>
-        </div>
-        
-        {/* Floating cards effect */}
-        <div className="absolute -bottom-16 left-1/2 -translate-x-1/2 w-full max-w-6xl px-4">
-          <div className="relative h-32 md:h-44">
-            <div 
-              className="absolute left-[10%] top-0 w-64 h-auto glass-card rounded-xl shadow-elevation transform opacity-70 blur-[1px] transition-all duration-200" 
-              style={{ transform: `translateY(${scrollY * -0.1}px) rotate(-5deg)` }}
-            >
-              <div className="p-4">
-                <div className="flex items-center gap-2 mb-2">
-                  {Array(5).fill(0).map((_, i) => (
-                    <Star key={i} className="h-3 w-3 text-yellow-400 fill-yellow-400" />
-                  ))}
-                </div>
-                <p className="text-xs line-clamp-2">Amazing headphones! Sound quality is incredible and they're so comfortable.</p>
-              </div>
-            </div>
-            
-            <div 
-              className="absolute left-[60%] top-2 w-56 h-auto glass-card rounded-xl shadow-elevation transition-all duration-200" 
-              style={{ transform: `translateY(${scrollY * -0.17}px) rotate(3deg)` }}
-            >
-              <div className="p-3">
-                <div className="text-xs font-medium mb-1 flex items-center">
-                  <Camera className="h-3 w-3 mr-1" />
-                  <span>Recent Review</span>
-                </div>
-                <div className="flex gap-1 mb-1">
-                  {Array(4).fill(0).map((_, i) => (
-                    <Star key={i} className="h-3 w-3 text-yellow-400 fill-yellow-400" />
-                  ))}
-                  <Star className="h-3 w-3 text-gray-300" />
-                </div>
-                <p className="text-xs line-clamp-1">Perfect coffee maker for my morning routine!</p>
-              </div>
-            </div>
-            
-            <div 
-              className="absolute left-[30%] top-10 w-60 h-auto glass-card rounded-xl shadow-elevation transition-all duration-200" 
-              style={{ transform: `translateY(${scrollY * -0.12}px) rotate(-2deg)` }}
-            >
-              <div className="p-3">
-                <div className="flex justify-between items-center mb-1">
-                  <span className="text-xs font-medium">Mission Completed</span>
-                  <div className="bg-brand-teal/20 text-brand-teal text-xs rounded-full px-2 py-0.5">+100 pts</div>
-                </div>
-                <p className="text-xs line-clamp-2">You earned points for your smartphone review!</p>
-              </div>
             </div>
           </div>
         </div>
