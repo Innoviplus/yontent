@@ -110,7 +110,10 @@ const Index = () => {
       
       {/* Hero section */}
       <section className="pt-28 pb-16 md:pt-40 md:pb-24 relative overflow-hidden">
-        <div className="absolute inset-0 bg-gradient-to-br from-brand-slate/10 to-brand-teal/5" />
+        {/* New Background */}
+        <div className="absolute inset-0 bg-gradient-to-br from-brand-teal/30 to-brand-slate/20">
+          <div className="absolute inset-0 opacity-15 bg-pattern-dots"></div>
+        </div>
         
         <div className="container mx-auto px-4 sm:px-6 relative z-10">
           <div className="max-w-3xl mx-auto text-center">
