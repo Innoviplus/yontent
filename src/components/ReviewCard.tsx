@@ -1,6 +1,6 @@
 
 import { useState } from 'react';
-import { Star, User, Calendar, ChevronDown, ChevronUp, Camera } from 'lucide-react';
+import { User, Calendar, ChevronDown, ChevronUp, Camera } from 'lucide-react';
 import { Review } from '@/lib/types';
 import { cn } from '@/lib/utils';
 import { format } from 'date-fns';
@@ -26,18 +26,6 @@ const ReviewCard = ({ review, className }: ReviewCardProps) => {
     setCurrentImageIndex((current) => 
       current === 0 ? review.images.length - 1 : current - 1
     );
-  };
-
-  const renderStars = (rating: number) => {
-    return Array(5).fill(0).map((_, index) => (
-      <Star 
-        key={index} 
-        className={cn(
-          "h-4 w-4", 
-          index < rating ? "text-yellow-400 fill-yellow-400" : "text-gray-300"
-        )} 
-      />
-    ));
   };
 
   return (
@@ -87,11 +75,8 @@ const ReviewCard = ({ review, className }: ReviewCardProps) => {
       
       <div className="p-4">
         {/* Header */}
-        <div className="flex justify-between items-start mb-2">
+        <div className="mb-2">
           <h3 className="font-semibold text-lg text-brand-slate">{review.productName}</h3>
-          <div className="flex items-center">
-            {renderStars(review.rating)}
-          </div>
         </div>
         
         {/* Content */}
