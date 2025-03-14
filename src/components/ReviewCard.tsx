@@ -1,6 +1,6 @@
 
 import { useState } from 'react';
-import { User, Calendar, ChevronDown, ChevronUp, Camera } from 'lucide-react';
+import { User, Calendar, ChevronDown, ChevronUp, Camera, Eye, ThumbsUp } from 'lucide-react';
 import { Review } from '@/lib/types';
 import { cn } from '@/lib/utils';
 import { format } from 'date-fns';
@@ -38,7 +38,7 @@ const ReviewCard = ({ review, className }: ReviewCardProps) => {
         <div className="relative h-48 overflow-hidden bg-gray-100">
           <img 
             src={review.images[currentImageIndex]} 
-            alt={`Product: ${review.productName}`} 
+            alt={`Review image ${currentImageIndex + 1}`} 
             className="w-full h-full object-cover transition-opacity duration-300"
           />
           
@@ -74,11 +74,6 @@ const ReviewCard = ({ review, className }: ReviewCardProps) => {
       )}
       
       <div className="p-4">
-        {/* Header */}
-        <div className="mb-2">
-          <h3 className="font-semibold text-lg text-brand-slate">{review.productName}</h3>
-        </div>
-        
         {/* Content */}
         <div className={cn(
           "text-gray-600 text-sm overflow-hidden transition-all duration-300",
@@ -109,15 +104,30 @@ const ReviewCard = ({ review, className }: ReviewCardProps) => {
           </button>
         )}
         
-        {/* Footer */}
-        <div className="mt-4 pt-3 border-t border-gray-100 flex items-center justify-between">
-          <div className="flex items-center text-sm text-gray-500">
-            <User className="h-4 w-4 mr-1.5" />
-            <span>{review.user?.username || 'Anonymous'}</span>
+        {/* Stats and Footer */}
+        <div className="mt-4 pt-3 border-t border-gray-100 space-y-3">
+          {/* Stats: Views and Likes */}
+          <div className="flex items-center gap-4">
+            <div className="flex items-center text-sm text-gray-500">
+              <Eye className="h-4 w-4 mr-1.5" />
+              <span>{review.viewsCount || 0}</span>
+            </div>
+            <div className="flex items-center text-sm text-gray-500">
+              <ThumbsUp className="h-4 w-4 mr-1.5" />
+              <span>{review.likesCount || 0}</span>
+            </div>
           </div>
-          <div className="flex items-center text-sm text-gray-500">
-            <Calendar className="h-4 w-4 mr-1.5" />
-            <span>{format(review.createdAt, 'MMM d, yyyy')}</span>
+          
+          {/* Author and Date */}
+          <div className="flex items-center justify-between">
+            <div className="flex items-center text-sm text-gray-500">
+              <User className="h-4 w-4 mr-1.5" />
+              <span>{review.user?.username || 'Anonymous'}</span>
+            </div>
+            <div className="flex items-center text-sm text-gray-500">
+              <Calendar className="h-4 w-4 mr-1.5" />
+              <span>{format(review.createdAt, 'MMM d, yyyy')}</span>
+            </div>
           </div>
         </div>
       </div>

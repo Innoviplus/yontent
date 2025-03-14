@@ -1,4 +1,3 @@
-
 export interface User {
   id: string;
   username: string;
@@ -17,6 +16,8 @@ export interface Review {
   images: string[];
   createdAt: Date;
   user?: User;
+  viewsCount?: number;
+  likesCount?: number;
 }
 
 export interface Mission {
