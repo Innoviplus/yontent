@@ -2,19 +2,50 @@
 import { useState } from 'react';
 import { Link, useNavigate } from 'react-router-dom';
 import { Eye, EyeOff, Star, Check, Lock } from 'lucide-react';
-import { useToast } from "@/hooks/use-toast";
+import { useAuth } from '@/contexts/AuthContext';
 import Navbar from '@/components/Navbar';
+import { Input } from '@/components/ui/input';
+import { Form, FormControl, FormField, FormItem, FormLabel, FormMessage } from '@/components/ui/form';
+import { zodResolver } from '@hookform/resolvers/zod';
+import { useForm } from 'react-hook-form';
+import * as z from 'zod';
+
+const registerSchema = z.object({
+  username: z.string().min(3, 'Username must be at least 3 characters'),
+  email: z.string().email('Please enter a valid email address'),
+  password: z.string()
+    .min(8, 'Password must be at least 8 characters')
+    .regex(/\d/, 'Password must contain at least 1 number')
+    .regex(/[!@#$%^&*(),.?":{}|<>]/, 'Password must contain at least 1 special character'),
+  confirmPassword: z.string(),
+  acceptTerms: z.boolean().refine(val => val === true, {
+    message: 'You must accept the terms and conditions',
+  }),
+}).refine((data) => data.password === data.confirmPassword, {
+  message: "Passwords don't match",
+  path: ["confirmPassword"],
+});
+
+type RegisterFormValues = z.infer<typeof registerSchema>;
 
 const Register = () => {
-  const [username, setUsername] = useState('');
-  const [email, setEmail] = useState('');
-  const [password, setPassword] = useState('');
-  const [confirmPassword, setConfirmPassword] = useState('');
   const [showPassword, setShowPassword] = useState(false);
-  const [isLoading, setIsLoading] = useState(false);
-  const [acceptTerms, setAcceptTerms] = useState(false);
-  const { toast } = useToast();
+  const { signUp } = useAuth();
   const navigate = useNavigate();
+
+  const form = useForm<RegisterFormValues>({
+    resolver: zodResolver(registerSchema),
+    defaultValues: {
+      username: '',
+      email: '',
+      password: '',
+      confirmPassword: '',
+      acceptTerms: false,
+    },
+  });
+
+  const isLoading = form.formState.isSubmitting;
+  const passwordValue = form.watch('password');
   
   const validatePassword = (password: string) => {
     const minLength = password.length >= 8;
@@ -29,70 +60,12 @@ const Register = () => {
     };
   };
   
-  const passwordValidation = validatePassword(password);
-  
-  const handleSubmit = async (e: React.FormEvent) => {
-    e.preventDefault();
-    
-    if (!username || !email || !password || !confirmPassword) {
-      toast({
-        title: "Missing Fields",
-        description: "Please fill in all required fields.",
-        variant: "destructive",
-      });
-      return;
-    }
-    
-    if (!passwordValidation.isValid) {
-      toast({
-        title: "Invalid Password",
-        description: "Please make sure your password meets all requirements.",
-        variant: "destructive",
-      });
-      return;
-    }
-    
-    if (password !== confirmPassword) {
-      toast({
-        title: "Passwords Don't Match",
-        description: "Please make sure your passwords match.",
-        variant: "destructive",
-      });
-      return;
-    }
-    
-    if (!acceptTerms) {
-      toast({
-        title: "Terms Required",
-        description: "Please accept the terms and conditions to continue.",
-        variant: "destructive",
-      });
-      return;
-    }
-    
-    try {
-      setIsLoading(true);
-      
-      // Simulate API call
-      await new Promise(resolve => setTimeout(resolve, 1500));
-      
-      // For demo, hard code a success response
-      toast({
-        title: "Registration Successful",
-        description: "Welcome to Review Rewards! You've earned 50 points for signing up.",
-      });
-      
-      // Redirect to dashboard
+  const passwordValidation = validatePassword(passwordValue || '');
+
+  const onSubmit = async (values: RegisterFormValues) => {
+    const { error } = await signUp(values.email, values.password, values.username);
+    if (!error) {
       navigate('/dashboard');
-      
-    } catch (error) {
-      toast({
-        title: "Registration Failed",
-        description: "There was a problem creating your account. Please try again.",
-        variant: "destructive",
-      });
-    } finally {
-      setIsLoading(false);
     }
   };
 
@@ -113,153 +86,171 @@ const Register = () => {
               </p>
             </div>
             
-            <form onSubmit={handleSubmit} className="space-y-5">
-              <div>
-                <label htmlFor="username" className="block text-sm font-medium text-gray-700 mb-1">
-                  Username
-                </label>
-                <input
-                  id="username"
-                  type="text"
-                  value={username}
-                  onChange={(e) => setUsername(e.target.value)}
-                  className="form-input"
-                  placeholder="Choose a username"
-                  autoComplete="username"
-                  required
+            <Form {...form}>
+              <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-5">
+                <FormField
+                  control={form.control}
+                  name="username"
+                  render={({ field }) => (
+                    <FormItem>
+                      <FormLabel>Username</FormLabel>
+                      <FormControl>
+                        <Input 
+                          placeholder="Choose a username"
+                          autoComplete="username"
+                          {...field} 
+                        />
+                      </FormControl>
+                      <FormMessage />
+                    </FormItem>
+                  )}
                 />
-              </div>
-              
-              <div>
-                <label htmlFor="email" className="block text-sm font-medium text-gray-700 mb-1">
-                  Email Address
-                </label>
-                <input
-                  id="email"
-                  type="email"
-                  value={email}
-                  onChange={(e) => setEmail(e.target.value)}
-                  className="form-input"
-                  placeholder="yourname@example.com"
-                  autoComplete="email"
-                  required
-                />
-              </div>
-              
-              <div>
-                <label htmlFor="password" className="block text-sm font-medium text-gray-700 mb-1">
-                  Password
-                </label>
-                <div className="relative">
-                  <input
-                    id="password"
-                    type={showPassword ? "text" : "password"}
-                    value={password}
-                    onChange={(e) => setPassword(e.target.value)}
-                    className="form-input pr-10"
-                    placeholder="••••••••"
-                    autoComplete="new-password"
-                    required
-                  />
-                  <button
-                    type="button"
-                    onClick={() => setShowPassword(!showPassword)}
-                    className="absolute right-3 top-1/2 -translate-y-1/2 text-gray-500 hover:text-gray-700"
-                  >
-                    {showPassword ? (
-                      <EyeOff className="h-4 w-4" />
-                    ) : (
-                      <Eye className="h-4 w-4" />
-                    )}
-                  </button>
-                </div>
                 
-                {/* Password strength indicator */}
-                <div className="mt-3 space-y-2">
-                  <div className="flex items-center gap-2 text-xs">
-                    <div className={`w-4 h-4 rounded-full flex items-center justify-center
-                        ${passwordValidation.minLength ? 'bg-brand-teal text-white' : 'bg-gray-200'}`}
-                    >
-                      {passwordValidation.minLength && <Check className="h-3 w-3" />}
-                    </div>
-                    <span className={passwordValidation.minLength ? 'text-brand-teal' : 'text-gray-500'}>
-                      At least 8 characters
-                    </span>
-                  </div>
-                  
-                  <div className="flex items-center gap-2 text-xs">
-                    <div className={`w-4 h-4 rounded-full flex items-center justify-center
-                        ${passwordValidation.hasNumber ? 'bg-brand-teal text-white' : 'bg-gray-200'}`}
-                    >
-                      {passwordValidation.hasNumber && <Check className="h-3 w-3" />}
-                    </div>
-                    <span className={passwordValidation.hasNumber ? 'text-brand-teal' : 'text-gray-500'}>
-                      At least 1 number
-                    </span>
-                  </div>
-                  
-                  <div className="flex items-center gap-2 text-xs">
-                    <div className={`w-4 h-4 rounded-full flex items-center justify-center
-                        ${passwordValidation.hasSpecial ? 'bg-brand-teal text-white' : 'bg-gray-200'}`}
-                    >
-                      {passwordValidation.hasSpecial && <Check className="h-3 w-3" />}
-                    </div>
-                    <span className={passwordValidation.hasSpecial ? 'text-brand-teal' : 'text-gray-500'}>
-                      At least 1 special character
-                    </span>
-                  </div>
-                </div>
-              </div>
-              
-              <div>
-                <label htmlFor="confirmPassword" className="block text-sm font-medium text-gray-700 mb-1">
-                  Confirm Password
-                </label>
-                <div className="relative">
-                  <input
-                    id="confirmPassword"
-                    type={showPassword ? "text" : "password"}
-                    value={confirmPassword}
-                    onChange={(e) => setConfirmPassword(e.target.value)}
-                    className="form-input"
-                    placeholder="••••••••"
-                    autoComplete="new-password"
-                    required
-                  />
-                </div>
-                {confirmPassword && password !== confirmPassword && (
-                  <p className="mt-1 text-xs text-red-500">Passwords do not match</p>
-                )}
-              </div>
-              
-              <div className="flex items-start gap-2">
-                <input
-                  id="acceptTerms"
-                  type="checkbox"
-                  checked={acceptTerms}
-                  onChange={(e) => setAcceptTerms(e.target.checked)}
-                  className="mt-0.5 h-4 w-4 text-brand-teal border-gray-300 rounded focus:ring-brand-teal focus:ring-offset-0"
+                <FormField
+                  control={form.control}
+                  name="email"
+                  render={({ field }) => (
+                    <FormItem>
+                      <FormLabel>Email Address</FormLabel>
+                      <FormControl>
+                        <Input 
+                          placeholder="yourname@example.com"
+                          type="email"
+                          autoComplete="email"
+                          {...field} 
+                        />
+                      </FormControl>
+                      <FormMessage />
+                    </FormItem>
+                  )}
                 />
-                <label htmlFor="acceptTerms" className="text-sm text-gray-600">
-                  I agree to the{' '}
-                  <Link to="/terms" className="text-brand-teal hover:underline">Terms of Service</Link>
-                  {' '}and{' '}
-                  <Link to="/privacy" className="text-brand-teal hover:underline">Privacy Policy</Link>
-                </label>
-              </div>
-              
-              <button
-                type="submit"
-                disabled={isLoading}
-                className="w-full btn-primary flex justify-center items-center"
-              >
-                {isLoading ? (
-                  <div className="h-5 w-5 border-2 border-white border-t-transparent rounded-full animate-spin" />
-                ) : (
-                  "Create Account"
-                )}
-              </button>
-            </form>
+                
+                <FormField
+                  control={form.control}
+                  name="password"
+                  render={({ field }) => (
+                    <FormItem>
+                      <FormLabel>Password</FormLabel>
+                      <FormControl>
+                        <div className="relative">
+                          <Input 
+                            placeholder="••••••••"
+                            type={showPassword ? "text" : "password"}
+                            autoComplete="new-password"
+                            {...field} 
+                          />
+                          <button
+                            type="button"
+                            onClick={() => setShowPassword(!showPassword)}
+                            className="absolute right-3 top-1/2 -translate-y-1/2 text-gray-500 hover:text-gray-700"
+                          >
+                            {showPassword ? (
+                              <EyeOff className="h-4 w-4" />
+                            ) : (
+                              <Eye className="h-4 w-4" />
+                            )}
+                          </button>
+                        </div>
+                      </FormControl>
+                      <FormMessage />
+                      
+                      {/* Password strength indicator */}
+                      <div className="mt-3 space-y-2">
+                        <div className="flex items-center gap-2 text-xs">
+                          <div className={`w-4 h-4 rounded-full flex items-center justify-center
+                              ${passwordValidation.minLength ? 'bg-brand-teal text-white' : 'bg-gray-200'}`}
+                          >
+                            {passwordValidation.minLength && <Check className="h-3 w-3" />}
+                          </div>
+                          <span className={passwordValidation.minLength ? 'text-brand-teal' : 'text-gray-500'}>
+                            At least 8 characters
+                          </span>
+                        </div>
+                        
+                        <div className="flex items-center gap-2 text-xs">
+                          <div className={`w-4 h-4 rounded-full flex items-center justify-center
+                              ${passwordValidation.hasNumber ? 'bg-brand-teal text-white' : 'bg-gray-200'}`}
+                          >
+                            {passwordValidation.hasNumber && <Check className="h-3 w-3" />}
+                          </div>
+                          <span className={passwordValidation.hasNumber ? 'text-brand-teal' : 'text-gray-500'}>
+                            At least 1 number
+                          </span>
+                        </div>
+                        
+                        <div className="flex items-center gap-2 text-xs">
+                          <div className={`w-4 h-4 rounded-full flex items-center justify-center
+                              ${passwordValidation.hasSpecial ? 'bg-brand-teal text-white' : 'bg-gray-200'}`}
+                          >
+                            {passwordValidation.hasSpecial && <Check className="h-3 w-3" />}
+                          </div>
+                          <span className={passwordValidation.hasSpecial ? 'text-brand-teal' : 'text-gray-500'}>
+                            At least 1 special character
+                          </span>
+                        </div>
+                      </div>
+                    </FormItem>
+                  )}
+                />
+                
+                <FormField
+                  control={form.control}
+                  name="confirmPassword"
+                  render={({ field }) => (
+                    <FormItem>
+                      <FormLabel>Confirm Password</FormLabel>
+                      <FormControl>
+                        <Input 
+                          placeholder="••••••••"
+                          type={showPassword ? "text" : "password"}
+                          autoComplete="new-password"
+                          {...field} 
+                        />
+                      </FormControl>
+                      <FormMessage />
+                    </FormItem>
+                  )}
+                />
+                
+                <FormField
+                  control={form.control}
+                  name="acceptTerms"
+                  render={({ field }) => (
+                    <FormItem className="flex items-start space-y-0 space-x-2">
+                      <FormControl>
+                        <input
+                          type="checkbox"
+                          checked={field.value}
+                          onChange={field.onChange}
+                          className="mt-0.5 h-4 w-4 text-brand-teal border-gray-300 rounded focus:ring-brand-teal focus:ring-offset-0"
+                        />
+                      </FormControl>
+                      <div className="space-y-1 leading-none">
+                        <FormLabel className="text-sm font-normal">
+                          I agree to the{' '}
+                          <Link to="/terms" className="text-brand-teal hover:underline">Terms of Service</Link>
+                          {' '}and{' '}
+                          <Link to="/privacy" className="text-brand-teal hover:underline">Privacy Policy</Link>
+                        </FormLabel>
+                        <FormMessage />
+                      </div>
+                    </FormItem>
+                  )}
+                />
+                
+                <button
+                  type="submit"
+                  disabled={isLoading}
+                  className="w-full btn-primary flex justify-center items-center"
+                >
+                  {isLoading ? (
+                    <div className="h-5 w-5 border-2 border-white border-t-transparent rounded-full animate-spin" />
+                  ) : (
+                    "Create Account"
+                  )}
+                </button>
+              </form>
+            </Form>
             
             <div className="mt-6 flex items-center gap-2 text-sm text-gray-600">
               <Lock className="h-4 w-4 text-brand-slate" />

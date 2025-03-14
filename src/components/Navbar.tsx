@@ -3,6 +3,7 @@ import { useState, useEffect } from 'react';
 import { Link, useLocation } from 'react-router-dom';
 import { Menu, X, User, Star, Award, LogOut } from 'lucide-react';
 import { cn } from '@/lib/utils';
+import { useAuth } from '@/contexts/AuthContext';
 
 interface NavLinkProps {
   to: string;
@@ -32,6 +33,7 @@ const Navbar = () => {
   const [isOpen, setIsOpen] = useState(false);
   const [isScrolled, setIsScrolled] = useState(false);
   const location = useLocation();
+  const { user, signOut, userProfile } = useAuth();
   
   // Handle scrolling effect
   useEffect(() => {
@@ -48,9 +50,6 @@ const Navbar = () => {
   useEffect(() => {
     setIsOpen(false);
   }, [location.pathname]);
-
-  // Mock auth state
-  const isAuthenticated = false;
 
   return (
     <header 
@@ -86,7 +85,7 @@ const Navbar = () => {
             current={location.pathname === '/missions'}
           />
           
-          {isAuthenticated ? (
+          {user ? (
             <>
               <NavLink 
                 to="/dashboard" 
@@ -94,10 +93,19 @@ const Navbar = () => {
                 icon={<User className="h-5 w-5" />}
                 current={location.pathname === '/dashboard'}
               />
-              <button className="ml-2 flex items-center gap-2 px-4 py-2.5 text-gray-600 hover:bg-gray-100 rounded-md transition-all duration-200">
+              <button 
+                onClick={() => signOut()}
+                className="ml-2 flex items-center gap-2 px-4 py-2.5 text-gray-600 hover:bg-gray-100 rounded-md transition-all duration-200"
+              >
                 <LogOut className="h-5 w-5" />
                 <span>Logout</span>
               </button>
+              {userProfile && (
+                <div className="ml-2 flex items-center gap-2 px-3 py-1.5 bg-brand-teal/10 text-brand-teal rounded-md">
+                  <span className="font-medium">{userProfile.points}</span>
+                  <span className="text-sm">points</span>
+                </div>
+              )}
             </>
           ) : (
             <div className="flex items-center ml-2 gap-2">
@@ -151,7 +159,7 @@ const Navbar = () => {
             current={location.pathname === '/missions'}
           />
           
-          {isAuthenticated ? (
+          {user ? (
             <>
               <NavLink 
                 to="/dashboard" 
@@ -159,10 +167,19 @@ const Navbar = () => {
                 icon={<User className="h-5 w-5" />}
                 current={location.pathname === '/dashboard'}
               />
-              <button className="w-full flex items-center gap-2 px-4 py-2.5 text-gray-600 hover:bg-gray-100 rounded-md transition-all duration-200">
+              <button 
+                onClick={() => signOut()}
+                className="w-full flex items-center gap-2 px-4 py-2.5 text-gray-600 hover:bg-gray-100 rounded-md transition-all duration-200"
+              >
                 <LogOut className="h-5 w-5" />
                 <span>Logout</span>
               </button>
+              {userProfile && (
+                <div className="flex items-center gap-2 px-3 py-1.5 bg-brand-teal/10 text-brand-teal rounded-md">
+                  <span className="font-medium">{userProfile.points}</span>
+                  <span className="text-sm">points</span>
+                </div>
+              )}
             </>
           ) : (
             <div className="flex flex-col gap-2 pt-2">
