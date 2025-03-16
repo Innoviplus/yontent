@@ -12,6 +12,7 @@ import Register from "./pages/Register";
 import Dashboard from "./pages/Dashboard";
 import SubmitReview from "./pages/SubmitReview";
 import ReviewFeed from "./pages/ReviewFeed";
+import Reviews from "./pages/Reviews";
 import ProtectedRoute from "./components/ProtectedRoute";
 
 const queryClient = new QueryClient();
@@ -38,6 +39,7 @@ const App = () => (
               </ProtectedRoute>
             } />
             <Route path="/feed" element={<ReviewFeed />} />
+            <Route path="/reviews" element={<Reviews />} />
             {/* ADD ALL CUSTOM ROUTES ABOVE THE CATCH-ALL "*" ROUTE */}
             <Route path="*" element={<NotFound />} />
           </Routes>
