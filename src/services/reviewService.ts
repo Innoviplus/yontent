@@ -43,9 +43,7 @@ export const submitReview = async ({ userId, content, images }: SubmitReviewPara
   // Upload images first
   const imageUrls = await uploadImages(userId, images);
   
-  if (imageUrls.length === 0) {
-    throw new Error('Failed to upload images');
-  }
+  // No need to throw an error if no images were uploaded, as validation is done in the UI
   
   // Insert the review into the database
   const { error } = await supabase
