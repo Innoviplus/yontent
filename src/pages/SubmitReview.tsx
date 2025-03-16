@@ -6,7 +6,6 @@ import { Camera, X, Loader2 } from 'lucide-react';
 import { useAuth } from '@/contexts/AuthContext';
 import { supabase } from '@/integrations/supabase/client';
 import { toast } from 'sonner';
-import { Input } from '@/components/ui/input';
 import { Button } from '@/components/ui/button';
 import { Textarea } from '@/components/ui/textarea';
 import { Form, FormControl, FormField, FormItem, FormLabel, FormMessage } from '@/components/ui/form';
@@ -16,8 +15,6 @@ import Navbar from '@/components/Navbar';
 
 // Form validation schema
 const reviewSchema = z.object({
-  productName: z.string().min(3, { message: "Product name must be at least 3 characters" }),
-  rating: z.number().min(1).max(5),
   content: z.string().min(20, { message: "Review content must be at least 20 characters" }),
 });
 
@@ -29,12 +26,11 @@ const SubmitReview = () => {
   const [uploading, setUploading] = useState(false);
   const [selectedImages, setSelectedImages] = useState<File[]>([]);
   const [imagePreviewUrls, setImagePreviewUrls] = useState<string[]>([]);
+  const [imageError, setImageError] = useState<string | null>(null);
   
   const form = useForm<ReviewFormValues>({
     resolver: zodResolver(reviewSchema),
     defaultValues: {
-      productName: '',
-      rating: 5,
       content: '',
     },
   });
@@ -42,11 +38,23 @@ const SubmitReview = () => {
   const handleImageChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     if (e.target.files && e.target.files.length > 0) {
       const newFiles = Array.from(e.target.files);
-      setSelectedImages((prevImages) => [...prevImages, ...newFiles]);
       
-      // Create preview URLs for the images
-      const newPreviewUrls = newFiles.map(file => URL.createObjectURL(file));
-      setImagePreviewUrls((prevUrls) => [...prevUrls, ...newPreviewUrls]);
+      // Limit to a maximum of 10 images total
+      const availableSlots = 10 - selectedImages.length;
+      const filesToAdd = newFiles.slice(0, availableSlots);
+      
+      if (filesToAdd.length > 0) {
+        setSelectedImages((prevImages) => [...prevImages, ...filesToAdd]);
+        
+        // Create preview URLs for the images
+        const newPreviewUrls = filesToAdd.map(file => URL.createObjectURL(file));
+        setImagePreviewUrls((prevUrls) => [...prevUrls, ...newPreviewUrls]);
+        
+        // Clear any previous image errors if we now have at least one image
+        if ([...selectedImages, ...filesToAdd].length > 0) {
+          setImageError(null);
+        }
+      }
     }
   };
 
@@ -55,6 +63,12 @@ const SubmitReview = () => {
     setSelectedImages(prevImages => {
       const newImages = [...prevImages];
       newImages.splice(index, 1);
+      
+      // If we removed the last image, set an error
+      if (newImages.length === 0) {
+        setImageError("At least one image is required");
+      }
+      
       return newImages;
     });
     
@@ -104,19 +118,30 @@ const SubmitReview = () => {
       return;
     }
     
+    // Validate that at least one image is selected
+    if (selectedImages.length === 0) {
+      setImageError("At least one image is required");
+      return;
+    }
+    
     try {
       setUploading(true);
       
       // Upload images first
       const imageUrls = await uploadImages();
       
+      if (imageUrls.length === 0) {
+        toast.error('Failed to upload images. Please try again.');
+        return;
+      }
+      
       // Insert the review into the database
       const { error } = await supabase
         .from('reviews')
         .insert({
           user_id: user.id,
-          product_name: values.productName,
-          rating: values.rating,
+          product_name: "Review", // Default value since we're not collecting product name
+          rating: 5, // Default value since we're not collecting rating
           content: values.content,
           images: imageUrls,
         });
@@ -148,70 +173,12 @@ const SubmitReview = () => {
           <div className="bg-white rounded-xl shadow-card p-6">
             <Form {...form}>
               <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-6">
-                {/* Product Name */}
-                <FormField
-                  control={form.control}
-                  name="productName"
-                  render={({ field }) => (
-                    <FormItem>
-                      <FormLabel>Product Name</FormLabel>
-                      <FormControl>
-                        <Input placeholder="Enter product name" {...field} />
-                      </FormControl>
-                      <FormMessage />
-                    </FormItem>
-                  )}
-                />
-                
-                {/* Rating */}
-                <FormField
-                  control={form.control}
-                  name="rating"
-                  render={({ field }) => (
-                    <FormItem>
-                      <FormLabel>Rating</FormLabel>
-                      <FormControl>
-                        <div className="flex items-center space-x-2">
-                          {[1, 2, 3, 4, 5].map((rating) => (
-                            <Button
-                              key={rating}
-                              type="button"
-                              variant={field.value >= rating ? "default" : "outline"}
-                              className={`w-10 h-10 p-0 ${field.value >= rating ? "bg-brand-teal hover:bg-brand-teal/90" : ""}`}
-                              onClick={() => form.setValue('rating', rating, { shouldValidate: true })}
-                            >
-                              {rating}
-                            </Button>
-                          ))}
-                        </div>
-                      </FormControl>
-                      <FormMessage />
-                    </FormItem>
-                  )}
-                />
-                
-                {/* Review Content */}
-                <FormField
-                  control={form.control}
-                  name="content"
-                  render={({ field }) => (
-                    <FormItem>
-                      <FormLabel>Review</FormLabel>
-                      <FormControl>
-                        <Textarea 
-                          placeholder="Share your experience with this product..."
-                          className="min-h-32"
-                          {...field}
-                        />
-                      </FormControl>
-                      <FormMessage />
-                    </FormItem>
-                  )}
-                />
-                
-                {/* Image Upload */}
+                {/* Image Upload - Now mandatory */}
                 <div className="space-y-2">
-                  <label className="block text-sm font-medium text-gray-700">Images (Optional)</label>
+                  <label className="block text-sm font-medium text-gray-700">
+                    Images <span className="text-red-500">*</span>
+                  </label>
+                  <p className="text-xs text-gray-500">At least 1 image is required (maximum 10)</p>
                   
                   {/* Image Previews */}
                   {imagePreviewUrls.length > 0 && (
@@ -239,14 +206,16 @@ const SubmitReview = () => {
                   <div className="flex items-center justify-center w-full">
                     <label
                       htmlFor="image-upload"
-                      className="flex flex-col items-center justify-center w-full h-32 border-2 border-gray-300 border-dashed rounded-lg cursor-pointer bg-gray-50 hover:bg-gray-100"
+                      className={`flex flex-col items-center justify-center w-full h-32 border-2 ${
+                        imageError ? 'border-red-300' : 'border-gray-300'
+                      } border-dashed rounded-lg cursor-pointer bg-gray-50 hover:bg-gray-100`}
                     >
                       <div className="flex flex-col items-center justify-center pt-5 pb-6">
                         <Camera className="w-8 h-8 mb-2 text-gray-500" />
                         <p className="mb-1 text-sm text-gray-500">
                           <span className="font-semibold">Click to upload</span> or drag and drop
                         </p>
-                        <p className="text-xs text-gray-500">PNG, JPG or WEBP (Max 3 photos)</p>
+                        <p className="text-xs text-gray-500">PNG, JPG or WEBP (Max 10 photos)</p>
                       </div>
                       <input
                         id="image-upload"
@@ -255,14 +224,38 @@ const SubmitReview = () => {
                         multiple
                         className="hidden"
                         onChange={handleImageChange}
-                        disabled={imagePreviewUrls.length >= 3}
+                        disabled={imagePreviewUrls.length >= 10}
                       />
                     </label>
                   </div>
-                  {imagePreviewUrls.length >= 3 && (
-                    <p className="text-xs text-amber-600">Maximum of 3 images reached</p>
+                  
+                  {imageError && (
+                    <p className="text-xs text-red-500">{imageError}</p>
+                  )}
+                  
+                  {imagePreviewUrls.length >= 10 && (
+                    <p className="text-xs text-amber-600">Maximum of 10 images reached</p>
                   )}
                 </div>
+                
+                {/* Review Content */}
+                <FormField
+                  control={form.control}
+                  name="content"
+                  render={({ field }) => (
+                    <FormItem>
+                      <FormLabel>Review</FormLabel>
+                      <FormControl>
+                        <Textarea 
+                          placeholder="Share your experience..."
+                          className="min-h-32"
+                          {...field}
+                        />
+                      </FormControl>
+                      <FormMessage />
+                    </FormItem>
+                  )}
+                />
                 
                 {/* Submit Button */}
                 <Button 
