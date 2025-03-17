@@ -1,3 +1,4 @@
+
 import { useState } from 'react';
 import { Link, useNavigate } from 'react-router-dom';
 import { useQuery } from '@tanstack/react-query';
@@ -87,7 +88,7 @@ const Reviews = () => {
   const { user } = useAuth();
   const [sortBy, setSortBy] = useState<string>('recent');
   const [page, setPage] = useState(1);
-  const itemsPerPage = 9;
+  const itemsPerPage = 10; // Increased to 10 to fill 5 columns better
 
   const { data: reviews, isLoading, error, refetch } = useQuery({
     queryKey: ['reviews', sortBy, user?.id],
@@ -161,9 +162,10 @@ const Reviews = () => {
           </div>
         ) : paginatedReviews.length > 0 ? (
           <>
-            <div className="grid gap-6 md:grid-cols-2 lg:grid-cols-3">
+            {/* 5-column grid with vertical cascading layout */}
+            <div className="grid gap-6 grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 xl:grid-cols-5 masonry-grid">
               {paginatedReviews.map((review) => (
-                <div key={review.id} onClick={() => handleReviewClick(review.id)}>
+                <div key={review.id} onClick={() => handleReviewClick(review.id)} className="mb-6">
                   <ReviewCard review={review} />
                 </div>
               ))}

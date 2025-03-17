@@ -52,9 +52,9 @@ const ReviewCard = ({ review, className }: ReviewCardProps) => {
         className
       )}
     >
-      {/* Review images - Vertical rectangle format */}
+      {/* Review images - More vertical rectangle format */}
       {review.images.length > 0 && (
-        <div className="relative h-64 overflow-hidden bg-gray-100">
+        <div className="relative h-80 overflow-hidden bg-gray-100">
           <img 
             src={review.images[currentImageIndex]} 
             alt={`Review image ${currentImageIndex + 1}`} 

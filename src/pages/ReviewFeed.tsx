@@ -1,3 +1,4 @@
+
 import { useState, useEffect } from 'react';
 import { Link } from 'react-router-dom';
 import { Plus, Loader2 } from 'lucide-react';
@@ -156,9 +157,11 @@ const ReviewFeed = () => {
             <Loader2 className="h-8 w-8 animate-spin text-brand-teal" />
           </div>
         ) : reviews.length > 0 ? (
-          <div className="grid gap-6 md:grid-cols-2 lg:grid-cols-3">
+          <div className="grid gap-6 grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 xl:grid-cols-5 masonry-grid">
             {reviews.map((review) => (
-              <ReviewCard key={review.id} review={review} />
+              <div key={review.id} className="mb-6">
+                <ReviewCard review={review} />
+              </div>
             ))}
           </div>
         ) : (

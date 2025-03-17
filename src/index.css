@@ -95,6 +95,22 @@
     background-image: radial-gradient(circle, #37495F 1px, transparent 1px);
     background-size: 20px 20px;
   }
+
+  /* Masonry/vertical cascading grid layout */
+  @media (min-width: 640px) {
+    .masonry-grid {
+      display: grid;
+      grid-auto-rows: 10px;
+    }
+    
+    .masonry-grid > div {
+      grid-row-end: span 60;
+    }
+    
+    .masonry-grid > div:has(img) {
+      grid-row-end: span 90;
+    }
+  }
 }
 
 @layer components {
