@@ -1,9 +1,11 @@
 
 import { useState } from 'react';
+import { useNavigate } from 'react-router-dom';
 import { User, Calendar, ChevronDown, ChevronUp, Camera, Eye, ThumbsUp } from 'lucide-react';
 import { Review } from '@/lib/types';
 import { cn } from '@/lib/utils';
 import { format } from 'date-fns';
+import { trackReviewView } from '@/services/reviewService';
 
 interface ReviewCardProps {
   review: Review;
@@ -13,26 +15,43 @@ interface ReviewCardProps {
 const ReviewCard = ({ review, className }: ReviewCardProps) => {
   const [expanded, setExpanded] = useState(false);
   const [currentImageIndex, setCurrentImageIndex] = useState(0);
+  const navigate = useNavigate();
 
-  const toggleExpand = () => setExpanded(!expanded);
+  const toggleExpand = (e: React.MouseEvent) => {
+    e.stopPropagation(); // Prevent card click when expanding content
+    setExpanded(!expanded);
+  };
   
-  const nextImage = () => {
+  const nextImage = (e: React.MouseEvent) => {
+    e.stopPropagation(); // Prevent card click when changing image
     setCurrentImageIndex((current) => 
       current === review.images.length - 1 ? 0 : current + 1
     );
   };
   
-  const prevImage = () => {
+  const prevImage = (e: React.MouseEvent) => {
+    e.stopPropagation(); // Prevent card click when changing image
     setCurrentImageIndex((current) => 
       current === 0 ? review.images.length - 1 : current - 1
     );
   };
 
+  const handleCardClick = () => {
+    // Track the view
+    trackReviewView(review.id);
+    // Navigate to the detail page
+    navigate(`/reviews/${review.id}`);
+  };
+
   return (
-    <div className={cn(
-      "bg-white rounded-xl overflow-hidden shadow-card card-hover transition-all",
-      className
-    )}>
+    <div 
+      onClick={handleCardClick}
+      className={cn(
+        "bg-white rounded-xl overflow-hidden shadow-card card-hover transition-all cursor-pointer",
+        "hover:shadow-lg transform hover:-translate-y-1 transition-all duration-200",
+        className
+      )}
+    >
       {/* Review images */}
       {review.images.length > 0 && (
         <div className="relative h-48 overflow-hidden bg-gray-100">

@@ -1,5 +1,5 @@
 import { useState } from 'react';
-import { Link } from 'react-router-dom';
+import { Link, useNavigate } from 'react-router-dom';
 import { useQuery } from '@tanstack/react-query';
 import { Plus, Loader2 } from 'lucide-react';
 import Navbar from '@/components/Navbar';
@@ -43,15 +43,9 @@ const fetchReviews = async (sortBy: string, userId?: string) => {
         )
       `);
 
-    // Apply sorting
     if (sortBy === 'recent') {
       query = query.order('created_at', { ascending: false });
     } else if (sortBy === 'relevant' && userId) {
-      // For 'relevant' sorting, we'll first need to track what the user has viewed
-      // This is a simplified implementation - in a real app, you'd have a more sophisticated algorithm
-      // and might use a dedicated recommendation system
-      
-      // For now, we'll still sort by created_at as a fallback
       query = query.order('created_at', { ascending: false });
     }
 
@@ -62,12 +56,11 @@ const fetchReviews = async (sortBy: string, userId?: string) => {
       throw new Error('Failed to load reviews');
     }
     
-    // Transform the reviews to match our Review type
     const transformedReviews: Review[] = data.map(review => ({
       id: review.id,
       userId: review.user_id,
-      productName: "Review", // Default value since column no longer exists
-      rating: 5, // Default value since column no longer exists
+      productName: "Review",
+      rating: 5,
       content: review.content,
       images: review.images || [],
       viewsCount: review.views_count,
@@ -76,9 +69,9 @@ const fetchReviews = async (sortBy: string, userId?: string) => {
       user: review.profiles ? {
         id: review.profiles.id,
         username: review.profiles.username || 'Anonymous',
-        email: '', // Not returned for privacy
-        points: 0, // Not relevant in this context
-        createdAt: new Date(), // Not relevant in this context
+        email: '',
+        points: 0,
+        createdAt: new Date(),
         avatar: review.profiles.avatar
       } : undefined
     }));
@@ -101,23 +94,20 @@ const Reviews = () => {
     queryFn: () => fetchReviews(sortBy, user?.id),
   });
 
-  // Handle review click/view to track for relevance
   const handleReviewClick = (reviewId: string) => {
     if (user) {
       trackReviewView(reviewId);
     }
   };
 
-  // Calculate pagination
   const totalPages = reviews ? Math.ceil(reviews.length / itemsPerPage) : 0;
   const paginatedReviews = reviews ? 
     reviews.slice((page - 1) * itemsPerPage, page * itemsPerPage) : 
     [];
 
-  // Handle sort change
   const handleSortChange = (value: string) => {
     setSortBy(value);
-    setPage(1); // Reset to first page when changing sort
+    setPage(1);
   };
 
   return (
@@ -129,7 +119,6 @@ const Reviews = () => {
           <h1 className="text-2xl font-bold">Reviews</h1>
           
           <div className="flex flex-col sm:flex-row gap-4 w-full md:w-auto">
-            {/* Sort Select */}
             <div className="w-full sm:w-48">
               <Select value={sortBy} onValueChange={handleSortChange}>
                 <SelectTrigger>
@@ -180,7 +169,6 @@ const Reviews = () => {
               ))}
             </div>
             
-            {/* Pagination */}
             {totalPages > 1 && (
               <Pagination className="mt-8">
                 <PaginationContent>
