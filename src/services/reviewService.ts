@@ -43,7 +43,7 @@ export const submitReview = async ({ userId, content, images }: SubmitReviewPara
   // Upload images first
   const imageUrls = await uploadImages(userId, images);
   
-  // No need to throw an error if no images were uploaded, as validation is done in the UI
+  // No need to throw an error if no images were uploaded
   
   // Insert the review into the database
   const { error } = await supabase
@@ -62,4 +62,22 @@ export const submitReview = async ({ userId, content, images }: SubmitReviewPara
   }
   
   return { success: true };
+};
+
+// Function to track review views
+export const trackReviewView = async (reviewId: string) => {
+  if (!reviewId) return;
+  
+  try {
+    // Call the RPC function to increment the view count
+    const { error } = await supabase.rpc('increment_view_count', { 
+      review_id: reviewId 
+    });
+    
+    if (error) {
+      console.error('Error tracking view:', error);
+    }
+  } catch (error) {
+    console.error('Error tracking view:', error);
+  }
 };

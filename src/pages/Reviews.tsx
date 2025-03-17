@@ -1,5 +1,5 @@
 
-import { useState, useEffect } from 'react';
+import { useState } from 'react';
 import { Link } from 'react-router-dom';
 import { useQuery } from '@tanstack/react-query';
 import { Plus, Loader2, SortAsc } from 'lucide-react';
@@ -18,6 +18,7 @@ import {
 } from '@/components/ui/select';
 import { toast } from 'sonner';
 import { Pagination, PaginationContent, PaginationItem, PaginationLink, PaginationNext, PaginationPrevious } from '@/components/ui/pagination';
+import { trackReviewView } from '@/services/reviewService';
 
 const sortOptions = [
   { value: 'recent', label: 'Most Recent' },
@@ -92,23 +93,6 @@ const fetchReviews = async (sortBy: string, userId?: string) => {
   }
 };
 
-// Helper function to track which review a user views
-// This would be used for the relevance algorithm
-const trackReviewView = async (reviewId: string, userId?: string) => {
-  if (!userId || !reviewId) return;
-  
-  try {
-    // Increment the view count
-    await supabase.rpc('increment_view_count', { review_id: reviewId });
-    
-    // In a real application, you would store user view history
-    // to build a recommendation system
-    console.log(`User ${userId} viewed review ${reviewId}`);
-  } catch (error) {
-    console.error('Error tracking view:', error);
-  }
-};
-
 const Reviews = () => {
   const { user } = useAuth();
   const [sortBy, setSortBy] = useState<string>('recent');
@@ -123,7 +107,7 @@ const Reviews = () => {
   // Handle review click/view to track for relevance
   const handleReviewClick = (reviewId: string) => {
     if (user) {
-      trackReviewView(reviewId, user.id);
+      trackReviewView(reviewId);
     }
   };
 

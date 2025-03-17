@@ -43,8 +43,6 @@ export type Database = {
           id: string
           images: string[]
           likes_count: number
-          product_name: string
-          rating: number
           updated_at: string
           user_id: string
           views_count: number
@@ -55,8 +53,6 @@ export type Database = {
           id?: string
           images?: string[]
           likes_count?: number
-          product_name: string
-          rating: number
           updated_at?: string
           user_id: string
           views_count?: number
@@ -67,8 +63,6 @@ export type Database = {
           id?: string
           images?: string[]
           likes_count?: number
-          product_name?: string
-          rating?: number
           updated_at?: string
           user_id?: string
           views_count?: number
@@ -88,7 +82,12 @@ export type Database = {
       [_ in never]: never
     }
     Functions: {
-      [_ in never]: never
+      increment_view_count: {
+        Args: {
+          review_id: string
+        }
+        Returns: undefined
+      }
     }
     Enums: {
       [_ in never]: never
