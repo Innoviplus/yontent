@@ -1,4 +1,3 @@
-
 import { useState, useEffect } from 'react';
 import { Link } from 'react-router-dom';
 import { Plus, Loader2 } from 'lucide-react';
@@ -23,8 +22,6 @@ const ReviewFeed = () => {
           .select(`
             id,
             user_id,
-            product_name,
-            rating,
             content,
             images,
             views_count,
@@ -48,8 +45,8 @@ const ReviewFeed = () => {
         const transformedReviews: Review[] = data.map(review => ({
           id: review.id,
           userId: review.user_id,
-          productName: review.product_name,
-          rating: review.rating,
+          productName: "Review", // Default value since column no longer exists
+          rating: 5, // Default value since column no longer exists
           content: review.content,
           images: review.images || [],
           viewsCount: review.views_count,
@@ -90,8 +87,6 @@ const ReviewFeed = () => {
           .select(`
             id,
             user_id,
-            product_name,
-            rating,
             content,
             images,
             views_count,
@@ -111,8 +106,8 @@ const ReviewFeed = () => {
             const newReview: Review = {
               id: data.id,
               userId: data.user_id,
-              productName: data.product_name,
-              rating: data.rating,
+              productName: "Review", // Default value
+              rating: 5, // Default value
               content: data.content,
               images: data.images || [],
               viewsCount: data.views_count,

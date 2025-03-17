@@ -1,8 +1,7 @@
-
 import { useState } from 'react';
 import { Link } from 'react-router-dom';
 import { useQuery } from '@tanstack/react-query';
-import { Plus, Loader2, SortAsc } from 'lucide-react';
+import { Plus, Loader2 } from 'lucide-react';
 import Navbar from '@/components/Navbar';
 import ReviewCard from '@/components/ReviewCard';
 import { Review } from '@/lib/types';
@@ -32,8 +31,6 @@ const fetchReviews = async (sortBy: string, userId?: string) => {
       .select(`
         id,
         user_id,
-        product_name,
-        rating,
         content,
         images,
         views_count,
@@ -69,8 +66,8 @@ const fetchReviews = async (sortBy: string, userId?: string) => {
     const transformedReviews: Review[] = data.map(review => ({
       id: review.id,
       userId: review.user_id,
-      productName: review.product_name,
-      rating: review.rating,
+      productName: "Review", // Default value since column no longer exists
+      rating: 5, // Default value since column no longer exists
       content: review.content,
       images: review.images || [],
       viewsCount: review.views_count,

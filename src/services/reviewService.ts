@@ -50,8 +50,6 @@ export const submitReview = async ({ userId, content, images }: SubmitReviewPara
     .from('reviews')
     .insert({
       user_id: userId,
-      product_name: "Review", // Default value since we're not collecting product name
-      rating: 5, // Default value since we're not collecting rating
       content,
       images: imageUrls,
     });
