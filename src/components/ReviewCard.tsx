@@ -1,11 +1,11 @@
 
 import { useState } from 'react';
 import { useNavigate } from 'react-router-dom';
-import { User, Calendar, ChevronDown, ChevronUp, Camera, Eye, ThumbsUp } from 'lucide-react';
+import { User, ChevronDown, ChevronUp, Camera, Eye, Heart } from 'lucide-react';
 import { Review } from '@/lib/types';
 import { cn } from '@/lib/utils';
-import { format } from 'date-fns';
 import { trackReviewView } from '@/services/reviewService';
+import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
 
 interface ReviewCardProps {
   review: Review;
@@ -52,9 +52,9 @@ const ReviewCard = ({ review, className }: ReviewCardProps) => {
         className
       )}
     >
-      {/* Review images */}
+      {/* Review images - Vertical rectangle format */}
       {review.images.length > 0 && (
-        <div className="relative h-48 overflow-hidden bg-gray-100">
+        <div className="relative h-64 overflow-hidden bg-gray-100">
           <img 
             src={review.images[currentImageIndex]} 
             alt={`Review image ${currentImageIndex + 1}`} 
@@ -125,28 +125,33 @@ const ReviewCard = ({ review, className }: ReviewCardProps) => {
         
         {/* Stats and Footer */}
         <div className="mt-4 pt-3 border-t border-gray-100 space-y-3">
-          {/* Stats: Views and Likes */}
+          {/* Stats: Views and Likes (with Heart icon) */}
           <div className="flex items-center gap-4">
             <div className="flex items-center text-sm text-gray-500">
               <Eye className="h-4 w-4 mr-1.5" />
               <span>{review.viewsCount || 0}</span>
             </div>
             <div className="flex items-center text-sm text-gray-500">
-              <ThumbsUp className="h-4 w-4 mr-1.5" />
+              <Heart className="h-4 w-4 mr-1.5 text-red-500" />
               <span>{review.likesCount || 0}</span>
             </div>
           </div>
           
-          {/* Author and Date */}
-          <div className="flex items-center justify-between">
-            <div className="flex items-center text-sm text-gray-500">
-              <User className="h-4 w-4 mr-1.5" />
-              <span>{review.user?.username || 'Anonymous'}</span>
-            </div>
-            <div className="flex items-center text-sm text-gray-500">
-              <Calendar className="h-4 w-4 mr-1.5" />
-              <span>{format(review.createdAt, 'MMM d, yyyy')}</span>
-            </div>
+          {/* Author with Avatar (no date) */}
+          <div className="flex items-center">
+            {review.user?.avatar ? (
+              <Avatar className="h-6 w-6 mr-2">
+                <AvatarImage src={review.user.avatar} alt={review.user?.username || 'User'} />
+                <AvatarFallback>
+                  <User className="h-3 w-3" />
+                </AvatarFallback>
+              </Avatar>
+            ) : (
+              <div className="h-6 w-6 rounded-full bg-gray-200 flex items-center justify-center mr-2">
+                <User className="h-3 w-3" />
+              </div>
+            )}
+            <span className="text-sm text-gray-500">{review.user?.username || 'Anonymous'}</span>
           </div>
         </div>
       </div>
