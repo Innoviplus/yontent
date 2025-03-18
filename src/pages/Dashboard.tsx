@@ -1,4 +1,3 @@
-
 import { useState } from 'react';
 import { Link } from 'react-router-dom';
 import { Star, Award, Receipt, Camera, ChevronRight, User, Gift, Settings } from 'lucide-react';
@@ -64,7 +63,10 @@ const sampleMissions: Mission[] = [
     type: 'REVIEW',
     status: 'ACTIVE',
     expiresAt: new Date('2024-01-31'),
-    requirementDescription: 'Post a review with at least one photo and 100+ words.'
+    requirementDescription: 'Post a review with at least one photo and 100+ words.',
+    startDate: new Date('2023-09-15'),
+    createdAt: new Date('2023-09-15'),
+    updatedAt: new Date('2023-09-15')
   },
   {
     id: '2',
@@ -74,7 +76,10 @@ const sampleMissions: Mission[] = [
     type: 'RECEIPT',
     status: 'ACTIVE',
     expiresAt: new Date('2024-01-15'),
-    requirementDescription: 'Upload a clear photo of your receipt showing date and store name.'
+    requirementDescription: 'Upload a clear photo of your receipt showing date and store name.',
+    startDate: new Date('2023-10-01'),
+    createdAt: new Date('2023-10-01'),
+    updatedAt: new Date('2023-10-01')
   },
   {
     id: '3',
@@ -84,7 +89,10 @@ const sampleMissions: Mission[] = [
     type: 'REVIEW',
     status: 'COMPLETED',
     expiresAt: new Date('2024-02-28'),
-    requirementDescription: 'Post a detailed review covering pros, cons, and usage tips.'
+    requirementDescription: 'Post a detailed review covering pros, cons, and usage tips.',
+    startDate: new Date('2023-11-01'),
+    createdAt: new Date('2023-11-01'),
+    updatedAt: new Date('2023-11-01')
   },
 ];
 
