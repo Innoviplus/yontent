@@ -1,3 +1,4 @@
+
 import { useState, useEffect } from 'react';
 import { Link } from 'react-router-dom';
 import { Plus, Loader2, ArrowDown, ArrowUp } from 'lucide-react';
@@ -44,7 +45,10 @@ const ReviewFeed = () => {
           profiles:user_id (
             id,
             username,
-            avatar
+            avatar,
+            email,
+            points,
+            created_at
           )
         `)
         .range(pageNum * ITEMS_PER_PAGE, (pageNum + 1) * ITEMS_PER_PAGE - 1);
@@ -80,6 +84,9 @@ const ReviewFeed = () => {
         user: review.profiles ? {
           id: review.profiles.id,
           username: review.profiles.username || 'Anonymous',
+          email: review.profiles.email || '',
+          points: review.profiles.points || 0,
+          createdAt: new Date(review.profiles.created_at),
           avatar: review.profiles.avatar
         } : undefined
       }));
