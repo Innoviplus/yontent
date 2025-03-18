@@ -1,6 +1,6 @@
 import { useState, useEffect } from 'react';
 import { Link, useLocation } from 'react-router-dom';
-import { Menu, X, Star, Award, LogOut } from 'lucide-react';
+import { Menu, X, Star, Award, LogOut, User } from 'lucide-react';
 import { cn } from '@/lib/utils';
 import { useAuth } from '@/contexts/AuthContext';
 import {
@@ -42,7 +42,6 @@ const Navbar = () => {
   const location = useLocation();
   const { user, signOut, userProfile } = useAuth();
   
-  // Handle scrolling effect
   useEffect(() => {
     const handleScroll = () => {
       const scrollPosition = window.scrollY;
@@ -53,7 +52,6 @@ const Navbar = () => {
     return () => window.removeEventListener('scroll', handleScroll);
   }, []);
 
-  // Close mobile menu when changing routes
   useEffect(() => {
     setIsOpen(false);
   }, [location.pathname]);
@@ -68,7 +66,6 @@ const Navbar = () => {
       )}
     >
       <div className="container mx-auto px-4 sm:px-6 flex items-center justify-between">
-        {/* Logo */}
         <Link 
           to="/" 
           className="flex items-center gap-2 font-bold text-xl text-brand-slate hover:opacity-90 transition-opacity"
@@ -77,7 +74,6 @@ const Navbar = () => {
           <span>Review Rewards</span>
         </Link>
 
-        {/* Desktop Navigation */}
         <nav className="hidden md:flex items-center gap-1">
           <NavLink 
             to="/reviews" 
@@ -136,7 +132,6 @@ const Navbar = () => {
           )}
         </nav>
 
-        {/* Mobile Menu Button */}
         <button 
           onClick={() => setIsOpen(!isOpen)}
           className="md:hidden p-2 text-gray-600 hover:text-gray-900 focus:outline-none"
@@ -149,7 +144,6 @@ const Navbar = () => {
         </button>
       </div>
 
-      {/* Mobile Menu */}
       <div
         className={cn(
           "absolute top-full left-0 right-0 bg-white shadow-md overflow-hidden transition-all duration-300 md:hidden",

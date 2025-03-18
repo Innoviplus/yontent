@@ -11,8 +11,8 @@ export interface User {
 export interface Review {
   id: string;
   userId: string;
-  productName: string;
-  rating: number;
+  productName?: string;  // Made optional
+  rating?: number;       // Made optional
   content: string;
   images: string[];
   createdAt: Date;

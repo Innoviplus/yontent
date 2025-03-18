@@ -1,4 +1,3 @@
-
 import { useState, useEffect } from 'react';
 import { Link } from 'react-router-dom';
 import { Plus, Loader2, ArrowDown, ArrowUp } from 'lucide-react';
@@ -50,7 +49,6 @@ const ReviewFeed = () => {
         `)
         .range(pageNum * ITEMS_PER_PAGE, (pageNum + 1) * ITEMS_PER_PAGE - 1);
 
-      // Apply sorting
       switch (sort) {
         case 'recent':
           query = query.order('created_at', { ascending: false });
@@ -59,8 +57,7 @@ const ReviewFeed = () => {
           query = query.order('views_count', { ascending: false });
           break;
         case 'relevant':
-          // Using the relevance score function
-          query = query.order('views_count', { ascending: false }); // Temporary fallback
+          query = query.order('views_count', { ascending: false });
           break;
       }
         
@@ -108,7 +105,6 @@ const ReviewFeed = () => {
     fetchReviews(0, sortBy);
   }, [sortBy]);
   
-  // Infinite scroll handling
   useEffect(() => {
     const handleScroll = () => {
       if (
