@@ -11,6 +11,7 @@ import Login from "./pages/Login";
 import Register from "./pages/Register";
 import Dashboard from "./pages/Dashboard";
 import SubmitReview from "./pages/SubmitReview";
+import SubmitReceipt from "./pages/SubmitReceipt";
 import ReviewFeed from "./pages/ReviewFeed";
 import Reviews from "./pages/Reviews";
 import ReviewDetail from "./pages/ReviewDetail";
@@ -40,6 +41,11 @@ const App = () => (
             <Route path="/submit-review" element={
               <ProtectedRoute>
                 <SubmitReview />
+              </ProtectedRoute>
+            } />
+            <Route path="/submit-receipt" element={
+              <ProtectedRoute>
+                <SubmitReceipt />
               </ProtectedRoute>
             } />
             <Route path="/feed" element={<ReviewFeed />} />

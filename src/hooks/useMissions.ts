@@ -29,7 +29,8 @@ export const useMissions = () => {
           query = query.order('created_at', { ascending: false });
           break;
         case 'expiring':
-          query = query.order('expires_at', { ascending: true, nullsLast: true });
+          // Fix: use nullsFirst instead of nullsLast to handle properly
+          query = query.order('expires_at', { ascending: true, nullsFirst: false });
           break;
         case 'points':
           query = query.order('points_reward', { ascending: false });
@@ -149,15 +150,18 @@ export const useMissionDetails = (missionId: string) => {
         });
         
         // Check if user is already participating in this mission
-        const { data: participationData } = await supabase
-          .from('mission_participations')
-          .select('status')
-          .eq('mission_id', missionId)
-          .eq('user_id', supabase.auth.getUser()?.data.user?.id || '')
-          .maybeSingle();
-          
-        if (participationData) {
-          setParticipation(participationData);
+        const { data: userSession } = await supabase.auth.getSession();
+        if (userSession?.session?.user?.id) {
+          const { data: participationData } = await supabase
+            .from('mission_participations')
+            .select('status')
+            .eq('mission_id', missionId)
+            .eq('user_id', userSession.session.user.id)
+            .maybeSingle();
+            
+          if (participationData) {
+            setParticipation(participationData);
+          }
         }
       }
     } catch (err) {
@@ -174,8 +178,8 @@ export const useMissionDetails = (missionId: string) => {
 
   const joinMission = async () => {
     try {
-      const user = supabase.auth.getUser();
-      if (!user.data.user) {
+      const { data: userSession } = await supabase.auth.getSession();
+      if (!userSession?.session?.user) {
         toast.error('You must be logged in to join a mission');
         return;
       }
@@ -183,7 +187,7 @@ export const useMissionDetails = (missionId: string) => {
       const { error } = await supabase
         .from('mission_participations')
         .insert({
-          user_id: user.data.user.id,
+          user_id: userSession.session.user.id,
           mission_id: missionId,
           status: 'IN_PROGRESS'
         });

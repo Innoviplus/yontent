@@ -108,9 +108,13 @@ const MissionDetail = () => {
               )}
               
               {user && !isExpired && participation && participation.status === 'IN_PROGRESS' && (
-                <Link to={mission.type === 'REVIEW' ? '/submit-review?missionId=' + mission.id : '/submit-receipt?missionId=' + mission.id}>
+                <Link to={
+                  mission.type === 'REVIEW' 
+                    ? `/submit-review?missionId=${mission.id}` 
+                    : `/submit-receipt?missionId=${mission.id}`
+                }>
                   <Button className="bg-brand-teal hover:bg-brand-teal/90">
-                    {mission.type === 'REVIEW' ? 'Submit Review' : 'Upload Receipt'}
+                    {mission.type === 'REVIEW' ? 'Submit Review' : 'Submit Receipt'}
                   </Button>
                 </Link>
               )}
