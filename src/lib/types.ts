@@ -6,6 +6,7 @@ export interface User {
   avatar?: string;
   points: number;
   createdAt: Date;
+  isAdmin?: boolean;
 }
 
 export interface Review {
@@ -27,9 +28,26 @@ export interface Mission {
   description: string;
   pointsReward: number;
   type: 'REVIEW' | 'RECEIPT';
-  status: 'ACTIVE' | 'COMPLETED';
+  status: 'ACTIVE' | 'COMPLETED' | 'DRAFT';
   expiresAt?: Date;
   requirementDescription: string;
+  merchantName?: string;
+  merchantLogo?: string;
+  bannerImage?: string;
+  maxSubmissionsPerUser?: number;
+  termsConditions?: string;
+  startDate: Date;
+  createdAt: Date;
+  updatedAt: Date;
+}
+
+export interface MissionParticipation {
+  id: string;
+  userId: string;
+  missionId: string;
+  status: 'IN_PROGRESS' | 'COMPLETED' | 'ABANDONED';
+  createdAt: Date;
+  updatedAt: Date;
 }
 
 export interface ReceiptSubmission {
@@ -39,6 +57,46 @@ export interface ReceiptSubmission {
   image: string;
   storeTitle: string;
   purchaseDate: Date;
+  items?: any[];
+  totalAmount?: number;
   status: 'PENDING' | 'APPROVED' | 'REJECTED';
+  adminNotes?: string;
+  ocrData?: any;
   createdAt: Date;
+  updatedAt: Date;
+}
+
+export interface MissionReview {
+  id: string;
+  userId: string;
+  missionId: string;
+  reviewId: string;
+  status: 'PENDING' | 'APPROVED' | 'REJECTED';
+  adminNotes?: string;
+  createdAt: Date;
+  updatedAt: Date;
+  review?: Review;
+}
+
+export interface PointTransaction {
+  id: string;
+  userId: string;
+  amount: number;
+  type: 'EARNED' | 'REDEEMED' | 'REFUNDED' | 'ADJUSTED';
+  source: 'MISSION_REVIEW' | 'RECEIPT_SUBMISSION' | 'REDEMPTION' | 'ADMIN_ADJUSTMENT';
+  sourceId?: string;
+  description?: string;
+  createdAt: Date;
+}
+
+export interface RedemptionRequest {
+  id: string;
+  userId: string;
+  pointsAmount: number;
+  redemptionType: 'CASH' | 'GIFT_VOUCHER';
+  status: 'PENDING' | 'APPROVED' | 'REJECTED';
+  paymentDetails?: any;
+  adminNotes?: string;
+  createdAt: Date;
+  updatedAt: Date;
 }

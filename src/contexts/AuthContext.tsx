@@ -70,7 +70,14 @@ export function AuthProvider({ children }: { children: ReactNode }) {
       return;
     }
 
-    setUserProfile(data);
+    // Check if user is admin
+    const { data: userData } = await supabase.auth.getUser();
+    const isAdmin = userData?.user?.app_metadata?.role === 'admin';
+
+    setUserProfile({
+      ...data,
+      isAdmin
+    });
   }
 
   const signIn = async (email: string, password: string) => {

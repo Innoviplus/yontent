@@ -9,6 +9,179 @@ export type Json =
 export type Database = {
   public: {
     Tables: {
+      mission_participations: {
+        Row: {
+          created_at: string
+          id: string
+          mission_id: string
+          status: string
+          updated_at: string
+          user_id: string
+        }
+        Insert: {
+          created_at?: string
+          id?: string
+          mission_id: string
+          status?: string
+          updated_at?: string
+          user_id: string
+        }
+        Update: {
+          created_at?: string
+          id?: string
+          mission_id?: string
+          status?: string
+          updated_at?: string
+          user_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "mission_participations_mission_id_fkey"
+            columns: ["mission_id"]
+            isOneToOne: false
+            referencedRelation: "missions"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      mission_reviews: {
+        Row: {
+          admin_notes: string | null
+          created_at: string
+          id: string
+          mission_id: string
+          review_id: string
+          status: string
+          updated_at: string
+          user_id: string
+        }
+        Insert: {
+          admin_notes?: string | null
+          created_at?: string
+          id?: string
+          mission_id: string
+          review_id: string
+          status?: string
+          updated_at?: string
+          user_id: string
+        }
+        Update: {
+          admin_notes?: string | null
+          created_at?: string
+          id?: string
+          mission_id?: string
+          review_id?: string
+          status?: string
+          updated_at?: string
+          user_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "mission_reviews_mission_id_fkey"
+            columns: ["mission_id"]
+            isOneToOne: false
+            referencedRelation: "missions"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "mission_reviews_review_id_fkey"
+            columns: ["review_id"]
+            isOneToOne: false
+            referencedRelation: "reviews"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      missions: {
+        Row: {
+          banner_image: string | null
+          created_at: string
+          description: string
+          expires_at: string | null
+          id: string
+          max_submissions_per_user: number | null
+          merchant_logo: string | null
+          merchant_name: string | null
+          points_reward: number
+          requirement_description: string
+          start_date: string
+          status: string
+          terms_conditions: string | null
+          title: string
+          type: string
+          updated_at: string
+        }
+        Insert: {
+          banner_image?: string | null
+          created_at?: string
+          description: string
+          expires_at?: string | null
+          id?: string
+          max_submissions_per_user?: number | null
+          merchant_logo?: string | null
+          merchant_name?: string | null
+          points_reward?: number
+          requirement_description?: string
+          start_date?: string
+          status?: string
+          terms_conditions?: string | null
+          title: string
+          type: string
+          updated_at?: string
+        }
+        Update: {
+          banner_image?: string | null
+          created_at?: string
+          description?: string
+          expires_at?: string | null
+          id?: string
+          max_submissions_per_user?: number | null
+          merchant_logo?: string | null
+          merchant_name?: string | null
+          points_reward?: number
+          requirement_description?: string
+          start_date?: string
+          status?: string
+          terms_conditions?: string | null
+          title?: string
+          type?: string
+          updated_at?: string
+        }
+        Relationships: []
+      }
+      point_transactions: {
+        Row: {
+          amount: number
+          created_at: string
+          description: string | null
+          id: string
+          source: string
+          source_id: string | null
+          type: string
+          user_id: string
+        }
+        Insert: {
+          amount: number
+          created_at?: string
+          description?: string | null
+          id?: string
+          source: string
+          source_id?: string | null
+          type: string
+          user_id: string
+        }
+        Update: {
+          amount?: number
+          created_at?: string
+          description?: string | null
+          id?: string
+          source?: string
+          source_id?: string | null
+          type?: string
+          user_id?: string
+        }
+        Relationships: []
+      }
       profiles: {
         Row: {
           avatar: string | null
@@ -33,6 +206,98 @@ export type Database = {
           points?: number
           updated_at?: string
           username?: string | null
+        }
+        Relationships: []
+      }
+      receipt_submissions: {
+        Row: {
+          admin_notes: string | null
+          created_at: string
+          id: string
+          image: string
+          items: Json | null
+          mission_id: string
+          ocr_data: Json | null
+          purchase_date: string
+          status: string
+          store_title: string
+          total_amount: number | null
+          updated_at: string
+          user_id: string
+        }
+        Insert: {
+          admin_notes?: string | null
+          created_at?: string
+          id?: string
+          image: string
+          items?: Json | null
+          mission_id: string
+          ocr_data?: Json | null
+          purchase_date: string
+          status?: string
+          store_title: string
+          total_amount?: number | null
+          updated_at?: string
+          user_id: string
+        }
+        Update: {
+          admin_notes?: string | null
+          created_at?: string
+          id?: string
+          image?: string
+          items?: Json | null
+          mission_id?: string
+          ocr_data?: Json | null
+          purchase_date?: string
+          status?: string
+          store_title?: string
+          total_amount?: number | null
+          updated_at?: string
+          user_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "receipt_submissions_mission_id_fkey"
+            columns: ["mission_id"]
+            isOneToOne: false
+            referencedRelation: "missions"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      redemption_requests: {
+        Row: {
+          admin_notes: string | null
+          created_at: string
+          id: string
+          payment_details: Json | null
+          points_amount: number
+          redemption_type: string
+          status: string
+          updated_at: string
+          user_id: string
+        }
+        Insert: {
+          admin_notes?: string | null
+          created_at?: string
+          id?: string
+          payment_details?: Json | null
+          points_amount: number
+          redemption_type: string
+          status?: string
+          updated_at?: string
+          user_id: string
+        }
+        Update: {
+          admin_notes?: string | null
+          created_at?: string
+          id?: string
+          payment_details?: Json | null
+          points_amount?: number
+          redemption_type?: string
+          status?: string
+          updated_at?: string
+          user_id?: string
         }
         Relationships: []
       }
