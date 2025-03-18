@@ -1,7 +1,6 @@
-
 import { useState, useEffect } from 'react';
 import { Link } from 'react-router-dom';
-import { Plus, Loader2, ArrowDown, ArrowUp } from 'lucide-react';
+import { Plus, Loader2 } from 'lucide-react';
 import {
   DropdownMenu,
   DropdownMenuTrigger,
@@ -33,16 +32,8 @@ const ReviewFeed = () => {
       let query = supabase
         .from('reviews')
         .select(`
-          id,
-          user_id,
-          content,
-          images,
-          views_count,
-          likes_count,
-          avg_time_spent,
-          click_through_rate,
-          created_at,
-          profiles:user_id (
+          *,
+          profiles (
             id,
             username,
             avatar,
