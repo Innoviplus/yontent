@@ -37,7 +37,6 @@ const ReviewFeed = () => {
             id,
             username,
             avatar,
-            email,
             points,
             created_at
           )
@@ -75,7 +74,7 @@ const ReviewFeed = () => {
         user: review.profiles ? {
           id: review.profiles.id,
           username: review.profiles.username || 'Anonymous',
-          email: review.profiles.email || '',
+          email: '',
           points: review.profiles.points || 0,
           createdAt: new Date(review.profiles.created_at),
           avatar: review.profiles.avatar
