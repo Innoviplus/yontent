@@ -16,9 +16,7 @@ const ReviewCard = ({ review, className }: ReviewCardProps) => {
   const navigate = useNavigate();
 
   const handleCardClick = () => {
-    // Track the view
     trackReviewView(review.id);
-    // Navigate to the detail page
     navigate(`/reviews/${review.id}`);
   };
 
@@ -58,8 +56,8 @@ const ReviewCard = ({ review, className }: ReviewCardProps) => {
           </p>
         </div>
         
-        {/* Stats and Footer - all in one line */}
-        <div className="flex items-center justify-between">
+        {/* User Info and Stats */}
+        <div className="space-y-2">
           {/* Author with Avatar */}
           <div className="flex items-center">
             {review.user?.avatar ? (

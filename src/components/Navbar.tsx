@@ -1,9 +1,16 @@
-
 import { useState, useEffect } from 'react';
 import { Link, useLocation } from 'react-router-dom';
-import { Menu, X, User, Star, Award, LogOut } from 'lucide-react';
+import { Menu, X, Star, Award, LogOut } from 'lucide-react';
 import { cn } from '@/lib/utils';
 import { useAuth } from '@/contexts/AuthContext';
+import {
+  DropdownMenu,
+  DropdownMenuContent,
+  DropdownMenuItem,
+  DropdownMenuSeparator,
+  DropdownMenuTrigger,
+} from '@/components/ui/dropdown-menu';
+import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
 
 interface NavLinkProps {
   to: string;
@@ -74,7 +81,7 @@ const Navbar = () => {
         <nav className="hidden md:flex items-center gap-1">
           <NavLink 
             to="/reviews" 
-            label="Reviews" 
+            label="Features" 
             icon={<Star className="h-5 w-5" />}
             current={location.pathname === '/reviews'}
           />
@@ -86,27 +93,31 @@ const Navbar = () => {
           />
           
           {user ? (
-            <>
-              <NavLink 
-                to="/dashboard" 
-                label="Dashboard" 
-                icon={<User className="h-5 w-5" />}
-                current={location.pathname === '/dashboard'}
-              />
-              <button 
-                onClick={() => signOut()}
-                className="ml-2 flex items-center gap-2 px-4 py-2.5 text-gray-600 hover:bg-gray-100 rounded-md transition-all duration-200"
-              >
-                <LogOut className="h-5 w-5" />
-                <span>Logout</span>
-              </button>
-              {userProfile && (
-                <div className="ml-2 flex items-center gap-2 px-3 py-1.5 bg-brand-teal/10 text-brand-teal rounded-md">
-                  <span className="font-medium">{userProfile.points}</span>
-                  <span className="text-sm">points</span>
-                </div>
-              )}
-            </>
+            <DropdownMenu>
+              <DropdownMenuTrigger className="flex items-center gap-3 px-2 py-1 rounded-md hover:bg-gray-100">
+                <Avatar>
+                  <AvatarImage src={userProfile?.avatar} />
+                  <AvatarFallback className="bg-brand-teal/10 text-brand-teal">
+                    {userProfile?.username?.[0]?.toUpperCase() || 'U'}
+                  </AvatarFallback>
+                </Avatar>
+                <span className="text-sm font-medium">{userProfile?.username}</span>
+              </DropdownMenuTrigger>
+              
+              <DropdownMenuContent align="end" className="w-56">
+                <DropdownMenuItem className="flex items-center gap-2">
+                  <div className="text-brand-teal font-medium">{userProfile?.points || 0} points</div>
+                </DropdownMenuItem>
+                <DropdownMenuSeparator />
+                <DropdownMenuItem asChild>
+                  <Link to="/dashboard" className="cursor-pointer">Profile</Link>
+                </DropdownMenuItem>
+                <DropdownMenuItem onClick={() => signOut()} className="text-red-600 cursor-pointer">
+                  <LogOut className="h-4 w-4 mr-2" />
+                  Logout
+                </DropdownMenuItem>
+              </DropdownMenuContent>
+            </DropdownMenu>
           ) : (
             <div className="flex items-center ml-2 gap-2">
               <Link 
@@ -148,7 +159,7 @@ const Navbar = () => {
         <div className="px-4 py-5 space-y-3">
           <NavLink 
             to="/reviews" 
-            label="Reviews" 
+            label="Features" 
             icon={<Star className="h-5 w-5" />}
             current={location.pathname === '/reviews'}
           />
@@ -161,12 +172,13 @@ const Navbar = () => {
           
           {user ? (
             <>
-              <NavLink 
+              <Link 
                 to="/dashboard" 
-                label="Dashboard" 
-                icon={<User className="h-5 w-5" />}
-                current={location.pathname === '/dashboard'}
-              />
+                className="w-full flex items-center gap-2 px-4 py-2.5 text-gray-600 hover:bg-gray-100 rounded-md transition-all duration-200"
+              >
+                <User className="h-5 w-5" />
+                <span>Dashboard</span>
+              </Link>
               <button 
                 onClick={() => signOut()}
                 className="w-full flex items-center gap-2 px-4 py-2.5 text-gray-600 hover:bg-gray-100 rounded-md transition-all duration-200"

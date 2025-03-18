@@ -38,6 +38,8 @@ export type Database = {
       }
       reviews: {
         Row: {
+          avg_time_spent: number | null
+          click_through_rate: number | null
           content: string
           created_at: string
           id: string
@@ -48,6 +50,8 @@ export type Database = {
           views_count: number
         }
         Insert: {
+          avg_time_spent?: number | null
+          click_through_rate?: number | null
           content: string
           created_at?: string
           id?: string
@@ -58,6 +62,8 @@ export type Database = {
           views_count?: number
         }
         Update: {
+          avg_time_spent?: number | null
+          click_through_rate?: number | null
           content?: string
           created_at?: string
           id?: string
@@ -82,6 +88,15 @@ export type Database = {
       [_ in never]: never
     }
     Functions: {
+      calculate_relevance_score: {
+        Args: {
+          views: number
+          likes: number
+          avg_time: number
+          ctr: number
+        }
+        Returns: number
+      }
       increment_view_count: {
         Args: {
           review_id: string
