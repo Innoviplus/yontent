@@ -1,3 +1,4 @@
+
 import { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { useForm } from 'react-hook-form';
@@ -35,6 +36,11 @@ import {
 import { Calendar } from '@/components/ui/calendar';
 import { Alert, AlertDescription } from '@/components/ui/alert';
 import { Switch } from '@/components/ui/switch';
+import { ProfileTab } from '@/components/settings/ProfileTab';
+import { AccountTab } from '@/components/settings/AccountTab';
+import { SocialMediaTab } from '@/components/settings/SocialMediaTab';
+import { GeneralTab } from '@/components/settings/GeneralTab';
+import { AvatarUploader } from '@/components/settings/AvatarUploader';
 
 const profileFormSchema = z.object({
   username: z.string().optional(),
@@ -216,7 +222,7 @@ const Settings = () => {
       // Update the profile with extended data
       const { error: updateError } = await supabase
         .from('profiles')
-        .update({ extended_data: extendedData })
+        .update({ extended_data: extendedData as any })
         .eq('id', user.id);
       
       if (updateError) {
@@ -266,7 +272,7 @@ const Settings = () => {
       // Update profile with new extended data
       const { error: updateError } = await supabase
         .from('profiles')
-        .update({ extended_data: updatedExtendedData })
+        .update({ extended_data: updatedExtendedData as any })
         .eq('id', user.id);
       
       if (updateError) {
@@ -362,385 +368,39 @@ const Settings = () => {
               </TabsList>
               
               <TabsContent value="profile">
-                <Card>
-                  <CardHeader>
-                    <CardTitle>Profile Information</CardTitle>
-                    <CardDescription>Update your profile information and personal details</CardDescription>
-                  </CardHeader>
-                  <CardContent>
-                    <div className="flex flex-col md:flex-row gap-8 mb-8">
-                      <div className="flex flex-col items-center">
-                        <Avatar className="w-32 h-32 mb-4">
-                          <AvatarImage src={avatarUrl || ''} alt={userProfile?.username || 'User'} />
-                          <AvatarFallback>{userProfile?.username?.charAt(0).toUpperCase() || 'U'}</AvatarFallback>
-                        </Avatar>
-                        <div className="relative">
-                          <Input
-                            type="file"
-                            accept="image/*"
-                            onChange={handleAvatarUpload}
-                            className="hidden"
-                            id="avatar-upload"
-                            disabled={uploading}
-                          />
-                          <Button
-                            variant="outline"
-                            className="relative"
-                            asChild
-                            disabled={uploading}
-                          >
-                            <label htmlFor="avatar-upload">
-                              {uploading ? (
-                                <Loader2 className="h-4 w-4 animate-spin mr-2" />
-                              ) : (
-                                <Camera className="h-4 w-4 mr-2" />
-                              )}
-                              {uploading ? 'Uploading...' : 'Change Avatar'}
-                            </label>
-                          </Button>
-                        </div>
-                      </div>
-                      
-                      <div className="flex-1">
-                        <Form {...profileForm}>
-                          <form onSubmit={profileForm.handleSubmit(onProfileSubmit)} className="space-y-6">
-                            <FormField
-                              control={profileForm.control}
-                              name="username"
-                              render={({ field }) => (
-                                <FormItem>
-                                  <FormLabel>Username</FormLabel>
-                                  <FormControl>
-                                    <Input {...field} readOnly />
-                                  </FormControl>
-                                  <FormDescription>
-                                    Your username cannot be changed.
-                                  </FormDescription>
-                                </FormItem>
-                              )}
-                            />
-                            
-                            <div className="grid gap-6 grid-cols-1 md:grid-cols-2">
-                              <FormField
-                                control={profileForm.control}
-                                name="firstName"
-                                render={({ field }) => (
-                                  <FormItem>
-                                    <FormLabel>First Name</FormLabel>
-                                    <FormControl>
-                                      <Input placeholder="John" {...field} />
-                                    </FormControl>
-                                    <FormMessage />
-                                  </FormItem>
-                                )}
-                              />
-                              
-                              <FormField
-                                control={profileForm.control}
-                                name="lastName"
-                                render={({ field }) => (
-                                  <FormItem>
-                                    <FormLabel>Last Name</FormLabel>
-                                    <FormControl>
-                                      <Input placeholder="Doe" {...field} />
-                                    </FormControl>
-                                    <FormMessage />
-                                  </FormItem>
-                                )}
-                              />
-                            </div>
-                            
-                            <FormField
-                              control={profileForm.control}
-                              name="bio"
-                              render={({ field }) => (
-                                <FormItem>
-                                  <FormLabel>Bio</FormLabel>
-                                  <FormControl>
-                                    <Textarea
-                                      placeholder="Tell us a little about yourself"
-                                      className="resize-none"
-                                      {...field}
-                                      value={field.value || ''}
-                                    />
-                                  </FormControl>
-                                  <FormDescription>
-                                    Brief description for your profile. Maximum 500 characters.
-                                  </FormDescription>
-                                  <FormMessage />
-                                </FormItem>
-                              )}
-                            />
-                            
-                            <div className="grid gap-6 grid-cols-1 md:grid-cols-2">
-                              <FormField
-                                control={profileForm.control}
-                                name="gender"
-                                render={({ field }) => (
-                                  <FormItem>
-                                    <FormLabel>Gender</FormLabel>
-                                    <FormControl>
-                                      <Input placeholder="Gender" {...field} value={field.value || ''} />
-                                    </FormControl>
-                                    <FormMessage />
-                                  </FormItem>
-                                )}
-                              />
-                              
-                              <FormField
-                                control={profileForm.control}
-                                name="birthDate"
-                                render={({ field }) => (
-                                  <FormItem className="flex flex-col">
-                                    <FormLabel>Date of Birth</FormLabel>
-                                    <Popover>
-                                      <PopoverTrigger asChild>
-                                        <FormControl>
-                                          <Button
-                                            variant={"outline"}
-                                            className={`w-full justify-start text-left font-normal ${!field.value && "text-muted-foreground"}`}
-                                          >
-                                            {field.value ? (
-                                              format(field.value, "PPP")
-                                            ) : (
-                                              <span>Pick a date</span>
-                                            )}
-                                            <CalendarIcon className="ml-auto h-4 w-4 opacity-50" />
-                                          </Button>
-                                        </FormControl>
-                                      </PopoverTrigger>
-                                      <PopoverContent className="w-auto p-0" align="start">
-                                        <Calendar
-                                          mode="single"
-                                          selected={field.value}
-                                          onSelect={field.onChange}
-                                          disabled={(date) =>
-                                            date > new Date() || date < new Date("1900-01-01")
-                                          }
-                                          initialFocus
-                                          className="p-3 pointer-events-auto"
-                                        />
-                                      </PopoverContent>
-                                    </Popover>
-                                    <FormMessage />
-                                  </FormItem>
-                                )}
-                              />
-                            </div>
-                            
-                            <Button type="submit" disabled={isUpdating}>
-                              {isUpdating && <Loader2 className="mr-2 h-4 w-4 animate-spin" />}
-                              Save Profile
-                            </Button>
-                          </form>
-                        </Form>
-                      </div>
-                    </div>
-                  </CardContent>
-                </Card>
+                <ProfileTab 
+                  userProfile={userProfile}
+                  avatarUrl={avatarUrl}
+                  uploading={uploading}
+                  handleAvatarUpload={handleAvatarUpload}
+                  profileForm={profileForm}
+                  onProfileSubmit={onProfileSubmit}
+                  isUpdating={isUpdating}
+                />
               </TabsContent>
               
               <TabsContent value="account">
-                <Card>
-                  <CardHeader>
-                    <CardTitle>Account Settings</CardTitle>
-                    <CardDescription>Manage your account details and security</CardDescription>
-                  </CardHeader>
-                  <CardContent className="space-y-8">
-                    <Form {...settingsForm}>
-                      <form onSubmit={settingsForm.handleSubmit(onSettingsSubmit)} className="space-y-6">
-                        <FormField
-                          control={settingsForm.control}
-                          name="email"
-                          render={({ field }) => (
-                            <FormItem>
-                              <FormLabel>Email Address</FormLabel>
-                              <FormControl>
-                                <Input type="email" {...field} readOnly />
-                              </FormControl>
-                              <FormDescription>
-                                Your email address cannot be changed directly.
-                              </FormDescription>
-                            </FormItem>
-                          )}
-                        />
-                        
-                        <FormField
-                          control={settingsForm.control}
-                          name="phoneNumber"
-                          render={({ field }) => (
-                            <FormItem>
-                              <FormLabel>Phone Number</FormLabel>
-                              <FormControl>
-                                <Input placeholder="+1 (555) 000-0000" {...field} value={field.value || ''} />
-                              </FormControl>
-                              <FormMessage />
-                            </FormItem>
-                          )}
-                        />
-                        
-                        <FormField
-                          control={settingsForm.control}
-                          name="country"
-                          render={({ field }) => (
-                            <FormItem>
-                              <FormLabel>Country</FormLabel>
-                              <FormControl>
-                                <Input placeholder="United States" {...field} value={field.value || ''} />
-                              </FormControl>
-                              <FormMessage />
-                            </FormItem>
-                          )}
-                        />
-                        
-                        <Button type="submit" disabled={isUpdating}>
-                          {isUpdating && <Loader2 className="mr-2 h-4 w-4 animate-spin" />}
-                          Save Settings
-                        </Button>
-                      </form>
-                    </Form>
-                    
-                    <div className="pt-6 border-t">
-                      <h3 className="text-lg font-medium mb-4">Password</h3>
-                      <Button variant="outline" onClick={handleResetPassword}>
-                        Reset Password
-                      </Button>
-                    </div>
-                  </CardContent>
-                </Card>
+                <AccountTab 
+                  settingsForm={settingsForm}
+                  onSettingsSubmit={onSettingsSubmit}
+                  isUpdating={isUpdating}
+                  handleResetPassword={handleResetPassword}
+                />
               </TabsContent>
               
               <TabsContent value="social">
-                <Card>
-                  <CardHeader>
-                    <CardTitle>Social Media Profiles</CardTitle>
-                    <CardDescription>Connect your social media accounts</CardDescription>
-                  </CardHeader>
-                  <CardContent>
-                    <Form {...profileForm}>
-                      <form className="space-y-6">
-                        <FormField
-                          control={profileForm.control}
-                          name="websiteUrl"
-                          render={({ field }) => (
-                            <FormItem>
-                              <FormLabel>Website</FormLabel>
-                              <FormControl>
-                                <Input placeholder="https://yourwebsite.com" {...field} value={field.value || ''} />
-                              </FormControl>
-                              <FormMessage />
-                            </FormItem>
-                          )}
-                        />
-                        
-                        <FormField
-                          control={profileForm.control}
-                          name="facebookUrl"
-                          render={({ field }) => (
-                            <FormItem>
-                              <FormLabel>Facebook Profile</FormLabel>
-                              <FormControl>
-                                <Input placeholder="https://facebook.com/username" {...field} value={field.value || ''} />
-                              </FormControl>
-                              <FormMessage />
-                            </FormItem>
-                          )}
-                        />
-                        
-                        <FormField
-                          control={profileForm.control}
-                          name="instagramUrl"
-                          render={({ field }) => (
-                            <FormItem>
-                              <FormLabel>Instagram Profile</FormLabel>
-                              <FormControl>
-                                <Input placeholder="https://instagram.com/username" {...field} value={field.value || ''} />
-                              </FormControl>
-                              <FormMessage />
-                            </FormItem>
-                          )}
-                        />
-                        
-                        <FormField
-                          control={profileForm.control}
-                          name="youtubeUrl"
-                          render={({ field }) => (
-                            <FormItem>
-                              <FormLabel>YouTube Channel</FormLabel>
-                              <FormControl>
-                                <Input placeholder="https://youtube.com/c/channelname" {...field} value={field.value || ''} />
-                              </FormControl>
-                              <FormMessage />
-                            </FormItem>
-                          )}
-                        />
-                        
-                        <FormField
-                          control={profileForm.control}
-                          name="tiktokUrl"
-                          render={({ field }) => (
-                            <FormItem>
-                              <FormLabel>TikTok Profile</FormLabel>
-                              <FormControl>
-                                <Input placeholder="https://tiktok.com/@username" {...field} value={field.value || ''} />
-                              </FormControl>
-                              <FormMessage />
-                            </FormItem>
-                          )}
-                        />
-                        
-                        <Button type="button" onClick={profileForm.handleSubmit(onProfileSubmit)} disabled={isUpdating}>
-                          {isUpdating && <Loader2 className="mr-2 h-4 w-4 animate-spin" />}
-                          Save Social Profiles
-                        </Button>
-                      </form>
-                    </Form>
-                  </CardContent>
-                </Card>
+                <SocialMediaTab 
+                  profileForm={profileForm}
+                  onSubmit={profileForm.handleSubmit(onProfileSubmit)}
+                  isUpdating={isUpdating}
+                />
               </TabsContent>
               
               <TabsContent value="general">
-                <Card>
-                  <CardHeader>
-                    <CardTitle>General Settings</CardTitle>
-                    <CardDescription>Manage app preferences and account actions</CardDescription>
-                  </CardHeader>
-                  <CardContent className="space-y-8">
-                    <div className="border-b pb-6">
-                      <h3 className="text-lg font-medium mb-4">About</h3>
-                      <p className="text-muted-foreground">
-                        This application helps users track and share reviews, participate in missions, and earn points.
-                      </p>
-                    </div>
-                    
-                    <div className="border-b pb-6">
-                      <h3 className="text-lg font-medium mb-4">Contact Us</h3>
-                      <p className="text-muted-foreground mb-4">
-                        If you have any questions or need support, please get in touch with our team.
-                      </p>
-                      <Button variant="outline">
-                        Send Message
-                      </Button>
-                    </div>
-                    
-                    <div className="border-b pb-6">
-                      <h3 className="text-lg font-medium mb-4">Account Actions</h3>
-                      <div className="space-y-4">
-                        <Button onClick={handleLogout} variant="outline" className="w-full justify-start">
-                          Log out
-                        </Button>
-                        
-                        <Button 
-                          onClick={handleDeleteAccount} 
-                          variant="destructive" 
-                          className="w-full justify-start"
-                        >
-                          Delete Account
-                        </Button>
-                      </div>
-                    </div>
-                  </CardContent>
-                </Card>
+                <GeneralTab 
+                  handleLogout={handleLogout}
+                  handleDeleteAccount={handleDeleteAccount}
+                />
               </TabsContent>
             </Tabs>
           </div>
