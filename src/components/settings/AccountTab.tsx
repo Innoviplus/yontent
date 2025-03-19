@@ -1,7 +1,7 @@
 
 import React from 'react';
 import { UseFormReturn } from 'react-hook-form';
-import { Loader2 } from 'lucide-react';
+import { Loader2, MessageSquare } from 'lucide-react';
 import {
   Form,
   FormControl,
@@ -14,6 +14,7 @@ import {
 import { Input } from '@/components/ui/input';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
+import { PhoneInput } from './PhoneInput';
 
 interface AccountTabProps {
   settingsForm: UseFormReturn<any>;
@@ -28,6 +29,10 @@ export const AccountTab: React.FC<AccountTabProps> = ({
   isUpdating,
   handleResetPassword
 }) => {
+  const handleContactUs = () => {
+    window.open('https://api.whatsapp.com/send?phone=85254278104', '_blank');
+  };
+
   return (
     <Card>
       <CardHeader>
@@ -60,7 +65,14 @@ export const AccountTab: React.FC<AccountTabProps> = ({
                 <FormItem>
                   <FormLabel>Phone Number</FormLabel>
                   <FormControl>
-                    <Input placeholder="+1 (555) 000-0000" {...field} value={field.value || ''} />
+                    <PhoneInput
+                      value={field.value || ''}
+                      onChange={field.onChange}
+                      countryCode={settingsForm.watch('phoneCountryCode') || ''}
+                      onCountryCodeChange={(code) => {
+                        settingsForm.setValue('phoneCountryCode', code);
+                      }}
+                    />
                   </FormControl>
                   <FormMessage />
                 </FormItem>
@@ -93,6 +105,17 @@ export const AccountTab: React.FC<AccountTabProps> = ({
           <Button variant="outline" onClick={handleResetPassword}>
             Reset Password
           </Button>
+        </div>
+        
+        <div className="pt-6 border-t">
+          <h3 className="text-lg font-medium mb-4">Contact Us</h3>
+          <Button onClick={handleContactUs} className="bg-green-600 hover:bg-green-700">
+            <MessageSquare className="mr-2 h-4 w-4" />
+            Send Message
+          </Button>
+          <p className="text-sm text-gray-500 mt-2">
+            Opens WhatsApp to connect with our support team
+          </p>
         </div>
       </CardContent>
     </Card>

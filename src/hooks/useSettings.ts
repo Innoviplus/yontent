@@ -1,3 +1,4 @@
+
 import { useState, useEffect } from 'react';
 import { useForm } from 'react-hook-form';
 import { zodResolver } from '@hookform/resolvers/zod';
@@ -27,6 +28,7 @@ const profileFormSchema = z.object({
 const settingsFormSchema = z.object({
   email: z.string().email("Please enter a valid email").optional(),
   phoneNumber: z.string().optional(),
+  phoneCountryCode: z.string().optional(),
   country: z.string().optional(),
 });
 
@@ -62,6 +64,7 @@ export const useSettings = () => {
     defaultValues: {
       email: user?.email || '',
       phoneNumber: '',
+      phoneCountryCode: '',
       country: '',
     },
   });
@@ -76,7 +79,7 @@ export const useSettings = () => {
         
         const { data, error } = await supabase
           .from('profiles')
-          .select('extended_data')
+          .select('extended_data, phone_country_code')
           .eq('id', user.id)
           .single();
           
@@ -85,8 +88,8 @@ export const useSettings = () => {
           return;
         }
         
-        if (data && data.extended_data) {
-          const extData = data.extended_data as ExtendedProfile;
+        if (data) {
+          const extData = data.extended_data as ExtendedProfile || {};
           setExtendedProfile(extData);
           
           profileForm.reset({
@@ -106,6 +109,7 @@ export const useSettings = () => {
           settingsForm.reset({
             email: user?.email || '',
             phoneNumber: extData.phoneNumber || '',
+            phoneCountryCode: data.phone_country_code || '',
             country: extData.country || '',
           });
         }
@@ -247,10 +251,13 @@ export const useSettings = () => {
         Object.entries(updatedExtendedData).map(([key, value]) => [key, value])
       );
       
-      // Update profile with new extended data
+      // Update profile with new extended data and phone country code
       const { error: updateError } = await supabase
         .from('profiles')
-        .update({ extended_data: jsonData })
+        .update({ 
+          extended_data: jsonData,
+          phone_country_code: values.phoneCountryCode || null
+        })
         .eq('id', user.id);
       
       if (updateError) {

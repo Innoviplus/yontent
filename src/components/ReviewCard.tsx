@@ -19,6 +19,13 @@ const ReviewCard = ({ review, className }: ReviewCardProps) => {
     trackReviewView(review.id);
     navigate(`/reviews/${review.id}`);
   };
+  
+  const handleUserClick = (e: React.MouseEvent) => {
+    e.stopPropagation();
+    if (review.user?.username) {
+      navigate(`/user/${review.user.username}`);
+    }
+  };
 
   return (
     <div 
@@ -60,19 +67,21 @@ const ReviewCard = ({ review, className }: ReviewCardProps) => {
         <div className="space-y-2">
           {/* Author with Avatar */}
           <div className="flex items-center">
-            {review.user?.avatar ? (
-              <Avatar className="h-6 w-6 mr-2">
-                <AvatarImage src={review.user.avatar} alt={review.user?.username || 'User'} />
-                <AvatarFallback>
+            <div onClick={handleUserClick} className="flex items-center cursor-pointer hover:underline">
+              {review.user?.avatar ? (
+                <Avatar className="h-6 w-6 mr-2">
+                  <AvatarImage src={review.user.avatar} alt={review.user?.username || 'User'} />
+                  <AvatarFallback>
+                    <User className="h-3 w-3" />
+                  </AvatarFallback>
+                </Avatar>
+              ) : (
+                <div className="h-6 w-6 rounded-full bg-gray-200 flex items-center justify-center mr-2">
                   <User className="h-3 w-3" />
-                </AvatarFallback>
-              </Avatar>
-            ) : (
-              <div className="h-6 w-6 rounded-full bg-gray-200 flex items-center justify-center mr-2">
-                <User className="h-3 w-3" />
-              </div>
-            )}
-            <span className="text-sm text-gray-500">{review.user?.username || 'Anonymous'}</span>
+                </div>
+              )}
+              <span className="text-sm text-gray-500">{review.user?.username || 'Anonymous'}</span>
+            </div>
           </div>
           
           {/* Stats: Views and Likes */}

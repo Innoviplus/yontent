@@ -104,7 +104,7 @@ const AdminMissions = () => {
       <div className="container mx-auto px-4 pt-28 pb-16">
         <div className="flex justify-between items-center mb-8">
           <h1 className="text-2xl font-bold">Admin: Manage Missions</h1>
-          <Link to="/admin/missions/new">
+          <Link to="/admin/missions/create">
             <Button className="bg-brand-teal hover:bg-brand-teal/90">
               <Plus className="h-4 w-4 mr-2" />
               Add Mission

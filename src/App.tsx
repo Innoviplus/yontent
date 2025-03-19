@@ -19,6 +19,8 @@ import ReviewDetail from "./pages/ReviewDetail";
 import MissionFeed from "./pages/MissionFeed";
 import MissionDetail from "./pages/MissionDetail";
 import AdminMissions from "./pages/admin/AdminMissions";
+import CreateEditMission from "./pages/admin/CreateEditMission";
+import UserProfile from "./pages/UserProfile";
 import ProtectedRoute from "./components/ProtectedRoute";
 
 const queryClient = new QueryClient();
@@ -57,6 +59,7 @@ const App = () => (
             <Route path="/feed" element={<ReviewFeed />} />
             <Route path="/reviews" element={<Reviews />} />
             <Route path="/reviews/:id" element={<ReviewDetail />} />
+            <Route path="/user/:username" element={<UserProfile />} />
             
             {/* Mission routes */}
             <Route path="/missions" element={<MissionFeed />} />
@@ -66,6 +69,16 @@ const App = () => (
             <Route path="/admin/missions" element={
               <ProtectedRoute>
                 <AdminMissions />
+              </ProtectedRoute>
+            } />
+            <Route path="/admin/missions/create" element={
+              <ProtectedRoute>
+                <CreateEditMission />
+              </ProtectedRoute>
+            } />
+            <Route path="/admin/missions/edit/:id" element={
+              <ProtectedRoute>
+                <CreateEditMission />
               </ProtectedRoute>
             } />
             

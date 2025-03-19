@@ -187,7 +187,10 @@ export type Database = {
           avatar: string | null
           created_at: string
           extended_data: Json | null
+          followers_count: number
+          following_count: number
           id: string
+          phone_country_code: string | null
           points: number
           updated_at: string
           username: string | null
@@ -196,7 +199,10 @@ export type Database = {
           avatar?: string | null
           created_at?: string
           extended_data?: Json | null
+          followers_count?: number
+          following_count?: number
           id: string
+          phone_country_code?: string | null
           points?: number
           updated_at?: string
           username?: string | null
@@ -205,7 +211,10 @@ export type Database = {
           avatar?: string | null
           created_at?: string
           extended_data?: Json | null
+          followers_count?: number
+          following_count?: number
           id?: string
+          phone_country_code?: string | null
           points?: number
           updated_at?: string
           username?: string | null
@@ -304,6 +313,35 @@ export type Database = {
         }
         Relationships: []
       }
+      review_likes: {
+        Row: {
+          created_at: string
+          id: string
+          review_id: string
+          user_id: string
+        }
+        Insert: {
+          created_at?: string
+          id?: string
+          review_id: string
+          user_id: string
+        }
+        Update: {
+          created_at?: string
+          id?: string
+          review_id?: string
+          user_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "review_likes_review_id_fkey"
+            columns: ["review_id"]
+            isOneToOne: false
+            referencedRelation: "reviews"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       reviews: {
         Row: {
           avg_time_spent: number | null
@@ -350,6 +388,27 @@ export type Database = {
             referencedColumns: ["id"]
           },
         ]
+      }
+      user_follows: {
+        Row: {
+          created_at: string
+          follower_id: string
+          following_id: string
+          id: string
+        }
+        Insert: {
+          created_at?: string
+          follower_id: string
+          following_id: string
+          id?: string
+        }
+        Update: {
+          created_at?: string
+          follower_id?: string
+          following_id?: string
+          id?: string
+        }
+        Relationships: []
       }
     }
     Views: {
