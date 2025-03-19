@@ -1,0 +1,209 @@
+
+import { useState, useEffect } from 'react';
+import { Review } from '@/lib/types';
+import { supabase } from '@/integrations/supabase/client';
+import { trackReviewView } from '@/services/reviewService';
+import { toast } from 'sonner';
+import { useAuth } from '@/contexts/AuthContext';
+import { useNavigate } from 'react-router-dom';
+
+export const useReviewDetail = (id: string | undefined) => {
+  const [review, setReview] = useState<Review | null>(null);
+  const [loading, setLoading] = useState(true);
+  const [likeLoading, setLikeLoading] = useState(false);
+  const [hasLiked, setHasLiked] = useState(false);
+  const { user } = useAuth();
+  const navigate = useNavigate();
+  
+  const fetchReview = async () => {
+    if (!id) return;
+    
+    try {
+      setLoading(true);
+      
+      const { data, error } = await supabase
+        .from('reviews')
+        .select(`
+          id,
+          user_id,
+          content,
+          images,
+          views_count,
+          likes_count,
+          created_at,
+          profiles:user_id (
+            id,
+            username,
+            avatar
+          )
+        `)
+        .eq('id', id)
+        .single();
+      
+      if (error) {
+        console.error('Error fetching review:', error);
+        toast.error('Failed to load review');
+        return;
+      }
+      
+      // Transform the review to match our Review type
+      const transformedReview: Review = {
+        id: data.id,
+        userId: data.user_id,
+        productName: "Review", // Default value since column no longer exists
+        rating: 5, // Default value since column no longer exists
+        content: data.content,
+        images: data.images || [],
+        viewsCount: data.views_count,
+        likesCount: data.likes_count,
+        createdAt: new Date(data.created_at),
+        user: data.profiles ? {
+          id: data.profiles.id,
+          username: data.profiles.username || 'Anonymous',
+          email: '', // Not returned for privacy
+          points: 0, // Not relevant in this context
+          createdAt: new Date(), // Not relevant in this context
+          avatar: data.profiles.avatar
+        } : undefined
+      };
+      
+      setReview(transformedReview);
+      
+      // Track the view
+      trackReviewView(id);
+    } catch (error) {
+      console.error('Unexpected error:', error);
+      toast.error('An unexpected error occurred');
+    } finally {
+      setLoading(false);
+    }
+  };
+  
+  const checkIfUserLiked = async () => {
+    if (!user || !id) return;
+    
+    try {
+      const { data, error } = await supabase
+        .from('review_likes')
+        .select('id')
+        .eq('user_id', user.id)
+        .eq('review_id', id)
+        .single();
+      
+      if (error && error.code !== 'PGRST116') {
+        console.error('Error checking if user liked review:', error);
+        return;
+      }
+      
+      setHasLiked(!!data);
+    } catch (error) {
+      console.error('Unexpected error:', error);
+    }
+  };
+  
+  const handleLike = async () => {
+    if (!user || !review) {
+      if (!user) toast.error('Please login to like reviews');
+      return;
+    }
+    
+    try {
+      setLikeLoading(true);
+      
+      if (hasLiked) {
+        // Unlike
+        const { error: deleteLikeError } = await supabase
+          .from('review_likes')
+          .delete()
+          .eq('user_id', user.id)
+          .eq('review_id', review.id);
+          
+        if (deleteLikeError) {
+          throw deleteLikeError;
+        }
+        
+        // Update likes count
+        const { error: updateError } = await supabase
+          .from('reviews')
+          .update({ likes_count: Math.max(0, (review.likesCount || 0) - 1) })
+          .eq('id', review.id);
+          
+        if (updateError) {
+          throw updateError;
+        }
+        
+        // Update local state
+        setHasLiked(false);
+        setReview(prev => {
+          if (!prev) return null;
+          return {
+            ...prev,
+            likesCount: Math.max(0, (prev.likesCount || 0) - 1)
+          };
+        });
+        
+        toast.success('Review unliked');
+      } else {
+        // Like
+        const { error: insertLikeError } = await supabase
+          .from('review_likes')
+          .insert([{ user_id: user.id, review_id: review.id }]);
+          
+        if (insertLikeError) {
+          throw insertLikeError;
+        }
+        
+        // Update likes count
+        const { error: updateError } = await supabase
+          .from('reviews')
+          .update({ likes_count: (review.likesCount || 0) + 1 })
+          .eq('id', review.id);
+          
+        if (updateError) {
+          throw updateError;
+        }
+        
+        // Update local state
+        setHasLiked(true);
+        setReview(prev => {
+          if (!prev) return null;
+          return {
+            ...prev,
+            likesCount: (prev.likesCount || 0) + 1
+          };
+        });
+        
+        toast.success('Review liked!');
+      }
+    } catch (error: any) {
+      console.error('Error liking/unliking review:', error);
+      toast.error('Failed to update like status');
+    } finally {
+      setLikeLoading(false);
+    }
+  };
+  
+  const navigateToUserProfile = () => {
+    if (review?.user?.username) {
+      navigate(`/user/${review.user.username}`);
+    }
+  };
+  
+  useEffect(() => {
+    if (id) {
+      fetchReview();
+      if (user) {
+        checkIfUserLiked();
+      }
+    }
+  }, [id, user]);
+  
+  return {
+    review,
+    loading,
+    likeLoading,
+    hasLiked,
+    handleLike,
+    navigateToUserProfile
+  };
+};
