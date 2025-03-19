@@ -6,8 +6,6 @@ import { useMissionFileUpload } from './mission/useMissionFileUpload';
 import { useMissionFetch } from './mission/useMissionFetch';
 import { useMissionSave } from './mission/useMissionSave';
 
-export type { MissionFormData };
-
 export const useMissionForm = (isAdmin: boolean) => {
   const { id } = useParams<{ id: string }>();
   const navigate = useNavigate();
