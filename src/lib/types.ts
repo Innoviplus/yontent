@@ -115,4 +115,3 @@ export interface ExtendedProfile {
   phoneNumber?: string;
   country?: string;
 }
-

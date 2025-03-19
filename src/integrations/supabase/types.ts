@@ -186,6 +186,7 @@ export type Database = {
         Row: {
           avatar: string | null
           created_at: string
+          extended_data: Json | null
           id: string
           points: number
           updated_at: string
@@ -194,6 +195,7 @@ export type Database = {
         Insert: {
           avatar?: string | null
           created_at?: string
+          extended_data?: Json | null
           id: string
           points?: number
           updated_at?: string
@@ -202,6 +204,7 @@ export type Database = {
         Update: {
           avatar?: string | null
           created_at?: string
+          extended_data?: Json | null
           id?: string
           points?: number
           updated_at?: string
