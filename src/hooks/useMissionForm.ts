@@ -96,6 +96,9 @@ export const useMissionForm = (isAdmin: boolean) => {
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
+    console.log('Submitting form with data:', formData);
+    console.log('User is admin:', isAdmin);
+    
     const success = await saveMission(formData, isAdmin);
     if (success) {
       navigate('/admin/missions');

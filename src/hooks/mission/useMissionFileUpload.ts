@@ -16,18 +16,28 @@ export const useMissionFileUpload = () => {
       const fileName = `${Math.random().toString(36).substring(2)}.${fileExt}`;
       const filePath = `${fileName}`;
       
-      const { error: uploadError } = await supabase.storage
+      console.log('Uploading file to missions bucket:', filePath);
+      
+      const { error: uploadError, data } = await supabase.storage
         .from('missions')
-        .upload(filePath, file);
+        .upload(filePath, file, {
+          cacheControl: '3600',
+          upsert: false
+        });
         
       if (uploadError) {
+        console.error('Upload error:', uploadError);
         throw uploadError;
       }
+      
+      console.log('File uploaded successfully:', data);
       
       const { data: urlData } = supabase.storage
         .from('missions')
         .getPublicUrl(filePath);
         
+      console.log('Public URL:', urlData.publicUrl);
+      
       toast.success('File uploaded successfully!');
       return urlData.publicUrl;
     } catch (error: any) {
