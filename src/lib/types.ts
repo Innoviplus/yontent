@@ -100,3 +100,19 @@ export interface RedemptionRequest {
   createdAt: Date;
   updatedAt: Date;
 }
+
+export interface ExtendedProfile {
+  firstName?: string;
+  lastName?: string;
+  bio?: string;
+  gender?: string;
+  birthDate?: Date;
+  websiteUrl?: string;
+  facebookUrl?: string;
+  instagramUrl?: string;
+  youtubeUrl?: string;
+  tiktokUrl?: string;
+  phoneNumber?: string;
+  country?: string;
+}
+

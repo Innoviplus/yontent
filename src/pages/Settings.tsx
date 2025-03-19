@@ -1,4 +1,3 @@
-
 import { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { useForm } from 'react-hook-form';
@@ -10,6 +9,7 @@ import { supabase } from '@/integrations/supabase/client';
 import { useToast } from '@/hooks/use-toast';
 import { toast as sonnerToast } from 'sonner';
 import { CalendarIcon, Loader2, Camera, Save, X } from 'lucide-react';
+import { ExtendedProfile } from '@/lib/types';
 
 import Navbar from '@/components/Navbar';
 import {
@@ -62,6 +62,7 @@ const Settings = () => {
   const [uploading, setUploading] = useState(false);
   const [isUpdating, setIsUpdating] = useState(false);
   const [activeTab, setActiveTab] = useState('profile');
+  const [extendedProfile, setExtendedProfile] = useState<ExtendedProfile | null>(null);
   const { toast } = useToast();
   const navigate = useNavigate();
 
@@ -100,35 +101,38 @@ const Settings = () => {
         if (!user) return;
         
         const { data, error } = await supabase
-          .from('extended_profiles')
-          .select('*')
-          .eq('user_id', user.id)
+          .from('profiles')
+          .select('extended_data')
+          .eq('id', user.id)
           .single();
           
-        if (error && error.code !== 'PGSQL_ERROR_NO_DATA_FOUND') {
+        if (error) {
           console.error('Error fetching extended profile:', error);
           return;
         }
         
-        if (data) {
+        if (data && data.extended_data) {
+          const extData = data.extended_data as ExtendedProfile;
+          setExtendedProfile(extData);
+          
           profileForm.reset({
             username: userProfile.username || '',
-            firstName: data.first_name || '',
-            lastName: data.last_name || '',
-            bio: data.bio || '',
-            gender: data.gender || '',
-            birthDate: data.birth_date ? new Date(data.birth_date) : undefined,
-            websiteUrl: data.website_url || '',
-            facebookUrl: data.facebook_url || '',
-            instagramUrl: data.instagram_url || '',
-            youtubeUrl: data.youtube_url || '',
-            tiktokUrl: data.tiktok_url || '',
+            firstName: extData.firstName || '',
+            lastName: extData.lastName || '',
+            bio: extData.bio || '',
+            gender: extData.gender || '',
+            birthDate: extData.birthDate ? new Date(extData.birthDate) : undefined,
+            websiteUrl: extData.websiteUrl || '',
+            facebookUrl: extData.facebookUrl || '',
+            instagramUrl: extData.instagramUrl || '',
+            youtubeUrl: extData.youtubeUrl || '',
+            tiktokUrl: extData.tiktokUrl || '',
           });
           
           settingsForm.reset({
             email: user?.email || '',
-            phoneNumber: data.phone_number || '',
-            country: data.country || '',
+            phoneNumber: extData.phoneNumber || '',
+            country: extData.country || '',
           });
         }
       };
@@ -149,22 +153,6 @@ const Settings = () => {
       const filePath = `avatars/${fileName}`;
       
       setUploading(true);
-      
-      // Check if storage bucket exists, create it if it doesn't
-      const { data: bucketData, error: bucketError } = await supabase
-        .storage
-        .getBucket('avatars');
-      
-      if (bucketError && bucketError.message.includes('not found')) {
-        // Bucket doesn't exist, show an error message
-        toast({
-          title: "Upload Error",
-          description: "The storage bucket doesn't exist. Please contact support.",
-          variant: "destructive",
-        });
-        setUploading(false);
-        return;
-      }
       
       // Upload file to storage
       const { error: uploadError } = await supabase.storage
@@ -209,50 +197,34 @@ const Settings = () => {
     setIsUpdating(true);
     
     try {
-      // Check if extended_profiles table has an entry for this user
-      const { data: existingProfile, error: checkError } = await supabase
-        .from('extended_profiles')
-        .select('id')
-        .eq('user_id', user.id)
-        .single();
-        
-      if (checkError && checkError.code !== 'PGSQL_ERROR_NO_DATA_FOUND') {
-        throw checkError;
-      }
-      
-      const profileData = {
-        user_id: user.id,
-        first_name: values.firstName,
-        last_name: values.lastName,
+      // Prepare extended data object
+      const extendedData: ExtendedProfile = {
+        firstName: values.firstName,
+        lastName: values.lastName,
         bio: values.bio || null,
         gender: values.gender || null,
-        birth_date: values.birthDate || null,
-        website_url: values.websiteUrl || null,
-        facebook_url: values.facebookUrl || null,
-        instagram_url: values.instagramUrl || null,
-        youtube_url: values.youtubeUrl || null,
-        tiktok_url: values.tiktokUrl || null,
+        birthDate: values.birthDate || null,
+        websiteUrl: values.websiteUrl || null,
+        facebookUrl: values.facebookUrl || null,
+        instagramUrl: values.instagramUrl || null,
+        youtubeUrl: values.youtubeUrl || null,
+        tiktokUrl: values.tiktokUrl || null,
+        phoneNumber: extendedProfile?.phoneNumber || null,
+        country: extendedProfile?.country || null,
       };
       
-      let operation;
-      if (existingProfile) {
-        // Update existing profile
-        operation = supabase
-          .from('extended_profiles')
-          .update(profileData)
-          .eq('user_id', user.id);
-      } else {
-        // Insert new profile
-        operation = supabase
-          .from('extended_profiles')
-          .insert(profileData);
+      // Update the profile with extended data
+      const { error: updateError } = await supabase
+        .from('profiles')
+        .update({ extended_data: extendedData })
+        .eq('id', user.id);
+      
+      if (updateError) {
+        throw updateError;
       }
       
-      const { error: saveError } = await operation;
-      
-      if (saveError) {
-        throw saveError;
-      }
+      // Update local state
+      setExtendedProfile(extendedData);
       
       sonnerToast.success('Profile updated successfully!');
     } catch (error: any) {
@@ -272,42 +244,37 @@ const Settings = () => {
     setIsUpdating(true);
     
     try {
-      // Check if extended_profiles table has an entry for this user
-      const { data: existingProfile, error: checkError } = await supabase
-        .from('extended_profiles')
-        .select('id')
-        .eq('user_id', user.id)
+      // Get current extended data
+      const { data, error: fetchError } = await supabase
+        .from('profiles')
+        .select('extended_data')
+        .eq('id', user.id)
         .single();
-        
-      if (checkError && checkError.code !== 'PGSQL_ERROR_NO_DATA_FOUND') {
-        throw checkError;
+      
+      if (fetchError) {
+        throw fetchError;
       }
       
-      const profileData = {
-        user_id: user.id,
-        phone_number: values.phoneNumber || null,
+      // Update extended data with new settings
+      const currentExtendedData = data.extended_data as ExtendedProfile || {};
+      const updatedExtendedData: ExtendedProfile = {
+        ...currentExtendedData,
+        phoneNumber: values.phoneNumber || null,
         country: values.country || null,
       };
       
-      let operation;
-      if (existingProfile) {
-        // Update existing profile
-        operation = supabase
-          .from('extended_profiles')
-          .update(profileData)
-          .eq('user_id', user.id);
-      } else {
-        // Insert new profile
-        operation = supabase
-          .from('extended_profiles')
-          .insert(profileData);
+      // Update profile with new extended data
+      const { error: updateError } = await supabase
+        .from('profiles')
+        .update({ extended_data: updatedExtendedData })
+        .eq('id', user.id);
+      
+      if (updateError) {
+        throw updateError;
       }
       
-      const { error: saveError } = await operation;
-      
-      if (saveError) {
-        throw saveError;
-      }
+      // Update local state
+      setExtendedProfile(updatedExtendedData);
       
       sonnerToast.success('Settings updated successfully!');
     } catch (error: any) {
