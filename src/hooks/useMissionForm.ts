@@ -129,18 +129,20 @@ export const useMissionForm = (isAdmin: boolean) => {
       
       const fileExt = file.name.split('.').pop();
       const fileName = `${Math.random().toString(36).substring(2)}.${fileExt}`;
-      const filePath = `missions/${fileName}`;
+      const filePath = `${fileName}`;
       
+      // Use the missions bucket instead of public
       const { error: uploadError } = await supabase.storage
-        .from('public')
+        .from('missions')
         .upload(filePath, file);
         
       if (uploadError) {
         throw uploadError;
       }
       
+      // Get the public URL from the missions bucket
       const { data: urlData } = supabase.storage
-        .from('public')
+        .from('missions')
         .getPublicUrl(filePath);
         
       setFormData(prev => ({
