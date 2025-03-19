@@ -1,4 +1,3 @@
-
 export interface User {
   id: string;
   username: string;
@@ -39,6 +38,22 @@ export interface Mission {
   startDate: Date;
   createdAt: Date;
   updatedAt: Date;
+}
+
+export interface MissionFormData {
+  title: string;
+  description: string;
+  requirementDescription: string;
+  pointsReward: number;
+  type: string;
+  status: string;
+  merchantName: string;
+  merchantLogo: string;
+  bannerImage: string;
+  maxSubmissionsPerUser: number;
+  termsConditions: string;
+  startDate: Date;
+  expiresAt: Date | null;
 }
 
 export interface MissionParticipation {

@@ -1,4 +1,3 @@
-
 import { useEffect } from 'react';
 import { Loader2, AlertCircle, Save, ArrowLeft } from 'lucide-react';
 import { Button } from '@/components/ui/button';
@@ -30,10 +29,8 @@ const CreateEditMission = () => {
   } = useMissionForm(!!isAdmin);
 
   useEffect(() => {
-    if (isEditMode) {
-      fetchMission();
-    }
-  }, [isEditMode, fetchMission]);
+    fetchMission();
+  }, [fetchMission]);
 
   if (!isAdmin) {
     return (
