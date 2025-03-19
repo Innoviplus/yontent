@@ -17,19 +17,16 @@ const registerSchema = z.object({
     .min(8, 'Password must be at least 8 characters')
     .regex(/\d/, 'Password must contain at least 1 number')
     .regex(/[!@#$%^&*(),.?":{}|<>]/, 'Password must contain at least 1 special character'),
-  confirmPassword: z.string(),
   acceptTerms: z.boolean().refine(val => val === true, {
     message: 'You must accept the terms and conditions',
   }),
-}).refine((data) => data.password === data.confirmPassword, {
-  message: "Passwords don't match",
-  path: ["confirmPassword"],
 });
 
 type RegisterFormValues = z.infer<typeof registerSchema>;
 
 const Register = () => {
   const [showPassword, setShowPassword] = useState(false);
+  const [usernameError, setUsernameError] = useState<string | null>(null);
   const { signUp } = useAuth();
   const navigate = useNavigate();
 
@@ -39,7 +36,6 @@ const Register = () => {
       username: '',
       email: '',
       password: '',
-      confirmPassword: '',
       acceptTerms: false,
     },
   });
@@ -63,10 +59,28 @@ const Register = () => {
   const passwordValidation = validatePassword(passwordValue || '');
 
   const onSubmit = async (values: RegisterFormValues) => {
+    // Clear any previous username error
+    setUsernameError(null);
+    
     const { error } = await signUp(values.email, values.password, values.username);
-    if (!error) {
-      navigate('/dashboard');
+    
+    if (error) {
+      // Check if error message contains information about duplicate username
+      if (error.message && (
+          error.message.includes('duplicate key') || 
+          error.message.includes('profiles_username_key') ||
+          error.message.includes('Database error saving new user')
+        )) {
+        setUsernameError('This username is already taken. Please choose a different one.');
+        form.setError('username', { 
+          type: 'manual', 
+          message: 'This username is already taken. Please choose a different one.' 
+        });
+      }
+      return;
     }
+    
+    navigate('/dashboard');
   };
 
   return (
@@ -101,6 +115,9 @@ const Register = () => {
                           {...field} 
                         />
                       </FormControl>
+                      {usernameError && (
+                        <p className="text-sm font-medium text-destructive">{usernameError}</p>
+                      )}
                       <FormMessage />
                     </FormItem>
                   )}
@@ -189,25 +206,6 @@ const Register = () => {
                           </span>
                         </div>
                       </div>
-                    </FormItem>
-                  )}
-                />
-                
-                <FormField
-                  control={form.control}
-                  name="confirmPassword"
-                  render={({ field }) => (
-                    <FormItem>
-                      <FormLabel>Confirm Password</FormLabel>
-                      <FormControl>
-                        <Input 
-                          placeholder="••••••••"
-                          type={showPassword ? "text" : "password"}
-                          autoComplete="new-password"
-                          {...field} 
-                        />
-                      </FormControl>
-                      <FormMessage />
                     </FormItem>
                   )}
                 />

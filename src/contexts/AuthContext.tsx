@@ -132,12 +132,24 @@ export function AuthProvider({ children }: { children: ReactNode }) {
       sonnerToast.success('Account created successfully! Please check your email for confirmation.');
       return { error: null };
     } catch (error: any) {
+      // Format error message to be more user-friendly
+      let errorMessage = error.message;
+      
+      if (errorMessage && (
+        errorMessage.includes('duplicate key') || 
+        errorMessage.includes('profiles_username_key') ||
+        errorMessage.includes('Database error saving new user')
+      )) {
+        errorMessage = 'This username is already taken. Please choose a different one.';
+      }
+      
       toast({
         title: "Registration Failed",
-        description: error.message,
+        description: errorMessage,
         variant: "destructive",
       });
-      return { error };
+      
+      return { error: { ...error, message: errorMessage } };
     }
   };
 
