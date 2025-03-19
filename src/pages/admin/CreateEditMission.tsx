@@ -7,9 +7,7 @@ import { Input } from '@/components/ui/input';
 import { Textarea } from '@/components/ui/textarea';
 import { Label } from '@/components/ui/label';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
-import { RadioGroup, RadioGroupItem } from "@/components/ui/radio-group";
 import { DatePicker } from "@/components/ui/date-picker";
-import { Switch } from '@/components/ui/switch';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { Alert, AlertDescription, AlertTitle } from "@/components/ui/alert";
 import { supabase } from '@/integrations/supabase/client';
@@ -86,6 +84,7 @@ const CreateEditMission = () => {
     } catch (error: any) {
       setError(error.message);
       toast.error('Failed to load mission details');
+      console.error('Error fetching mission:', error);
     } finally {
       setLoading(false);
     }
@@ -125,6 +124,7 @@ const CreateEditMission = () => {
     
     try {
       setSavingMission(true);
+      setError(null);
       
       const missionData = {
         title: formData.title,
@@ -142,6 +142,8 @@ const CreateEditMission = () => {
         expires_at: formData.expiresAt ? formData.expiresAt.toISOString() : null,
       };
       
+      console.log('Saving mission with data:', missionData);
+      
       let result;
       
       if (isEditMode) {
@@ -156,14 +158,17 @@ const CreateEditMission = () => {
       }
       
       if (result.error) {
+        console.error('Supabase error:', result.error);
         throw result.error;
       }
       
+      console.log('Mission saved successfully:', result);
       toast.success(`Mission ${isEditMode ? 'updated' : 'created'} successfully!`);
       navigate('/admin/missions');
     } catch (error: any) {
+      console.error('Error saving mission:', error);
       setError(error.message);
-      toast.error(`Failed to ${isEditMode ? 'update' : 'create'} mission`);
+      toast.error(`Failed to ${isEditMode ? 'update' : 'create'} mission: ${error.message}`);
     } finally {
       setSavingMission(false);
     }
@@ -200,6 +205,7 @@ const CreateEditMission = () => {
       toast.success('File uploaded successfully!');
     } catch (error: any) {
       toast.error('Error uploading file: ' + error.message);
+      console.error('File upload error:', error);
     } finally {
       setLoading(false);
     }
