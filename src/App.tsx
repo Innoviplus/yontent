@@ -10,6 +10,7 @@ import NotFound from "./pages/NotFound";
 import Login from "./pages/Login";
 import Register from "./pages/Register";
 import Dashboard from "./pages/Dashboard";
+import Settings from "./pages/Settings";
 import SubmitReview from "./pages/SubmitReview";
 import SubmitReceipt from "./pages/SubmitReceipt";
 import ReviewFeed from "./pages/ReviewFeed";
@@ -36,6 +37,11 @@ const App = () => (
             <Route path="/dashboard" element={
               <ProtectedRoute>
                 <Dashboard />
+              </ProtectedRoute>
+            } />
+            <Route path="/settings" element={
+              <ProtectedRoute>
+                <Settings />
               </ProtectedRoute>
             } />
             <Route path="/submit-review" element={

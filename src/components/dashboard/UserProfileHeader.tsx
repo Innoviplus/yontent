@@ -17,7 +17,11 @@ const UserProfileHeader = ({ user }: UserProfileHeaderProps) => {
       <div className="flex flex-col sm:flex-row items-center sm:items-start gap-6">
         {/* Avatar */}
         <div className="w-24 h-24 rounded-full bg-brand-teal/10 flex items-center justify-center text-brand-teal">
-          <User className="h-12 w-12" />
+          {user.avatar ? (
+            <img src={user.avatar} alt={user.username} className="w-24 h-24 rounded-full object-cover" />
+          ) : (
+            <User className="h-12 w-12" />
+          )}
         </div>
         
         {/* User info */}
