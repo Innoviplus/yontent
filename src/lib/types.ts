@@ -114,4 +114,14 @@ export interface ExtendedProfile {
   tiktokUrl?: string;
   phoneNumber?: string;
   country?: string;
+  [key: string]: any; // Add index signature to make it compatible with Json type
 }
+
+// Define Json type to match Supabase's Json type
+export type Json =
+  | string
+  | number
+  | boolean
+  | null
+  | { [key: string]: Json | undefined }
+  | Json[];

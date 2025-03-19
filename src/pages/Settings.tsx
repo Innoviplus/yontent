@@ -10,7 +10,7 @@ import { supabase } from '@/integrations/supabase/client';
 import { useToast } from '@/hooks/use-toast';
 import { toast as sonnerToast } from 'sonner';
 import { CalendarIcon, Loader2, Camera, Save, X } from 'lucide-react';
-import { ExtendedProfile } from '@/lib/types';
+import { ExtendedProfile, Json } from '@/lib/types';
 
 import Navbar from '@/components/Navbar';
 import {
@@ -219,10 +219,15 @@ const Settings = () => {
         country: extendedProfile?.country || null,
       };
       
+      // Convert ExtendedProfile to a plain object for storage
+      const jsonData = Object.fromEntries(
+        Object.entries(extendedData).map(([key, value]) => [key, value])
+      );
+      
       // Update the profile with extended data
       const { error: updateError } = await supabase
         .from('profiles')
-        .update({ extended_data: extendedData as any })
+        .update({ extended_data: jsonData })
         .eq('id', user.id);
       
       if (updateError) {
@@ -269,10 +274,15 @@ const Settings = () => {
         country: values.country || null,
       };
       
+      // Convert ExtendedProfile to a plain object for storage
+      const jsonData = Object.fromEntries(
+        Object.entries(updatedExtendedData).map(([key, value]) => [key, value])
+      );
+      
       // Update profile with new extended data
       const { error: updateError } = await supabase
         .from('profiles')
-        .update({ extended_data: updatedExtendedData as any })
+        .update({ extended_data: jsonData })
         .eq('id', user.id);
       
       if (updateError) {
