@@ -15,6 +15,7 @@ import Navbar from '@/components/Navbar';
 import { useAuth } from '@/contexts/AuthContext';
 import { toast } from 'sonner';
 import { Mission } from '@/lib/types';
+import RichTextEditor from '@/components/RichTextEditor';
 
 const CreateEditMission = () => {
   const { id } = useParams<{ id: string }>();
@@ -97,6 +98,13 @@ const CreateEditMission = () => {
       [name]: name === 'pointsReward' || name === 'maxSubmissionsPerUser'
         ? parseInt(value) || 0
         : value
+    }));
+  };
+
+  const handleRichTextChange = (name: string, value: string) => {
+    setFormData(prev => ({
+      ...prev,
+      [name]: value
     }));
   };
 
@@ -312,14 +320,10 @@ const CreateEditMission = () => {
               
               <div className="space-y-2">
                 <Label htmlFor="requirementDescription">Requirement Description <span className="text-red-500">*</span></Label>
-                <Textarea
-                  id="requirementDescription"
-                  name="requirementDescription"
+                <RichTextEditor
                   value={formData.requirementDescription}
-                  onChange={handleChange}
+                  onChange={(value) => handleRichTextChange('requirementDescription', value)}
                   placeholder="Enter mission requirements"
-                  rows={3}
-                  required
                 />
               </div>
               
@@ -453,14 +457,23 @@ const CreateEditMission = () => {
               
               <div className="space-y-2">
                 <Label htmlFor="termsConditions">Terms & Conditions</Label>
-                <Textarea
-                  id="termsConditions"
-                  name="termsConditions"
+                <RichTextEditor
                   value={formData.termsConditions}
-                  onChange={handleChange}
+                  onChange={(value) => handleRichTextChange('termsConditions', value)}
                   placeholder="Enter terms and conditions (optional)"
-                  rows={4}
                 />
+              </div>
+              
+              <div className="flex justify-end mt-6">
+                <Button 
+                  type="submit" 
+                  disabled={savingMission}
+                  className="bg-brand-teal hover:bg-brand-teal/90"
+                >
+                  {savingMission && <Loader2 className="h-4 w-4 mr-2 animate-spin" />}
+                  <Save className="h-4 w-4 mr-2" />
+                  Save Mission
+                </Button>
               </div>
             </CardContent>
           </Card>
