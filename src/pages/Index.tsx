@@ -5,103 +5,12 @@ import Navbar from '@/components/Navbar';
 import ReviewCard from '@/components/ReviewCard';
 import MissionCard from '@/components/MissionCard';
 import { Review, Mission } from '@/lib/types';
-
-// Sample data
-const sampleReviews: Review[] = [
-  {
-    id: '1',
-    userId: '1',
-    productName: 'Wireless Headphones',
-    rating: 5,
-    content: 'These headphones have amazing sound quality and the noise cancellation is top-notch. Battery life is exceptional - I can go days without charging. The comfort level is also great for long listening sessions.',
-    images: ['/placeholder.svg'],
-    createdAt: new Date('2023-09-15'),
-    user: {
-      id: '1',
-      username: 'audiophile',
-      email: 'audio@example.com',
-      points: 750,
-      createdAt: new Date('2023-01-10')
-    }
-  },
-  {
-    id: '2',
-    userId: '2',
-    productName: 'Smart Watch Series 7',
-    rating: 4,
-    content: 'Great fitness tracking capabilities and the screen is beautiful. Battery life could be better but overall very satisfied with the purchase.',
-    images: ['/placeholder.svg', '/placeholder.svg'],
-    createdAt: new Date('2023-10-05'),
-    user: {
-      id: '2',
-      username: 'techgeek',
-      email: 'tech@example.com',
-      points: 450,
-      createdAt: new Date('2023-03-22')
-    }
-  },
-  {
-    id: '3',
-    userId: '3',
-    productName: 'Coffee Machine Deluxe',
-    rating: 5,
-    content: 'Makes perfect coffee every time. Easy to clean and the programmable timer is a lifesaver for busy mornings.',
-    images: ['/placeholder.svg'],
-    createdAt: new Date('2023-11-20'),
-    user: {
-      id: '3',
-      username: 'coffeelover',
-      email: 'coffee@example.com',
-      points: 920,
-      createdAt: new Date('2023-02-14')
-    }
-  }
-];
-
-const sampleMissions: Mission[] = [
-  {
-    id: '1',
-    title: 'Review Your Recent Electronics',
-    description: 'Share your honest opinion about any electronics product you purchased in the last 3 months.',
-    pointsReward: 150,
-    type: 'REVIEW',
-    status: 'ACTIVE',
-    expiresAt: new Date('2024-01-31'),
-    requirementDescription: 'Post a review with at least one photo and 100+ words.',
-    startDate: new Date('2023-09-15'),
-    createdAt: new Date('2023-09-15'),
-    updatedAt: new Date('2023-09-15')
-  },
-  {
-    id: '2',
-    title: 'Holiday Shopping Receipt',
-    description: 'Submit a receipt from your holiday shopping for a chance to earn points.',
-    pointsReward: 100,
-    type: 'RECEIPT',
-    status: 'ACTIVE',
-    expiresAt: new Date('2024-01-15'),
-    requirementDescription: 'Upload a clear photo of your receipt showing date and store name.',
-    startDate: new Date('2023-10-01'),
-    createdAt: new Date('2023-10-01'),
-    updatedAt: new Date('2023-10-01')
-  },
-  {
-    id: '3',
-    title: 'Home Appliance Review',
-    description: 'Share your experience with a home appliance you use regularly.',
-    pointsReward: 200,
-    type: 'REVIEW',
-    status: 'ACTIVE',
-    expiresAt: new Date('2024-02-28'),
-    requirementDescription: 'Post a detailed review covering pros, cons, and usage tips.',
-    startDate: new Date('2023-11-01'),
-    createdAt: new Date('2023-11-01'),
-    updatedAt: new Date('2023-11-01')
-  }
-];
+import { useReviews } from '@/hooks/useReviews';
+import { sampleMissions } from '@/data/sampleData';
 
 const Index = () => {
   const [scrollY, setScrollY] = useState(0);
+  const { reviews, loading } = useReviews();
   
   useEffect(() => {
     const handleScroll = () => {
@@ -226,11 +135,24 @@ const Index = () => {
             </Link>
           </div>
           
-          <div className="grid gap-6 md:grid-cols-2 lg:grid-cols-3">
-            {sampleReviews.map((review) => (
-              <ReviewCard key={review.id} review={review} />
-            ))}
-          </div>
+          {loading ? (
+            <div className="flex justify-center items-center py-12">
+              <div className="animate-spin rounded-full h-12 w-12 border-t-2 border-b-2 border-brand-teal"></div>
+            </div>
+          ) : (
+            <div className="flex overflow-x-auto pb-4 space-x-6">
+              {reviews.slice(0, 5).map((review) => (
+                <div key={review.id} className="min-w-[280px] w-[280px] flex-shrink-0">
+                  <ReviewCard review={review} />
+                </div>
+              ))}
+              {reviews.length === 0 && (
+                <div className="w-full py-8 text-center text-gray-500">
+                  No reviews available yet. Be the first to share your experience!
+                </div>
+              )}
+            </div>
+          )}
         </div>
       </section>
       
@@ -304,7 +226,7 @@ const Index = () => {
             </div>
           </div>
           
-          <div className="mt-8 pt-6 border-t border-gray-100 text-center text-gray-500 text-sm">
+          <div className="mt-8 pt-6 border-t border-gray-100 text-center text-gray-500">
             <p>© {new Date().getFullYear()} Review Rewards. All rights reserved.</p>
           </div>
         </div>
