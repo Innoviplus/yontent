@@ -9,9 +9,9 @@ export const useMissionSave = (id: string | undefined) => {
   const [error, setError] = useState<string | null>(null);
   const isEditMode = !!id;
 
-  const saveMission = async (formData: MissionFormData, isAdmin: boolean) => {
-    if (!isAdmin) {
-      toast.error('You do not have permission to create or edit missions');
+  const saveMission = async (formData: MissionFormData, isLoggedIn: boolean) => {
+    if (!isLoggedIn) {
+      toast.error('You must be logged in to create or edit missions');
       return false;
     }
     

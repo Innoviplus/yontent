@@ -1,4 +1,3 @@
-
 import { useState, useEffect } from 'react';
 import { Link } from 'react-router-dom';
 import { Plus, Edit, Trash, Eye } from 'lucide-react';
@@ -13,8 +12,8 @@ import { toast } from 'sonner';
 const AdminMissions = () => {
   const [missions, setMissions] = useState<Mission[]>([]);
   const [loading, setLoading] = useState(true);
-  const { userProfile } = useAuth();
-  const isAdmin = userProfile?.isAdmin;
+  const { user } = useAuth();
+  const isLoggedIn = !!user;
 
   useEffect(() => {
     fetchMissions();
@@ -85,13 +84,13 @@ const AdminMissions = () => {
     }
   };
 
-  if (!isAdmin) {
+  if (!isLoggedIn) {
     return (
       <div className="min-h-screen bg-gray-50">
         <Navbar />
         <div className="container mx-auto px-4 pt-28 pb-16">
           <div className="bg-red-50 border border-red-200 text-red-700 px-4 py-3 rounded-md">
-            You don't have permission to access this page
+            You need to be logged in to access this page
           </div>
         </div>
       </div>

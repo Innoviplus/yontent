@@ -12,8 +12,8 @@ import Navbar from '@/components/Navbar';
 
 const MissionFeed = () => {
   const { missions, loading, sortBy, setSortBy, setPage, hasMore } = useMissions();
-  const { user, userProfile } = useAuth();
-  const isAdmin = userProfile?.isAdmin || false;
+  const { user } = useAuth();
+  const isLoggedIn = !!user;
 
   const handleLoadMore = () => {
     setPage(prevPage => prevPage + 1);
@@ -30,7 +30,7 @@ const MissionFeed = () => {
           <div className="flex items-center gap-4">
             <MissionSort sortBy={sortBy} onSortChange={setSortBy} />
 
-            {isAdmin && (
+            {isLoggedIn && (
               <Link to="/admin/missions/new">
                 <Button className="bg-brand-teal hover:bg-brand-teal/90">
                   <Plus className="h-4 w-4 mr-2" />

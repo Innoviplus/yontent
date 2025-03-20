@@ -6,7 +6,7 @@ import { useMissionFileUpload } from './mission/useMissionFileUpload';
 import { useMissionFetch } from './mission/useMissionFetch';
 import { useMissionSave } from './mission/useMissionSave';
 
-export const useMissionForm = (isAdmin: boolean) => {
+export const useMissionForm = (isLoggedIn: boolean) => {
   const { id } = useParams<{ id: string }>();
   const navigate = useNavigate();
   
@@ -97,9 +97,9 @@ export const useMissionForm = (isAdmin: boolean) => {
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     console.log('Submitting form with data:', formData);
-    console.log('User is admin:', isAdmin);
+    console.log('User is logged in:', isLoggedIn);
     
-    const success = await saveMission(formData, isAdmin);
+    const success = await saveMission(formData, isLoggedIn);
     if (success) {
       navigate('/admin/missions');
     }
