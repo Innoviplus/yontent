@@ -40,11 +40,25 @@ export const useMissionSave = (id: string | undefined) => {
       let result;
       
       if (isEditMode) {
+        // Get the current user's session to verify they are authenticated
+        const { data: { session } } = await supabase.auth.getSession();
+        
+        if (!session) {
+          throw new Error('You must be logged in to edit missions');
+        }
+        
         result = await supabase
           .from('missions')
           .update(missionData)
           .eq('id', id);
       } else {
+        // Get the current user's session to verify they are authenticated
+        const { data: { session } } = await supabase.auth.getSession();
+        
+        if (!session) {
+          throw new Error('You must be logged in to create missions');
+        }
+        
         result = await supabase
           .from('missions')
           .insert([missionData]);
