@@ -1,15 +1,14 @@
 
 import { useState } from 'react';
-import { Review, Mission } from '@/lib/types';
+import { Review } from '@/lib/types';
 import ReviewsTab from './ReviewsTab';
 import MissionsTab from './MissionsTab';
 
 interface DashboardTabsProps {
   reviews: Review[];
-  missions: Mission[];
 }
 
-const DashboardTabs = ({ reviews, missions }: DashboardTabsProps) => {
+const DashboardTabs = ({ reviews }: DashboardTabsProps) => {
   const [activeTab, setActiveTab] = useState<'reviews' | 'missions'>('reviews');
   
   return (
@@ -45,7 +44,7 @@ const DashboardTabs = ({ reviews, missions }: DashboardTabsProps) => {
         {activeTab === 'reviews' ? (
           <ReviewsTab reviews={reviews} />
         ) : (
-          <MissionsTab missions={missions} />
+          <MissionsTab />
         )}
       </div>
     </>

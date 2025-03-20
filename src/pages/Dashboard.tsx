@@ -7,7 +7,7 @@ import Navbar from '@/components/Navbar';
 import UserProfileHeader from '@/components/dashboard/UserProfileHeader';
 import QuickActions from '@/components/dashboard/QuickActions';
 import DashboardTabs from '@/components/dashboard/DashboardTabs';
-import { sampleUserData, sampleReviews, sampleMissions } from '@/data/sampleData';
+import { sampleUserData, sampleReviews } from '@/data/sampleData';
 import { Review } from '@/lib/types';
 
 const Dashboard = () => {
@@ -75,10 +75,7 @@ const Dashboard = () => {
           <QuickActions />
           
           {/* Tabs for Reviews and Missions */}
-          <DashboardTabs 
-            reviews={reviews.length > 0 ? reviews : sampleReviews} 
-            missions={sampleMissions} 
-          />
+          <DashboardTabs reviews={reviews.length > 0 ? reviews : sampleReviews} />
         </div>
       </div>
     </div>

@@ -17,7 +17,7 @@ const Index = () => {
       
       <HowItWorksSection />
       
-      <FeaturedReviewsSection reviews={sampleReviews.slice(0, 3)} />
+      <FeaturedReviewsSection reviews={sampleReviews.slice(0, 3)} loading={false} />
       
       <ActiveMissionsSection />
       
