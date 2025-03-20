@@ -1,9 +1,10 @@
 
-import { Award, Clock, ArrowRight } from 'lucide-react';
+import { Award, Clock, ArrowRight, Users } from 'lucide-react';
 import { Mission } from '@/lib/types';
 import { cn } from '@/lib/utils';
 import { Link } from 'react-router-dom';
 import { format, isPast } from 'date-fns';
+import { Button } from './ui/button';
 
 interface MissionCardProps {
   mission: Mission;
@@ -17,7 +18,7 @@ const MissionCard = ({ mission, className }: MissionCardProps) => {
   return (
     <div 
       className={cn(
-        "bg-white rounded-xl overflow-hidden border relative transition-all",
+        "bg-white rounded-xl overflow-hidden border relative transition-all flex flex-col",
         isCompleted 
           ? "border-brand-teal shadow-sm" 
           : isExpired 
@@ -28,66 +29,93 @@ const MissionCard = ({ mission, className }: MissionCardProps) => {
     >
       {/* Status indicator */}
       {isCompleted && (
-        <div className="absolute -top-1 -right-1 bg-brand-teal text-white text-xs font-medium px-2 py-0.5 rounded-bl-md rounded-tr-md">
+        <div className="absolute -top-1 -right-1 bg-brand-teal text-white text-xs font-medium px-2 py-0.5 rounded-bl-md rounded-tr-md z-10">
           Completed
         </div>
       )}
       
       {isExpired && !isCompleted && (
-        <div className="absolute -top-1 -right-1 bg-gray-500 text-white text-xs font-medium px-2 py-0.5 rounded-bl-md rounded-tr-md">
+        <div className="absolute -top-1 -right-1 bg-gray-500 text-white text-xs font-medium px-2 py-0.5 rounded-bl-md rounded-tr-md z-10">
           Expired
         </div>
       )}
       
-      <div className="p-5">
-        <div className="flex justify-between mb-2">
-          <div className="chip chip-secondary">
-            {mission.type === 'REVIEW' ? 'Write a Review' : 'Submit Receipt'}
-          </div>
-          <div className="flex items-center text-brand-teal font-semibold">
-            <Award className="h-4 w-4 mr-1" />
-            <span>{mission.pointsReward} pts</span>
+      <div className="p-5 flex-1 flex flex-col">
+        <div className="flex items-center mb-4">
+          {mission.merchantLogo && (
+            <div className="w-12 h-12 rounded-md overflow-hidden flex items-center justify-center bg-gray-100 mr-3">
+              <img 
+                src={mission.merchantLogo} 
+                alt={mission.merchantName || 'Brand'} 
+                className="w-full h-full object-contain"
+              />
+            </div>
+          )}
+          <div>
+            <div className="text-sm font-medium text-gray-500">
+              {mission.merchantName || 'Brand Mission'}
+            </div>
+            <div className="flex items-center text-brand-teal font-semibold">
+              <Award className="h-4 w-4 mr-1" />
+              <span>{mission.pointsReward} pts</span>
+            </div>
           </div>
         </div>
         
         <h3 className="text-lg font-semibold text-brand-slate mb-2">{mission.title}</h3>
         
-        <p className="text-gray-600 mb-4 text-sm">{mission.description}</p>
+        <p className="text-gray-600 mb-4 text-sm flex-1">{mission.description}</p>
         
-        <div className="border-t border-gray-100 pt-3 mt-1">
-          <div className="flex justify-between items-center">
-            {mission.expiresAt && (
-              <div className="text-xs text-gray-500 flex items-center">
-                <Clock className="h-3 w-3 mr-1" />
-                <span>
-                  {isExpired ? 'Expired on ' : 'Expires '} 
-                  {format(mission.expiresAt, 'MMM d, yyyy')}
-                </span>
-              </div>
-            )}
-            
-            {!isCompleted && !isExpired && (
-              <Link 
-                to={`/missions/${mission.id}`}
-                className="flex items-center text-sm font-medium text-brand-teal hover:text-brand-darkTeal transition-colors"
-              >
-                <span>Start mission</span>
+        <div className="space-y-3 mb-4">
+          <div className="flex items-center text-xs text-gray-500">
+            <Clock className="h-3 w-3 mr-1 flex-shrink-0" />
+            <span>
+              {mission.startDate && format(mission.startDate, 'MMM d, yyyy')} 
+              {mission.expiresAt && ' - ' + format(mission.expiresAt, 'MMM d, yyyy')}
+            </span>
+          </div>
+          
+          {mission.maxSubmissionsPerUser && (
+            <div className="flex items-center text-xs text-gray-500">
+              <Users className="h-3 w-3 mr-1 flex-shrink-0" />
+              <span>Max submissions: {mission.maxSubmissionsPerUser}</span>
+            </div>
+          )}
+        </div>
+        
+        <div className="border-t border-gray-100 pt-3 mt-auto">
+          {!isCompleted && !isExpired && (
+            <Button 
+              asChild
+              variant="default"
+              className="w-full bg-brand-teal hover:bg-brand-teal/90"
+            >
+              <Link to={`/missions/${mission.id}`} className="flex items-center justify-center">
+                <span>Join Mission</span>
                 <ArrowRight className="h-4 w-4 ml-1" />
               </Link>
-            )}
-            
-            {isCompleted && (
-              <span className="text-sm font-medium text-brand-teal">
-                Completed
-              </span>
-            )}
-            
-            {isExpired && !isCompleted && (
-              <span className="text-sm font-medium text-gray-500">
-                No longer available
-              </span>
-            )}
-          </div>
+            </Button>
+          )}
+          
+          {isCompleted && (
+            <Button 
+              disabled
+              variant="outline"
+              className="w-full border-brand-teal text-brand-teal"
+            >
+              Completed
+            </Button>
+          )}
+          
+          {isExpired && !isCompleted && (
+            <Button 
+              disabled
+              variant="outline"
+              className="w-full opacity-50"
+            >
+              Expired
+            </Button>
+          )}
         </div>
       </div>
     </div>
