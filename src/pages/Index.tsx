@@ -1,33 +1,28 @@
 
-import { useState, useEffect } from 'react';
-import Navbar from '@/components/Navbar';
+import { sampleReviews } from '@/data/sampleData';
 import HeroSection from '@/components/home/HeroSection';
-import HowItWorksSection from '@/components/home/HowItWorksSection';
 import FeaturedReviewsSection from '@/components/home/FeaturedReviewsSection';
+import HowItWorksSection from '@/components/home/HowItWorksSection';
 import CallToActionSection from '@/components/home/CallToActionSection';
+import ActiveMissionsSection from '@/components/home/ActiveMissionsSection';
 import Footer from '@/components/home/Footer';
-import { useReviews } from '@/hooks/useReviews';
+import Navbar from '@/components/Navbar';
 
 const Index = () => {
-  const [scrollY, setScrollY] = useState(0);
-  const { reviews, loading } = useReviews();
-  
-  useEffect(() => {
-    const handleScroll = () => {
-      setScrollY(window.scrollY);
-    };
-    
-    window.addEventListener('scroll', handleScroll);
-    return () => window.removeEventListener('scroll', handleScroll);
-  }, []);
-
   return (
-    <div className="min-h-screen bg-gray-50">
+    <div className="min-h-screen">
       <Navbar />
+      
       <HeroSection />
+      
       <HowItWorksSection />
-      <FeaturedReviewsSection reviews={reviews} loading={loading} />
+      
+      <FeaturedReviewsSection reviews={sampleReviews.slice(0, 3)} />
+      
+      <ActiveMissionsSection />
+      
       <CallToActionSection />
+      
       <Footer />
     </div>
   );

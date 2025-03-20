@@ -9,6 +9,101 @@ export type Json =
 export type Database = {
   public: {
     Tables: {
+      mission_participations: {
+        Row: {
+          created_at: string
+          id: string
+          mission_id: string
+          status: string
+          submission_data: Json | null
+          updated_at: string
+          user_id: string
+        }
+        Insert: {
+          created_at?: string
+          id?: string
+          mission_id: string
+          status: string
+          submission_data?: Json | null
+          updated_at?: string
+          user_id: string
+        }
+        Update: {
+          created_at?: string
+          id?: string
+          mission_id?: string
+          status?: string
+          submission_data?: Json | null
+          updated_at?: string
+          user_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "mission_participations_mission_id_fkey"
+            columns: ["mission_id"]
+            isOneToOne: false
+            referencedRelation: "missions"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      missions: {
+        Row: {
+          banner_image: string | null
+          created_at: string
+          description: string
+          expires_at: string | null
+          id: string
+          max_submissions_per_user: number | null
+          merchant_logo: string | null
+          merchant_name: string | null
+          points_reward: number
+          requirement_description: string | null
+          start_date: string
+          status: string
+          terms_conditions: string | null
+          title: string
+          type: string
+          updated_at: string
+        }
+        Insert: {
+          banner_image?: string | null
+          created_at?: string
+          description: string
+          expires_at?: string | null
+          id?: string
+          max_submissions_per_user?: number | null
+          merchant_logo?: string | null
+          merchant_name?: string | null
+          points_reward: number
+          requirement_description?: string | null
+          start_date: string
+          status: string
+          terms_conditions?: string | null
+          title: string
+          type: string
+          updated_at?: string
+        }
+        Update: {
+          banner_image?: string | null
+          created_at?: string
+          description?: string
+          expires_at?: string | null
+          id?: string
+          max_submissions_per_user?: number | null
+          merchant_logo?: string | null
+          merchant_name?: string | null
+          points_reward?: number
+          requirement_description?: string | null
+          start_date?: string
+          status?: string
+          terms_conditions?: string | null
+          title?: string
+          type?: string
+          updated_at?: string
+        }
+        Relationships: []
+      }
       point_transactions: {
         Row: {
           amount: number

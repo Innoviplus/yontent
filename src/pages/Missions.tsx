@@ -5,85 +5,8 @@ import MissionCard from '@/components/MissionCard';
 import MissionSortDropdown from '@/components/mission/MissionSortDropdown';
 import Navbar from '@/components/Navbar';
 import { RefreshCw } from 'lucide-react';
-
-// Sample mission data for UI
-const sampleMissions: Mission[] = [
-  {
-    id: '1',
-    title: 'Write a review for Nike Air Max',
-    description: 'Share your honest experience with the Nike Air Max shoes and earn points.',
-    pointsReward: 50,
-    type: 'REVIEW',
-    status: 'ACTIVE',
-    merchantName: 'Nike',
-    merchantLogo: '/placeholder.svg',
-    startDate: new Date(Date.now() - 7 * 24 * 60 * 60 * 1000), // 7 days ago
-    expiresAt: new Date(Date.now() + 30 * 24 * 60 * 60 * 1000), // 30 days from now
-    maxSubmissionsPerUser: 1,
-    createdAt: new Date(),
-    updatedAt: new Date()
-  },
-  {
-    id: '2',
-    title: 'Submit your Apple iPad receipt',
-    description: 'Upload your receipt for any Apple iPad purchase to earn rewards.',
-    pointsReward: 100,
-    type: 'RECEIPT',
-    status: 'ACTIVE',
-    merchantName: 'Apple',
-    merchantLogo: '/placeholder.svg',
-    startDate: new Date(Date.now() - 14 * 24 * 60 * 60 * 1000), // 14 days ago
-    expiresAt: new Date(Date.now() + 14 * 24 * 60 * 60 * 1000), // 14 days from now
-    maxSubmissionsPerUser: 1,
-    createdAt: new Date(),
-    updatedAt: new Date()
-  },
-  {
-    id: '3',
-    title: 'Review Adidas Sneakers',
-    description: 'Share your thoughts on any Adidas sneakers you have purchased recently.',
-    pointsReward: 75,
-    type: 'REVIEW',
-    status: 'ACTIVE',
-    merchantName: 'Adidas',
-    merchantLogo: '/placeholder.svg',
-    startDate: new Date(Date.now() - 5 * 24 * 60 * 60 * 1000), // 5 days ago
-    expiresAt: new Date(Date.now() + 25 * 24 * 60 * 60 * 1000), // 25 days from now
-    maxSubmissionsPerUser: 1,
-    createdAt: new Date(),
-    updatedAt: new Date()
-  },
-  {
-    id: '4',
-    title: 'Samsung TV Purchase Receipt',
-    description: 'Submit your receipt for any Samsung TV purchase.',
-    pointsReward: 200,
-    type: 'RECEIPT',
-    status: 'ACTIVE',
-    merchantName: 'Samsung',
-    merchantLogo: '/placeholder.svg',
-    startDate: new Date(Date.now() - 10 * 24 * 60 * 60 * 1000), // 10 days ago
-    expiresAt: new Date(Date.now() + 20 * 24 * 60 * 60 * 1000), // 20 days from now
-    maxSubmissionsPerUser: 2,
-    createdAt: new Date(),
-    updatedAt: new Date()
-  },
-  {
-    id: '5',
-    title: 'H&M Clothing Review',
-    description: 'Share your experience with any H&M clothing items purchased within the last 30 days.',
-    pointsReward: 40,
-    type: 'REVIEW',
-    status: 'COMPLETED',
-    merchantName: 'H&M',
-    merchantLogo: '/placeholder.svg',
-    startDate: new Date(Date.now() - 20 * 24 * 60 * 60 * 1000), // 20 days ago
-    expiresAt: new Date(Date.now() + 10 * 24 * 60 * 60 * 1000), // 10 days from now
-    maxSubmissionsPerUser: 3,
-    createdAt: new Date(),
-    updatedAt: new Date()
-  }
-];
+import { supabase } from '@/integrations/supabase/client';
+import { toast } from 'sonner';
 
 type SortOption = 'recent' | 'expiringSoon' | 'highestReward';
 
@@ -92,14 +15,48 @@ const Missions = () => {
   const [sortBy, setSortBy] = useState<SortOption>('recent');
   const [isLoading, setIsLoading] = useState(true);
 
-  useEffect(() => {
-    // Simulate loading data
-    const timer = setTimeout(() => {
-      setMissions(sampleMissions);
+  const fetchMissions = async () => {
+    setIsLoading(true);
+    try {
+      let query = supabase
+        .from('missions')
+        .select('*');
+      
+      const { data, error } = await query;
+      
+      if (error) throw error;
+      
+      // Transform the data to match the Mission type
+      const transformedMissions: Mission[] = data.map(mission => ({
+        id: mission.id,
+        title: mission.title,
+        description: mission.description,
+        pointsReward: mission.points_reward,
+        type: mission.type as 'REVIEW' | 'RECEIPT',
+        status: mission.status as 'ACTIVE' | 'COMPLETED' | 'DRAFT',
+        merchantName: mission.merchant_name || undefined,
+        merchantLogo: mission.merchant_logo || undefined,
+        bannerImage: mission.banner_image || undefined,
+        maxSubmissionsPerUser: mission.max_submissions_per_user,
+        termsConditions: mission.terms_conditions || undefined,
+        requirementDescription: mission.requirement_description || undefined,
+        startDate: new Date(mission.start_date),
+        expiresAt: mission.expires_at ? new Date(mission.expires_at) : undefined,
+        createdAt: new Date(mission.created_at),
+        updatedAt: new Date(mission.updated_at)
+      }));
+      
+      setMissions(transformedMissions);
+    } catch (error) {
+      console.error('Error fetching missions:', error);
+      toast.error('Failed to load missions');
+    } finally {
       setIsLoading(false);
-    }, 1000);
-    
-    return () => clearTimeout(timer);
+    }
+  };
+
+  useEffect(() => {
+    fetchMissions();
   }, []);
 
   useEffect(() => {
@@ -109,13 +66,13 @@ const Missions = () => {
     switch (sortBy) {
       case 'recent':
         sortedMissions.sort((a, b) => 
-          new Date(b.startDate).getTime() - new Date(a.startDate).getTime());
+          b.startDate.getTime() - a.startDate.getTime());
         break;
       case 'expiringSoon':
         sortedMissions.sort((a, b) => {
           if (!a.expiresAt) return 1;
           if (!b.expiresAt) return -1;
-          return new Date(a.expiresAt).getTime() - new Date(b.expiresAt).getTime();
+          return a.expiresAt.getTime() - b.expiresAt.getTime();
         });
         break;
       case 'highestReward':
@@ -147,13 +104,7 @@ const Missions = () => {
               
               <button 
                 className="flex items-center justify-center p-2 rounded-md border border-gray-300 text-gray-500 hover:bg-gray-50 transition-colors"
-                onClick={() => {
-                  setIsLoading(true);
-                  setTimeout(() => {
-                    setMissions(sampleMissions);
-                    setIsLoading(false);
-                  }, 500);
-                }}
+                onClick={fetchMissions}
               >
                 <RefreshCw className="h-5 w-5" />
               </button>
