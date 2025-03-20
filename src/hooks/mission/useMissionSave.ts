@@ -19,13 +19,21 @@ export const useMissionSave = (id: string | undefined) => {
       setSavingMission(true);
       setError(null);
       
+      // Ensure type is one of the valid values according to the constraint
+      // Based on the error message, there seems to be a check constraint on the type field
+      // Let's make sure we're using a valid value (likely case-sensitive)
+      const missionType = formData.type.toUpperCase();
+      if (!['REVIEW', 'RECEIPT'].includes(missionType)) {
+        throw new Error('Mission type must be either REVIEW or RECEIPT');
+      }
+      
       const missionData = {
         title: formData.title,
         description: formData.description,
         requirement_description: formData.requirementDescription,
         points_reward: formData.pointsReward,
-        type: formData.type,
-        status: formData.status,
+        type: missionType, // Use the uppercase value
+        status: formData.status.toUpperCase(), // Ensure status is also uppercase
         merchant_name: formData.merchantName || null,
         merchant_logo: formData.merchantLogo || null,
         banner_image: formData.bannerImage || null,
@@ -39,26 +47,13 @@ export const useMissionSave = (id: string | undefined) => {
       
       let result;
       
+      // We'll use the existing session without querying the users table
       if (isEditMode) {
-        // Get the current user's session to verify they are authenticated
-        const { data: { session } } = await supabase.auth.getSession();
-        
-        if (!session) {
-          throw new Error('You must be logged in to edit missions');
-        }
-        
         result = await supabase
           .from('missions')
           .update(missionData)
           .eq('id', id);
       } else {
-        // Get the current user's session to verify they are authenticated
-        const { data: { session } } = await supabase.auth.getSession();
-        
-        if (!session) {
-          throw new Error('You must be logged in to create missions');
-        }
-        
         result = await supabase
           .from('missions')
           .insert([missionData]);

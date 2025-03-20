@@ -15,8 +15,8 @@ export const useMissionForm = (isLoggedIn: boolean) => {
     description: '',
     requirementDescription: '',
     pointsReward: 0,
-    type: 'REVIEW',
-    status: 'DRAFT',
+    type: 'REVIEW', // Ensure we use a valid type that matches the constraint
+    status: 'DRAFT', // Use uppercase to match DB constraints
     merchantName: '',
     merchantLogo: '',
     bannerImage: '',
@@ -68,10 +68,18 @@ export const useMissionForm = (isLoggedIn: boolean) => {
   };
 
   const handleSelectChange = (name: string, value: string) => {
-    setFormData(prev => ({
-      ...prev,
-      [name]: value
-    }));
+    // For type and status, store them in uppercase to match DB constraints
+    if (name === 'type' || name === 'status') {
+      setFormData(prev => ({
+        ...prev,
+        [name]: value.toUpperCase()
+      }));
+    } else {
+      setFormData(prev => ({
+        ...prev,
+        [name]: value
+      }));
+    }
   };
 
   const handleDateChange = (name: string, date: Date | null) => {
