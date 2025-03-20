@@ -12,14 +12,9 @@ import Register from "./pages/Register";
 import Dashboard from "./pages/Dashboard";
 import Settings from "./pages/Settings";
 import SubmitReview from "./pages/SubmitReview";
-import SubmitReceipt from "./pages/SubmitReceipt";
 import ReviewFeed from "./pages/ReviewFeed";
 import Reviews from "./pages/Reviews";
 import ReviewDetail from "./pages/ReviewDetail";
-import MissionFeed from "./pages/MissionFeed";
-import MissionDetail from "./pages/MissionDetail";
-import AdminMissions from "./pages/admin/AdminMissions";
-import CreateEditMission from "./pages/admin/CreateEditMission";
 import UserProfile from "./pages/UserProfile";
 import ProtectedRoute from "./components/ProtectedRoute";
 
@@ -51,36 +46,10 @@ const App = () => (
                 <SubmitReview />
               </ProtectedRoute>
             } />
-            <Route path="/submit-receipt" element={
-              <ProtectedRoute>
-                <SubmitReceipt />
-              </ProtectedRoute>
-            } />
             <Route path="/feed" element={<ReviewFeed />} />
             <Route path="/reviews" element={<Reviews />} />
             <Route path="/reviews/:id" element={<ReviewDetail />} />
             <Route path="/user/:username" element={<UserProfile />} />
-            
-            {/* Mission routes */}
-            <Route path="/missions" element={<MissionFeed />} />
-            <Route path="/missions/:id" element={<MissionDetail />} />
-            
-            {/* Admin routes */}
-            <Route path="/admin/missions" element={
-              <ProtectedRoute>
-                <AdminMissions />
-              </ProtectedRoute>
-            } />
-            <Route path="/admin/missions/create" element={
-              <ProtectedRoute>
-                <CreateEditMission />
-              </ProtectedRoute>
-            } />
-            <Route path="/admin/missions/edit/:id" element={
-              <ProtectedRoute>
-                <CreateEditMission />
-              </ProtectedRoute>
-            } />
             
             {/* ADD ALL CUSTOM ROUTES ABOVE THE CATCH-ALL "*" ROUTE */}
             <Route path="*" element={<NotFound />} />

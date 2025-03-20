@@ -1,3 +1,4 @@
+
 export interface User {
   id: string;
   username: string;
@@ -19,78 +20,6 @@ export interface Review {
   user?: User;
   viewsCount?: number;
   likesCount?: number;
-}
-
-export interface Mission {
-  id: string;
-  title: string;
-  description: string;
-  pointsReward: number;
-  type: 'REVIEW' | 'RECEIPT';
-  status: 'ACTIVE' | 'COMPLETED' | 'DRAFT';
-  expiresAt?: Date;
-  requirementDescription: string;
-  merchantName?: string;
-  merchantLogo?: string;
-  bannerImage?: string;
-  maxSubmissionsPerUser?: number;
-  termsConditions?: string;
-  startDate: Date;
-  createdAt: Date;
-  updatedAt: Date;
-}
-
-export interface MissionFormData {
-  title: string;
-  description: string;
-  requirementDescription: string;
-  pointsReward: number;
-  type: string;
-  status: string;
-  merchantName: string;
-  merchantLogo: string;
-  bannerImage: string;
-  maxSubmissionsPerUser: number;
-  termsConditions: string;
-  startDate: Date;
-  expiresAt: Date | null;
-}
-
-export interface MissionParticipation {
-  id: string;
-  userId: string;
-  missionId: string;
-  status: 'IN_PROGRESS' | 'COMPLETED' | 'ABANDONED';
-  createdAt: Date;
-  updatedAt: Date;
-}
-
-export interface ReceiptSubmission {
-  id: string;
-  userId: string;
-  missionId: string;
-  image: string;
-  storeTitle: string;
-  purchaseDate: Date;
-  items?: any[];
-  totalAmount?: number;
-  status: 'PENDING' | 'APPROVED' | 'REJECTED';
-  adminNotes?: string;
-  ocrData?: any;
-  createdAt: Date;
-  updatedAt: Date;
-}
-
-export interface MissionReview {
-  id: string;
-  userId: string;
-  missionId: string;
-  reviewId: string;
-  status: 'PENDING' | 'APPROVED' | 'REJECTED';
-  adminNotes?: string;
-  createdAt: Date;
-  updatedAt: Date;
-  review?: Review;
 }
 
 export interface PointTransaction {
