@@ -61,6 +61,26 @@ export interface ExtendedProfile {
   [key: string]: any; // Add index signature to make it compatible with Json type
 }
 
+// Define Mission type for UI only
+export interface Mission {
+  id: string;
+  title: string;
+  description: string;
+  pointsReward: number;
+  type: 'REVIEW' | 'RECEIPT';
+  status: 'ACTIVE' | 'COMPLETED' | 'DRAFT';
+  expiresAt?: Date;
+  requirementDescription?: string;
+  merchantName?: string;
+  merchantLogo?: string;
+  bannerImage?: string;
+  maxSubmissionsPerUser?: number;
+  termsConditions?: string;
+  startDate: Date;
+  createdAt: Date;
+  updatedAt: Date;
+}
+
 // Define Json type to match Supabase's Json type
 export type Json =
   | string
