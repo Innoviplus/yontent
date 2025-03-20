@@ -20,8 +20,6 @@ export const useMissionSave = (id: string | undefined) => {
       setError(null);
       
       // Ensure type is one of the valid values according to the constraint
-      // Based on the error message, there seems to be a check constraint on the type field
-      // Let's make sure we're using a valid value (likely case-sensitive)
       const missionType = formData.type.toUpperCase();
       if (!['REVIEW', 'RECEIPT'].includes(missionType)) {
         throw new Error('Mission type must be either REVIEW or RECEIPT');
@@ -47,7 +45,6 @@ export const useMissionSave = (id: string | undefined) => {
       
       let result;
       
-      // We'll use the existing session without querying the users table
       if (isEditMode) {
         result = await supabase
           .from('missions')
