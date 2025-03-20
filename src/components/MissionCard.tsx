@@ -99,21 +99,25 @@ const MissionCard = ({ mission, className }: MissionCardProps) => {
           
           {isCompleted && (
             <Button 
-              disabled
+              asChild
               variant="outline"
               className="w-full border-brand-teal text-brand-teal"
             >
-              Completed
+              <Link to={`/missions/${mission.id}`}>
+                Completed
+              </Link>
             </Button>
           )}
           
           {isExpired && !isCompleted && (
             <Button 
-              disabled
+              asChild
               variant="outline"
               className="w-full opacity-50"
             >
-              Expired
+              <Link to={`/missions/${mission.id}`}>
+                Expired
+              </Link>
             </Button>
           )}
         </div>
