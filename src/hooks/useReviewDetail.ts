@@ -49,8 +49,8 @@ export const useReviewDetail = (id: string | undefined) => {
       const transformedReview: Review = {
         id: data.id,
         userId: data.user_id,
-        productName: "Review", // Default value since column no longer exists
-        rating: 5, // Default value since column no longer exists
+        productName: "Review",
+        rating: 5,
         content: data.content,
         images: data.images || [],
         viewsCount: data.views_count,
@@ -59,9 +59,9 @@ export const useReviewDetail = (id: string | undefined) => {
         user: data.profiles ? {
           id: data.profiles.id,
           username: data.profiles.username || 'Anonymous',
-          email: '', // Not returned for privacy
-          points: 0, // Not relevant in this context
-          createdAt: new Date(), // Not relevant in this context
+          email: '',
+          points: 0,
+          createdAt: new Date(),
           avatar: data.profiles.avatar
         } : undefined
       };
@@ -190,7 +190,9 @@ export const useReviewDetail = (id: string | undefined) => {
           profiles:user_id (
             id,
             username,
-            avatar
+            avatar,
+            points,
+            created_at
           )
         `)
         .neq('id', reviewData.id)
@@ -213,6 +215,8 @@ export const useReviewDetail = (id: string | undefined) => {
           id: item.profiles.id,
           username: item.profiles.username || 'Anonymous',
           email: '',
+          points: item.profiles.points || 0,
+          createdAt: new Date(item.profiles.created_at),
           avatar: item.profiles.avatar
         } : undefined
       }));
