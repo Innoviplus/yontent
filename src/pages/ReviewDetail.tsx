@@ -10,6 +10,8 @@ import ReviewActionButtons from '@/components/review/ReviewDetail/ReviewActionBu
 import ReviewStats from '@/components/review/ReviewDetail/ReviewStats';
 import ReviewContent from '@/components/review/ReviewDetail/ReviewContent';
 import ReviewNotFound from '@/components/review/ReviewDetail/ReviewNotFound';
+import ReviewAuthorProfile from '@/components/review/ReviewDetail/ReviewAuthorProfile';
+import RelatedReviews from '@/components/review/ReviewDetail/RelatedReviews';
 
 const ReviewDetail = () => {
   const { id } = useParams<{ id: string }>();
@@ -19,7 +21,8 @@ const ReviewDetail = () => {
     likeLoading,
     hasLiked,
     handleLike,
-    navigateToUserProfile
+    navigateToUserProfile,
+    relatedReviews
   } = useReviewDetail(id);
 
   return (
@@ -46,34 +49,49 @@ const ReviewDetail = () => {
             </div>
           </div>
         ) : review ? (
-          <div className="bg-white rounded-xl overflow-hidden shadow-subtle">
-            {/* Review images */}
-            <ReviewImages images={review.images} />
-            
-            <div className="p-6 md:p-8">
-              {/* User and date info */}
-              <div className="flex items-center justify-between mb-6">
-                <ReviewUserInfo 
-                  user={review.user} 
-                  createdAt={review.createdAt} 
-                  onUserClick={navigateToUserProfile} 
-                />
+          <div className="space-y-6">
+            <div className="bg-white rounded-xl overflow-hidden shadow-subtle">
+              {/* Review images */}
+              <ReviewImages images={review.images} />
+              
+              <div className="p-6 md:p-8">
+                {/* User and date info */}
+                <div className="mb-6">
+                  <ReviewUserInfo 
+                    user={review.user} 
+                    createdAt={review.createdAt} 
+                    onUserClick={navigateToUserProfile} 
+                  />
+                </div>
                 
-                {/* Action buttons */}
-                <ReviewActionButtons
-                  likesCount={review.likesCount || 0}
-                  hasLiked={hasLiked}
-                  onLike={handleLike}
-                  likeLoading={likeLoading}
-                />
+                {/* Stats and action buttons on the same row */}
+                <div className="flex items-center justify-between mb-6">
+                  <ReviewStats viewsCount={review.viewsCount || 0} />
+                  
+                  {/* Action buttons moved here */}
+                  <ReviewActionButtons
+                    likesCount={review.likesCount || 0}
+                    hasLiked={hasLiked}
+                    onLike={handleLike}
+                    likeLoading={likeLoading}
+                  />
+                </div>
+                
+                {/* Content */}
+                <ReviewContent content={review.content} />
               </div>
-              
-              {/* Stats */}
-              <ReviewStats viewsCount={review.viewsCount || 0} />
-              
-              {/* Content */}
-              <ReviewContent content={review.content} />
             </div>
+            
+            {/* Author profile section */}
+            {review.user && (
+              <ReviewAuthorProfile userId={review.userId} />
+            )}
+            
+            {/* Related Reviews */}
+            <RelatedReviews 
+              reviewId={review.id} 
+              relatedReviews={relatedReviews} 
+            />
           </div>
         ) : (
           <ReviewNotFound />

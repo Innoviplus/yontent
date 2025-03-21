@@ -1,4 +1,3 @@
-
 import { useState, useEffect } from 'react';
 import { Review } from '@/lib/types';
 import { supabase } from '@/integrations/supabase/client';
@@ -12,6 +11,7 @@ export const useReviewDetail = (id: string | undefined) => {
   const [loading, setLoading] = useState(true);
   const [likeLoading, setLikeLoading] = useState(false);
   const [hasLiked, setHasLiked] = useState(false);
+  const [relatedReviews, setRelatedReviews] = useState<Review[]>([]);
   const { user } = useAuth();
   const navigate = useNavigate();
   
@@ -46,7 +46,6 @@ export const useReviewDetail = (id: string | undefined) => {
         return;
       }
       
-      // Transform the review to match our Review type
       const transformedReview: Review = {
         id: data.id,
         userId: data.user_id,
@@ -69,7 +68,6 @@ export const useReviewDetail = (id: string | undefined) => {
       
       setReview(transformedReview);
       
-      // Track the view
       trackReviewView(id);
     } catch (error) {
       console.error('Unexpected error:', error);
@@ -111,7 +109,6 @@ export const useReviewDetail = (id: string | undefined) => {
       setLikeLoading(true);
       
       if (hasLiked) {
-        // Unlike
         const { error: deleteLikeError } = await supabase
           .from('review_likes')
           .delete()
@@ -122,7 +119,6 @@ export const useReviewDetail = (id: string | undefined) => {
           throw deleteLikeError;
         }
         
-        // Update likes count
         const { error: updateError } = await supabase
           .from('reviews')
           .update({ likes_count: Math.max(0, (review.likesCount || 0) - 1) })
@@ -132,7 +128,6 @@ export const useReviewDetail = (id: string | undefined) => {
           throw updateError;
         }
         
-        // Update local state
         setHasLiked(false);
         setReview(prev => {
           if (!prev) return null;
@@ -144,7 +139,6 @@ export const useReviewDetail = (id: string | undefined) => {
         
         toast.success('Review unliked');
       } else {
-        // Like
         const { error: insertLikeError } = await supabase
           .from('review_likes')
           .insert([{ user_id: user.id, review_id: review.id }]);
@@ -153,7 +147,6 @@ export const useReviewDetail = (id: string | undefined) => {
           throw insertLikeError;
         }
         
-        // Update likes count
         const { error: updateError } = await supabase
           .from('reviews')
           .update({ likes_count: (review.likesCount || 0) + 1 })
@@ -163,7 +156,6 @@ export const useReviewDetail = (id: string | undefined) => {
           throw updateError;
         }
         
-        // Update local state
         setHasLiked(true);
         setReview(prev => {
           if (!prev) return null;
@@ -183,6 +175,54 @@ export const useReviewDetail = (id: string | undefined) => {
     }
   };
   
+  const fetchRelatedReviews = async (reviewData: Review) => {
+    try {
+      const { data, error } = await supabase
+        .from('reviews')
+        .select(`
+          id,
+          user_id,
+          content,
+          images,
+          views_count,
+          likes_count,
+          created_at,
+          profiles:user_id (
+            id,
+            username,
+            avatar
+          )
+        `)
+        .neq('id', reviewData.id)
+        .order('likes_count', { ascending: false })
+        .limit(10);
+      
+      if (error) throw error;
+      
+      const transformedReviews: Review[] = data.map(item => ({
+        id: item.id,
+        userId: item.user_id,
+        productName: "Review",
+        rating: 5,
+        content: item.content,
+        images: item.images || [],
+        viewsCount: item.views_count,
+        likesCount: item.likes_count,
+        createdAt: new Date(item.created_at),
+        user: item.profiles ? {
+          id: item.profiles.id,
+          username: item.profiles.username || 'Anonymous',
+          email: '',
+          avatar: item.profiles.avatar
+        } : undefined
+      }));
+      
+      setRelatedReviews(transformedReviews);
+    } catch (error) {
+      console.error('Error fetching related reviews:', error);
+    }
+  };
+  
   const navigateToUserProfile = () => {
     if (review?.user?.username) {
       navigate(`/user/${review.user.username}`);
@@ -198,12 +238,19 @@ export const useReviewDetail = (id: string | undefined) => {
     }
   }, [id, user]);
   
+  useEffect(() => {
+    if (review) {
+      fetchRelatedReviews(review);
+    }
+  }, [review]);
+  
   return {
     review,
     loading,
     likeLoading,
     hasLiked,
     handleLike,
-    navigateToUserProfile
+    navigateToUserProfile,
+    relatedReviews
   };
 };

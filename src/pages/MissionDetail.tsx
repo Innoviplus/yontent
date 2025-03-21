@@ -1,6 +1,5 @@
-
 import { useState, useEffect } from 'react';
-import { useParams, Link } from 'react-router-dom';
+import { useParams, Link, Navigate } from 'react-router-dom';
 import { Mission } from '@/lib/types';
 import { supabase } from '@/integrations/supabase/client';
 import Navbar from '@/components/Navbar';
@@ -19,12 +18,15 @@ const MissionDetail = () => {
   const [participationStatus, setParticipationStatus] = useState<string | null>(null);
   const { user } = useAuth();
 
+  if (!user) {
+    return <Navigate to="/login" replace />;
+  }
+
   useEffect(() => {
     const fetchMission = async () => {
       if (!id) return;
       
       try {
-        // Fetch the mission
         const { data, error } = await supabase
           .from('missions')
           .select('*')
@@ -33,7 +35,6 @@ const MissionDetail = () => {
           
         if (error) throw error;
         
-        // Transform the data
         const transformedMission: Mission = {
           id: data.id,
           title: data.title,
@@ -55,7 +56,6 @@ const MissionDetail = () => {
         
         setMission(transformedMission);
         
-        // If user is logged in, check if they're participating in this mission
         if (user) {
           const { data: participationData, error: participationError } = await supabase
             .from('mission_participations')
@@ -150,7 +150,6 @@ const MissionDetail = () => {
     <div className="min-h-screen bg-gray-50">
       <Navbar />
       
-      {/* Hero Banner */}
       <div 
         className="h-64 md:h-80 bg-cover bg-center"
         style={{ 
@@ -184,9 +183,7 @@ const MissionDetail = () => {
       
       <div className="container mx-auto px-4 py-8">
         <div className="grid grid-cols-1 lg:grid-cols-3 gap-8">
-          {/* Main Content */}
           <div className="lg:col-span-2 space-y-6">
-            {/* Mission Description */}
             <Card>
               <CardContent className="p-6">
                 <h2 className="text-xl font-semibold mb-3">Mission Details</h2>
@@ -245,7 +242,6 @@ const MissionDetail = () => {
               </CardContent>
             </Card>
             
-            {/* Social Proof - Fictitious */}
             <Card>
               <CardContent className="p-6">
                 <h2 className="text-xl font-semibold mb-3">Community Engagement</h2>
@@ -266,7 +262,6 @@ const MissionDetail = () => {
               </CardContent>
             </Card>
             
-            {/* Testimonials - Fictitious */}
             <Card>
               <CardContent className="p-6">
                 <h2 className="text-xl font-semibold mb-3">What Participants Say</h2>
@@ -284,9 +279,7 @@ const MissionDetail = () => {
             </Card>
           </div>
           
-          {/* Sidebar */}
           <div className="space-y-6">
-            {/* Mission Stats Card */}
             <Card className="overflow-hidden border-t-4 border-t-brand-teal">
               <CardContent className="p-6">
                 <div className="flex justify-between items-center mb-4">
@@ -364,7 +357,6 @@ const MissionDetail = () => {
               </CardContent>
             </Card>
             
-            {/* FAQ Card */}
             <Card>
               <CardContent className="p-6">
                 <div className="flex items-center mb-4">
@@ -391,15 +383,24 @@ const MissionDetail = () => {
               </CardContent>
             </Card>
             
-            {/* Need Help Card */}
             <Card className="bg-gray-50 border-none">
               <CardContent className="p-6">
                 <h2 className="text-lg font-semibold mb-2">Need Help?</h2>
                 <p className="text-sm text-gray-600 mb-4">
                   If you have any questions about this mission, please contact our support team.
                 </p>
-                <Button variant="outline" className="w-full">
-                  Contact Support
+                <Button 
+                  variant="outline" 
+                  className="w-full" 
+                  asChild
+                >
+                  <a 
+                    href="https://api.whatsapp.com/send?phone=85254278104?text=mission%20inquiry" 
+                    target="_blank" 
+                    rel="noopener noreferrer"
+                  >
+                    Contact Support
+                  </a>
                 </Button>
               </CardContent>
             </Card>
