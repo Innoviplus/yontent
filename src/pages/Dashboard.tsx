@@ -29,13 +29,10 @@ const Dashboard = () => {
 
   const fetchUserProfile = async () => {
     try {
+      // Simplified query to avoid deep type instantiation
       const { data: profile, error } = await supabase
         .from('profiles')
-        .select(`
-          *,
-          (SELECT count(*) FROM reviews WHERE user_id = profiles.id) as completed_reviews,
-          (SELECT count(*) FROM user_missions WHERE user_id = profiles.id) as completed_missions
-        `)
+        .select('*')
         .eq('id', authUser?.id)
         .single();
 
@@ -43,7 +40,24 @@ const Dashboard = () => {
         throw error;
       }
 
-      setUser(profile);
+      // If we need counts, fetch them separately
+      const { count: reviewsCount } = await supabase
+        .from('reviews')
+        .select('*', { count: 'exact', head: true })
+        .eq('user_id', authUser?.id)
+        .eq('status', 'PUBLISHED');
+
+      const { count: missionsCount } = await supabase
+        .from('user_missions')
+        .select('*', { count: 'exact', head: true })
+        .eq('user_id', authUser?.id);
+
+      // Combine the profile with the counts
+      setUser({
+        ...profile,
+        completed_reviews: reviewsCount || 0,
+        completed_missions: missionsCount || 0
+      });
     } catch (error: any) {
       console.error('Error fetching user profile:', error);
       toast.error('Failed to load profile');
@@ -70,7 +84,7 @@ const Dashboard = () => {
         id: review.id,
         userId: review.user_id,
         content: review.content,
-        images: review.images,
+        images: review.images || [],
         createdAt: new Date(review.created_at),
         viewsCount: review.views_count,
         likesCount: review.likes_count
@@ -101,7 +115,7 @@ const Dashboard = () => {
         id: draft.id,
         userId: draft.user_id,
         content: draft.content,
-        images: draft.images,
+        images: draft.images || [],
         createdAt: new Date(draft.created_at),
         viewsCount: draft.views_count,
         likesCount: draft.likes_count
