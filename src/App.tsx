@@ -18,6 +18,7 @@ import ReviewDetail from "./pages/ReviewDetail";
 import UserProfile from "./pages/UserProfile";
 import Missions from "./pages/Missions";
 import MissionDetail from "./pages/MissionDetail";
+import UserRankings from "./pages/UserRankings";
 import ProtectedRoute from "./components/ProtectedRoute";
 
 const queryClient = new QueryClient();
@@ -54,6 +55,7 @@ const App = () => (
             <Route path="/user/:username" element={<UserProfile />} />
             <Route path="/missions" element={<Missions />} />
             <Route path="/missions/:id" element={<MissionDetail />} />
+            <Route path="/rankings" element={<UserRankings />} />
             
             {/* ADD ALL CUSTOM ROUTES ABOVE THE CATCH-ALL "*" ROUTE */}
             <Route path="*" element={<NotFound />} />

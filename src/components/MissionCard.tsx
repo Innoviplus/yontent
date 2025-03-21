@@ -56,7 +56,11 @@ const MissionCard = ({ mission, className }: MissionCardProps) => {
               {mission.merchantName || 'Brand Mission'}
             </div>
             <div className="flex items-center text-brand-teal font-semibold">
-              <Award className="h-4 w-4 mr-1" />
+              <img 
+                src="/lovable-uploads/87f7987e-62e4-4871-b384-8c77779df418.png" 
+                alt="Points" 
+                className="w-4 h-4 mr-1"
+              />
               <span>{mission.pointsReward} pts</span>
             </div>
           </div>

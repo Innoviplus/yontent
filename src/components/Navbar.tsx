@@ -1,7 +1,7 @@
 
 import { useState, useEffect } from 'react';
 import { Link, useLocation } from 'react-router-dom';
-import { Menu, X, Star, Award, LogOut, User } from 'lucide-react';
+import { Menu, X, Star, Award, LogOut, User, Medal } from 'lucide-react';
 import { cn } from '@/lib/utils';
 import { useAuth } from '@/contexts/AuthContext';
 import {
@@ -77,7 +77,7 @@ const Navbar = () => {
         <nav className="hidden md:flex items-center gap-1">
           <NavLink 
             to="/reviews" 
-            label="Features" 
+            label="Reviews" 
             icon={<Star className="h-5 w-5" />}
             current={location.pathname === '/reviews'}
           />
@@ -86,6 +86,12 @@ const Navbar = () => {
             label="Missions" 
             icon={<Award className="h-5 w-5" />}
             current={location.pathname === '/missions'}
+          />
+          <NavLink 
+            to="/rankings" 
+            label="Rankings" 
+            icon={<Medal className="h-5 w-5" />}
+            current={location.pathname === '/rankings'}
           />
           
           {user ? (
@@ -153,7 +159,7 @@ const Navbar = () => {
         <div className="px-4 py-5 space-y-3">
           <NavLink 
             to="/reviews" 
-            label="Features" 
+            label="Reviews" 
             icon={<Star className="h-5 w-5" />}
             current={location.pathname === '/reviews'}
           />
@@ -162,6 +168,12 @@ const Navbar = () => {
             label="Missions" 
             icon={<Award className="h-5 w-5" />}
             current={location.pathname === '/missions'}
+          />
+          <NavLink 
+            to="/rankings" 
+            label="Rankings" 
+            icon={<Medal className="h-5 w-5" />}
+            current={location.pathname === '/rankings'}
           />
           
           {user ? (

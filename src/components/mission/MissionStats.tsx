@@ -3,7 +3,7 @@ import { useState } from 'react';
 import { Mission } from '@/lib/types';
 import { Card, CardContent } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
-import { Award, Clock, Users, MapPin, Target } from 'lucide-react';
+import { Clock, Users, MapPin, Target } from 'lucide-react';
 import { format, isPast } from 'date-fns';
 import { toast } from 'sonner';
 import { supabase } from '@/integrations/supabase/client';
@@ -63,7 +63,11 @@ const MissionStats = ({
         <div className="flex justify-between items-center mb-4">
           <h2 className="text-xl font-semibold">Mission Stats</h2>
           <div className="flex items-center text-brand-teal font-bold text-lg">
-            <Award className="h-5 w-5 mr-1" />
+            <img 
+              src="/lovable-uploads/87f7987e-62e4-4871-b384-8c77779df418.png" 
+              alt="Points" 
+              className="w-5 h-5 mr-1"
+            />
             <span>{mission.pointsReward} pts</span>
           </div>
         </div>

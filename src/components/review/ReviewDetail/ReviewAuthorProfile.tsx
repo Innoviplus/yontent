@@ -28,7 +28,7 @@ const ReviewAuthorProfile = ({ userId }: ReviewAuthorProfileProps) => {
         // Fetch user profile
         const { data: profileData, error: profileError } = await supabase
           .from('profiles')
-          .select('*')
+          .select('*, followers_count, following_count')
           .eq('id', userId)
           .single();
           
@@ -54,15 +54,11 @@ const ReviewAuthorProfile = ({ userId }: ReviewAuthorProfileProps) => {
           
         if (reviewsError) throw reviewsError;
         
-        // For simplicity, we're using placeholder values for followers/following
-        // In a real app, you would fetch these from a followers table
-        const followersCount = Math.floor(Math.random() * 500) + 10;
-        const followingCount = Math.floor(Math.random() * 200) + 5;
-        
+        // Use the actual follower and following counts from the database
         setStats({
           reviewsCount: reviewsCount || 0,
-          followersCount,
-          followingCount
+          followersCount: profileData.followers_count || 0,
+          followingCount: profileData.following_count || 0
         });
       } catch (error) {
         console.error('Error fetching author profile:', error);

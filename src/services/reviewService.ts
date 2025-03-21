@@ -19,11 +19,13 @@ export const trackReviewView = async (reviewId: string) => {
 export const submitReview = async ({ 
   userId, 
   content, 
-  images 
+  images,
+  isDraft = false 
 }: { 
   userId: string; 
   content: string; 
-  images: File[] 
+  images: File[];
+  isDraft?: boolean;
 }) => {
   try {
     // Upload images
@@ -62,7 +64,8 @@ export const submitReview = async ({
         content,
         images: imageUrls,
         views_count: 0,
-        likes_count: 0
+        likes_count: 0,
+        status: isDraft ? 'DRAFT' : 'PUBLISHED'
       });
       
     if (insertError) {
