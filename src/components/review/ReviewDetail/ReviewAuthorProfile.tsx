@@ -38,7 +38,7 @@ const ReviewAuthorProfile = ({ userId }: ReviewAuthorProfileProps) => {
         const userProfile: UserType = {
           id: profileData.id,
           username: profileData.username || 'Anonymous',
-          // Remove the reference to email as it doesn't exist in the profile data
+          email: '', // Add the required email property even though it's not in profile data
           avatar: profileData.avatar,
           points: profileData.points || 0,
           createdAt: new Date(profileData.created_at),
