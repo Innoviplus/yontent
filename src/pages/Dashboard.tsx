@@ -1,3 +1,4 @@
+
 import { useEffect, useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { useAuth } from '@/contexts/AuthContext';
@@ -64,7 +65,18 @@ const Dashboard = () => {
         throw error;
       }
 
-      setUserReviews(reviews || []);
+      // Transform the data to match the Review type
+      const transformedReviews: Review[] = (reviews || []).map(review => ({
+        id: review.id,
+        userId: review.user_id,
+        content: review.content,
+        images: review.images,
+        createdAt: new Date(review.created_at),
+        viewsCount: review.views_count,
+        likesCount: review.likes_count
+      }));
+
+      setUserReviews(transformedReviews);
     } catch (error: any) {
       console.error('Error fetching user reviews:', error);
       toast.error('Failed to load reviews');
@@ -84,7 +96,18 @@ const Dashboard = () => {
         throw error;
       }
 
-      setDraftReviews(drafts || []);
+      // Transform the data to match the Review type
+      const transformedDrafts: Review[] = (drafts || []).map(draft => ({
+        id: draft.id,
+        userId: draft.user_id,
+        content: draft.content,
+        images: draft.images,
+        createdAt: new Date(draft.created_at),
+        viewsCount: draft.views_count,
+        likesCount: draft.likes_count
+      }));
+
+      setDraftReviews(transformedDrafts);
     } catch (error: any) {
       console.error('Error fetching draft reviews:', error);
       toast.error('Failed to load draft reviews.');
@@ -121,8 +144,6 @@ const Dashboard = () => {
     <div className="min-h-screen bg-gray-50">
       <div className="container mx-auto px-4 pt-28 pb-16 max-w-4xl">
         <UserProfileHeader user={user} />
-
-        {/* Only updating the DashboardTabs component to pass draftReviews prop */}
         <DashboardTabs reviews={userReviews} draftReviews={draftReviews} />
       </div>
     </div>
