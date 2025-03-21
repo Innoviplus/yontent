@@ -13,7 +13,7 @@ const Dashboard = () => {
   const { user: authUser } = useAuth();
   const navigate = useNavigate();
   const { user, loading } = useDashboardProfile(authUser?.id);
-  const { userReviews, draftReviews } = useDashboardReviews(authUser?.id);
+  const { userReviews, draftReviews, isLoading } = useDashboardReviews(authUser?.id);
 
   useEffect(() => {
     if (!authUser) {
@@ -21,7 +21,7 @@ const Dashboard = () => {
     }
   }, [authUser, navigate]);
 
-  if (loading) {
+  if (loading || isLoading) {
     return <DashboardSkeleton />;
   }
 

@@ -8,7 +8,10 @@ export const useDashboardProfile = (userId: string | undefined) => {
   const [loading, setLoading] = useState(true);
 
   useEffect(() => {
-    if (!userId) return;
+    if (!userId) {
+      setLoading(false);
+      return;
+    }
     
     const fetchUserProfile = async () => {
       try {
@@ -23,18 +26,26 @@ export const useDashboardProfile = (userId: string | undefined) => {
           throw error;
         }
 
-        // Fetch review count
-        const { count: reviewsCount } = await supabase
+        // Fetch review count separately
+        const { count: reviewsCount, error: reviewsError } = await supabase
           .from('reviews')
           .select('*', { count: 'exact', head: true })
           .eq('user_id', userId)
           .eq('status', 'PUBLISHED');
 
-        // Fetch missions count
-        const { count: missionsCount } = await supabase
+        if (reviewsError) {
+          console.error('Error fetching reviews count:', reviewsError);
+        }
+
+        // Fetch missions count separately
+        const { count: missionsCount, error: missionsError } = await supabase
           .from('mission_participations')
           .select('*', { count: 'exact', head: true })
           .eq('user_id', userId);
+
+        if (missionsError) {
+          console.error('Error fetching missions count:', missionsError);
+        }
 
         // Combine the profile with the counts
         setUser({
