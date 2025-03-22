@@ -1,7 +1,7 @@
 
 import React from 'react';
 import { Control } from 'react-hook-form';
-import { format } from 'date-fns';
+import { format, subYears } from 'date-fns';
 import { CalendarIcon } from 'lucide-react';
 import {
   FormControl,
@@ -23,6 +23,9 @@ interface BirthDatePickerProps {
 }
 
 export const BirthDatePicker: React.FC<BirthDatePickerProps> = ({ control }) => {
+  // Calculate date for 18 years ago from today
+  const maxDate = subYears(new Date(), 18);
+  
   return (
     <FormField
       control={control}
@@ -52,7 +55,7 @@ export const BirthDatePicker: React.FC<BirthDatePickerProps> = ({ control }) => 
                 selected={field.value}
                 onSelect={field.onChange}
                 disabled={(date) =>
-                  date > new Date() || date < new Date("1900-01-01")
+                  date > maxDate || date < new Date("1900-01-01")
                 }
                 initialFocus
                 className="p-3 pointer-events-auto"

@@ -33,9 +33,8 @@ const NavLinks = () => {
       
       {user && (
         <Link to="/submit-review" className="ml-2">
-          <Button size="sm" className="bg-brand-teal hover:bg-brand-teal/90">
-            <Plus className="h-4 w-4 mr-1" />
-            Add Review
+          <Button size="sm" className="bg-brand-teal hover:bg-brand-teal/90 w-9 h-9 p-0">
+            <Plus className="h-5 w-5 font-bold" strokeWidth={3} />
           </Button>
         </Link>
       )}

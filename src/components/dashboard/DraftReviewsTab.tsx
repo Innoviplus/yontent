@@ -90,7 +90,7 @@ const DraftReviewsTab = ({ reviews }: DraftReviewsTabProps) => {
               
               <div className="flex gap-2">
                 <Button variant="ghost" size="icon" asChild>
-                  <Link to={`/edit-review/${review.id}`}>
+                  <Link to={`/submit-review?draft=${review.id}`}>
                     <Edit className="h-4 w-4" />
                   </Link>
                 </Button>
