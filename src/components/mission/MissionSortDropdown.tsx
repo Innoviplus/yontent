@@ -6,7 +6,7 @@ import {
   DropdownMenuItem,
 } from '@/components/ui/dropdown-menu';
 import { Button } from '@/components/ui/button';
-import { ArrowUpDown } from 'lucide-react';
+import { ChevronDown } from 'lucide-react';
 
 type SortOption = 'recent' | 'expiringSoon' | 'highestReward';
 
@@ -16,15 +16,25 @@ interface MissionSortDropdownProps {
 }
 
 const MissionSortDropdown = ({ sortBy, onSortChange }: MissionSortDropdownProps) => {
+  const getSortLabel = (option: SortOption): string => {
+    switch (option) {
+      case 'recent':
+        return 'Most Recent';
+      case 'expiringSoon':
+        return 'Expiring Soon';
+      case 'highestReward':
+        return 'Highest Reward';
+      default:
+        return '';
+    }
+  };
+
   return (
     <DropdownMenu>
       <DropdownMenuTrigger asChild>
         <Button variant="outline" className="gap-2">
-          <ArrowUpDown className="h-4 w-4" />
-          <span>Sort by</span>
-          {sortBy === 'recent' && ' Most Recent'}
-          {sortBy === 'expiringSoon' && ' Expiring Soon'}
-          {sortBy === 'highestReward' && ' Highest Reward'}
+          {getSortLabel(sortBy)}
+          <ChevronDown className="h-4 w-4" />
         </Button>
       </DropdownMenuTrigger>
       <DropdownMenuContent align="end">

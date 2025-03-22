@@ -64,10 +64,10 @@ const ProfileHeader = ({
                 <Users className="h-4 w-4 mr-1.5 text-gray-600" />
                 <span><strong>{profile.followers_count}</strong> followers</span>
               </Link>
-              <div className="flex items-center">
+              <Link to={`/following/${profile.id}`} className="flex items-center hover:text-brand-teal">
                 <Users className="h-4 w-4 mr-1.5 text-gray-600" />
                 <span><strong>{profile.following_count}</strong> following</span>
-              </div>
+              </Link>
             </div>
           </div>
           

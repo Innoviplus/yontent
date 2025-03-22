@@ -12,6 +12,7 @@ import ReviewContent from '@/components/review/ReviewDetail/ReviewContent';
 import ReviewNotFound from '@/components/review/ReviewDetail/ReviewNotFound';
 import ReviewAuthorProfile from '@/components/review/ReviewDetail/ReviewAuthorProfile';
 import RelatedReviews from '@/components/review/ReviewDetail/RelatedReviews';
+import ReviewComments from '@/components/review/ReviewDetail/ReviewComments';
 import { useAuth } from '@/contexts/AuthContext';
 
 const ReviewDetail = () => {
@@ -98,6 +99,9 @@ const ReviewDetail = () => {
                   <ReviewContent content={review.content} />
                 </div>
               </div>
+              
+              {/* Comments section */}
+              {id && <ReviewComments reviewId={id} />}
               
               {/* Author profile section */}
               {review.user && (

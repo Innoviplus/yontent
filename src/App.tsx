@@ -1,4 +1,3 @@
-
 import { Toaster } from "@/components/ui/toaster";
 import { Toaster as Sonner } from "@/components/ui/sonner";
 import { TooltipProvider } from "@/components/ui/tooltip";
@@ -21,55 +20,46 @@ import MissionDetail from "./pages/MissionDetail";
 import UserRankings from "./pages/UserRankings";
 import RedeemPoints from "./pages/RedeemPoints";
 import ProtectedRoute from "./components/ProtectedRoute";
+import FollowersList from "./pages/FollowersList";
+import FollowingList from "./pages/FollowingList";
 
 const queryClient = new QueryClient();
 
-const App = () => (
-  <QueryClientProvider client={queryClient}>
-    <AuthProvider>
-      <TooltipProvider>
-        <Toaster />
-        <Sonner />
-        <BrowserRouter>
-          <Routes>
-            <Route path="/" element={<Index />} />
-            <Route path="/login" element={<Login />} />
-            <Route path="/register" element={<Register />} />
-            <Route path="/dashboard" element={
-              <ProtectedRoute>
-                <Dashboard />
-              </ProtectedRoute>
-            } />
-            <Route path="/settings" element={
-              <ProtectedRoute>
-                <Settings />
-              </ProtectedRoute>
-            } />
-            <Route path="/submit-review" element={
-              <ProtectedRoute>
-                <SubmitReview />
-              </ProtectedRoute>
-            } />
-            <Route path="/redeem-points" element={
-              <ProtectedRoute>
-                <RedeemPoints />
-              </ProtectedRoute>
-            } />
-            <Route path="/feed" element={<ReviewFeed />} />
-            <Route path="/reviews" element={<Reviews />} />
-            <Route path="/reviews/:id" element={<ReviewDetail />} />
-            <Route path="/user/:username" element={<UserProfile />} />
-            <Route path="/missions" element={<Missions />} />
-            <Route path="/missions/:id" element={<MissionDetail />} />
-            <Route path="/rankings" element={<UserRankings />} />
-            
-            {/* ADD ALL CUSTOM ROUTES ABOVE THE CATCH-ALL "*" ROUTE */}
-            <Route path="*" element={<NotFound />} />
-          </Routes>
-        </BrowserRouter>
-      </TooltipProvider>
-    </AuthProvider>
-  </QueryClientProvider>
-);
+function App() {
+  return (
+    <QueryClientProvider client={queryClient}>
+      <AuthProvider>
+        <TooltipProvider>
+          <Toaster />
+          <Sonner />
+          <BrowserRouter>
+            <Routes>
+              <Route path="/" element={<Index />} />
+              <Route path="/login" element={<Login />} />
+              <Route path="/register" element={<Register />} />
+              <Route path="/reviews" element={<Reviews />} />
+              <Route path="/reviews/:id" element={<ReviewDetail />} />
+              <Route path="/missions" element={<Missions />} />
+              <Route path="/missions/:id" element={<MissionDetail />} />
+              <Route path="/followers/:id" element={<FollowersList />} />
+              <Route path="/following/:id" element={<FollowingList />} />
+              <Route path="/user/:username" element={<UserProfile />} />
+              <Route path="/user-rankings" element={<UserRankings />} />
+              
+              <Route element={<ProtectedRoute />}>
+                <Route path="/dashboard" element={<Dashboard />} />
+                <Route path="/submit-review" element={<SubmitReview />} />
+                <Route path="/settings" element={<Settings />} />
+                <Route path="/redeem-points" element={<RedeemPoints />} />
+              </Route>
+              
+              <Route path="*" element={<NotFound />} />
+            </Routes>
+          </BrowserRouter>
+        </TooltipProvider>
+      </AuthProvider>
+    </QueryClientProvider>
+  );
+}
 
 export default App;

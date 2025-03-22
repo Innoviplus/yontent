@@ -1,7 +1,7 @@
 import { useState, useEffect } from 'react';
 import { Mission } from '@/lib/types';
 import MissionCard from '@/components/MissionCard';
-import SortDropdown from '@/components/review/SortDropdown';
+import MissionSortDropdown from '@/components/mission/MissionSortDropdown';
 import Navbar from '@/components/Navbar';
 import { RefreshCw } from 'lucide-react';
 import { supabase } from '@/integrations/supabase/client';
@@ -87,46 +87,6 @@ const Missions = () => {
     setMissions(sortedMissions);
   }, [sortBy]);
 
-  const mapSortOption = (option: SortOption): 'recent' | 'views' | 'relevant' => {
-    switch (option) {
-      case 'recent':
-        return 'recent';
-      case 'expiringSoon':
-        return 'views';
-      case 'highestReward':
-        return 'relevant';
-      default:
-        return 'recent';
-    }
-  };
-
-  const handleSortChange = (option: 'recent' | 'views' | 'relevant') => {
-    switch (option) {
-      case 'recent':
-        setSortBy('recent');
-        break;
-      case 'views':
-        setSortBy('expiringSoon');
-        break;
-      case 'relevant':
-        setSortBy('highestReward');
-        break;
-    }
-  };
-
-  const getSortLabel = (option: 'recent' | 'views' | 'relevant'): string => {
-    switch (option) {
-      case 'recent':
-        return 'Latest';
-      case 'views':
-        return 'Expiring Soon';
-      case 'relevant':
-        return 'Highest Reward';
-      default:
-        return '';
-    }
-  };
-
   return (
     <div className="min-h-screen bg-gray-50">
       <Navbar />
@@ -144,14 +104,9 @@ const Missions = () => {
             </p>
             
             <div className="flex gap-2">
-              <SortDropdown 
-                sortBy={mapSortOption(sortBy)} 
-                onSortChange={handleSortChange}
-                labelOverrides={{
-                  recent: 'Latest',
-                  views: 'Expiring Soon',
-                  relevant: 'Highest Reward'
-                }}
+              <MissionSortDropdown 
+                sortBy={sortBy} 
+                onSortChange={setSortBy}
               />
               
               <button 

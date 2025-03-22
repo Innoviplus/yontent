@@ -74,7 +74,7 @@ const ReviewActionButtons = ({
         <Heart 
           className={`h-5 w-5 mr-1 ${hasLiked ? 'fill-red-500 text-red-500' : ''}`} 
         />
-        <span>{likesCount}</span>
+        <span className="text-gray-600">{likesCount}</span>
       </Button>
       
       {isAuthor ? (
