@@ -3,13 +3,69 @@ import { Link } from 'react-router-dom';
 import { ChevronRight } from 'lucide-react';
 import ReviewCard from '@/components/ReviewCard';
 import { Review } from '@/lib/types';
+import { useEffect, useState } from 'react';
+import { supabase } from '@/integrations/supabase/client';
 
 interface FeaturedReviewsSectionProps {
-  reviews: Review[];
-  loading: boolean;
+  loading?: boolean;
 }
 
-const FeaturedReviewsSection = ({ reviews, loading }: FeaturedReviewsSectionProps) => {
+const FeaturedReviewsSection = ({ loading: initialLoading }: FeaturedReviewsSectionProps) => {
+  const [reviews, setReviews] = useState<Review[]>([]);
+  const [loading, setLoading] = useState(initialLoading || true);
+
+  useEffect(() => {
+    const fetchReviews = async () => {
+      try {
+        const { data, error } = await supabase
+          .from('reviews')
+          .select(`
+            *,
+            profiles (
+              id,
+              username,
+              avatar,
+              points,
+              created_at
+            )
+          `)
+          .order('created_at', { ascending: false })
+          .limit(5);
+          
+        if (error) {
+          console.error('Error fetching reviews:', error);
+          return;
+        }
+        
+        const transformedReviews: Review[] = data.map(review => ({
+          id: review.id,
+          userId: review.user_id,
+          content: review.content,
+          images: review.images || [],
+          viewsCount: review.views_count,
+          likesCount: review.likes_count,
+          createdAt: new Date(review.created_at),
+          user: review.profiles ? {
+            id: review.profiles.id,
+            username: review.profiles.username || 'Anonymous',
+            email: '',
+            points: review.profiles.points || 0,
+            createdAt: new Date(review.profiles.created_at),
+            avatar: review.profiles.avatar
+          } : undefined
+        }));
+        
+        setReviews(transformedReviews);
+      } catch (error) {
+        console.error('Unexpected error:', error);
+      } finally {
+        setLoading(false);
+      }
+    };
+    
+    fetchReviews();
+  }, []);
+
   return (
     <section className="py-16 md:py-24 bg-gray-50">
       <div className="container mx-auto px-4 sm:px-6">

@@ -1,6 +1,6 @@
 
 import { Link } from 'react-router-dom';
-import { Star } from 'lucide-react';
+import { MessageSquarePen } from 'lucide-react';
 
 const Footer = () => {
   return (
@@ -8,8 +8,8 @@ const Footer = () => {
       <div className="container mx-auto px-4 sm:px-6">
         <div className="flex flex-col md:flex-row justify-between items-center">
           <div className="flex items-center gap-2 mb-6 md:mb-0">
-            <Star className="h-6 w-6 text-brand-teal" />
-            <span className="font-bold text-xl text-brand-slate">Review Rewards</span>
+            <MessageSquarePen className="h-6 w-6 text-brand-slate" />
+            <span className="font-bold text-xl text-brand-slate">Yontent</span>
           </div>
           
           <div className="flex flex-wrap gap-8 justify-center">
@@ -32,7 +32,7 @@ const Footer = () => {
         </div>
         
         <div className="mt-8 pt-6 border-t border-gray-100 text-center text-gray-500">
-          <p>© {new Date().getFullYear()} Review Rewards. All rights reserved.</p>
+          <p>© {new Date().getFullYear()} Yontent. All rights reserved.</p>
         </div>
       </div>
     </footer>

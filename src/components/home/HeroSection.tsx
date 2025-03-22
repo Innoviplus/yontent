@@ -1,8 +1,11 @@
 
 import { Link } from 'react-router-dom';
 import { Star, Award, ArrowUpRight } from 'lucide-react';
+import { useAuth } from '@/contexts/AuthContext';
 
 const HeroSection = () => {
+  const { user } = useAuth();
+  
   return (
     <section className="pt-28 pb-16 md:pt-40 md:pb-24 relative overflow-hidden">
       {/* Background */}
@@ -28,8 +31,8 @@ const HeroSection = () => {
           </p>
           
           <div className="flex flex-col sm:flex-row gap-4 justify-center mb-8 animate-fade-up" style={{ animationDelay: '300ms' }}>
-            <Link to="/register" className="btn-primary">
-              Join Now
+            <Link to={user ? "/submit-review" : "/register"} className="btn-primary">
+              {user ? "Write a Review" : "Join Now"}
             </Link>
             <Link to="/reviews" className="btn-outline">
               Explore Reviews

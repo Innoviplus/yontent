@@ -1,7 +1,10 @@
 
 import { Link } from 'react-router-dom';
+import { useAuth } from '@/contexts/AuthContext';
 
 const CallToActionSection = () => {
+  const { user } = useAuth();
+  
   return (
     <section className="py-16 md:py-24 bg-brand-slate text-white">
       <div className="container mx-auto px-4 sm:px-6 text-center">
@@ -11,12 +14,25 @@ const CallToActionSection = () => {
             Join our community today and turn your product experiences into valuable rewards.
           </p>
           <div className="flex flex-col sm:flex-row gap-4 justify-center">
-            <Link to="/register" className="bg-white text-brand-slate hover:bg-gray-100 px-6 py-2.5 rounded-md font-medium transition-colors duration-200">
-              Sign Up Now
-            </Link>
-            <Link to="/login" className="bg-transparent border border-white text-white hover:bg-white/10 px-6 py-2.5 rounded-md font-medium transition-colors duration-200">
-              Login
-            </Link>
+            {user ? (
+              <>
+                <Link to="/missions" className="bg-white text-brand-slate hover:bg-gray-100 px-6 py-2.5 rounded-md font-medium transition-colors duration-200">
+                  Explore Missions
+                </Link>
+                <Link to="/reviews" className="bg-transparent border border-white text-white hover:bg-white/10 px-6 py-2.5 rounded-md font-medium transition-colors duration-200">
+                  Discover Reviews
+                </Link>
+              </>
+            ) : (
+              <>
+                <Link to="/register" className="bg-white text-brand-slate hover:bg-gray-100 px-6 py-2.5 rounded-md font-medium transition-colors duration-200">
+                  Sign Up Now
+                </Link>
+                <Link to="/login" className="bg-transparent border border-white text-white hover:bg-white/10 px-6 py-2.5 rounded-md font-medium transition-colors duration-200">
+                  Login
+                </Link>
+              </>
+            )}
           </div>
         </div>
       </div>

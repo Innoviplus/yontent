@@ -1,5 +1,4 @@
 
-import { sampleReviews } from '@/data/sampleData';
 import HeroSection from '@/components/home/HeroSection';
 import FeaturedReviewsSection from '@/components/home/FeaturedReviewsSection';
 import HowItWorksSection from '@/components/home/HowItWorksSection';
@@ -17,7 +16,7 @@ const Index = () => {
       
       <HowItWorksSection />
       
-      <FeaturedReviewsSection reviews={sampleReviews.slice(0, 3)} loading={false} />
+      <FeaturedReviewsSection />
       
       <ActiveMissionsSection />
       

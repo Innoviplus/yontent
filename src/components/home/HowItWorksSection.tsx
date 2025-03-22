@@ -1,8 +1,11 @@
 
 import { Link } from 'react-router-dom';
 import { Camera, Award, Star, ArrowUpRight } from 'lucide-react';
+import { useAuth } from '@/contexts/AuthContext';
 
 const HowItWorksSection = () => {
+  const { user } = useAuth();
+  
   return (
     <section className="py-16 md:py-24">
       <div className="container mx-auto px-4 sm:px-6">
@@ -49,8 +52,8 @@ const HowItWorksSection = () => {
           </div>
           
           <div className="text-center mt-12">
-            <Link to="/register" className="btn-primary inline-flex items-center gap-2">
-              <span>Get Started</span>
+            <Link to={user ? "/missions" : "/register"} className="btn-primary inline-flex items-center gap-2">
+              <span>{user ? "Explore Missions" : "Get Started"}</span>
               <ArrowUpRight className="h-4 w-4" />
             </Link>
           </div>
