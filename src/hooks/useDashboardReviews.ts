@@ -38,7 +38,8 @@ export const useDashboardReviews = (userId: string | undefined) => {
           images: review.images || [],
           createdAt: new Date(review.created_at),
           viewsCount: review.views_count,
-          likesCount: review.likes_count
+          likesCount: review.likes_count,
+          status: review.status
         }));
 
         setUserReviews(transformedReviews);
@@ -63,7 +64,8 @@ export const useDashboardReviews = (userId: string | undefined) => {
           images: draft.images || [],
           createdAt: new Date(draft.created_at),
           viewsCount: draft.views_count,
-          likesCount: draft.likes_count
+          likesCount: draft.likes_count,
+          status: draft.status
         }));
 
         setDraftReviews(transformedDrafts);

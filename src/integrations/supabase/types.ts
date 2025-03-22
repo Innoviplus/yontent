@@ -250,6 +250,7 @@ export type Database = {
           id: string
           images: string[]
           likes_count: number
+          status: string
           updated_at: string
           user_id: string
           views_count: number
@@ -262,6 +263,7 @@ export type Database = {
           id?: string
           images?: string[]
           likes_count?: number
+          status?: string
           updated_at?: string
           user_id: string
           views_count?: number
@@ -274,6 +276,7 @@ export type Database = {
           id?: string
           images?: string[]
           likes_count?: number
+          status?: string
           updated_at?: string
           user_id?: string
           views_count?: number

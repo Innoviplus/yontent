@@ -20,6 +20,7 @@ export interface Review {
   user?: User;
   viewsCount?: number;
   likesCount?: number;
+  status?: string;     // Added status field
 }
 
 export interface PointTransaction {
