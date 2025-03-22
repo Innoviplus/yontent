@@ -55,7 +55,7 @@ const ReviewComments = ({ reviewId }: ReviewCommentsProps) => {
         
       if (error) throw error;
       
-      const transformedComments = data.map((comment: any) => ({
+      const transformedComments = data.map((comment) => ({
         id: comment.id,
         content: comment.content,
         created_at: comment.created_at,
