@@ -3,8 +3,9 @@ import { useState, useEffect } from 'react';
 import { supabase } from '@/integrations/supabase/client';
 import { toast } from 'sonner';
 import { Tables } from '@/integrations/supabase/types';
+import { User } from '@/lib/types';
 
-type ProfileWithCounts = Tables<'profiles'> & {
+type ProfileWithCounts = User & {
   completedReviews: number;
   completedMissions: number;
 };
@@ -53,12 +54,20 @@ export const useDashboardProfile = (userId: string | undefined) => {
           console.error('Error fetching missions count:', missionsError);
         }
 
-        // Combine the profile with the counts
-        setUser({
-          ...profile,
+        // Transform the profile data to match the User type with counts
+        const userWithCounts: ProfileWithCounts = {
+          id: profile.id,
+          username: profile.username || 'Anonymous',
+          email: '', // Add a default empty string for email as it's required by User type
+          avatar: profile.avatar || undefined,
+          points: profile.points || 0,
+          createdAt: new Date(profile.created_at), // Convert string date to Date object
           completedReviews: reviewsCount || 0,
-          completedMissions: missionsCount || 0
-        });
+          completedMissions: missionsCount || 0,
+          isAdmin: false // Default value for isAdmin
+        };
+
+        setUser(userWithCounts);
       } catch (error: any) {
         console.error('Error fetching user profile:', error);
         toast.error('Failed to load profile');
