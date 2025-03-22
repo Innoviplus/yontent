@@ -36,16 +36,21 @@ export const submitReview = async ({
       const fileName = `${Math.random().toString(36).substring(2, 15)}.${fileExt}`;
       const filePath = `${userId}/${fileName}`;
       
-      const { error: uploadError } = await supabase
+      // Upload the image to the review-images bucket
+      const { error: uploadError, data } = await supabase
         .storage
         .from('review-images')
-        .upload(filePath, image);
+        .upload(filePath, image, {
+          cacheControl: '3600',
+          upsert: false
+        });
         
       if (uploadError) {
         console.error('Error uploading image:', uploadError);
-        throw new Error('Failed to upload image');
+        throw new Error(`Failed to upload image: ${uploadError.message}`);
       }
       
+      // Get the public URL of the uploaded image
       const { data: publicURL } = supabase
         .storage
         .from('review-images')
@@ -70,13 +75,17 @@ export const submitReview = async ({
       
     if (insertError) {
       console.error('Error creating review:', insertError);
-      throw new Error('Failed to create review');
+      throw new Error(`Failed to create review: ${insertError.message}`);
     }
     
     return true;
   } catch (error) {
     console.error('Unexpected error:', error);
-    toast.error('Failed to submit review');
+    if (error instanceof Error) {
+      toast.error(error.message);
+    } else {
+      toast.error('Failed to submit review');
+    }
     throw error;
   }
 };
