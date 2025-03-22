@@ -1,3 +1,4 @@
+
 import { Toaster } from "@/components/ui/toaster";
 import { Toaster as Sonner } from "@/components/ui/sonner";
 import { TooltipProvider } from "@/components/ui/tooltip";
@@ -20,6 +21,12 @@ import MissionDetail from "./pages/MissionDetail";
 import UserRankings from "./pages/UserRankings";
 import RedeemPoints from "./pages/RedeemPoints";
 import ProtectedRoute from "./components/ProtectedRoute";
+import AdminLayout from "./components/admin/AdminLayout";
+import AdminDashboard from "./pages/Admin/AdminDashboard";
+import UserManagement from "./pages/Admin/UserManagement";
+import RedemptionItems from "./pages/Admin/RedemptionItems";
+import PointsManagement from "./pages/Admin/PointsManagement";
+import AdminUsers from "./pages/Admin/AdminUsers";
 import FollowersList from "./pages/FollowersList";
 import FollowingList from "./pages/FollowingList";
 
@@ -51,6 +58,15 @@ function App() {
                 <Route path="/submit-review" element={<SubmitReview />} />
                 <Route path="/settings" element={<Settings />} />
                 <Route path="/redeem-points" element={<RedeemPoints />} />
+                
+                {/* Admin Routes */}
+                <Route path="/admin" element={<AdminLayout />}>
+                  <Route index element={<AdminDashboard />} />
+                  <Route path="users" element={<UserManagement />} />
+                  <Route path="redemption-items" element={<RedemptionItems />} />
+                  <Route path="points" element={<PointsManagement />} />
+                  <Route path="admin-users" element={<AdminUsers />} />
+                </Route>
               </Route>
               
               <Route path="*" element={<NotFound />} />
