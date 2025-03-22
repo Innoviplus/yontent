@@ -69,9 +69,11 @@ const ReviewActionButtons = ({
         size="sm"
         onClick={onLike}
         disabled={likeLoading}
-        className={hasLiked ? 'text-red-500' : 'text-gray-600'}
+        className="text-gray-600"
       >
-        <Heart className="h-5 w-5 mr-1" />
+        <Heart 
+          className={`h-5 w-5 mr-1 ${hasLiked ? 'fill-red-500 text-red-500' : ''}`} 
+        />
         <span>{likesCount}</span>
       </Button>
       

@@ -2,6 +2,7 @@
 import { User, Calendar, MapPin, Users, Grid } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { format } from 'date-fns';
+import { Link } from 'react-router-dom';
 
 interface ProfileHeaderProps {
   profile: any;
@@ -59,10 +60,10 @@ const ProfileHeader = ({
                 <Grid className="h-4 w-4 mr-1.5 text-gray-600" />
                 <span><strong>{reviews.length}</strong> reviews</span>
               </div>
-              <div className="flex items-center">
+              <Link to={`/followers/${profile.id}`} className="flex items-center hover:text-brand-teal">
                 <Users className="h-4 w-4 mr-1.5 text-gray-600" />
                 <span><strong>{profile.followers_count}</strong> followers</span>
-              </div>
+              </Link>
               <div className="flex items-center">
                 <Users className="h-4 w-4 mr-1.5 text-gray-600" />
                 <span><strong>{profile.following_count}</strong> following</span>

@@ -240,7 +240,7 @@ const UserRankings = () => {
                               alt="Points" 
                               className="w-4 h-4 mr-1"
                             />
-                            <span className="font-medium">{user.stats}</span>
+                            <span className="font-medium text-brand-teal">{user.stats}</span>
                           </div>
                         ) : (
                           <div className="flex items-center gap-1 text-gray-700">

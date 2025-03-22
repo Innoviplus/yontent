@@ -1,8 +1,7 @@
-
 import { useState, useEffect } from 'react';
 import { Mission } from '@/lib/types';
 import MissionCard from '@/components/MissionCard';
-import MissionSortDropdown from '@/components/mission/MissionSortDropdown';
+import SortDropdown from '@/components/review/SortDropdown';
 import Navbar from '@/components/Navbar';
 import { RefreshCw } from 'lucide-react';
 import { supabase } from '@/integrations/supabase/client';
@@ -27,7 +26,6 @@ const Missions = () => {
       
       if (error) throw error;
       
-      // Transform the data to match the Mission type
       const transformedMissions: Mission[] = data.map(mission => ({
         id: mission.id,
         title: mission.title,
@@ -47,7 +45,6 @@ const Missions = () => {
         updatedAt: new Date(mission.updated_at)
       }));
 
-      // Count active missions (not completed or expired)
       const activeCount = transformedMissions.filter(
         mission => mission.status === 'ACTIVE' && 
         (!mission.expiresAt || new Date() < mission.expiresAt)
@@ -68,7 +65,6 @@ const Missions = () => {
   }, []);
 
   useEffect(() => {
-    // Sort missions based on selected option
     const sortedMissions = [...missions];
     
     switch (sortBy) {
@@ -91,6 +87,46 @@ const Missions = () => {
     setMissions(sortedMissions);
   }, [sortBy]);
 
+  const mapSortOption = (option: SortOption): 'recent' | 'views' | 'relevant' => {
+    switch (option) {
+      case 'recent':
+        return 'recent';
+      case 'expiringSoon':
+        return 'views';
+      case 'highestReward':
+        return 'relevant';
+      default:
+        return 'recent';
+    }
+  };
+
+  const handleSortChange = (option: 'recent' | 'views' | 'relevant') => {
+    switch (option) {
+      case 'recent':
+        setSortBy('recent');
+        break;
+      case 'views':
+        setSortBy('expiringSoon');
+        break;
+      case 'relevant':
+        setSortBy('highestReward');
+        break;
+    }
+  };
+
+  const getSortLabel = (option: 'recent' | 'views' | 'relevant'): string => {
+    switch (option) {
+      case 'recent':
+        return 'Latest';
+      case 'views':
+        return 'Expiring Soon';
+      case 'relevant':
+        return 'Highest Reward';
+      default:
+        return '';
+    }
+  };
+
   return (
     <div className="min-h-screen bg-gray-50">
       <Navbar />
@@ -108,7 +144,15 @@ const Missions = () => {
             </p>
             
             <div className="flex gap-2">
-              <MissionSortDropdown sortBy={sortBy} onSortChange={(sort) => setSortBy(sort as SortOption)} />
+              <SortDropdown 
+                sortBy={mapSortOption(sortBy)} 
+                onSortChange={handleSortChange}
+                labelOverrides={{
+                  recent: 'Latest',
+                  views: 'Expiring Soon',
+                  relevant: 'Highest Reward'
+                }}
+              />
               
               <button 
                 className="flex items-center justify-center p-2 rounded-md border border-gray-300 text-gray-500 hover:bg-gray-50 transition-colors"
