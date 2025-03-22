@@ -1,465 +1,368 @@
 
-import { useState } from "react";
-import { useQuery } from "@tanstack/react-query";
-import { supabase } from "@/integrations/supabase/client";
-import { 
-  Card, 
-  CardContent, 
-  CardFooter, 
-  CardHeader, 
-  CardTitle 
-} from "@/components/ui/card";
-import { 
-  Dialog, 
-  DialogContent, 
-  DialogFooter, 
-  DialogHeader, 
-  DialogTitle, 
-  DialogTrigger 
-} from "@/components/ui/dialog";
+import { useState, useEffect } from 'react';
+import { supabase } from '@/integrations/supabase/client';
+import { useToast } from '@/hooks/use-toast';
 import {
-  Form,
-  FormControl,
-  FormField,
-  FormItem,
-  FormLabel,
-  FormMessage
-} from "@/components/ui/form";
-import { Button } from "@/components/ui/button";
-import { Input } from "@/components/ui/input";
-import { Textarea } from "@/components/ui/textarea";
-import { Switch } from "@/components/ui/switch";
-import { useForm } from "react-hook-form";
-import { zodResolver } from "@hookform/resolvers/zod";
-import * as z from "zod";
-import { Loader2, Plus, Pencil, Trash2, Gift } from "lucide-react";
-import { toast } from "sonner";
-
-// Define schema for redemption item form
-const redemptionItemSchema = z.object({
-  name: z.string().min(1, "Name is required"),
-  description: z.string().min(1, "Description is required"),
-  points_required: z.coerce.number().min(1, "Points must be at least 1"),
-  image_url: z.string().url("Please enter a valid URL").or(z.string().length(0)).optional(),
-  is_active: z.boolean().default(true)
-});
-
-type RedemptionItemFormValues = z.infer<typeof redemptionItemSchema>;
+  Table,
+  TableBody,
+  TableCell,
+  TableHead,
+  TableHeader,
+  TableRow,
+} from "@/components/ui/table";
+import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
+import { Button } from '@/components/ui/button';
+import { Input } from '@/components/ui/input';
+import { Switch } from '@/components/ui/switch';
+import { Textarea } from '@/components/ui/textarea';
+import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger } from '@/components/ui/dialog';
+import { Badge } from '@/components/ui/badge';
+import { Gift, Plus, Pencil, Trash2 } from 'lucide-react';
+import { RedemptionItem } from '@/types/redemption';
 
 const RedemptionItems = () => {
-  const [isAddDialogOpen, setIsAddDialogOpen] = useState(false);
-  const [isEditDialogOpen, setIsEditDialogOpen] = useState(false);
-  const [isDeleteDialogOpen, setIsDeleteDialogOpen] = useState(false);
-  const [currentItem, setCurrentItem] = useState<any>(null);
-  
-  // Set up form
-  const form = useForm<RedemptionItemFormValues>({
-    resolver: zodResolver(redemptionItemSchema),
-    defaultValues: {
-      name: "",
-      description: "",
-      points_required: 100,
-      image_url: "",
-      is_active: true
-    }
+  const [items, setItems] = useState<RedemptionItem[]>([]);
+  const [isLoading, setIsLoading] = useState(true);
+  const [isDialogOpen, setIsDialogOpen] = useState(false);
+  const [isEditing, setIsEditing] = useState(false);
+  const [currentItem, setCurrentItem] = useState<RedemptionItem>({
+    name: '',
+    description: '',
+    points_required: 0,
+    image_url: '',
+    is_active: true
   });
-  
-  // Query to fetch redemption items
-  const { data: items, isLoading, refetch } = useQuery({
-    queryKey: ["redemption-items"],
-    queryFn: async () => {
+  const { toast } = useToast();
+
+  useEffect(() => {
+    fetchItems();
+  }, []);
+
+  const fetchItems = async () => {
+    setIsLoading(true);
+    try {
       const { data, error } = await supabase
         .from('redemption_items')
         .select('*')
         .order('created_at', { ascending: false });
-        
-      if (error) throw error;
-      return data || [];
-    }
-  });
-  
-  // Submit handler for adding a new item
-  const handleAddItem = async (values: RedemptionItemFormValues) => {
-    try {
-      const { error } = await supabase
-        .from('redemption_items')
-        .insert([values]);
-        
-      if (error) throw error;
-      
-      toast.success("Redemption item added successfully");
-      setIsAddDialogOpen(false);
-      form.reset();
-      refetch();
+
+      if (error) {
+        throw error;
+      }
+
+      setItems(data || []);
     } catch (error: any) {
-      toast.error(`Error adding item: ${error.message}`);
+      toast({
+        title: "Error fetching redemption items",
+        description: error.message,
+        variant: "destructive",
+      });
+    } finally {
+      setIsLoading(false);
     }
   };
-  
-  // Submit handler for editing an item
-  const handleEditItem = async (values: RedemptionItemFormValues) => {
+
+  const handleSubmit = async (e: React.FormEvent) => {
+    e.preventDefault();
+    
     try {
-      const { error } = await supabase
-        .from('redemption_items')
-        .update(values)
-        .eq('id', currentItem.id);
-        
-      if (error) throw error;
+      if (!currentItem.name || !currentItem.description || !currentItem.points_required) {
+        toast({
+          title: "Missing information",
+          description: "Please fill all required fields.",
+          variant: "destructive",
+        });
+        return;
+      }
+
+      setIsLoading(true);
       
-      toast.success("Redemption item updated successfully");
-      setIsEditDialogOpen(false);
-      refetch();
+      let response;
+      
+      if (isEditing && currentItem.id) {
+        // Update existing item
+        response = await supabase
+          .from('redemption_items')
+          .update({
+            name: currentItem.name,
+            description: currentItem.description,
+            points_required: currentItem.points_required,
+            image_url: currentItem.image_url,
+            is_active: currentItem.is_active,
+            updated_at: new Date().toISOString()
+          })
+          .eq('id', currentItem.id);
+      } else {
+        // Create new item
+        response = await supabase
+          .from('redemption_items')
+          .insert([{
+            name: currentItem.name,
+            description: currentItem.description,
+            points_required: currentItem.points_required,
+            image_url: currentItem.image_url,
+            is_active: currentItem.is_active
+          }]);
+      }
+
+      if (response.error) {
+        throw response.error;
+      }
+
+      // Reset form and refresh data
+      setCurrentItem({
+        name: '',
+        description: '',
+        points_required: 0,
+        image_url: '',
+        is_active: true
+      });
+      setIsDialogOpen(false);
+      setIsEditing(false);
+      fetchItems();
+      
+      toast({
+        title: isEditing ? "Item updated" : "Item created",
+        description: `Successfully ${isEditing ? 'updated' : 'created'} redemption item.`,
+      });
     } catch (error: any) {
-      toast.error(`Error updating item: ${error.message}`);
+      toast({
+        title: "Error saving item",
+        description: error.message,
+        variant: "destructive",
+      });
+    } finally {
+      setIsLoading(false);
     }
   };
-  
-  // Handler for deleting an item
-  const handleDeleteItem = async () => {
+
+  const handleEdit = (item: RedemptionItem) => {
+    setCurrentItem(item);
+    setIsEditing(true);
+    setIsDialogOpen(true);
+  };
+
+  const handleDelete = async (id: string) => {
+    if (!confirm("Are you sure you want to delete this item?")) return;
+    
     try {
       const { error } = await supabase
         .from('redemption_items')
         .delete()
-        .eq('id', currentItem.id);
-        
-      if (error) throw error;
+        .eq('id', id);
+
+      if (error) {
+        throw error;
+      }
+
+      // Remove from local state
+      setItems(items.filter(item => item.id !== id));
       
-      toast.success("Redemption item deleted successfully");
-      setIsDeleteDialogOpen(false);
-      refetch();
+      toast({
+        title: "Item deleted",
+        description: "Redemption item has been successfully deleted.",
+      });
     } catch (error: any) {
-      toast.error(`Error deleting item: ${error.message}`);
+      toast({
+        title: "Error deleting item",
+        description: error.message,
+        variant: "destructive",
+      });
     }
   };
-  
-  // Set up edit form
-  const handleEditClick = (item: any) => {
-    setCurrentItem(item);
-    form.reset({
-      name: item.name,
-      description: item.description,
-      points_required: item.points_required,
-      image_url: item.image_url || "",
-      is_active: item.is_active
-    });
-    setIsEditDialogOpen(true);
+
+  const toggleItemStatus = async (id: string, currentStatus: boolean) => {
+    try {
+      const { error } = await supabase
+        .from('redemption_items')
+        .update({ is_active: !currentStatus })
+        .eq('id', id);
+
+      if (error) {
+        throw error;
+      }
+
+      // Update in local state
+      setItems(items.map(item => 
+        item.id === id ? { ...item, is_active: !currentStatus } : item
+      ));
+      
+      toast({
+        title: "Status updated",
+        description: `Item is now ${!currentStatus ? 'active' : 'inactive'}.`,
+      });
+    } catch (error: any) {
+      toast({
+        title: "Error updating status",
+        description: error.message,
+        variant: "destructive",
+      });
+    }
   };
-  
-  // Set up delete confirmation
-  const handleDeleteClick = (item: any) => {
-    setCurrentItem(item);
-    setIsDeleteDialogOpen(true);
-  };
-  
-  if (isLoading) {
-    return (
-      <div className="flex justify-center items-center h-64">
-        <Loader2 className="h-8 w-8 animate-spin text-brand-teal" />
-      </div>
-    );
-  }
-  
+
   return (
-    <div>
-      <div className="flex justify-between items-center mb-6">
+    <div className="space-y-6">
+      <div className="flex justify-between items-center">
         <h1 className="text-2xl font-bold">Redemption Items</h1>
-        
-        <Dialog open={isAddDialogOpen} onOpenChange={setIsAddDialogOpen}>
+        <Dialog open={isDialogOpen} onOpenChange={setIsDialogOpen}>
           <DialogTrigger asChild>
-            <Button className="bg-brand-teal hover:bg-brand-teal/90">
+            <Button onClick={() => {
+              setIsEditing(false);
+              setCurrentItem({
+                name: '',
+                description: '',
+                points_required: 0,
+                image_url: '',
+                is_active: true
+              });
+            }}>
               <Plus className="h-4 w-4 mr-2" /> Add New Item
             </Button>
           </DialogTrigger>
-          <DialogContent>
+          <DialogContent className="sm:max-w-md">
             <DialogHeader>
-              <DialogTitle>Add New Redemption Item</DialogTitle>
+              <DialogTitle>{isEditing ? "Edit Redemption Item" : "Add New Redemption Item"}</DialogTitle>
             </DialogHeader>
-            
-            <Form {...form}>
-              <form onSubmit={form.handleSubmit(handleAddItem)} className="space-y-4">
-                <FormField
-                  control={form.control}
-                  name="name"
-                  render={({ field }) => (
-                    <FormItem>
-                      <FormLabel>Name</FormLabel>
-                      <FormControl>
-                        <Input placeholder="Gift Card" {...field} />
-                      </FormControl>
-                      <FormMessage />
-                    </FormItem>
-                  )}
+            <form onSubmit={handleSubmit} className="space-y-4">
+              <div className="space-y-2">
+                <label htmlFor="name" className="text-sm font-medium">Name</label>
+                <Input
+                  id="name"
+                  value={currentItem.name}
+                  onChange={e => setCurrentItem({...currentItem, name: e.target.value})}
+                  placeholder="Item name"
+                  required
                 />
-                
-                <FormField
-                  control={form.control}
-                  name="description"
-                  render={({ field }) => (
-                    <FormItem>
-                      <FormLabel>Description</FormLabel>
-                      <FormControl>
-                        <Textarea placeholder="Redeem for a $10 gift card..." {...field} />
-                      </FormControl>
-                      <FormMessage />
-                    </FormItem>
-                  )}
+              </div>
+              
+              <div className="space-y-2">
+                <label htmlFor="description" className="text-sm font-medium">Description</label>
+                <Textarea
+                  id="description"
+                  value={currentItem.description}
+                  onChange={e => setCurrentItem({...currentItem, description: e.target.value})}
+                  placeholder="Item description"
+                  required
                 />
-                
-                <FormField
-                  control={form.control}
-                  name="points_required"
-                  render={({ field }) => (
-                    <FormItem>
-                      <FormLabel>Points Required</FormLabel>
-                      <FormControl>
-                        <Input type="number" {...field} />
-                      </FormControl>
-                      <FormMessage />
-                    </FormItem>
-                  )}
+              </div>
+              
+              <div className="space-y-2">
+                <label htmlFor="points" className="text-sm font-medium">Points Required</label>
+                <Input
+                  id="points"
+                  type="number"
+                  min="0"
+                  value={currentItem.points_required}
+                  onChange={e => setCurrentItem({...currentItem, points_required: parseInt(e.target.value) || 0})}
+                  required
                 />
-                
-                <FormField
-                  control={form.control}
-                  name="image_url"
-                  render={({ field }) => (
-                    <FormItem>
-                      <FormLabel>Image URL (Optional)</FormLabel>
-                      <FormControl>
-                        <Input placeholder="https://example.com/image.jpg" {...field} />
-                      </FormControl>
-                      <FormMessage />
-                    </FormItem>
-                  )}
+              </div>
+              
+              <div className="space-y-2">
+                <label htmlFor="image" className="text-sm font-medium">Image URL (optional)</label>
+                <Input
+                  id="image"
+                  value={currentItem.image_url || ''}
+                  onChange={e => setCurrentItem({...currentItem, image_url: e.target.value})}
+                  placeholder="https://example.com/image.jpg"
                 />
-                
-                <FormField
-                  control={form.control}
-                  name="is_active"
-                  render={({ field }) => (
-                    <FormItem className="flex flex-row items-center justify-between rounded-lg border p-3">
-                      <div className="space-y-0.5">
-                        <FormLabel>Active</FormLabel>
-                      </div>
-                      <FormControl>
-                        <Switch
-                          checked={field.value}
-                          onCheckedChange={field.onChange}
-                        />
-                      </FormControl>
-                    </FormItem>
-                  )}
+              </div>
+              
+              <div className="flex items-center space-x-2">
+                <Switch
+                  id="active"
+                  checked={currentItem.is_active}
+                  onCheckedChange={checked => setCurrentItem({...currentItem, is_active: checked})}
                 />
-                
-                <DialogFooter>
-                  <Button type="button" variant="outline" onClick={() => setIsAddDialogOpen(false)}>
-                    Cancel
-                  </Button>
-                  <Button type="submit">Save Item</Button>
-                </DialogFooter>
-              </form>
-            </Form>
+                <label htmlFor="active" className="text-sm font-medium">Active</label>
+              </div>
+              
+              <div className="flex justify-end space-x-2 pt-4">
+                <Button 
+                  type="button" 
+                  variant="outline" 
+                  onClick={() => setIsDialogOpen(false)}
+                >
+                  Cancel
+                </Button>
+                <Button type="submit" disabled={isLoading}>
+                  {isLoading ? 'Saving...' : isEditing ? 'Update Item' : 'Add Item'}
+                </Button>
+              </div>
+            </form>
           </DialogContent>
         </Dialog>
       </div>
-      
-      {/* Redemption Items Grid */}
-      <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
-        {items?.map((item) => (
-          <Card key={item.id} className={!item.is_active ? "opacity-60" : ""}>
-            <CardHeader className="pb-2">
-              <div className="flex justify-between">
-                <CardTitle className="text-lg">{item.name}</CardTitle>
-                <div className="flex space-x-1">
-                  <Button 
-                    variant="ghost" 
-                    size="sm" 
-                    onClick={() => handleEditClick(item)}
-                    className="h-8 w-8 p-0"
-                  >
-                    <Pencil className="h-4 w-4" />
-                  </Button>
-                  <Button 
-                    variant="ghost" 
-                    size="sm" 
-                    onClick={() => handleDeleteClick(item)}
-                    className="h-8 w-8 p-0 text-red-500 hover:text-red-600"
-                  >
-                    <Trash2 className="h-4 w-4" />
-                  </Button>
-                </div>
-              </div>
-              
-              {!item.is_active && (
-                <div className="text-xs font-medium text-red-500 mt-1">Inactive</div>
-              )}
-            </CardHeader>
-            
-            <CardContent>
-              <div className="flex items-start gap-4">
-                <div className="h-16 w-16 rounded-md bg-gray-100 flex items-center justify-center">
-                  {item.image_url ? (
-                    <img 
-                      src={item.image_url} 
-                      alt={item.name} 
-                      className="h-full w-full object-cover rounded-md"
-                    />
-                  ) : (
-                    <Gift className="h-8 w-8 text-gray-400" />
-                  )}
-                </div>
-                
-                <div className="flex-1">
-                  <p className="text-sm text-gray-500 line-clamp-3">{item.description}</p>
-                </div>
-              </div>
-            </CardContent>
-            
-            <CardFooter className="border-t pt-4">
-              <div className="flex items-center justify-between w-full">
-                <div className="text-sm font-medium">
-                  <span className="text-gray-500">Required: </span>
-                  <span>{item.points_required} points</span>
-                </div>
-                <div className="text-xs text-gray-500">
-                  Added {new Date(item.created_at).toLocaleDateString()}
-                </div>
-              </div>
-            </CardFooter>
-          </Card>
-        ))}
-        
-        {items?.length === 0 && (
-          <div className="col-span-full text-center py-12 border rounded-lg bg-gray-50">
-            <Gift className="h-12 w-12 mx-auto text-gray-300" />
-            <h3 className="mt-4 text-lg font-medium text-gray-900">No redemption items</h3>
-            <p className="mt-1 text-sm text-gray-500">
-              Get started by creating your first redemption item.
-            </p>
-            <Button 
-              variant="outline" 
-              className="mt-6"
-              onClick={() => setIsAddDialogOpen(true)}
-            >
-              <Plus className="h-4 w-4 mr-2" /> Add Redemption Item
-            </Button>
-          </div>
-        )}
-      </div>
-      
-      {/* Edit Dialog */}
-      <Dialog open={isEditDialogOpen} onOpenChange={setIsEditDialogOpen}>
-        <DialogContent>
-          <DialogHeader>
-            <DialogTitle>Edit Redemption Item</DialogTitle>
-          </DialogHeader>
-          
-          <Form {...form}>
-            <form onSubmit={form.handleSubmit(handleEditItem)} className="space-y-4">
-              <FormField
-                control={form.control}
-                name="name"
-                render={({ field }) => (
-                  <FormItem>
-                    <FormLabel>Name</FormLabel>
-                    <FormControl>
-                      <Input {...field} />
-                    </FormControl>
-                    <FormMessage />
-                  </FormItem>
-                )}
-              />
-              
-              <FormField
-                control={form.control}
-                name="description"
-                render={({ field }) => (
-                  <FormItem>
-                    <FormLabel>Description</FormLabel>
-                    <FormControl>
-                      <Textarea {...field} />
-                    </FormControl>
-                    <FormMessage />
-                  </FormItem>
-                )}
-              />
-              
-              <FormField
-                control={form.control}
-                name="points_required"
-                render={({ field }) => (
-                  <FormItem>
-                    <FormLabel>Points Required</FormLabel>
-                    <FormControl>
-                      <Input type="number" {...field} />
-                    </FormControl>
-                    <FormMessage />
-                  </FormItem>
-                )}
-              />
-              
-              <FormField
-                control={form.control}
-                name="image_url"
-                render={({ field }) => (
-                  <FormItem>
-                    <FormLabel>Image URL (Optional)</FormLabel>
-                    <FormControl>
-                      <Input {...field} />
-                    </FormControl>
-                    <FormMessage />
-                  </FormItem>
-                )}
-              />
-              
-              <FormField
-                control={form.control}
-                name="is_active"
-                render={({ field }) => (
-                  <FormItem className="flex flex-row items-center justify-between rounded-lg border p-3">
-                    <div className="space-y-0.5">
-                      <FormLabel>Active</FormLabel>
+
+      {isLoading && items.length === 0 ? (
+        <Card>
+          <CardContent className="flex justify-center items-center h-40">
+            <p>Loading redemption items...</p>
+          </CardContent>
+        </Card>
+      ) : items.length === 0 ? (
+        <Card>
+          <CardContent className="flex flex-col justify-center items-center h-40">
+            <Gift className="h-10 w-10 text-gray-400 mb-2" />
+            <p className="text-gray-500">No redemption items found.</p>
+            <p className="text-gray-400 text-sm">Click "Add New Item" to create your first redemption item.</p>
+          </CardContent>
+        </Card>
+      ) : (
+        <div className="bg-white rounded-lg shadow overflow-hidden">
+          <Table>
+            <TableHeader>
+              <TableRow>
+                <TableHead>Item</TableHead>
+                <TableHead>Description</TableHead>
+                <TableHead>Points</TableHead>
+                <TableHead>Status</TableHead>
+                <TableHead>Actions</TableHead>
+              </TableRow>
+            </TableHeader>
+            <TableBody>
+              {items.map((item) => (
+                <TableRow key={item.id}>
+                  <TableCell className="font-medium">
+                    <div className="flex items-center space-x-2">
+                      {item.image_url ? (
+                        <img src={item.image_url} alt={item.name} className="h-10 w-10 object-cover rounded" />
+                      ) : (
+                        <div className="h-10 w-10 rounded bg-brand-teal/10 flex items-center justify-center">
+                          <Gift className="h-5 w-5 text-brand-teal" />
+                        </div>
+                      )}
+                      <span>{item.name}</span>
                     </div>
-                    <FormControl>
-                      <Switch
-                        checked={field.value}
-                        onCheckedChange={field.onChange}
+                  </TableCell>
+                  <TableCell className="max-w-xs truncate">{item.description}</TableCell>
+                  <TableCell>{item.points_required}</TableCell>
+                  <TableCell>
+                    <Badge className={item.is_active ? "bg-green-100 text-green-800" : "bg-red-100 text-red-800"}>
+                      {item.is_active ? "Active" : "Inactive"}
+                    </Badge>
+                  </TableCell>
+                  <TableCell>
+                    <div className="flex items-center space-x-2">
+                      <Switch 
+                        checked={!!item.is_active} 
+                        onCheckedChange={() => toggleItemStatus(item.id!, !!item.is_active)}
+                        aria-label="Toggle item status"
                       />
-                    </FormControl>
-                  </FormItem>
-                )}
-              />
-              
-              <DialogFooter>
-                <Button type="button" variant="outline" onClick={() => setIsEditDialogOpen(false)}>
-                  Cancel
-                </Button>
-                <Button type="submit">Update Item</Button>
-              </DialogFooter>
-            </form>
-          </Form>
-        </DialogContent>
-      </Dialog>
-      
-      {/* Delete Confirmation Dialog */}
-      <Dialog open={isDeleteDialogOpen} onOpenChange={setIsDeleteDialogOpen}>
-        <DialogContent>
-          <DialogHeader>
-            <DialogTitle>Confirm Deletion</DialogTitle>
-          </DialogHeader>
-          
-          <p>Are you sure you want to delete "{currentItem?.name}"? This action cannot be undone.</p>
-          
-          <DialogFooter>
-            <Button variant="outline" onClick={() => setIsDeleteDialogOpen(false)}>
-              Cancel
-            </Button>
-            <Button variant="destructive" onClick={handleDeleteItem}>
-              Delete
-            </Button>
-          </DialogFooter>
-        </DialogContent>
-      </Dialog>
+                      <Button variant="ghost" size="icon" onClick={() => handleEdit(item)}>
+                        <Pencil className="h-4 w-4" />
+                      </Button>
+                      <Button variant="ghost" size="icon" onClick={() => handleDelete(item.id!)}>
+                        <Trash2 className="h-4 w-4 text-red-500" />
+                      </Button>
+                    </div>
+                  </TableCell>
+                </TableRow>
+              ))}
+            </TableBody>
+          </Table>
+        </div>
+      )}
     </div>
   );
 };

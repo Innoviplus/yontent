@@ -1,4 +1,5 @@
 
+import React from "react";
 import { Toaster } from "@/components/ui/toaster";
 import { Toaster as Sonner } from "@/components/ui/sonner";
 import { TooltipProvider } from "@/components/ui/tooltip";
@@ -30,51 +31,54 @@ import AdminUsers from "./pages/Admin/AdminUsers";
 import FollowersList from "./pages/FollowersList";
 import FollowingList from "./pages/FollowingList";
 
+// Create a new QueryClient instance
 const queryClient = new QueryClient();
 
 function App() {
   return (
-    <QueryClientProvider client={queryClient}>
-      <AuthProvider>
-        <TooltipProvider>
-          <Toaster />
-          <Sonner />
-          <BrowserRouter>
-            <Routes>
-              <Route path="/" element={<Index />} />
-              <Route path="/login" element={<Login />} />
-              <Route path="/register" element={<Register />} />
-              <Route path="/reviews" element={<Reviews />} />
-              <Route path="/reviews/:id" element={<ReviewDetail />} />
-              <Route path="/missions" element={<Missions />} />
-              <Route path="/missions/:id" element={<MissionDetail />} />
-              <Route path="/followers/:id" element={<FollowersList />} />
-              <Route path="/following/:id" element={<FollowingList />} />
-              <Route path="/user/:username" element={<UserProfile />} />
-              <Route path="/user-rankings" element={<UserRankings />} />
-              
-              <Route element={<ProtectedRoute />}>
-                <Route path="/dashboard" element={<Dashboard />} />
-                <Route path="/submit-review" element={<SubmitReview />} />
-                <Route path="/settings" element={<Settings />} />
-                <Route path="/redeem-points" element={<RedeemPoints />} />
+    <React.StrictMode>
+      <QueryClientProvider client={queryClient}>
+        <AuthProvider>
+          <TooltipProvider>
+            <Toaster />
+            <Sonner />
+            <BrowserRouter>
+              <Routes>
+                <Route path="/" element={<Index />} />
+                <Route path="/login" element={<Login />} />
+                <Route path="/register" element={<Register />} />
+                <Route path="/reviews" element={<Reviews />} />
+                <Route path="/reviews/:id" element={<ReviewDetail />} />
+                <Route path="/missions" element={<Missions />} />
+                <Route path="/missions/:id" element={<MissionDetail />} />
+                <Route path="/followers/:id" element={<FollowersList />} />
+                <Route path="/following/:id" element={<FollowingList />} />
+                <Route path="/user/:username" element={<UserProfile />} />
+                <Route path="/user-rankings" element={<UserRankings />} />
                 
-                {/* Admin Routes */}
-                <Route path="/admin" element={<AdminLayout />}>
-                  <Route index element={<AdminDashboard />} />
-                  <Route path="users" element={<UserManagement />} />
-                  <Route path="redemption-items" element={<RedemptionItems />} />
-                  <Route path="points" element={<PointsManagement />} />
-                  <Route path="admin-users" element={<AdminUsers />} />
+                <Route element={<ProtectedRoute />}>
+                  <Route path="/dashboard" element={<Dashboard />} />
+                  <Route path="/submit-review" element={<SubmitReview />} />
+                  <Route path="/settings" element={<Settings />} />
+                  <Route path="/redeem-points" element={<RedeemPoints />} />
+                  
+                  {/* Admin Routes */}
+                  <Route path="/admin" element={<AdminLayout />}>
+                    <Route index element={<AdminDashboard />} />
+                    <Route path="users" element={<UserManagement />} />
+                    <Route path="redemption-items" element={<RedemptionItems />} />
+                    <Route path="points" element={<PointsManagement />} />
+                    <Route path="admin-users" element={<AdminUsers />} />
+                  </Route>
                 </Route>
-              </Route>
-              
-              <Route path="*" element={<NotFound />} />
-            </Routes>
-          </BrowserRouter>
-        </TooltipProvider>
-      </AuthProvider>
-    </QueryClientProvider>
+                
+                <Route path="*" element={<NotFound />} />
+              </Routes>
+            </BrowserRouter>
+          </TooltipProvider>
+        </AuthProvider>
+      </QueryClientProvider>
+    </React.StrictMode>
   );
 }
 

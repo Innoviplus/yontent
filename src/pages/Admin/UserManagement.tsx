@@ -1,206 +1,247 @@
 
-import { useState } from "react";
-import { useQuery } from "@tanstack/react-query";
-import { supabase } from "@/integrations/supabase/client";
-import { Input } from "@/components/ui/input";
-import { Button } from "@/components/ui/button";
-import { 
-  Table, 
-  TableBody, 
-  TableCell, 
-  TableHead, 
-  TableHeader, 
-  TableRow 
+import { useState, useEffect } from 'react';
+import { supabase } from '@/integrations/supabase/client';
+import { useToast } from '@/hooks/use-toast';
+import {
+  Table,
+  TableBody,
+  TableCell,
+  TableHead,
+  TableHeader,
+  TableRow,
 } from "@/components/ui/table";
-import { Loader2, Search, User, Check, X, Shield } from "lucide-react";
-import { toast } from "sonner";
+import { Badge } from '@/components/ui/badge';
+import { Button } from '@/components/ui/button';
+import { Input } from '@/components/ui/input';
+import { Switch } from '@/components/ui/switch';
+import { Shield, Search, UserCog } from 'lucide-react';
+
+type UserProfile = {
+  id: string;
+  username: string;
+  avatar?: string;
+  email?: string;
+  created_at?: string;
+  points?: number;
+  extended_data?: Record<string, any> | null;
+};
 
 const UserManagement = () => {
-  const [searchQuery, setSearchQuery] = useState("");
-  
-  const { data: users, isLoading, refetch } = useQuery({
-    queryKey: ["admin-users"],
-    queryFn: async () => {
+  const [users, setUsers] = useState<UserProfile[]>([]);
+  const [searchTerm, setSearchTerm] = useState('');
+  const [loading, setLoading] = useState(true);
+  const { toast } = useToast();
+
+  useEffect(() => {
+    fetchUsers();
+  }, []);
+
+  const fetchUsers = async () => {
+    setLoading(true);
+    try {
       const { data, error } = await supabase
         .from('profiles')
-        .select('*')
+        .select('id, username, avatar, email, created_at, points, extended_data')
         .order('created_at', { ascending: false });
-        
-      if (error) throw error;
-      return data || [];
+
+      if (error) {
+        throw error;
+      }
+
+      if (data) {
+        setUsers(data as UserProfile[]);
+      }
+    } catch (error: any) {
+      toast({
+        title: "Error fetching users",
+        description: error.message,
+        variant: "destructive",
+      });
+    } finally {
+      setLoading(false);
     }
-  });
-  
-  const filteredUsers = users?.filter(user => 
-    user.username?.toLowerCase().includes(searchQuery.toLowerCase())
+  };
+
+  const toggleUserStatus = async (userId: string, isCurrentlyDisabled: boolean) => {
+    try {
+      const { error } = await supabase
+        .from('profiles')
+        .update({
+          extended_data: {
+            ...users.find(u => u.id === userId)?.extended_data,
+            isDisabled: !isCurrentlyDisabled
+          }
+        })
+        .eq('id', userId);
+
+      if (error) throw error;
+      
+      setUsers(users.map(user => {
+        if (user.id === userId) {
+          return {
+            ...user,
+            extended_data: {
+              ...user.extended_data,
+              isDisabled: !isCurrentlyDisabled
+            }
+          };
+        }
+        return user;
+      }));
+      
+      toast({
+        title: "User status updated",
+        description: `User has been ${isCurrentlyDisabled ? 'enabled' : 'disabled'}.`,
+      });
+    } catch (error: any) {
+      toast({
+        title: "Error updating user",
+        description: error.message,
+        variant: "destructive",
+      });
+    }
+  };
+
+  const toggleAdminStatus = async (userId: string, isCurrentlyAdmin: boolean) => {
+    try {
+      const { error } = await supabase
+        .from('profiles')
+        .update({
+          extended_data: {
+            ...users.find(u => u.id === userId)?.extended_data,
+            isAdmin: !isCurrentlyAdmin
+          }
+        })
+        .eq('id', userId);
+
+      if (error) throw error;
+      
+      setUsers(users.map(user => {
+        if (user.id === userId) {
+          return {
+            ...user,
+            extended_data: {
+              ...user.extended_data,
+              isAdmin: !isCurrentlyAdmin
+            }
+          };
+        }
+        return user;
+      }));
+      
+      toast({
+        title: "Admin status updated",
+        description: `User is now ${!isCurrentlyAdmin ? 'an admin' : 'not an admin'}.`,
+      });
+    } catch (error: any) {
+      toast({
+        title: "Error updating user",
+        description: error.message,
+        variant: "destructive",
+      });
+    }
+  };
+
+  const filteredUsers = users.filter(user => 
+    user.username.toLowerCase().includes(searchTerm.toLowerCase()) ||
+    (user.email && user.email.toLowerCase().includes(searchTerm.toLowerCase()))
   );
-  
-  const toggleUserStatus = async (userId: string, isActive: boolean) => {
-    try {
-      const { error } = await supabase
-        .from('profiles')
-        .update({ 
-          extended_data: { 
-            ...users?.find(u => u.id === userId)?.extended_data,
-            isDisabled: !isActive 
-          } 
-        })
-        .eq('id', userId);
-        
-      if (error) throw error;
-      
-      toast.success(`User ${isActive ? 'disabled' : 'enabled'} successfully`);
-      refetch();
-    } catch (error: any) {
-      toast.error(`Error updating user: ${error.message}`);
-    }
-  };
-  
-  const toggleAdminStatus = async (userId: string, isAdmin: boolean) => {
-    try {
-      const { error } = await supabase
-        .from('profiles')
-        .update({ 
-          extended_data: { 
-            ...users?.find(u => u.id === userId)?.extended_data,
-            isAdmin: !isAdmin 
-          } 
-        })
-        .eq('id', userId);
-        
-      if (error) throw error;
-      
-      toast.success(`User ${isAdmin ? 'removed from' : 'added to'} admin role successfully`);
-      refetch();
-    } catch (error: any) {
-      toast.error(`Error updating user: ${error.message}`);
-    }
-  };
-  
-  if (isLoading) {
-    return (
-      <div className="flex justify-center items-center h-64">
-        <Loader2 className="h-8 w-8 animate-spin text-brand-teal" />
-      </div>
-    );
-  }
-  
+
   return (
-    <div>
-      <h1 className="text-2xl font-bold mb-6">User Management</h1>
-      
-      <div className="mb-6 flex">
-        <div className="relative flex-1">
-          <Search className="absolute left-2.5 top-2.5 h-4 w-4 text-gray-500" />
+    <div className="space-y-6">
+      <div className="flex justify-between items-center">
+        <h1 className="text-2xl font-bold">User Management</h1>
+        <div className="relative w-64">
+          <Search className="absolute left-2 top-2.5 h-4 w-4 text-gray-500" />
           <Input
-            placeholder="Search users by username..."
+            placeholder="Search users..."
+            value={searchTerm}
+            onChange={(e) => setSearchTerm(e.target.value)}
             className="pl-8"
-            value={searchQuery}
-            onChange={(e) => setSearchQuery(e.target.value)}
           />
         </div>
       </div>
-      
-      <div className="bg-white rounded-md shadow">
+
+      <div className="bg-white rounded-lg shadow overflow-hidden">
         <Table>
           <TableHeader>
             <TableRow>
-              <TableHead>Username</TableHead>
+              <TableHead>User</TableHead>
+              <TableHead>Email</TableHead>
               <TableHead>Points</TableHead>
-              <TableHead>Created At</TableHead>
               <TableHead>Status</TableHead>
               <TableHead>Admin</TableHead>
               <TableHead>Actions</TableHead>
             </TableRow>
           </TableHeader>
           <TableBody>
-            {filteredUsers?.map((user) => {
-              const isDisabled = user.extended_data?.isDisabled === true;
-              const isAdmin = user.extended_data?.isAdmin === true;
-              
-              return (
-                <TableRow key={user.id}>
-                  <TableCell className="font-medium">
-                    <div className="flex items-center">
-                      {user.avatar ? (
-                        <img 
-                          src={user.avatar} 
-                          alt={user.username || ''} 
-                          className="w-8 h-8 rounded-full mr-2"
-                        />
-                      ) : (
-                        <div className="w-8 h-8 rounded-full bg-gray-200 flex items-center justify-center mr-2">
-                          <User className="h-4 w-4 text-gray-500" />
-                        </div>
-                      )}
-                      {user.username || 'Anonymous'}
-                    </div>
-                  </TableCell>
-                  <TableCell>{user.points || 0}</TableCell>
-                  <TableCell>
-                    {new Date(user.created_at).toLocaleDateString()}
-                  </TableCell>
-                  <TableCell>
-                    <span className={`inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium ${
-                      isDisabled 
-                        ? 'bg-red-100 text-red-800' 
-                        : 'bg-green-100 text-green-800'
-                    }`}>
-                      {isDisabled ? 'Disabled' : 'Active'}
-                    </span>
-                  </TableCell>
-                  <TableCell>
-                    <span className={`inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium ${
-                      isAdmin
-                        ? 'bg-purple-100 text-purple-800' 
-                        : 'bg-gray-100 text-gray-800'
-                    }`}>
-                      {isAdmin ? 'Admin' : 'User'}
-                    </span>
-                  </TableCell>
-                  <TableCell>
-                    <div className="flex space-x-2">
-                      <Button
-                        variant="outline"
-                        size="sm"
-                        onClick={() => toggleUserStatus(user.id, !isDisabled)}
-                      >
-                        {isDisabled ? (
-                          <><Check className="h-4 w-4 mr-1" /> Enable</>
-                        ) : (
-                          <><X className="h-4 w-4 mr-1" /> Disable</>
-                        )}
-                      </Button>
-                      <Button
-                        variant="outline"
-                        size="sm"
-                        onClick={() => toggleAdminStatus(user.id, isAdmin)}
-                      >
-                        {isAdmin ? (
-                          <><X className="h-4 w-4 mr-1" /> Remove Admin</>
-                        ) : (
-                          <><Shield className="h-4 w-4 mr-1" /> Make Admin</>
-                        )}
-                      </Button>
-                      <Button
-                        variant="outline"
-                        size="sm"
-                        asChild
-                      >
-                        <a href={`/admin/points?userId=${user.id}`}>Add Points</a>
-                      </Button>
-                    </div>
-                  </TableCell>
-                </TableRow>
-              );
-            })}
-            
-            {filteredUsers?.length === 0 && (
+            {loading ? (
               <TableRow>
-                <TableCell colSpan={6} className="h-24 text-center">
-                  No users found.
-                </TableCell>
+                <TableCell colSpan={6} className="text-center py-10">Loading users...</TableCell>
               </TableRow>
+            ) : filteredUsers.length === 0 ? (
+              <TableRow>
+                <TableCell colSpan={6} className="text-center py-10">No users found</TableCell>
+              </TableRow>
+            ) : (
+              filteredUsers.map((user) => {
+                // Access extended_data properties safely
+                const extendedData = user.extended_data || {};
+                const isDisabled = extendedData.isDisabled === true;
+                const isAdmin = extendedData.isAdmin === true;
+                
+                return (
+                  <TableRow key={user.id}>
+                    <TableCell className="font-medium">
+                      <div className="flex items-center space-x-2">
+                        <div className="h-8 w-8 rounded-full bg-gray-200 overflow-hidden">
+                          {user.avatar ? (
+                            <img src={user.avatar} alt={user.username} className="h-full w-full object-cover" />
+                          ) : (
+                            <div className="h-full w-full flex items-center justify-center bg-brand-teal text-white">
+                              {user.username.charAt(0).toUpperCase()}
+                            </div>
+                          )}
+                        </div>
+                        <span>{user.username}</span>
+                      </div>
+                    </TableCell>
+                    <TableCell>{user.email || "N/A"}</TableCell>
+                    <TableCell>{user.points || 0}</TableCell>
+                    <TableCell>
+                      <Badge className={isDisabled ? "bg-red-100 text-red-800" : "bg-green-100 text-green-800"}>
+                        {isDisabled ? "Disabled" : "Active"}
+                      </Badge>
+                    </TableCell>
+                    <TableCell>
+                      {isAdmin ? (
+                        <Badge className="bg-purple-100 text-purple-800 flex items-center gap-1">
+                          <Shield className="h-3 w-3" /> Admin
+                        </Badge>
+                      ) : (
+                        <Badge className="bg-gray-100 text-gray-800">User</Badge>
+                      )}
+                    </TableCell>
+                    <TableCell>
+                      <div className="flex items-center space-x-2">
+                        <Switch 
+                          checked={!isDisabled} 
+                          onCheckedChange={() => toggleUserStatus(user.id, isDisabled)}
+                          aria-label="Toggle user status"
+                        />
+                        <Button 
+                          variant="outline" 
+                          size="sm"
+                          onClick={() => toggleAdminStatus(user.id, isAdmin)}
+                        >
+                          <UserCog className="h-4 w-4 mr-1" />
+                          {isAdmin ? "Remove Admin" : "Make Admin"}
+                        </Button>
+                      </div>
+                    </TableCell>
+                  </TableRow>
+                );
+              })
             )}
           </TableBody>
         </Table>

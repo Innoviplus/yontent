@@ -70,8 +70,12 @@ export function AuthProvider({ children }: { children: ReactNode }) {
       return;
     }
 
-    // Check if user is admin from extended_data
-    const isAdmin = data?.extended_data?.isAdmin === true;
+    // Check if extended_data exists and has isAdmin property
+    let isAdmin = false;
+    
+    if (data?.extended_data && typeof data.extended_data === 'object') {
+      isAdmin = data.extended_data.isAdmin === true;
+    }
 
     setUserProfile({
       ...data,

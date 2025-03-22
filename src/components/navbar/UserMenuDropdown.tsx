@@ -19,7 +19,7 @@ const UserMenuDropdown = () => {
   if (!user) return null;
   
   const username = userProfile?.username || 'User';
-  const isAdmin = userProfile?.isAdmin;
+  const isAdmin = userProfile?.isAdmin === true;
   
   return (
     <DropdownMenu>
@@ -53,7 +53,7 @@ const UserMenuDropdown = () => {
           </Link>
         </DropdownMenuItem>
         
-        {userProfile?.extended_data?.isAdmin === true && (
+        {isAdmin && (
           <>
             <DropdownMenuSeparator />
             <DropdownMenuLabel>Administration</DropdownMenuLabel>
