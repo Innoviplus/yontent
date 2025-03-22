@@ -19,7 +19,6 @@ type UserProfile = {
   id: string;
   username: string;
   avatar?: string;
-  email?: string;
   created_at?: string;
   extended_data?: Record<string, any> | null;
 };
@@ -39,7 +38,7 @@ const AdminUsers = () => {
     try {
       const { data, error } = await supabase
         .from('profiles')
-        .select('id, username, avatar, email, created_at, extended_data')
+        .select('id, username, avatar, created_at, extended_data')
         .order('created_at', { ascending: false });
 
       if (error) {
@@ -50,7 +49,11 @@ const AdminUsers = () => {
         // Filter for admin users only
         const adminUsers = data.filter(user => {
           const extendedData = user.extended_data || {};
-          return extendedData.isAdmin === true;
+          // Safely check if extendedData has the isAdmin property as true
+          if (typeof extendedData === 'object' && !Array.isArray(extendedData)) {
+            return extendedData.isAdmin === true;
+          }
+          return false;
         });
         setUsers(adminUsers as UserProfile[]);
       }
@@ -70,25 +73,28 @@ const AdminUsers = () => {
       const user = users.find(u => u.id === userId);
       if (!user) return;
 
-      const extendedData = { ...user.extended_data } || {};
-      extendedData.isAdmin = false;
+      // Make a copy of extended_data or create a new object if it doesn't exist
+      const extendedData = user.extended_data ? { ...user.extended_data } : {};
+      if (typeof extendedData === 'object' && !Array.isArray(extendedData)) {
+        extendedData.isAdmin = false;
 
-      const { error } = await supabase
-        .from('profiles')
-        .update({
-          extended_data: extendedData
-        })
-        .eq('id', userId);
+        const { error } = await supabase
+          .from('profiles')
+          .update({
+            extended_data: extendedData
+          })
+          .eq('id', userId);
 
-      if (error) throw error;
-      
-      // Remove user from local state
-      setUsers(users.filter(user => user.id !== userId));
-      
-      toast({
-        title: "Admin status removed",
-        description: "User is no longer an admin.",
-      });
+        if (error) throw error;
+        
+        // Remove user from local state
+        setUsers(users.filter(user => user.id !== userId));
+        
+        toast({
+          title: "Admin status removed",
+          description: "User is no longer an admin.",
+        });
+      }
     } catch (error: any) {
       toast({
         title: "Error updating user",
@@ -99,8 +105,7 @@ const AdminUsers = () => {
   };
 
   const filteredUsers = users.filter(user => 
-    user.username.toLowerCase().includes(searchTerm.toLowerCase()) ||
-    (user.email && user.email.toLowerCase().includes(searchTerm.toLowerCase()))
+    user.username.toLowerCase().includes(searchTerm.toLowerCase())
   );
 
   return (
@@ -123,7 +128,6 @@ const AdminUsers = () => {
           <TableHeader>
             <TableRow>
               <TableHead>User</TableHead>
-              <TableHead>Email</TableHead>
               <TableHead>Status</TableHead>
               <TableHead>Actions</TableHead>
             </TableRow>
@@ -131,11 +135,11 @@ const AdminUsers = () => {
           <TableBody>
             {loading ? (
               <TableRow>
-                <TableCell colSpan={4} className="text-center py-10">Loading admin users...</TableCell>
+                <TableCell colSpan={3} className="text-center py-10">Loading admin users...</TableCell>
               </TableRow>
             ) : filteredUsers.length === 0 ? (
               <TableRow>
-                <TableCell colSpan={4} className="text-center py-10">No admin users found</TableCell>
+                <TableCell colSpan={3} className="text-center py-10">No admin users found</TableCell>
               </TableRow>
             ) : (
               filteredUsers.map((user) => (
@@ -154,7 +158,6 @@ const AdminUsers = () => {
                       <span>{user.username}</span>
                     </div>
                   </TableCell>
-                  <TableCell>{user.email || "N/A"}</TableCell>
                   <TableCell>
                     <Badge className="bg-purple-100 text-purple-800 flex items-center gap-1">
                       <Shield className="h-3 w-3" /> Admin

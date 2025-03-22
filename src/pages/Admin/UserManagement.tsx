@@ -20,7 +20,6 @@ type UserProfile = {
   id: string;
   username: string;
   avatar?: string;
-  email?: string;
   created_at?: string;
   points?: number;
   extended_data?: Record<string, any> | null;
@@ -41,7 +40,7 @@ const UserManagement = () => {
     try {
       const { data, error } = await supabase
         .from('profiles')
-        .select('id, username, avatar, email, created_at, points, extended_data')
+        .select('id, username, avatar, created_at, points, extended_data')
         .order('created_at', { ascending: false });
 
       if (error) {
@@ -64,13 +63,22 @@ const UserManagement = () => {
 
   const toggleUserStatus = async (userId: string, isCurrentlyDisabled: boolean) => {
     try {
+      const user = users.find(u => u.id === userId);
+      if (!user) return;
+
+      // Safely update the extended_data object
+      let updatedExtendedData: Record<string, any> = {};
+      
+      if (user.extended_data && typeof user.extended_data === 'object' && !Array.isArray(user.extended_data)) {
+        updatedExtendedData = { ...user.extended_data };
+      }
+      
+      updatedExtendedData.isDisabled = !isCurrentlyDisabled;
+
       const { error } = await supabase
         .from('profiles')
         .update({
-          extended_data: {
-            ...users.find(u => u.id === userId)?.extended_data,
-            isDisabled: !isCurrentlyDisabled
-          }
+          extended_data: updatedExtendedData
         })
         .eq('id', userId);
 
@@ -81,7 +89,9 @@ const UserManagement = () => {
           return {
             ...user,
             extended_data: {
-              ...user.extended_data,
+              ...(typeof user.extended_data === 'object' && !Array.isArray(user.extended_data) 
+                ? user.extended_data 
+                : {}),
               isDisabled: !isCurrentlyDisabled
             }
           };
@@ -104,13 +114,22 @@ const UserManagement = () => {
 
   const toggleAdminStatus = async (userId: string, isCurrentlyAdmin: boolean) => {
     try {
+      const user = users.find(u => u.id === userId);
+      if (!user) return;
+
+      // Safely update the extended_data object
+      let updatedExtendedData: Record<string, any> = {};
+      
+      if (user.extended_data && typeof user.extended_data === 'object' && !Array.isArray(user.extended_data)) {
+        updatedExtendedData = { ...user.extended_data };
+      }
+      
+      updatedExtendedData.isAdmin = !isCurrentlyAdmin;
+
       const { error } = await supabase
         .from('profiles')
         .update({
-          extended_data: {
-            ...users.find(u => u.id === userId)?.extended_data,
-            isAdmin: !isCurrentlyAdmin
-          }
+          extended_data: updatedExtendedData
         })
         .eq('id', userId);
 
@@ -121,7 +140,9 @@ const UserManagement = () => {
           return {
             ...user,
             extended_data: {
-              ...user.extended_data,
+              ...(typeof user.extended_data === 'object' && !Array.isArray(user.extended_data) 
+                ? user.extended_data 
+                : {}),
               isAdmin: !isCurrentlyAdmin
             }
           };
@@ -143,8 +164,7 @@ const UserManagement = () => {
   };
 
   const filteredUsers = users.filter(user => 
-    user.username.toLowerCase().includes(searchTerm.toLowerCase()) ||
-    (user.email && user.email.toLowerCase().includes(searchTerm.toLowerCase()))
+    user.username.toLowerCase().includes(searchTerm.toLowerCase())
   );
 
   return (
@@ -167,7 +187,6 @@ const UserManagement = () => {
           <TableHeader>
             <TableRow>
               <TableHead>User</TableHead>
-              <TableHead>Email</TableHead>
               <TableHead>Points</TableHead>
               <TableHead>Status</TableHead>
               <TableHead>Admin</TableHead>
@@ -177,16 +196,19 @@ const UserManagement = () => {
           <TableBody>
             {loading ? (
               <TableRow>
-                <TableCell colSpan={6} className="text-center py-10">Loading users...</TableCell>
+                <TableCell colSpan={5} className="text-center py-10">Loading users...</TableCell>
               </TableRow>
             ) : filteredUsers.length === 0 ? (
               <TableRow>
-                <TableCell colSpan={6} className="text-center py-10">No users found</TableCell>
+                <TableCell colSpan={5} className="text-center py-10">No users found</TableCell>
               </TableRow>
             ) : (
               filteredUsers.map((user) => {
                 // Access extended_data properties safely
-                const extendedData = user.extended_data || {};
+                const extendedData = typeof user.extended_data === 'object' && !Array.isArray(user.extended_data) 
+                  ? user.extended_data || {} 
+                  : {};
+                
                 const isDisabled = extendedData.isDisabled === true;
                 const isAdmin = extendedData.isAdmin === true;
                 
@@ -206,7 +228,6 @@ const UserManagement = () => {
                         <span>{user.username}</span>
                       </div>
                     </TableCell>
-                    <TableCell>{user.email || "N/A"}</TableCell>
                     <TableCell>{user.points || 0}</TableCell>
                     <TableCell>
                       <Badge className={isDisabled ? "bg-red-100 text-red-800" : "bg-green-100 text-green-800"}>
