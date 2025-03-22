@@ -1,11 +1,11 @@
 
 import { useState, useRef } from "react";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
-import ProfileTab from "./ProfileTab";
-import GeneralTab from "./GeneralTab";
-import AccountTab from "./AccountTab";
-import SocialMediaTab from "./SocialMediaTab";
-import AvatarUploader from "./AvatarUploader";
+import { ProfileTab } from "./ProfileTab";
+import { GeneralTab } from "./GeneralTab";
+import { AccountTab } from "./AccountTab";
+import { SocialMediaTab } from "./SocialMediaTab";
+import { AvatarUploader } from "./AvatarUploader";
 import { User, ShieldCheck } from "lucide-react";
 import AdminPrivileges from "@/pages/Settings/AdminPrivileges";
 
