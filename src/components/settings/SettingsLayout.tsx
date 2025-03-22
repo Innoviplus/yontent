@@ -1,33 +1,15 @@
 
-import React from 'react';
-import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
-import { ProfileTab } from '@/components/settings/ProfileTab';
-import { AccountTab } from '@/components/settings/AccountTab';
-import { SocialMediaTab } from '@/components/settings/SocialMediaTab';
-import { GeneralTab } from '@/components/settings/GeneralTab';
-import Navbar from '@/components/Navbar';
-import { ExtendedProfile } from '@/lib/types';
-import { UseFormReturn } from 'react-hook-form';
+import { useState, useRef } from "react";
+import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
+import ProfileTab from "./ProfileTab";
+import GeneralTab from "./GeneralTab";
+import AccountTab from "./AccountTab";
+import SocialMediaTab from "./SocialMediaTab";
+import AvatarUploader from "./AvatarUploader";
+import { User, ShieldCheck } from "lucide-react";
+import AdminPrivileges from "@/pages/Settings/AdminPrivileges";
 
-interface SettingsLayoutProps {
-  userProfile: any;
-  avatarUrl: string | null;
-  uploading: boolean;
-  handleAvatarUpload: (event: React.ChangeEvent<HTMLInputElement>) => Promise<void>;
-  profileForm: UseFormReturn<any>;
-  settingsForm: UseFormReturn<any>;
-  onProfileSubmit: (values: any) => Promise<void>;
-  onSettingsSubmit: (values: any) => Promise<void>;
-  isUpdating: boolean;
-  extendedProfile: ExtendedProfile | null;
-  handleResetPassword: () => Promise<void>;
-  handleLogout: () => Promise<void>;
-  handleDeleteAccount: () => Promise<void>;
-  activeTab: string;
-  setActiveTab: (value: string) => void;
-}
-
-export const SettingsLayout: React.FC<SettingsLayoutProps> = ({
+export function SettingsLayout({
   userProfile,
   avatarUrl,
   uploading,
@@ -42,64 +24,91 @@ export const SettingsLayout: React.FC<SettingsLayoutProps> = ({
   handleLogout,
   handleDeleteAccount,
   activeTab,
-  setActiveTab
-}) => {
+  setActiveTab,
+}) {
+  const fileInputRef = useRef(null);
+
   return (
-    <div className="min-h-screen bg-gray-50">
-      <Navbar />
-      
-      <div className="pt-28 pb-16">
-        <div className="container mx-auto px-4">
-          <div className="max-w-4xl mx-auto">
-            <h1 className="text-3xl font-bold text-gray-900 mb-8">Account Settings</h1>
-            
-            <Tabs value={activeTab} onValueChange={setActiveTab}>
-              <TabsList className="mb-8 w-full">
-                <TabsTrigger value="profile" className="flex-1">Profile</TabsTrigger>
-                <TabsTrigger value="account" className="flex-1">Account</TabsTrigger>
-                <TabsTrigger value="social" className="flex-1">Social Media</TabsTrigger>
-                <TabsTrigger value="general" className="flex-1">General</TabsTrigger>
-              </TabsList>
-              
-              <TabsContent value="profile">
-                <ProfileTab 
-                  userProfile={userProfile}
-                  avatarUrl={avatarUrl}
-                  uploading={uploading}
-                  handleAvatarUpload={handleAvatarUpload}
-                  profileForm={profileForm}
-                  onProfileSubmit={onProfileSubmit}
-                  isUpdating={isUpdating}
-                />
-              </TabsContent>
-              
-              <TabsContent value="account">
-                <AccountTab 
-                  settingsForm={settingsForm}
-                  onSettingsSubmit={onSettingsSubmit}
-                  isUpdating={isUpdating}
-                  handleResetPassword={handleResetPassword}
-                />
-              </TabsContent>
-              
-              <TabsContent value="social">
-                <SocialMediaTab 
-                  profileForm={profileForm}
-                  onSubmit={profileForm.handleSubmit(onProfileSubmit)}
-                  isUpdating={isUpdating}
-                />
-              </TabsContent>
-              
-              <TabsContent value="general">
-                <GeneralTab 
-                  handleLogout={handleLogout}
-                  handleDeleteAccount={handleDeleteAccount}
-                />
-              </TabsContent>
-            </Tabs>
+    <div className="container mx-auto px-4 py-8 max-w-5xl">
+      <div className="flex flex-col md:flex-row gap-8">
+        <div className="w-full md:w-1/3 space-y-6">
+          <div className="bg-white rounded-lg shadow-sm p-6 text-center">
+            <h2 className="text-xl font-semibold mb-6">Your Profile</h2>
+            <AvatarUploader
+              avatarUrl={avatarUrl}
+              uploading={uploading}
+              onUpload={handleAvatarUpload}
+              fileInputRef={fileInputRef}
+              username={userProfile?.username || "User"}
+            />
+            <h3 className="mt-4 text-lg font-medium">{userProfile?.username}</h3>
+            {userProfile?.points !== undefined && (
+              <p className="text-sm text-gray-500">{userProfile.points} points</p>
+            )}
+            <button
+              onClick={() => fileInputRef.current?.click()}
+              className="mt-4 px-4 py-2 bg-gray-100 rounded-md text-sm text-gray-700 hover:bg-gray-200 transition-colors"
+            >
+              Change Avatar
+            </button>
           </div>
+        </div>
+
+        <div className="w-full md:w-2/3">
+          <Tabs value={activeTab} onValueChange={setActiveTab} className="w-full">
+            <TabsList className="grid grid-cols-4 md:grid-cols-5 mb-8">
+              <TabsTrigger value="profile" className="flex items-center gap-2">
+                <User className="h-4 w-4" />
+                <span className="hidden sm:inline">Profile</span>
+              </TabsTrigger>
+              <TabsTrigger value="general">General</TabsTrigger>
+              <TabsTrigger value="social">Social</TabsTrigger>
+              <TabsTrigger value="account">Account</TabsTrigger>
+              <TabsTrigger value="admin" className="flex items-center gap-2">
+                <ShieldCheck className="h-4 w-4" />
+                <span className="hidden sm:inline">Admin</span>
+              </TabsTrigger>
+            </TabsList>
+            
+            <TabsContent value="profile" className="mt-0">
+              <ProfileTab
+                form={profileForm}
+                onSubmit={onProfileSubmit}
+                isUpdating={isUpdating}
+                extendedProfile={extendedProfile}
+              />
+            </TabsContent>
+            
+            <TabsContent value="general" className="mt-0">
+              <GeneralTab
+                form={settingsForm}
+                onSubmit={onSettingsSubmit}
+                isUpdating={isUpdating}
+              />
+            </TabsContent>
+            
+            <TabsContent value="social" className="mt-0">
+              <SocialMediaTab
+                form={settingsForm}
+                onSubmit={onSettingsSubmit}
+                isUpdating={isUpdating}
+              />
+            </TabsContent>
+            
+            <TabsContent value="account" className="mt-0">
+              <AccountTab
+                onResetPassword={handleResetPassword}
+                onLogout={handleLogout}
+                onDeleteAccount={handleDeleteAccount}
+              />
+            </TabsContent>
+
+            <TabsContent value="admin" className="mt-0">
+              <AdminPrivileges />
+            </TabsContent>
+          </Tabs>
         </div>
       </div>
     </div>
   );
-};
+}

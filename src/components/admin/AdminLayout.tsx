@@ -5,17 +5,26 @@ import { useAuth } from "@/contexts/AuthContext";
 import { Shield, Users, Gift, CreditCard, LayoutDashboard } from "lucide-react";
 
 const AdminLayout = () => {
-  const { userProfile } = useAuth();
+  const { userProfile, user } = useAuth();
   const navigate = useNavigate();
+  
+  // For debugging
+  useEffect(() => {
+    console.log("AdminLayout - Current user:", user?.email);
+    console.log("AdminLayout - User profile:", userProfile);
+    console.log("AdminLayout - Is admin:", userProfile?.isAdmin);
+  }, [user, userProfile]);
   
   // Check if user is admin
   useEffect(() => {
-    if (!userProfile?.isAdmin) {
+    if (userProfile && !userProfile.isAdmin) {
+      console.log("Not an admin, redirecting to dashboard");
       navigate("/dashboard");
     }
   }, [userProfile, navigate]);
 
-  if (!userProfile?.isAdmin) {
+  // If still loading or not admin, show nothing
+  if (!userProfile || !userProfile.isAdmin) {
     return null;
   }
 
@@ -40,6 +49,12 @@ const AdminLayout = () => {
             className="flex items-center px-3 py-2 text-sm font-medium rounded-md text-gray-700 hover:bg-gray-100"
           >
             <Users className="h-4 w-4 mr-2 text-gray-500" /> Users Management
+          </Link>
+          <Link 
+            to="/admin/admin-users" 
+            className="flex items-center px-3 py-2 text-sm font-medium rounded-md text-gray-700 hover:bg-gray-100"
+          >
+            <Shield className="h-4 w-4 mr-2 text-gray-500" /> Admin Users
           </Link>
           <Link 
             to="/admin/redemption-items" 

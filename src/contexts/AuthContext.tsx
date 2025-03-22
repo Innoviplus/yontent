@@ -74,13 +74,17 @@ export function AuthProvider({ children }: { children: ReactNode }) {
     let isAdmin = false;
     
     if (data?.extended_data) {
-      // Safely check if extended_data is an object and if it has isAdmin property
+      // Safely check if extended_data is an object
       if (typeof data.extended_data === 'object' && data.extended_data !== null && !Array.isArray(data.extended_data)) {
-        // Need to use type assertion to safely access the isAdmin property
+        // Extract isAdmin value from extended_data safely
         const extData = data.extended_data as Record<string, any>;
-        isAdmin = extData.isAdmin === true;
+        isAdmin = Boolean(extData.isAdmin);
       }
     }
+
+    // For debugging
+    console.log('User profile data:', data);
+    console.log('Is admin:', isAdmin);
 
     setUserProfile({
       ...data,
