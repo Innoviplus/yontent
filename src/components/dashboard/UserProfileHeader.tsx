@@ -8,6 +8,9 @@ interface UserProfileHeaderProps {
   user: UserType & {
     completedReviews: number;
     completedMissions: number;
+    extendedData?: any;
+    followersCount?: number;
+    followingCount?: number;
   };
 }
 
@@ -44,11 +47,11 @@ const UserProfileHeader = ({ user }: UserProfileHeaderProps) => {
               <div className="text-sm text-gray-500">Reviews</div>
             </div>
             <div className="bg-gray-50 rounded-lg p-3 text-center">
-              <div className="text-2xl font-semibold text-brand-slate">{extendedData?.followersCount || 0}</div>
+              <div className="text-2xl font-semibold text-brand-slate">{user.followersCount || 0}</div>
               <div className="text-sm text-gray-500">Followers</div>
             </div>
             <div className="bg-gray-50 rounded-lg p-3 text-center">
-              <div className="text-2xl font-semibold text-brand-slate">{extendedData?.followingCount || 0}</div>
+              <div className="text-2xl font-semibold text-brand-slate">{user.followingCount || 0}</div>
               <div className="text-sm text-gray-500">Following</div>
             </div>
             <div className="bg-gray-50 rounded-lg p-3 text-center">

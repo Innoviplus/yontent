@@ -8,6 +8,8 @@ type ProfileWithCounts = User & {
   completedReviews: number;
   completedMissions: number;
   extendedData?: any;
+  followersCount?: number;
+  followingCount?: number;
 };
 
 export const useDashboardProfile = (userId: string | undefined) => {
