@@ -1,25 +1,30 @@
 
-import React, { useState, useRef, useEffect } from 'react';
+import React, { useState, useEffect, RefObject } from 'react';
 import { Input } from '@/components/ui/input';
 import { Button } from '@/components/ui/button';
 import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
 import { Camera, Loader2 } from 'lucide-react';
 
-interface AvatarUploaderProps {
+export interface AvatarUploaderProps {
   avatarUrl: string | null;
   username?: string;
   uploading: boolean;
   handleAvatarUpload: (event: React.ChangeEvent<HTMLInputElement>) => Promise<void>;
+  fileInputRef?: RefObject<HTMLInputElement>;
 }
 
 export const AvatarUploader: React.FC<AvatarUploaderProps> = ({
   avatarUrl,
   username,
   uploading,
-  handleAvatarUpload
+  handleAvatarUpload,
+  fileInputRef: externalFileInputRef
 }) => {
   const [preview, setPreview] = useState<string | null>(avatarUrl);
-  const fileInputRef = useRef<HTMLInputElement>(null);
+  const internalFileInputRef = React.useRef<HTMLInputElement>(null);
+  
+  // Use the external ref if provided, otherwise use the internal one
+  const fileInputRef = externalFileInputRef || internalFileInputRef;
 
   // Update preview when avatarUrl changes
   useEffect(() => {

@@ -85,22 +85,24 @@ export function SettingsLayout({
             
             <TabsContent value="general" className="mt-0">
               <GeneralTab
-                settingsForm={settingsForm}
-                onSettingsSubmit={onSettingsSubmit}
-                isUpdating={isUpdating}
+                handleLogout={handleLogout}
+                handleDeleteAccount={handleDeleteAccount}
               />
             </TabsContent>
             
             <TabsContent value="social" className="mt-0">
               <SocialMediaTab
-                settingsForm={settingsForm}
-                onSettingsSubmit={onSettingsSubmit}
+                profileForm={profileForm}
+                onSubmit={() => onProfileSubmit(profileForm.getValues())}
                 isUpdating={isUpdating}
               />
             </TabsContent>
             
             <TabsContent value="account" className="mt-0">
               <AccountTab
+                settingsForm={settingsForm}
+                onSettingsSubmit={onSettingsSubmit}
+                isUpdating={isUpdating}
                 handleResetPassword={handleResetPassword}
                 handleLogout={handleLogout}
                 handleDeleteAccount={handleDeleteAccount}

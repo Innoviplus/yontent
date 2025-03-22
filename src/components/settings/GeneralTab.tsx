@@ -2,15 +2,24 @@
 import React from 'react';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
+import { UseFormReturn } from 'react-hook-form';
 
-interface GeneralTabProps {
+export interface GeneralTabProps {
   handleLogout: () => Promise<void>;
   handleDeleteAccount: () => Promise<void>;
+  settingsForm?: UseFormReturn<any>;
+  onSettingsSubmit?: (values: any) => Promise<void>;
+  isUpdating?: boolean;
 }
 
 export const GeneralTab: React.FC<GeneralTabProps> = ({
   handleLogout,
-  handleDeleteAccount
+  handleDeleteAccount,
+  // We're not using these props in this component yet, but including them
+  // in the interface to avoid TypeScript errors
+  settingsForm,
+  onSettingsSubmit,
+  isUpdating
 }) => {
   return (
     <>

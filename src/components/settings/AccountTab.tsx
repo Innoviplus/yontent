@@ -16,18 +16,22 @@ import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { PhoneInput } from './PhoneInput';
 
-interface AccountTabProps {
+export interface AccountTabProps {
   settingsForm: UseFormReturn<any>;
   onSettingsSubmit: (values: any) => Promise<void>;
   isUpdating: boolean;
   handleResetPassword: () => Promise<void>;
+  handleLogout: () => Promise<void>;
+  handleDeleteAccount: () => Promise<void>;
 }
 
 export const AccountTab: React.FC<AccountTabProps> = ({
   settingsForm,
   onSettingsSubmit,
   isUpdating,
-  handleResetPassword
+  handleResetPassword,
+  handleLogout,
+  handleDeleteAccount
 }) => {
   const handleContactUs = () => {
     window.open('https://api.whatsapp.com/send?phone=85254278104', '_blank');

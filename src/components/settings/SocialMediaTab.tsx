@@ -14,17 +14,30 @@ import { Input } from '@/components/ui/input';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 
-interface SocialMediaTabProps {
-  profileForm: UseFormReturn<any>;
-  onSubmit: () => void;
+export interface SocialMediaTabProps {
+  profileForm?: UseFormReturn<any>;
+  settingsForm?: UseFormReturn<any>;
+  onSubmit?: () => void;
+  onSettingsSubmit?: (values: any) => Promise<void>;
   isUpdating: boolean;
 }
 
 export const SocialMediaTab: React.FC<SocialMediaTabProps> = ({
   profileForm,
+  settingsForm,
   onSubmit,
+  onSettingsSubmit,
   isUpdating
 }) => {
+  // Use either profileForm or settingsForm - prioritize profileForm
+  const formToUse = profileForm || settingsForm;
+  const submitHandler = onSubmit || (onSettingsSubmit ? () => onSettingsSubmit(formToUse?.getValues()) : undefined);
+  
+  if (!formToUse) {
+    console.error("No form provided to SocialMediaTab");
+    return <div>Error: No form data available</div>;
+  }
+
   return (
     <Card>
       <CardHeader>
@@ -32,10 +45,10 @@ export const SocialMediaTab: React.FC<SocialMediaTabProps> = ({
         <CardDescription>Connect your social media accounts</CardDescription>
       </CardHeader>
       <CardContent>
-        <Form {...profileForm}>
+        <Form {...formToUse}>
           <form className="space-y-6">
             <FormField
-              control={profileForm.control}
+              control={formToUse.control}
               name="websiteUrl"
               render={({ field }) => (
                 <FormItem>
@@ -49,7 +62,7 @@ export const SocialMediaTab: React.FC<SocialMediaTabProps> = ({
             />
             
             <FormField
-              control={profileForm.control}
+              control={formToUse.control}
               name="facebookUrl"
               render={({ field }) => (
                 <FormItem>
@@ -63,7 +76,7 @@ export const SocialMediaTab: React.FC<SocialMediaTabProps> = ({
             />
             
             <FormField
-              control={profileForm.control}
+              control={formToUse.control}
               name="instagramUrl"
               render={({ field }) => (
                 <FormItem>
@@ -77,7 +90,7 @@ export const SocialMediaTab: React.FC<SocialMediaTabProps> = ({
             />
             
             <FormField
-              control={profileForm.control}
+              control={formToUse.control}
               name="youtubeUrl"
               render={({ field }) => (
                 <FormItem>
@@ -91,7 +104,7 @@ export const SocialMediaTab: React.FC<SocialMediaTabProps> = ({
             />
             
             <FormField
-              control={profileForm.control}
+              control={formToUse.control}
               name="tiktokUrl"
               render={({ field }) => (
                 <FormItem>
@@ -104,7 +117,7 @@ export const SocialMediaTab: React.FC<SocialMediaTabProps> = ({
               )}
             />
             
-            <Button type="button" onClick={onSubmit} disabled={isUpdating}>
+            <Button type="button" onClick={submitHandler} disabled={isUpdating}>
               {isUpdating && <Loader2 className="mr-2 h-4 w-4 animate-spin" />}
               Save Social Profiles
             </Button>
