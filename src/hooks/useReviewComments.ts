@@ -27,6 +27,7 @@ export const useReviewComments = (reviewId: string) => {
     try {
       setLoading(true);
       
+      // Use a proper join query to get review comments with user profile data
       const { data, error } = await supabase
         .from('review_comments')
         .select(`
@@ -34,7 +35,7 @@ export const useReviewComments = (reviewId: string) => {
           content,
           created_at,
           user_id,
-          profiles (
+          profiles!review_comments_user_id_fkey (
             id,
             username,
             avatar
@@ -50,8 +51,8 @@ export const useReviewComments = (reviewId: string) => {
         content: comment.content,
         created_at: comment.created_at,
         user: {
-          id: comment.profiles?.id || '',
-          username: comment.profiles?.username || '',
+          id: comment.profiles?.id || comment.user_id || '',
+          username: comment.profiles?.username || 'Anonymous',
           avatar: comment.profiles?.avatar
         }
       }));
@@ -93,16 +94,19 @@ export const useReviewComments = (reviewId: string) => {
         .eq('id', user.id)
         .single();
         
-      if (profileError) throw profileError;
+      if (profileError) {
+        console.warn('Could not fetch profile data:', profileError);
+        // Continue with a fallback for the profile data
+      }
       
       const newCommentObj: Comment = {
         id: commentData.id,
         content: commentData.content,
         created_at: commentData.created_at,
         user: {
-          id: profileData.id,
-          username: profileData.username || '',
-          avatar: profileData.avatar
+          id: user.id,
+          username: profileData?.username || 'Anonymous',
+          avatar: profileData?.avatar
         }
       };
       
