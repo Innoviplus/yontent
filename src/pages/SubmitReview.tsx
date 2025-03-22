@@ -1,85 +1,85 @@
 
-import { useState } from 'react';
-import { useNavigate } from 'react-router-dom';
-import { useForm } from 'react-hook-form';
 import { Loader2, Save } from 'lucide-react';
-import { useAuth } from '@/contexts/AuthContext';
-import { toast } from 'sonner';
 import { Button } from '@/components/ui/button';
 import { Textarea } from '@/components/ui/textarea';
 import { Form, FormControl, FormField, FormItem, FormLabel, FormMessage } from '@/components/ui/form';
-import { zodResolver } from '@hookform/resolvers/zod';
-import { z } from 'zod';
 import Navbar from '@/components/Navbar';
-import ImageUploadSection from '@/components/review/ImageUploadSection';
-import { submitReview } from '@/services/reviewService';
+import { useSubmitReview } from '@/hooks/useSubmitReview';
+import { Skeleton } from '@/components/ui/skeleton';
 
-// Form validation schema
-const reviewSchema = z.object({
-  content: z.string().min(20, { message: "Review content must be at least 20 characters" }),
-});
-
-type ReviewFormValues = z.infer<typeof reviewSchema>;
+// Custom image upload section component
+const ImageUploadSection = ({ 
+  imagePreviewUrls, 
+  onFileSelect, 
+  onRemoveImage, 
+  error, 
+  uploading 
+}: { 
+  imagePreviewUrls: string[];
+  onFileSelect: (files: FileList | null) => void;
+  onRemoveImage: (index: number) => void;
+  error: string | null;
+  uploading: boolean;
+}) => {
+  return (
+    <div className="mb-6">
+      <div className="flex items-center justify-between mb-2">
+        <h3 className="font-medium text-gray-900">Images</h3>
+        <span className="text-sm text-gray-500">Add up to 5 images</span>
+      </div>
+      
+      <div className="flex flex-wrap gap-4 mb-4">
+        {/* Show existing images */}
+        {imagePreviewUrls.map((url, index) => (
+          <div key={index} className="relative w-20 h-20 bg-gray-100 rounded-md overflow-hidden">
+            <img src={url} alt={`Preview ${index}`} className="w-full h-full object-cover" />
+            <button
+              type="button"
+              className="absolute top-0 right-0 bg-red-500 text-white p-1 rounded-bl-md"
+              onClick={() => onRemoveImage(index)}
+              disabled={uploading}
+            >
+              ×
+            </button>
+          </div>
+        ))}
+        
+        {/* Add image button - only show if less than 5 images */}
+        {imagePreviewUrls.length < 5 && (
+          <label className="w-20 h-20 border-2 border-dashed border-gray-300 rounded-md flex items-center justify-center cursor-pointer hover:bg-gray-50">
+            <input
+              type="file"
+              accept="image/*"
+              className="hidden"
+              onChange={(e) => onFileSelect(e.target.files)}
+              multiple
+              disabled={uploading}
+            />
+            <span className="text-3xl text-gray-400">+</span>
+          </label>
+        )}
+      </div>
+      
+      {error && <p className="text-sm text-red-500 mt-1">{error}</p>}
+    </div>
+  );
+};
 
 const SubmitReview = () => {
-  const { user } = useAuth();
-  const navigate = useNavigate();
-  const [uploading, setUploading] = useState(false);
-  const [selectedImages, setSelectedImages] = useState<File[]>([]);
-  const [imagePreviewUrls, setImagePreviewUrls] = useState<string[]>([]);
-  const [imageError, setImageError] = useState<string | null>(null);
-  
-  const form = useForm<ReviewFormValues>({
-    resolver: zodResolver(reviewSchema),
-    defaultValues: {
-      content: '',
-    },
-  });
-
-  const onSubmit = async (values: ReviewFormValues, isDraft: boolean = false) => {
-    if (!user) {
-      toast.error('You must be logged in to submit a review');
-      return;
-    }
-    
-    // For published reviews, validate that at least one image is selected
-    if (!isDraft && selectedImages.length === 0) {
-      setImageError("At least one image is required");
-      return;
-    }
-    
-    try {
-      setUploading(true);
-      
-      await submitReview({
-        userId: user.id,
-        content: values.content,
-        images: selectedImages,
-        isDraft
-      });
-      
-      toast.success(isDraft ? 'Draft saved successfully!' : 'Review submitted successfully!');
-      navigate(isDraft ? '/dashboard' : '/feed');
-    } catch (error) {
-      console.error('Unexpected error:', error);
-      toast.error('An unexpected error occurred');
-    } finally {
-      setUploading(false);
-    }
-  };
-
-  const saveDraft = () => {
-    // Since we're saving as draft, we'll validate manually to allow empty content
-    const values = form.getValues();
-    
-    // For drafts, allow empty content
-    if (values.content.length === 0 && selectedImages.length === 0) {
-      toast.error('Please add some content or images to save as draft');
-      return;
-    }
-    
-    onSubmit(values, true);
-  };
+  const {
+    form,
+    uploading,
+    isLoading,
+    imagePreviewUrls,
+    imageError,
+    isDraft,
+    isEditing,
+    onSubmit,
+    saveDraft,
+    handleImageSelection,
+    removeImage,
+    setImageError
+  } = useSubmitReview();
 
   return (
     <div className="min-h-screen bg-gray-50">
@@ -87,72 +87,85 @@ const SubmitReview = () => {
       
       <div className="container mx-auto px-4 pt-28 pb-16">
         <div className="max-w-2xl mx-auto">
-          <h1 className="text-2xl font-bold mb-6">Submit a Review</h1>
+          <h1 className="text-2xl font-bold mb-6">
+            {isEditing ? (isDraft ? 'Edit Draft Review' : 'Edit Review') : 'Submit a Review'}
+          </h1>
           
           <div className="bg-white rounded-xl shadow-card p-6">
-            <Form {...form}>
-              <form onSubmit={form.handleSubmit((values) => onSubmit(values, false))} className="space-y-6">
-                {/* Image Upload Section */}
-                <ImageUploadSection
-                  selectedImages={selectedImages}
-                  setSelectedImages={setSelectedImages}
-                  imagePreviewUrls={imagePreviewUrls}
-                  setImagePreviewUrls={setImagePreviewUrls}
-                  imageError={imageError}
-                  setImageError={setImageError}
-                />
-                
-                {/* Review Content */}
-                <FormField
-                  control={form.control}
-                  name="content"
-                  render={({ field }) => (
-                    <FormItem>
-                      <FormLabel>Review</FormLabel>
-                      <FormControl>
-                        <Textarea 
-                          placeholder="Share your experience..."
-                          className="min-h-32"
-                          {...field}
-                        />
-                      </FormControl>
-                      <FormMessage />
-                    </FormItem>
-                  )}
-                />
-                
-                {/* Action Buttons */}
-                <div className="flex flex-col sm:flex-row gap-3 sm:justify-between">
-                  <Button 
-                    type="button" 
-                    variant="outline"
-                    onClick={saveDraft}
-                    disabled={uploading}
-                    className="order-2 sm:order-1"
-                  >
-                    {uploading ? (
-                      <Loader2 className="mr-2 h-4 w-4 animate-spin" />
-                    ) : (
-                      <Save className="mr-2 h-4 w-4" />
-                    )}
-                    Save as Draft
-                  </Button>
-                  
-                  <Button 
-                    type="submit" 
-                    className="order-1 sm:order-2"
-                    disabled={uploading}
-                  >
-                    {uploading ? (
-                      <>
-                        <Loader2 className="mr-2 h-4 w-4 animate-spin" />
-                        Uploading...
-                      </>
-                    ) : "Publish Review"}
-                  </Button>
+            {isLoading ? (
+              <div className="space-y-4">
+                <Skeleton className="h-20 w-full" />
+                <Skeleton className="h-10 w-1/3" />
+                <Skeleton className="h-40 w-full" />
+                <div className="flex justify-end space-x-4">
+                  <Skeleton className="h-10 w-32" />
+                  <Skeleton className="h-10 w-32" />
                 </div>
-              </form>
-            </Form>
+              </div>
+            ) : (
+              <Form {...form}>
+                <form onSubmit={form.handleSubmit((values) => onSubmit(values, false))} className="space-y-6">
+                  {/* Image Upload Section */}
+                  <ImageUploadSection
+                    imagePreviewUrls={imagePreviewUrls}
+                    onFileSelect={handleImageSelection}
+                    onRemoveImage={removeImage}
+                    error={imageError}
+                    uploading={uploading}
+                  />
+                  
+                  {/* Review Content */}
+                  <FormField
+                    control={form.control}
+                    name="content"
+                    render={({ field }) => (
+                      <FormItem>
+                        <FormLabel>Review</FormLabel>
+                        <FormControl>
+                          <Textarea 
+                            placeholder="Share your experience..."
+                            className="min-h-32"
+                            {...field}
+                          />
+                        </FormControl>
+                        <FormMessage />
+                      </FormItem>
+                    )}
+                  />
+                  
+                  {/* Action Buttons */}
+                  <div className="flex flex-col sm:flex-row gap-3 sm:justify-between">
+                    <Button 
+                      type="button" 
+                      variant="outline"
+                      onClick={saveDraft}
+                      disabled={uploading}
+                      className="order-2 sm:order-1"
+                    >
+                      {uploading ? (
+                        <Loader2 className="mr-2 h-4 w-4 animate-spin" />
+                      ) : (
+                        <Save className="mr-2 h-4 w-4" />
+                      )}
+                      Save as Draft
+                    </Button>
+                    
+                    <Button 
+                      type="submit" 
+                      className="order-1 sm:order-2"
+                      disabled={uploading}
+                    >
+                      {uploading ? (
+                        <>
+                          <Loader2 className="mr-2 h-4 w-4 animate-spin" />
+                          {isEditing ? 'Updating...' : 'Uploading...'}
+                        </>
+                      ) : (isEditing ? "Update Review" : "Publish Review")}
+                    </Button>
+                  </div>
+                </form>
+              </Form>
+            )}
           </div>
         </div>
       </div>

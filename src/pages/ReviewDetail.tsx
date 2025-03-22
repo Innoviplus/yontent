@@ -12,9 +12,11 @@ import ReviewContent from '@/components/review/ReviewDetail/ReviewContent';
 import ReviewNotFound from '@/components/review/ReviewDetail/ReviewNotFound';
 import ReviewAuthorProfile from '@/components/review/ReviewDetail/ReviewAuthorProfile';
 import RelatedReviews from '@/components/review/ReviewDetail/RelatedReviews';
+import { useAuth } from '@/contexts/AuthContext';
 
 const ReviewDetail = () => {
   const { id } = useParams<{ id: string }>();
+  const { user } = useAuth();
   const {
     review,
     loading,
@@ -24,6 +26,9 @@ const ReviewDetail = () => {
     navigateToUserProfile,
     relatedReviews
   } = useReviewDetail(id);
+
+  // Check if current user is the author of the review
+  const isAuthor = user && review && user.id === review.userId;
 
   return (
     <div className="min-h-screen bg-gray-50">
@@ -78,12 +83,14 @@ const ReviewDetail = () => {
                   <div className="flex items-center justify-between mb-6">
                     <ReviewStats viewsCount={review.viewsCount || 0} />
                     
-                    {/* Action buttons moved here */}
+                    {/* Action buttons with isAuthor prop */}
                     <ReviewActionButtons
                       likesCount={review.likesCount || 0}
                       hasLiked={hasLiked}
                       onLike={handleLike}
                       likeLoading={likeLoading}
+                      isAuthor={isAuthor}
+                      reviewId={review.id}
                     />
                   </div>
                   

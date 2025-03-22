@@ -2,12 +2,12 @@
 import { useState, useEffect } from 'react';
 import { supabase } from '@/integrations/supabase/client';
 import { toast } from 'sonner';
-import { Tables } from '@/integrations/supabase/types';
 import { User } from '@/lib/types';
 
 type ProfileWithCounts = User & {
   completedReviews: number;
   completedMissions: number;
+  extendedData?: any;
 };
 
 export const useDashboardProfile = (userId: string | undefined) => {
@@ -64,7 +64,10 @@ export const useDashboardProfile = (userId: string | undefined) => {
           createdAt: new Date(profile.created_at), // Convert string date to Date object
           completedReviews: reviewsCount || 0,
           completedMissions: missionsCount || 0,
-          isAdmin: false // Default value for isAdmin
+          isAdmin: false, // Default value for isAdmin
+          extendedData: profile.extended_data || {},
+          followersCount: profile.followers_count || 0,
+          followingCount: profile.following_count || 0
         };
 
         setUser(userWithCounts);
