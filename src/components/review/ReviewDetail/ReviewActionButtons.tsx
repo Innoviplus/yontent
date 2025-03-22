@@ -1,10 +1,12 @@
 
 import React from 'react';
-import { Heart, Share2, Edit, Trash2 } from 'lucide-react';
-import { Button } from '@/components/ui/button';
-import { useNavigate } from 'react-router-dom';
-import { toast } from 'sonner';
-import { supabase } from '@/integrations/supabase/client';
+import LikeButton from './buttons/LikeButton';
+import ShareButton from './buttons/ShareButton';
+import EditButton from './buttons/EditButton';
+import DeleteButton from './buttons/DeleteButton';
+import { useLikeAction } from '@/hooks/review/useLikeAction';
+import { useShareAction } from '@/hooks/review/useShareAction';
+import { useAuthorActions } from '@/hooks/review/useAuthorActions';
 
 interface ReviewActionButtonsProps {
   likesCount: number;
@@ -23,69 +25,28 @@ const ReviewActionButtons = ({
   isAuthor = false,
   reviewId
 }: ReviewActionButtonsProps) => {
-  const navigate = useNavigate();
-  
-  const handleCopyLink = () => {
-    const url = window.location.href;
-    navigator.clipboard.writeText(url);
-    toast.success('Link copied to clipboard');
-  };
-  
-  const handleEdit = () => {
-    navigate(`/submit-review?edit=${reviewId}`);
-  };
-  
-  const handleDelete = async () => {
-    if (!reviewId) return;
-    
-    if (window.confirm('Are you sure you want to delete this review? This action cannot be undone.')) {
-      try {
-        const { error } = await supabase
-          .from('reviews')
-          .delete()
-          .eq('id', reviewId);
-          
-        if (error) throw error;
-        
-        toast.success('Review deleted successfully');
-        navigate('/dashboard');
-      } catch (error) {
-        console.error('Error deleting review:', error);
-        toast.error('Failed to delete review');
-      }
-    }
-  };
+  // Use our custom hooks
+  const likeAction = useLikeAction({ reviewId, likesCount, hasLiked, likeLoading, onLike });
+  const shareAction = useShareAction();
+  const authorActions = useAuthorActions({ reviewId, isAuthor });
   
   return (
     <div className="flex items-center gap-2">
-      <Button
-        variant="ghost"
-        size="sm"
-        onClick={onLike}
-        disabled={likeLoading}
-        className="text-gray-600"
-      >
-        <Heart 
-          className={`h-5 w-5 mr-1 ${hasLiked ? 'fill-red-500 text-red-500' : ''}`} 
-        />
-        <span className="text-gray-600">{likesCount}</span>
-      </Button>
+      <LikeButton 
+        likesCount={likeAction.likesCount}
+        hasLiked={likeAction.hasLiked}
+        onClick={likeAction.handleLike}
+        isLoading={likeAction.likeLoading}
+      />
       
-      {isAuthor ? (
+      {authorActions.isAuthor ? (
         <>
-          <Button variant="ghost" size="sm" onClick={handleEdit}>
-            <Edit className="h-5 w-5" />
-          </Button>
-          
-          <Button variant="ghost" size="sm" onClick={handleDelete}>
-            <Trash2 className="h-5 w-5" />
-          </Button>
+          <EditButton onClick={authorActions.handleEdit} />
+          <DeleteButton onClick={authorActions.handleDelete} />
         </>
       ) : null}
       
-      <Button variant="ghost" size="sm" onClick={handleCopyLink}>
-        <Share2 className="h-5 w-5" />
-      </Button>
+      <ShareButton onClick={shareAction.handleCopyLink} />
     </div>
   );
 };
