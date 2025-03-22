@@ -176,6 +176,39 @@ export type Database = {
         }
         Relationships: []
       }
+      redemption_items: {
+        Row: {
+          created_at: string
+          description: string
+          id: string
+          image_url: string | null
+          is_active: boolean
+          name: string
+          points_required: number
+          updated_at: string
+        }
+        Insert: {
+          created_at?: string
+          description: string
+          id?: string
+          image_url?: string | null
+          is_active?: boolean
+          name: string
+          points_required: number
+          updated_at?: string
+        }
+        Update: {
+          created_at?: string
+          description?: string
+          id?: string
+          image_url?: string | null
+          is_active?: boolean
+          name?: string
+          points_required?: number
+          updated_at?: string
+        }
+        Relationships: []
+      }
       redemption_requests: {
         Row: {
           admin_notes: string | null

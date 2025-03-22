@@ -12,7 +12,7 @@ import {
   TableHeader, 
   TableRow 
 } from "@/components/ui/table";
-import { Loader2, Search, User, Check, X } from "lucide-react";
+import { Loader2, Search, User, Check, X, Shield } from "lucide-react";
 import { toast } from "sonner";
 
 const UserManagement = () => {
@@ -56,6 +56,27 @@ const UserManagement = () => {
     }
   };
   
+  const toggleAdminStatus = async (userId: string, isAdmin: boolean) => {
+    try {
+      const { error } = await supabase
+        .from('profiles')
+        .update({ 
+          extended_data: { 
+            ...users?.find(u => u.id === userId)?.extended_data,
+            isAdmin: !isAdmin 
+          } 
+        })
+        .eq('id', userId);
+        
+      if (error) throw error;
+      
+      toast.success(`User ${isAdmin ? 'removed from' : 'added to'} admin role successfully`);
+      refetch();
+    } catch (error: any) {
+      toast.error(`Error updating user: ${error.message}`);
+    }
+  };
+  
   if (isLoading) {
     return (
       <div className="flex justify-center items-center h-64">
@@ -88,12 +109,14 @@ const UserManagement = () => {
               <TableHead>Points</TableHead>
               <TableHead>Created At</TableHead>
               <TableHead>Status</TableHead>
+              <TableHead>Admin</TableHead>
               <TableHead>Actions</TableHead>
             </TableRow>
           </TableHeader>
           <TableBody>
             {filteredUsers?.map((user) => {
               const isDisabled = user.extended_data?.isDisabled === true;
+              const isAdmin = user.extended_data?.isAdmin === true;
               
               return (
                 <TableRow key={user.id}>
@@ -127,6 +150,15 @@ const UserManagement = () => {
                     </span>
                   </TableCell>
                   <TableCell>
+                    <span className={`inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium ${
+                      isAdmin
+                        ? 'bg-purple-100 text-purple-800' 
+                        : 'bg-gray-100 text-gray-800'
+                    }`}>
+                      {isAdmin ? 'Admin' : 'User'}
+                    </span>
+                  </TableCell>
+                  <TableCell>
                     <div className="flex space-x-2">
                       <Button
                         variant="outline"
@@ -137,6 +169,17 @@ const UserManagement = () => {
                           <><Check className="h-4 w-4 mr-1" /> Enable</>
                         ) : (
                           <><X className="h-4 w-4 mr-1" /> Disable</>
+                        )}
+                      </Button>
+                      <Button
+                        variant="outline"
+                        size="sm"
+                        onClick={() => toggleAdminStatus(user.id, isAdmin)}
+                      >
+                        {isAdmin ? (
+                          <><X className="h-4 w-4 mr-1" /> Remove Admin</>
+                        ) : (
+                          <><Shield className="h-4 w-4 mr-1" /> Make Admin</>
                         )}
                       </Button>
                       <Button
@@ -154,7 +197,7 @@ const UserManagement = () => {
             
             {filteredUsers?.length === 0 && (
               <TableRow>
-                <TableCell colSpan={5} className="h-24 text-center">
+                <TableCell colSpan={6} className="h-24 text-center">
                   No users found.
                 </TableCell>
               </TableRow>

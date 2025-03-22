@@ -10,7 +10,7 @@ import {
 } from "@/components/ui/dropdown-menu";
 import { useAuth } from "@/contexts/AuthContext";
 import { Link } from "react-router-dom";
-import { LogOut, User, Settings, ShoppingBag, Award, Shield } from "lucide-react";
+import { LogOut, User, Settings, Award, Shield } from "lucide-react";
 import PointsBadge from "../PointsBadge";
 
 const UserMenuDropdown = () => {
@@ -53,7 +53,7 @@ const UserMenuDropdown = () => {
           </Link>
         </DropdownMenuItem>
         
-        {isAdmin && (
+        {userProfile?.extended_data?.isAdmin === true && (
           <>
             <DropdownMenuSeparator />
             <DropdownMenuLabel>Administration</DropdownMenuLabel>

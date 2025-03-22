@@ -1,52 +1,73 @@
+
 import { useState, useEffect } from "react";
-import { useSearchParams } from "react-router-dom";
+import { useSearchParams, useNavigate } from "react-router-dom";
 import { useQuery } from "@tanstack/react-query";
 import { supabase } from "@/integrations/supabase/client";
-import { Input } from "@/components/ui/input";
-import { Button } from "@/components/ui/button";
+import { 
+  Card, 
+  CardContent, 
+  CardFooter, 
+  CardHeader, 
+  CardTitle 
+} from "@/components/ui/card";
 import {
   Form,
   FormControl,
   FormField,
   FormItem,
   FormLabel,
-  FormMessage,
+  FormMessage
 } from "@/components/ui/form";
+import { Button } from "@/components/ui/button";
+import { Input } from "@/components/ui/input";
+import { 
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue
+} from "@/components/ui/select";
+import { Textarea } from "@/components/ui/textarea";
 import { useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
 import * as z from "zod";
-import { Loader2, User, Search } from "lucide-react";
+import { Loader2, Search, User, CreditCard } from "lucide-react";
 import { toast } from "sonner";
 
-// Define the schema for points addition
-const pointsSchema = z.object({
-  userId: z.string().uuid("Please select a valid user"),
-  amount: z.number().min(1, "Amount must be at least 1"),
-  description: z.string().min(2, "Please enter a description"),
+// Define schema for points transaction form
+const pointsTransactionSchema = z.object({
+  amount: z.coerce.number().min(1, "Amount must be at least 1"),
+  type: z.enum(["EARNED", "ADJUSTED"]),
+  description: z.string().min(1, "Description is required"),
+  userId: z.string().min(1, "User is required")
 });
+
+type PointsTransactionFormValues = z.infer<typeof pointsTransactionSchema>;
 
 const PointsManagement = () => {
   const [searchParams] = useSearchParams();
-  const preselectedUserId = searchParams.get('userId');
+  const navigate = useNavigate();
   const [searchQuery, setSearchQuery] = useState("");
   const [selectedUser, setSelectedUser] = useState<any>(null);
   
-  const form = useForm<z.infer<typeof pointsSchema>>({
-    resolver: zodResolver(pointsSchema),
+  // Set up form
+  const form = useForm<PointsTransactionFormValues>({
+    resolver: zodResolver(pointsTransactionSchema),
     defaultValues: {
-      userId: preselectedUserId || "",
       amount: 50,
-      description: "Admin adjustment",
-    },
+      type: "EARNED",
+      description: "",
+      userId: ""
+    }
   });
   
-  // Fetch users for the dropdown
+  // Query to fetch users
   const { data: users, isLoading } = useQuery({
-    queryKey: ["admin-users-list"],
+    queryKey: ["admin-users-for-points"],
     queryFn: async () => {
       const { data, error } = await supabase
         .from('profiles')
-        .select('id, username, avatar')
+        .select('id, username, avatar, points')
         .order('username', { ascending: true });
         
       if (error) throw error;
@@ -54,40 +75,28 @@ const PointsManagement = () => {
     }
   });
   
-  // If a user ID is preselected, fetch that user's details
-  useEffect(() => {
-    if (preselectedUserId) {
-      const fetchUser = async () => {
-        const { data, error } = await supabase
-          .from('profiles')
-          .select('id, username, avatar')
-          .eq('id', preselectedUserId)
-          .single();
-          
-        if (!error && data) {
-          setSelectedUser(data);
-          form.setValue('userId', data.id);
-        }
-      };
-      
-      fetchUser();
-    }
-  }, [preselectedUserId, form]);
-  
+  // Filter users based on search query
   const filteredUsers = users?.filter(user => 
-    !searchQuery || user.username?.toLowerCase().includes(searchQuery.toLowerCase())
+    user.username?.toLowerCase().includes(searchQuery.toLowerCase())
   );
   
-  const selectUser = (user: any) => {
-    setSelectedUser(user);
-    form.setValue('userId', user.id);
-    setSearchQuery("");
-  };
+  // Check for userId in URL and set selected user
+  useEffect(() => {
+    const userId = searchParams.get('userId');
+    if (userId && users) {
+      const user = users.find(u => u.id === userId);
+      if (user) {
+        setSelectedUser(user);
+        form.setValue('userId', user.id);
+      }
+    }
+  }, [searchParams, users, form]);
   
-  const onSubmit = async (values: z.infer<typeof pointsSchema>) => {
+  // Submit handler for adding points
+  const handleAddPoints = async (values: PointsTransactionFormValues) => {
     try {
-      // First, update the user's points
-      const { data: userData, error: userError } = await supabase
+      // Start a transaction for atomicity
+      const { data: user, error: userError } = await supabase
         .from('profiles')
         .select('points')
         .eq('id', values.userId)
@@ -95,40 +104,54 @@ const PointsManagement = () => {
         
       if (userError) throw userError;
       
-      const currentPoints = userData.points || 0;
-      const newPoints = currentPoints + values.amount;
+      // Add the transaction
+      const { error: transactionError } = await supabase
+        .from('point_transactions')
+        .insert([{
+          user_id: values.userId,
+          amount: values.amount,
+          type: values.type,
+          source: 'ADMIN_ADJUSTMENT',
+          description: values.description
+        }]);
+        
+      if (transactionError) throw transactionError;
       
+      // Update user's points
       const { error: updateError } = await supabase
         .from('profiles')
-        .update({ points: newPoints })
+        .update({ points: user.points + values.amount })
         .eq('id', values.userId);
         
       if (updateError) throw updateError;
       
-      // Then, record the points transaction
-      const { error: transactionError } = await supabase
-        .from('point_transactions')
-        .insert({
-          user_id: values.userId,
-          amount: values.amount,
-          type: 'EARNED',
-          source: 'ADMIN_ADJUSTMENT',
-          description: values.description,
-        });
-        
-      if (transactionError) throw transactionError;
+      toast.success(`Successfully added ${values.amount} points to user`);
       
-      toast.success(`${values.amount} points added successfully to ${selectedUser?.username}`);
-      
-      // Reset form but keep the selected user
+      // Reset form except for userId
       form.reset({
-        userId: values.userId,
         amount: 50,
-        description: "Admin adjustment",
+        type: "EARNED",
+        description: "",
+        userId: values.userId
       });
+      
     } catch (error: any) {
-      toast.error(`Error: ${error.message}`);
+      toast.error(`Error adding points: ${error.message}`);
     }
+  };
+  
+  // Handler for selecting a user
+  const handleSelectUser = (user: any) => {
+    setSelectedUser(user);
+    form.setValue('userId', user.id);
+    setSearchQuery("");
+  };
+  
+  // Handler for clearing selected user
+  const handleClearUser = () => {
+    setSelectedUser(null);
+    form.setValue('userId', "");
+    navigate('/admin/points');
   };
   
   if (isLoading) {
@@ -143,170 +166,167 @@ const PointsManagement = () => {
     <div>
       <h1 className="text-2xl font-bold mb-6">Points Management</h1>
       
-      <div className="grid grid-cols-1 lg:grid-cols-2 gap-8">
-        <div className="bg-white p-6 rounded-md shadow">
-          <h2 className="text-xl font-semibold mb-4">Add Points to User</h2>
-          
-          <Form {...form}>
-            <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-4">
-              <FormField
-                control={form.control}
-                name="userId"
-                render={({ field }) => (
-                  <FormItem>
-                    <FormLabel>Select User</FormLabel>
-                    {selectedUser ? (
-                      <div className="flex items-center p-2 border rounded-md">
-                        {selectedUser.avatar ? (
-                          <img 
-                            src={selectedUser.avatar} 
-                            alt={selectedUser.username} 
-                            className="w-8 h-8 rounded-full mr-2"
-                          />
-                        ) : (
-                          <div className="w-8 h-8 rounded-full bg-gray-200 flex items-center justify-center mr-2">
-                            <User className="h-4 w-4 text-gray-500" />
-                          </div>
-                        )}
-                        <span>{selectedUser.username}</span>
-                        <Button
-                          type="button"
-                          variant="ghost"
-                          size="sm"
-                          className="ml-auto"
-                          onClick={() => {
-                            setSelectedUser(null);
-                            form.setValue('userId', '');
-                          }}
+      <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+        {/* User Search */}
+        <Card>
+          <CardHeader>
+            <CardTitle>Select User</CardTitle>
+          </CardHeader>
+          <CardContent>
+            {selectedUser ? (
+              <div className="flex items-center justify-between p-4 bg-gray-50 rounded-lg">
+                <div className="flex items-center">
+                  {selectedUser.avatar ? (
+                    <img 
+                      src={selectedUser.avatar} 
+                      alt={selectedUser.username || ''} 
+                      className="w-10 h-10 rounded-full mr-3"
+                    />
+                  ) : (
+                    <div className="w-10 h-10 rounded-full bg-gray-200 flex items-center justify-center mr-3">
+                      <User className="h-5 w-5 text-gray-500" />
+                    </div>
+                  )}
+                  <div>
+                    <div className="font-medium">{selectedUser.username || 'Anonymous'}</div>
+                    <div className="text-sm text-gray-500">Current points: {selectedUser.points}</div>
+                  </div>
+                </div>
+                <Button variant="outline" size="sm" onClick={handleClearUser}>
+                  Change
+                </Button>
+              </div>
+            ) : (
+              <>
+                <div className="relative mb-4">
+                  <Search className="absolute left-2.5 top-2.5 h-4 w-4 text-gray-500" />
+                  <Input
+                    placeholder="Search users by username..."
+                    className="pl-8"
+                    value={searchQuery}
+                    onChange={(e) => setSearchQuery(e.target.value)}
+                  />
+                </div>
+                
+                <div className="border rounded-md max-h-60 overflow-y-auto">
+                  {filteredUsers?.length === 0 ? (
+                    <div className="p-4 text-center text-sm text-gray-500">
+                      No users found
+                    </div>
+                  ) : (
+                    <div className="divide-y">
+                      {filteredUsers?.map(user => (
+                        <div 
+                          key={user.id} 
+                          className="p-3 flex items-center hover:bg-gray-50 cursor-pointer"
+                          onClick={() => handleSelectUser(user)}
                         >
-                          Change
-                        </Button>
-                      </div>
-                    ) : (
-                      <div>
-                        <div className="relative">
-                          <Search className="absolute left-2.5 top-2.5 h-4 w-4 text-gray-500" />
-                          <Input
-                            placeholder="Search for a user..."
-                            className="pl-8"
-                            value={searchQuery}
-                            onChange={(e) => setSearchQuery(e.target.value)}
-                          />
-                        </div>
-                        
-                        {searchQuery && (
-                          <div className="mt-2 border rounded-md max-h-48 overflow-y-auto">
-                            {filteredUsers?.length === 0 && (
-                              <div className="p-2 text-center text-gray-500">
-                                No users found
-                              </div>
-                            )}
-                            
-                            {filteredUsers?.map(user => (
-                              <div
-                                key={user.id}
-                                className="flex items-center p-2 hover:bg-gray-100 cursor-pointer"
-                                onClick={() => selectUser(user)}
-                              >
-                                {user.avatar ? (
-                                  <img 
-                                    src={user.avatar} 
-                                    alt={user.username || ''} 
-                                    className="w-8 h-8 rounded-full mr-2"
-                                  />
-                                ) : (
-                                  <div className="w-8 h-8 rounded-full bg-gray-200 flex items-center justify-center mr-2">
-                                    <User className="h-4 w-4 text-gray-500" />
-                                  </div>
-                                )}
-                                <span>{user.username || 'Anonymous'}</span>
-                              </div>
-                            ))}
+                          {user.avatar ? (
+                            <img 
+                              src={user.avatar} 
+                              alt={user.username || ''} 
+                              className="w-8 h-8 rounded-full mr-2"
+                            />
+                          ) : (
+                            <div className="w-8 h-8 rounded-full bg-gray-200 flex items-center justify-center mr-2">
+                              <User className="h-4 w-4 text-gray-500" />
+                            </div>
+                          )}
+                          <div>
+                            <div className="font-medium">{user.username || 'Anonymous'}</div>
+                            <div className="text-xs text-gray-500">Points: {user.points}</div>
                           </div>
-                        )}
-                      </div>
-                    )}
-                    <FormMessage />
-                  </FormItem>
-                )}
-              />
-              
-              <FormField
-                control={form.control}
-                name="amount"
-                render={({ field }) => (
-                  <FormItem>
-                    <FormLabel>Points Amount</FormLabel>
-                    <FormControl>
-                      <Input
-                        type="number"
-                        placeholder="50"
-                        {...field}
-                        onChange={(e) => field.onChange(parseInt(e.target.value))}
-                      />
-                    </FormControl>
-                    <FormMessage />
-                  </FormItem>
-                )}
-              />
-              
-              <FormField
-                control={form.control}
-                name="description"
-                render={({ field }) => (
-                  <FormItem>
-                    <FormLabel>Description</FormLabel>
-                    <FormControl>
-                      <Input
-                        placeholder="Admin adjustment"
-                        {...field}
-                      />
-                    </FormControl>
-                    <FormMessage />
-                  </FormItem>
-                )}
-              />
-              
-              <Button 
-                type="submit" 
-                className="w-full"
-                disabled={!selectedUser}
-              >
-                Add Points
-              </Button>
-            </form>
-          </Form>
-        </div>
+                        </div>
+                      ))}
+                    </div>
+                  )}
+                </div>
+              </>
+            )}
+          </CardContent>
+        </Card>
         
-        <div className="bg-white p-6 rounded-md shadow">
-          <h2 className="text-xl font-semibold mb-4">Points Management Guide</h2>
-          
-          <div className="space-y-4">
-            <div>
-              <h3 className="font-medium">When to Add Points</h3>
-              <p className="text-gray-600">
-                Add points manually as rewards for special achievements, contest winners, or to correct discrepancies in user point balances.
-              </p>
-            </div>
-            
-            <div>
-              <h3 className="font-medium">Suggested Point Values</h3>
-              <ul className="list-disc list-inside text-gray-600">
-                <li>Contest winner: 100-500 points</li>
-                <li>Special achievement: 50-200 points</li>
-                <li>Error correction: As needed</li>
-                <li>Welcome bonus: 50 points</li>
-              </ul>
-            </div>
-            
-            <div>
-              <h3 className="font-medium">Description Best Practices</h3>
-              <p className="text-gray-600">
-                Always include a clear description of why points were added. This creates transparency for both admins and users.
-              </p>
-            </div>
-          </div>
-        </div>
+        {/* Points Form */}
+        <Card>
+          <CardHeader>
+            <CardTitle>Add Points</CardTitle>
+          </CardHeader>
+          <CardContent>
+            <Form {...form}>
+              <form onSubmit={form.handleSubmit(handleAddPoints)} className="space-y-4">
+                <FormField
+                  control={form.control}
+                  name="amount"
+                  render={({ field }) => (
+                    <FormItem>
+                      <FormLabel>Points Amount</FormLabel>
+                      <FormControl>
+                        <Input type="number" {...field} />
+                      </FormControl>
+                      <FormMessage />
+                    </FormItem>
+                  )}
+                />
+                
+                <FormField
+                  control={form.control}
+                  name="type"
+                  render={({ field }) => (
+                    <FormItem>
+                      <FormLabel>Transaction Type</FormLabel>
+                      <Select 
+                        onValueChange={field.onChange} 
+                        defaultValue={field.value}
+                      >
+                        <FormControl>
+                          <SelectTrigger>
+                            <SelectValue placeholder="Select a type" />
+                          </SelectTrigger>
+                        </FormControl>
+                        <SelectContent>
+                          <SelectItem value="EARNED">Earned Points</SelectItem>
+                          <SelectItem value="ADJUSTED">Manual Adjustment</SelectItem>
+                        </SelectContent>
+                      </Select>
+                      <FormMessage />
+                    </FormItem>
+                  )}
+                />
+                
+                <FormField
+                  control={form.control}
+                  name="description"
+                  render={({ field }) => (
+                    <FormItem>
+                      <FormLabel>Description</FormLabel>
+                      <FormControl>
+                        <Textarea 
+                          placeholder="Reason for awarding points..." 
+                          {...field} 
+                        />
+                      </FormControl>
+                      <FormMessage />
+                    </FormItem>
+                  )}
+                />
+                
+                <input type="hidden" {...form.register('userId')} />
+                
+                <Button 
+                  type="submit" 
+                  className="w-full bg-brand-teal hover:bg-brand-teal/90"
+                  disabled={!selectedUser}
+                >
+                  <CreditCard className="h-4 w-4 mr-2" /> 
+                  Add Points
+                </Button>
+              </form>
+            </Form>
+          </CardContent>
+          <CardFooter className="border-t pt-4 text-xs text-gray-500">
+            Points will be immediately added to the user's account and a transaction record will be created.
+          </CardFooter>
+        </Card>
       </div>
     </div>
   );
