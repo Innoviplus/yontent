@@ -57,7 +57,7 @@ const UserProfileHeader = ({ user }: UserProfileHeaderProps) => {
           <Link to="/settings" className="btn-outline py-2 px-3">
             <Settings className="h-5 w-5" />
           </Link>
-          <Link to="/rewards" className="btn-primary py-2 flex items-center gap-1.5">
+          <Link to="/redeem-points" className="btn-primary py-2 flex items-center gap-1.5">
             <Gift className="h-5 w-5" />
             <span>Redeem Points</span>
           </Link>

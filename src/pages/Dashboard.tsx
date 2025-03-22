@@ -2,6 +2,7 @@
 import { useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { useAuth } from '@/contexts/AuthContext';
+import Navbar from '@/components/Navbar';
 import UserProfileHeader from '@/components/dashboard/UserProfileHeader';
 import DashboardTabs from '@/components/dashboard/DashboardTabs';
 import DashboardSkeleton from '@/components/dashboard/DashboardSkeleton';
@@ -22,15 +23,26 @@ const Dashboard = () => {
   }, [authUser, navigate]);
 
   if (loading || isLoading) {
-    return <DashboardSkeleton />;
+    return (
+      <>
+        <Navbar />
+        <DashboardSkeleton />
+      </>
+    );
   }
 
   if (!user) {
-    return <DashboardError />;
+    return (
+      <>
+        <Navbar />
+        <DashboardError />
+      </>
+    );
   }
 
   return (
     <div className="min-h-screen bg-gray-50">
+      <Navbar />
       <div className="container mx-auto px-4 pt-28 pb-16 max-w-4xl">
         <UserProfileHeader user={user} />
         <DashboardTabs reviews={userReviews} draftReviews={draftReviews} />

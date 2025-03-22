@@ -3,7 +3,7 @@ import { Link } from 'react-router-dom';
 import { Review } from '@/lib/types';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Skeleton } from '@/components/ui/skeleton';
-import { ArrowRight } from 'lucide-react';
+import { ChevronRight } from 'lucide-react';
 
 interface RelatedReviewsProps {
   reviewId: string;
@@ -18,7 +18,7 @@ const RelatedReviews = ({ reviewId, relatedReviews }: RelatedReviewsProps) => {
   return (
     <Card>
       <CardHeader className="pb-2">
-        <CardTitle className="text-lg">Related Reviews</CardTitle>
+        <CardTitle className="text-lg">You may also like</CardTitle>
       </CardHeader>
       
       <CardContent className="p-6">
@@ -50,9 +50,12 @@ const RelatedReviews = ({ reviewId, relatedReviews }: RelatedReviewsProps) => {
                 <p className="text-sm text-gray-600 line-clamp-2 mt-1">
                   {review.content}
                 </p>
+                
+                <div className="mt-2 flex items-center text-brand-teal text-xs">
+                  <span>Read more</span>
+                  <ChevronRight className="h-3 w-3 text-brand-teal ml-1" />
+                </div>
               </div>
-              
-              <ArrowRight className="h-4 w-4 text-gray-400 flex-shrink-0 mt-1" />
             </Link>
           ))}
         </div>

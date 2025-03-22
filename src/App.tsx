@@ -19,6 +19,7 @@ import UserProfile from "./pages/UserProfile";
 import Missions from "./pages/Missions";
 import MissionDetail from "./pages/MissionDetail";
 import UserRankings from "./pages/UserRankings";
+import RedeemPoints from "./pages/RedeemPoints";
 import ProtectedRoute from "./components/ProtectedRoute";
 
 const queryClient = new QueryClient();
@@ -47,6 +48,11 @@ const App = () => (
             <Route path="/submit-review" element={
               <ProtectedRoute>
                 <SubmitReview />
+              </ProtectedRoute>
+            } />
+            <Route path="/redeem-points" element={
+              <ProtectedRoute>
+                <RedeemPoints />
               </ProtectedRoute>
             } />
             <Route path="/feed" element={<ReviewFeed />} />
