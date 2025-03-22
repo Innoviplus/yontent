@@ -1,5 +1,5 @@
 
-import React, { useState, useRef } from 'react';
+import React, { useState, useRef, useEffect } from 'react';
 import { Input } from '@/components/ui/input';
 import { Button } from '@/components/ui/button';
 import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
@@ -20,6 +20,13 @@ export const AvatarUploader: React.FC<AvatarUploaderProps> = ({
 }) => {
   const [preview, setPreview] = useState<string | null>(avatarUrl);
   const fileInputRef = useRef<HTMLInputElement>(null);
+
+  // Update preview when avatarUrl changes
+  useEffect(() => {
+    if (avatarUrl) {
+      setPreview(avatarUrl);
+    }
+  }, [avatarUrl]);
   
   const handleFileChange = async (e: React.ChangeEvent<HTMLInputElement>) => {
     const file = e.target.files?.[0];
@@ -80,6 +87,9 @@ export const AvatarUploader: React.FC<AvatarUploaderProps> = ({
     
     img.src = objectUrl;
   };
+
+  console.log("Avatar URL in uploader:", avatarUrl);
+  console.log("Preview URL in uploader:", preview);
 
   return (
     <div className="flex flex-col items-center">

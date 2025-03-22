@@ -109,7 +109,7 @@ export const AccountTab: React.FC<AccountTabProps> = ({
         
         <div className="pt-6 border-t">
           <h3 className="text-lg font-medium mb-4">Contact Us</h3>
-          <Button onClick={handleContactUs} className="bg-green-600 hover:bg-green-700">
+          <Button onClick={handleContactUs} className="bg-brand-teal hover:bg-brand-teal/90">
             <MessageSquare className="mr-2 h-4 w-4" />
             Send Message
           </Button>

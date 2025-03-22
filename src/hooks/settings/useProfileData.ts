@@ -14,6 +14,7 @@ export const useProfileData = (
 ) => {
   useEffect(() => {
     if (userProfile) {
+      // Ensure avatar URL is set
       setAvatarUrl(userProfile.avatar || null);
       
       // Load extended profile data if available
@@ -22,7 +23,7 @@ export const useProfileData = (
         
         const { data, error } = await supabase
           .from('profiles')
-          .select('extended_data, phone_country_code')
+          .select('extended_data, phone_country_code, avatar')
           .eq('id', user.id)
           .single();
           
@@ -32,6 +33,11 @@ export const useProfileData = (
         }
         
         if (data) {
+          // Make sure avatar URL is set from profile data
+          if (data.avatar) {
+            setAvatarUrl(data.avatar);
+          }
+          
           const extData = data.extended_data as ExtendedProfile || {};
           setExtendedProfile(extData);
           

@@ -1,6 +1,6 @@
 
 import { Link } from 'react-router-dom';
-import { LogOut } from 'lucide-react';
+import { LogOut, UserCircle, Settings } from 'lucide-react';
 import { useAuth } from '@/contexts/AuthContext';
 import {
   DropdownMenu,
@@ -32,8 +32,18 @@ const UserMenuDropdown = () => {
         </DropdownMenuItem>
         <DropdownMenuSeparator />
         <DropdownMenuItem asChild>
-          <Link to="/dashboard" className="cursor-pointer">Profile</Link>
+          <Link to="/dashboard" className="cursor-pointer flex items-center">
+            <UserCircle className="h-4 w-4 mr-2" />
+            Profile
+          </Link>
         </DropdownMenuItem>
+        <DropdownMenuItem asChild>
+          <Link to="/settings" className="cursor-pointer flex items-center">
+            <Settings className="h-4 w-4 mr-2" />
+            Settings
+          </Link>
+        </DropdownMenuItem>
+        <DropdownMenuSeparator />
         <DropdownMenuItem onClick={() => signOut()} className="text-red-600 cursor-pointer">
           <LogOut className="h-4 w-4 mr-2" />
           Logout

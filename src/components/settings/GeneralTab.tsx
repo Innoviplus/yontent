@@ -32,7 +32,7 @@ export const GeneralTab: React.FC<GeneralTabProps> = ({
             <p className="text-muted-foreground mb-4">
               If you have any questions or need support, please get in touch with our team.
             </p>
-            <Button variant="outline">
+            <Button className="bg-brand-teal hover:bg-brand-teal/90">
               Send Message
             </Button>
           </div>
@@ -40,7 +40,7 @@ export const GeneralTab: React.FC<GeneralTabProps> = ({
           <div className="pb-6">
             <h3 className="text-lg font-medium mb-4">Account Actions</h3>
             <div className="space-y-4">
-              <Button onClick={handleLogout} variant="outline" className="w-full justify-start">
+              <Button onClick={handleLogout} className="w-auto px-8 bg-brand-teal hover:bg-brand-teal/90">
                 Log out
               </Button>
             </div>

@@ -14,6 +14,7 @@ const Missions = () => {
   const [missions, setMissions] = useState<Mission[]>([]);
   const [sortBy, setSortBy] = useState<SortOption>('recent');
   const [isLoading, setIsLoading] = useState(true);
+  const [activeMissionsCount, setActiveMissionsCount] = useState(0);
 
   const fetchMissions = async () => {
     setIsLoading(true);
@@ -45,7 +46,14 @@ const Missions = () => {
         createdAt: new Date(mission.created_at),
         updatedAt: new Date(mission.updated_at)
       }));
+
+      // Count active missions (not completed or expired)
+      const activeCount = transformedMissions.filter(
+        mission => mission.status === 'ACTIVE' && 
+        (!mission.expiresAt || new Date() < mission.expiresAt)
+      ).length;
       
+      setActiveMissionsCount(activeCount);
       setMissions(transformedMissions);
     } catch (error) {
       console.error('Error fetching missions:', error);
@@ -89,14 +97,14 @@ const Missions = () => {
       
       <main className="container mx-auto px-4 pt-24 pb-16">
         <div className="bg-white rounded-xl shadow-subtle p-6 mb-8">
-          <h1 className="text-3xl font-bold text-gray-900 mb-2">Available Missions</h1>
+          <h1 className="text-3xl font-bold text-gray-900 mb-2">Missions</h1>
           <p className="text-lg text-gray-600 mb-6">
             Complete missions to earn points and unlock rewards.
           </p>
           
           <div className="flex justify-between items-center mb-4">
             <p className="text-gray-500">
-              {isLoading ? 'Loading missions...' : `${missions.length} missions available`}
+              {isLoading ? 'Loading missions...' : `${activeMissionsCount} active missions available`}
             </p>
             
             <div className="flex gap-2">
