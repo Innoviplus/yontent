@@ -95,16 +95,24 @@ const PointsManagement = () => {
   // Submit handler for adding points
   const handleAddPoints = async (values: PointsTransactionFormValues) => {
     try {
+      console.log("Adding points to user:", values.userId, "Amount:", values.amount);
+      
       // Start a transaction for atomicity
+      // First, fetch the current user points from profiles
       const { data: user, error: userError } = await supabase
         .from('profiles')
         .select('points')
         .eq('id', values.userId)
         .single();
         
-      if (userError) throw userError;
+      if (userError) {
+        console.error("Error fetching user:", userError);
+        throw userError;
+      }
       
-      // Add the transaction
+      console.log("Current user points:", user.points);
+      
+      // Add the point transaction
       const { error: transactionError } = await supabase
         .from('point_transactions')
         .insert([{
@@ -115,17 +123,35 @@ const PointsManagement = () => {
           description: values.description
         }]);
         
-      if (transactionError) throw transactionError;
+      if (transactionError) {
+        console.error("Error adding transaction:", transactionError);
+        throw transactionError;
+      }
       
-      // Update user's points
+      // Update user's points directly in the profiles table
+      const newPointsTotal = user.points + values.amount;
+      console.log("New points total:", newPointsTotal);
+      
       const { error: updateError } = await supabase
         .from('profiles')
-        .update({ points: user.points + values.amount })
+        .update({ points: newPointsTotal })
         .eq('id', values.userId);
         
-      if (updateError) throw updateError;
+      if (updateError) {
+        console.error("Error updating user points:", updateError);
+        throw updateError;
+      }
       
+      // If we get here, everything succeeded
       toast.success(`Successfully added ${values.amount} points to user`);
+      
+      // Update the selected user's points in the UI
+      if (selectedUser) {
+        setSelectedUser({
+          ...selectedUser,
+          points: newPointsTotal
+        });
+      }
       
       // Reset form except for userId
       form.reset({
@@ -136,6 +162,7 @@ const PointsManagement = () => {
       });
       
     } catch (error: any) {
+      console.error("Error in handleAddPoints:", error);
       toast.error(`Error adding points: ${error.message}`);
     }
   };
