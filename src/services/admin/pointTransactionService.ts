@@ -22,8 +22,14 @@ export const addPointsToUser = async (
       .single();
       
     if (userError) {
-      console.error("Error fetching user:", userError);
+      console.error("Error fetching user profile:", userError);
       throw userError;
+    }
+    
+    if (!user) {
+      const errorMsg = "User profile not found";
+      console.error(errorMsg);
+      throw new Error(errorMsg);
     }
     
     console.log("Current user points:", user.points);
@@ -71,11 +77,20 @@ export const addPointsToUser = async (
  * Fetches all users with their points information
  */
 export const fetchUsersWithPoints = async () => {
-  const { data, error } = await supabase
-    .from('profiles')
-    .select('id, username, avatar, points')
-    .order('username', { ascending: true });
+  try {
+    const { data, error } = await supabase
+      .from('profiles')
+      .select('id, username, avatar, points')
+      .order('username', { ascending: true });
+      
+    if (error) {
+      console.error("Error fetching users with points:", error);
+      throw error;
+    }
     
-  if (error) throw error;
-  return data || [];
+    return data || [];
+  } catch (error: any) {
+    console.error("Error in fetchUsersWithPoints:", error);
+    throw error;
+  }
 };
