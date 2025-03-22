@@ -2,9 +2,15 @@
 import { useState, useEffect } from 'react';
 import { supabase } from '@/integrations/supabase/client';
 import { toast } from 'sonner';
+import { Tables } from '@/integrations/supabase/types';
+
+type ProfileWithCounts = Tables<'profiles'> & {
+  completedReviews: number;
+  completedMissions: number;
+};
 
 export const useDashboardProfile = (userId: string | undefined) => {
-  const [user, setUser] = useState<any>(null);
+  const [user, setUser] = useState<ProfileWithCounts | null>(null);
   const [loading, setLoading] = useState(true);
 
   useEffect(() => {
