@@ -27,14 +27,17 @@ const NavLinks = () => {
         to="/rankings" 
         label="Rankings" 
         icon={<Medal className="h-5 w-5" />}
-        current={location.pathname === '/rankings'}
+        current={location.pathname.includes('/rankings')}
       />
       
       {user && (
         <NavLink 
           to="/submit-review" 
           label="Write a Review" 
-          icon={<MessageSquare className="h-5 w-5" />}
+          icon={<>
+            <MessageSquare className="h-5 w-5" />
+            <Pencil className="h-3 w-3 absolute -right-1 -top-1" />
+          </>}
           current={location.pathname === '/submit-review'}
         />
       )}

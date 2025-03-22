@@ -33,28 +33,38 @@ const FollowersList = () => {
         if (profileError) throw profileError;
         setUsername(profileData.username);
         
-        // Get followers
+        // Get followers - using a direct query instead of a join
         const { data, error } = await supabase
           .from('user_follows')
-          .select(`
-            follower_id,
-            profiles:follower_id (
-              id,
-              username,
-              avatar
-            )
-          `)
+          .select('follower_id')
           .eq('following_id', id);
           
         if (error) throw error;
         
-        const transformedFollowers = data.map((item: any) => ({
-          id: item.profiles.id,
-          username: item.profiles.username,
-          avatar: item.profiles.avatar
-        }));
-        
-        setFollowers(transformedFollowers);
+        if (data.length > 0) {
+          // Fetch profiles for each follower_id
+          const followerProfiles = await Promise.all(
+            data.map(async (item) => {
+              const { data: profile, error: profileError } = await supabase
+                .from('profiles')
+                .select('id, username, avatar')
+                .eq('id', item.follower_id)
+                .single();
+                
+              if (profileError) {
+                console.error('Error fetching profile:', profileError);
+                return null;
+              }
+              
+              return profile;
+            })
+          );
+          
+          // Filter out null values and set followers
+          setFollowers(followerProfiles.filter(Boolean));
+        } else {
+          setFollowers([]);
+        }
       } catch (error) {
         console.error('Error fetching followers:', error);
         toast.error('Failed to load followers');

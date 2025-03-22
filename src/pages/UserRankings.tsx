@@ -1,4 +1,3 @@
-
 import { useState, useEffect } from 'react';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import Navbar from '@/components/Navbar';
@@ -12,7 +11,7 @@ import { format } from 'date-fns';
 
 type RankingType = 'points' | 'views' | 'likes';
 
-const UserRankings = () => {
+const Rankings = () => {
   const [activeTab, setActiveTab] = useState<RankingType>('points');
   const [users, setUsers] = useState<(User & { rank: number, stats: number })[]>([]);
   const [loading, setLoading] = useState(true);
@@ -25,7 +24,6 @@ const UserRankings = () => {
         let data: any[] = [];
         
         if (activeTab === 'points') {
-          // Fetch users with most points this month
           const { data: pointsData, error: pointsError } = await supabase
             .from('profiles')
             .select('id, username, points, avatar, created_at')
@@ -36,7 +34,6 @@ const UserRankings = () => {
           data = pointsData;
         } 
         else if (activeTab === 'views') {
-          // Fetch users with most views this month
           const { data: viewsData, error: viewsError } = await supabase
             .from('reviews')
             .select(`
@@ -50,7 +47,6 @@ const UserRankings = () => {
             
           if (viewsError) throw viewsError;
           
-          // Aggregate views by user
           const userViews = viewsData.reduce((acc: Record<string, any>, review) => {
             const userId = review.user_id;
             if (!acc[userId]) {
@@ -68,7 +64,6 @@ const UserRankings = () => {
             .slice(0, 20);
         } 
         else if (activeTab === 'likes') {
-          // Fetch users with most likes this month
           const { data: likesData, error: likesError } = await supabase
             .from('reviews')
             .select(`
@@ -82,7 +77,6 @@ const UserRankings = () => {
             
           if (likesError) throw likesError;
           
-          // Aggregate likes by user
           const userLikes = likesData.reduce((acc: Record<string, any>, review) => {
             const userId = review.user_id;
             if (!acc[userId]) {
@@ -100,12 +94,11 @@ const UserRankings = () => {
             .slice(0, 20);
         }
         
-        // Transform data to User type with rank
         const transformedUsers = data.map((item, index) => {
           const user: User & { rank: number, stats: number } = {
             id: item.id || '',
             username: item.username || 'Anonymous',
-            email: '', // Not needed for display
+            email: '',
             points: item.points || 0,
             createdAt: new Date(item.created_at),
             avatar: item.avatar,
@@ -265,4 +258,4 @@ const UserRankings = () => {
   );
 };
 
-export default UserRankings;
+export default Rankings;
