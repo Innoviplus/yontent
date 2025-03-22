@@ -27,37 +27,40 @@ export const useReviewComments = (reviewId: string) => {
     try {
       setLoading(true);
       
-      // Use a proper join query to get review comments with user profile data
+      // First get the comments without the join
       const { data, error } = await supabase
         .from('review_comments')
-        .select(`
-          id,
-          content,
-          created_at,
-          user_id,
-          profiles!review_comments_user_id_fkey (
-            id,
-            username,
-            avatar
-          )
-        `)
+        .select('id, content, created_at, user_id')
         .eq('review_id', reviewId)
         .order('created_at', { ascending: true });
         
       if (error) throw error;
       
-      const transformedComments = data.map((comment) => ({
-        id: comment.id,
-        content: comment.content,
-        created_at: comment.created_at,
-        user: {
-          id: comment.profiles?.id || comment.user_id || '',
-          username: comment.profiles?.username || 'Anonymous',
-          avatar: comment.profiles?.avatar
-        }
-      }));
+      // Then fetch user profiles separately and map them to comments
+      const commentWithProfiles = await Promise.all(
+        data.map(async (comment) => {
+          // Get profile data for each comment
+          const { data: profileData, error: profileError } = await supabase
+            .from('profiles')
+            .select('id, username, avatar')
+            .eq('id', comment.user_id)
+            .single();
+          
+          // Return comment with user data
+          return {
+            id: comment.id,
+            content: comment.content,
+            created_at: comment.created_at,
+            user: {
+              id: comment.user_id,
+              username: profileError ? 'Anonymous' : (profileData?.username || 'Anonymous'),
+              avatar: profileError ? null : profileData?.avatar
+            }
+          };
+        })
+      );
       
-      setComments(transformedComments);
+      setComments(commentWithProfiles);
     } catch (error) {
       console.error('Error fetching comments:', error);
       toast.error('Failed to load comments');
