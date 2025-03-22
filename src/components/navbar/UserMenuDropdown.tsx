@@ -28,7 +28,14 @@ const UserMenuDropdown = () => {
       
       <DropdownMenuContent align="end" className="w-56">
         <DropdownMenuItem className="flex items-center gap-2">
-          <div className="text-brand-teal font-medium">{userProfile?.points || 0} points</div>
+          <div className="font-medium flex items-center">
+            <img 
+              src="/lovable-uploads/87f7987e-62e4-4871-b384-8c77779df418.png" 
+              alt="Points" 
+              className="w-4 h-4 mr-1"
+            />
+            {userProfile?.points || 0}
+          </div>
         </DropdownMenuItem>
         <DropdownMenuSeparator />
         <DropdownMenuItem asChild>

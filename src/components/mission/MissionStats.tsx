@@ -68,7 +68,7 @@ const MissionStats = ({
               alt="Points" 
               className="w-5 h-5 mr-1"
             />
-            <span>{mission.pointsReward} pts</span>
+            <span>{mission.pointsReward}</span>
           </div>
         </div>
         

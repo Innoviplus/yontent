@@ -61,7 +61,7 @@ const MissionCard = ({ mission, className }: MissionCardProps) => {
                 alt="Points" 
                 className="w-4 h-4 mr-1"
               />
-              <span>{mission.pointsReward} pts</span>
+              <span>{mission.pointsReward}</span>
             </div>
           </div>
         </div>

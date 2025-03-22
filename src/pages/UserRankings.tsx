@@ -9,7 +9,6 @@ import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
 import { Link } from 'react-router-dom';
 import { Trophy, Eye, Heart, Award } from 'lucide-react';
 import { format } from 'date-fns';
-import PointsBadge from '@/components/PointsBadge';
 
 type RankingType = 'points' | 'views' | 'likes';
 
@@ -235,7 +234,14 @@ const UserRankings = () => {
                       
                       <div className="text-right">
                         {activeTab === 'points' ? (
-                          <PointsBadge points={user.stats} />
+                          <div className="flex items-center">
+                            <img 
+                              src="/lovable-uploads/87f7987e-62e4-4871-b384-8c77779df418.png" 
+                              alt="Points" 
+                              className="w-4 h-4 mr-1"
+                            />
+                            <span className="font-medium">{user.stats}</span>
+                          </div>
                         ) : (
                           <div className="flex items-center gap-1 text-gray-700">
                             {activeTab === 'views' ? (
