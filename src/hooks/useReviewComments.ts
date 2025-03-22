@@ -2,7 +2,7 @@
 import { useState, useEffect } from 'react';
 import { supabase } from '@/integrations/supabase/client';
 import { toast } from 'sonner';
-import { User } from '@/lib/types';
+import { User as SupabaseUser } from '@supabase/supabase-js';
 
 export interface Comment {
   id: string;
@@ -34,7 +34,7 @@ export const useReviewComments = (reviewId: string) => {
           content,
           created_at,
           user_id,
-          profiles:user_id (
+          profiles (
             id,
             username,
             avatar
@@ -50,9 +50,9 @@ export const useReviewComments = (reviewId: string) => {
         content: comment.content,
         created_at: comment.created_at,
         user: {
-          id: comment.profiles.id,
-          username: comment.profiles.username,
-          avatar: comment.profiles.avatar
+          id: comment.profiles?.id || '',
+          username: comment.profiles?.username || '',
+          avatar: comment.profiles?.avatar
         }
       }));
       
@@ -65,13 +65,14 @@ export const useReviewComments = (reviewId: string) => {
     }
   };
   
-  const handleSubmitComment = async (user: User | null) => {
+  const handleSubmitComment = async (user: SupabaseUser | null) => {
     if (!user || !reviewId || !newComment.trim()) return;
     
     try {
       setIsSubmitting(true);
       
-      const { data, error } = await supabase
+      // First, add the comment
+      const { data: commentData, error: commentError } = await supabase
         .from('review_comments')
         .insert([
           {
@@ -80,29 +81,28 @@ export const useReviewComments = (reviewId: string) => {
             content: newComment.trim()
           }
         ])
-        .select(`
-          id,
-          content,
-          created_at,
-          user_id,
-          profiles:user_id (
-            id,
-            username,
-            avatar
-          )
-        `)
+        .select()
         .single();
         
-      if (error) throw error;
+      if (commentError) throw commentError;
       
-      const newCommentObj = {
-        id: data.id,
-        content: data.content,
-        created_at: data.created_at,
+      // Then, get the user profile data
+      const { data: profileData, error: profileError } = await supabase
+        .from('profiles')
+        .select('id, username, avatar')
+        .eq('id', user.id)
+        .single();
+        
+      if (profileError) throw profileError;
+      
+      const newCommentObj: Comment = {
+        id: commentData.id,
+        content: commentData.content,
+        created_at: commentData.created_at,
         user: {
-          id: data.profiles.id,
-          username: data.profiles.username,
-          avatar: data.profiles.avatar
+          id: profileData.id,
+          username: profileData.username || '',
+          avatar: profileData.avatar
         }
       };
       
