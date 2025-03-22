@@ -12,7 +12,7 @@ interface FeaturedReviewsSectionProps {
 
 const FeaturedReviewsSection = ({ loading: initialLoading }: FeaturedReviewsSectionProps) => {
   const [reviews, setReviews] = useState<Review[]>([]);
-  const [loading, setLoading] = useState(initialLoading || true);
+  const [loading, setLoading] = useState<boolean>(initialLoading || true);
 
   useEffect(() => {
     const fetchReviews = async () => {

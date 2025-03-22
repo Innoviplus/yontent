@@ -1,6 +1,6 @@
 
 import { Link } from 'react-router-dom';
-import { MessageSquarePen } from 'lucide-react';
+import { MessageSquare } from 'lucide-react';
 
 const Footer = () => {
   return (
@@ -8,7 +8,7 @@ const Footer = () => {
       <div className="container mx-auto px-4 sm:px-6">
         <div className="flex flex-col md:flex-row justify-between items-center">
           <div className="flex items-center gap-2 mb-6 md:mb-0">
-            <MessageSquarePen className="h-6 w-6 text-brand-slate" />
+            <MessageSquare className="h-6 w-6 text-brand-slate" />
             <span className="font-bold text-xl text-brand-slate">Yontent</span>
           </div>
           
