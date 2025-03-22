@@ -1,7 +1,6 @@
 
 import React, { useEffect } from 'react';
 import { UseFormReturn } from 'react-hook-form';
-import { AvatarUploader } from './AvatarUploader';
 import { ProfileInfoForm } from './ProfileInfoForm';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 
@@ -13,16 +12,16 @@ interface ProfileTabProps {
   profileForm: UseFormReturn<any>;
   onProfileSubmit: (values: any) => Promise<void>;
   isUpdating: boolean;
+  extendedProfile: any;
 }
 
 export const ProfileTab: React.FC<ProfileTabProps> = ({
   userProfile,
   avatarUrl,
-  uploading,
-  handleAvatarUpload,
   profileForm,
   onProfileSubmit,
-  isUpdating
+  isUpdating,
+  extendedProfile
 }) => {
   // Ensure avatar URL is properly set
   useEffect(() => {
@@ -39,13 +38,6 @@ export const ProfileTab: React.FC<ProfileTabProps> = ({
       </CardHeader>
       <CardContent>
         <div className="flex flex-col md:flex-row gap-8 mb-8">
-          <AvatarUploader
-            avatarUrl={userProfile?.avatar || avatarUrl}
-            username={userProfile?.username}
-            uploading={uploading}
-            handleAvatarUpload={handleAvatarUpload}
-          />
-          
           <div className="flex-1">
             <ProfileInfoForm 
               profileForm={profileForm}

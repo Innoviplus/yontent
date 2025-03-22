@@ -5,6 +5,7 @@ import { useProfileForm } from './settings/useProfileForm';
 import { useSettingsForm } from './settings/useSettingsForm';
 import { useAccountActions } from './settings/useAccountActions';
 import { useProfileData } from './settings/useProfileData';
+import { useEffect } from 'react';
 
 export const useSettings = () => {
   const {
@@ -55,6 +56,16 @@ export const useSettings = () => {
     profileForm,
     settingsForm
   );
+
+  // Debugging - log critical objects
+  useEffect(() => {
+    console.log('useSettings hook initialized with:', {
+      user: !!user,
+      userProfile: !!userProfile,
+      profileForm: !!profileForm,
+      settingsForm: !!settingsForm
+    });
+  }, [user, userProfile, profileForm, settingsForm]);
 
   return {
     user,

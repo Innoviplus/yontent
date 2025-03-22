@@ -1,5 +1,5 @@
 
-import { useState, useRef } from "react";
+import { useRef } from "react";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { ProfileTab } from "./ProfileTab";
 import { GeneralTab } from "./GeneralTab";
@@ -37,7 +37,7 @@ export function SettingsLayout({
             <AvatarUploader
               avatarUrl={avatarUrl}
               uploading={uploading}
-              onUpload={handleAvatarUpload}
+              handleAvatarUpload={handleAvatarUpload}
               fileInputRef={fileInputRef}
               username={userProfile?.username || "User"}
             />
@@ -72,8 +72,12 @@ export function SettingsLayout({
             
             <TabsContent value="profile" className="mt-0">
               <ProfileTab
-                form={profileForm}
-                onSubmit={onProfileSubmit}
+                userProfile={userProfile}
+                avatarUrl={avatarUrl}
+                uploading={uploading}
+                handleAvatarUpload={handleAvatarUpload}
+                profileForm={profileForm}
+                onProfileSubmit={onProfileSubmit}
                 isUpdating={isUpdating}
                 extendedProfile={extendedProfile}
               />
@@ -81,25 +85,25 @@ export function SettingsLayout({
             
             <TabsContent value="general" className="mt-0">
               <GeneralTab
-                form={settingsForm}
-                onSubmit={onSettingsSubmit}
+                settingsForm={settingsForm}
+                onSettingsSubmit={onSettingsSubmit}
                 isUpdating={isUpdating}
               />
             </TabsContent>
             
             <TabsContent value="social" className="mt-0">
               <SocialMediaTab
-                form={settingsForm}
-                onSubmit={onSettingsSubmit}
+                settingsForm={settingsForm}
+                onSettingsSubmit={onSettingsSubmit}
                 isUpdating={isUpdating}
               />
             </TabsContent>
             
             <TabsContent value="account" className="mt-0">
               <AccountTab
-                onResetPassword={handleResetPassword}
-                onLogout={handleLogout}
-                onDeleteAccount={handleDeleteAccount}
+                handleResetPassword={handleResetPassword}
+                handleLogout={handleLogout}
+                handleDeleteAccount={handleDeleteAccount}
               />
             </TabsContent>
 

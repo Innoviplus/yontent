@@ -34,6 +34,11 @@ export const ProfileInfoForm: React.FC<ProfileInfoFormProps> = ({
   onProfileSubmit,
   isUpdating
 }) => {
+  // Early return if profileForm is undefined or null
+  if (!profileForm) {
+    return <div>Loading profile form...</div>;
+  }
+
   return (
     <Form {...profileForm}>
       <form onSubmit={profileForm.handleSubmit(onProfileSubmit)} className="space-y-6">
