@@ -19,15 +19,17 @@ import MissionLoadingState from '@/components/mission/MissionLoadingState';
 
 const MissionDetail = () => {
   const { id } = useParams<{ id: string }>();
+  const { user } = useAuth();
+  
+  // Return early BEFORE any hooks if user is not authenticated
+  if (!user) {
+    return <Navigate to="/login" replace />;
+  }
+
   const [mission, setMission] = useState<Mission | null>(null);
   const [loading, setLoading] = useState(true);
   const [participating, setParticipating] = useState(false);
   const [participationStatus, setParticipationStatus] = useState<string | null>(null);
-  const { user } = useAuth();
-
-  if (!user) {
-    return <Navigate to="/login" replace />;
-  }
 
   useEffect(() => {
     const fetchMission = async () => {
