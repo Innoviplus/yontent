@@ -5,6 +5,7 @@ export interface RedemptionItem {
   description: string;
   points_required: number;
   image_url?: string;
+  banner_image?: string;
   is_active?: boolean;
   created_at?: string;
   updated_at?: string;

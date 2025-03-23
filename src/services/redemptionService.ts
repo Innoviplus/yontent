@@ -5,8 +5,16 @@ import { RedemptionRequest } from "@/lib/types";
 // Get total redeemed points for a user
 export const getRedeemedPoints = async (userId: string): Promise<number> => {
   try {
-    // For now, return 0 as we haven't implemented redemption_requests table yet
-    return 0;
+    const { data, error } = await supabase
+      .from('redemption_requests')
+      .select('points_amount')
+      .eq('user_id', userId)
+      .eq('status', 'APPROVED');
+    
+    if (error) throw error;
+    
+    // Sum up all the redeemed points
+    return data?.reduce((sum, item) => sum + item.points_amount, 0) || 0;
   } catch (error) {
     console.error("Error getting redeemed points:", error);
     return 0;
@@ -21,17 +29,29 @@ export const createRedemptionRequest = async (
   paymentDetails?: any
 ): Promise<RedemptionRequest | null> => {
   try {
-    // For now, just return a mock successful response
-    // In the future, we'll implement the actual database interaction
+    const { data, error } = await supabase
+      .from('redemption_requests')
+      .insert({
+        user_id: userId,
+        points_amount: pointsAmount,
+        redemption_type: redemptionType,
+        payment_details: paymentDetails,
+        status: 'PENDING'
+      })
+      .select()
+      .single();
+    
+    if (error) throw error;
+    
     return {
-      id: "mock-id-" + Date.now(),
-      userId,
-      pointsAmount,
-      redemptionType,
-      status: "PENDING",
-      paymentDetails,
-      createdAt: new Date(),
-      updatedAt: new Date()
+      id: data.id,
+      userId: data.user_id,
+      pointsAmount: data.points_amount,
+      redemptionType: data.redemption_type as "CASH" | "GIFT_VOUCHER",
+      status: data.status as "PENDING" | "APPROVED" | "REJECTED",
+      paymentDetails: data.payment_details,
+      createdAt: new Date(data.created_at),
+      updatedAt: new Date(data.updated_at)
     };
   } catch (error) {
     console.error("Error creating redemption request:", error);
@@ -44,8 +64,24 @@ export const getUserRedemptionRequests = async (
   userId: string
 ): Promise<RedemptionRequest[]> => {
   try {
-    // For now, return an empty array
-    return [];
+    const { data, error } = await supabase
+      .from('redemption_requests')
+      .select('*')
+      .eq('user_id', userId)
+      .order('created_at', { ascending: false });
+    
+    if (error) throw error;
+    
+    return data.map(item => ({
+      id: item.id,
+      userId: item.user_id,
+      pointsAmount: item.points_amount,
+      redemptionType: item.redemption_type as "CASH" | "GIFT_VOUCHER",
+      status: item.status as "PENDING" | "APPROVED" | "REJECTED",
+      paymentDetails: item.payment_details,
+      createdAt: new Date(item.created_at),
+      updatedAt: new Date(item.updated_at)
+    }));
   } catch (error) {
     console.error("Error getting user redemption requests:", error);
     return [];

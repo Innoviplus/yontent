@@ -39,6 +39,7 @@ const RewardDetail = () => {
       description: 'Treat yourself to coffee, food and more with a Starbucks Gift Card. Use it at any participating Starbucks store to purchase your favorite beverages, food items, or merchandise. Perfect for coffee lovers!',
       points_required: 3000,
       image_url: 'https://qoycoypkyqxrcqdpfqhd.supabase.co/storage/v1/object/public/brand-images/starbucks-logo.png',
+      banner_image: 'https://qoycoypkyqxrcqdpfqhd.supabase.co/storage/v1/object/public/brand-images/starbucks-banner.jpg',
       is_active: true,
     },
     {
@@ -170,27 +171,47 @@ const RewardDetail = () => {
         </div>
         
         <Card className="mb-6">
-          <CardHeader className="pb-3 flex flex-row items-start">
-            <div className="w-20 h-20 rounded-lg bg-gray-100 flex items-center justify-center mr-4 overflow-hidden">
-              {reward.image_url ? (
+          <CardHeader className="pb-3">
+            {reward.banner_image && (
+              <div className="h-40 w-full mb-4 rounded-lg overflow-hidden">
                 <img 
-                  src={reward.image_url} 
-                  alt={reward.name} 
-                  className="w-16 h-16 object-contain" 
+                  src={reward.banner_image} 
+                  alt={`${reward.name} Banner`} 
+                  className="w-full h-full object-cover"
+                  onError={(e) => {
+                    (e.target as HTMLImageElement).onerror = null; 
+                    (e.target as HTMLImageElement).style.display = 'none';
+                  }}
                 />
-              ) : (
-                <Gift className="w-10 h-10 text-gray-400" />
-              )}
-            </div>
-            <div>
-              <CardTitle className="text-xl">{reward.name}</CardTitle>
-              <div className="flex items-center gap-1 text-brand-teal font-semibold mt-1">
-                <img 
-                  src="/lovable-uploads/15750ea6-ed41-4d3d-83e2-299853617c30.png" 
-                  alt="Points" 
-                  className="h-4 w-4" 
-                />
-                <span>{reward.points_required} points required</span>
+              </div>
+            )}
+            <div className="flex flex-row items-start">
+              <div className="w-20 h-20 rounded-lg bg-gray-100 flex items-center justify-center mr-4 overflow-hidden">
+                {reward.image_url ? (
+                  <img 
+                    src={reward.image_url} 
+                    alt={reward.name} 
+                    className="w-16 h-16 object-contain"
+                    onError={(e) => {
+                      (e.target as HTMLImageElement).onerror = null; 
+                      (e.target as HTMLImageElement).src = "/placeholder.svg";
+                    }}
+                  />
+                ) : (
+                  <Gift className="w-10 h-10 text-gray-400" />
+                )}
+              </div>
+              <div>
+                <CardTitle className="text-xl">{reward.name}</CardTitle>
+                <div className="flex items-center gap-1 text-brand-teal font-semibold mt-1">
+                  <img 
+                    src="/lovable-uploads/15750ea6-ed41-4d3d-83e2-299853617c30.png" 
+                    alt="Points" 
+                    className="h-4 w-4" 
+                  />
+                  <span>{reward.points_required} points required</span>
+                </div>
+                <div className="text-sm text-gray-600 mt-1">Quantity: 1</div>
               </div>
             </div>
           </CardHeader>
@@ -244,7 +265,7 @@ const RewardDetail = () => {
               disabled={!canRedeem || isRedeeming} 
               className="w-full"
             >
-              {isRedeeming ? 'Processing...' : 'Redeem Now'}
+              {isRedeeming ? 'Processing...' : 'Send Redeem Request'}
             </Button>
             
             {!canRedeem && (
@@ -254,6 +275,23 @@ const RewardDetail = () => {
             )}
           </CardContent>
         </Card>
+        
+        <div className="bg-white rounded-lg p-6 shadow-sm">
+          <h2 className="text-xl font-bold mb-4">Terms & Conditions</h2>
+          <div className="prose text-sm text-gray-700">
+            <p>By redeeming this reward, you agree to the following terms and conditions:</p>
+            <ol className="list-decimal pl-5 space-y-2 mt-2">
+              <li>Redemption requests are subject to review and approval.</li>
+              <li>Points will be deducted from your account upon approval of your redemption request.</li>
+              <li>Rewards cannot be exchanged for cash or other rewards once the redemption request is approved.</li>
+              <li>Gift cards and vouchers are subject to the terms and conditions of the issuing company.</li>
+              <li>We reserve the right to modify or cancel rewards at any time.</li>
+              <li>Please allow 3-5 business days for processing of redemption requests.</li>
+              <li>If you choose bank transfer, you must provide valid banking information upon request.</li>
+              <li>Rewards are non-transferable and cannot be sold or transferred to another account.</li>
+            </ol>
+          </div>
+        </div>
       </div>
       <Toaster />
     </div>

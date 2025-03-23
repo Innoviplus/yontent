@@ -24,6 +24,7 @@ const RewardsList = () => {
       description: 'Treat yourself to coffee, food and more with a Starbucks Gift Card.',
       points_required: 3000,
       image_url: 'https://qoycoypkyqxrcqdpfqhd.supabase.co/storage/v1/object/public/brand-images/starbucks-logo.png',
+      banner_image: 'https://qoycoypkyqxrcqdpfqhd.supabase.co/storage/v1/object/public/brand-images/starbucks-banner.jpg',
       is_active: true,
     },
     {

@@ -28,6 +28,10 @@ const RewardCard = ({ reward }: RewardCardProps) => {
               src={reward.image_url} 
               alt={reward.name} 
               className="w-12 h-12 object-contain" 
+              onError={(e) => {
+                (e.target as HTMLImageElement).onerror = null; 
+                (e.target as HTMLImageElement).src = "/placeholder.svg";
+              }}
             />
           ) : (
             <Gift className="w-8 h-8 text-gray-400" />
