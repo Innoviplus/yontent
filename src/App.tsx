@@ -23,6 +23,8 @@ import UserProfile from "./pages/UserProfile";
 import NotFound from "./pages/NotFound";
 import FollowersList from "./pages/FollowersList";
 import FollowingList from "./pages/FollowingList";
+import EditReview from "./pages/EditReview";
+import SubmitReview from "./pages/SubmitReview";
 
 const routes = [
   {
@@ -80,6 +82,14 @@ const routes = [
   {
     path: "/following/:id",
     element: <FollowingList />,
+  },
+  {
+    path: "/edit-review/:id",
+    element: <EditReview />,
+  },
+  {
+    path: "/submit-review",
+    element: <SubmitReview />,
   },
   {
     path: "*",

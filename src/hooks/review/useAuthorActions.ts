@@ -12,7 +12,7 @@ export const useAuthorActions = ({ reviewId, isAuthor }: UseAuthorActionsProps) 
   const navigate = useNavigate();
   
   const handleEdit = () => {
-    navigate(`/submit-review?edit=${reviewId}`);
+    navigate(`/edit-review/${reviewId}`);
   };
   
   const handleDelete = async () => {
