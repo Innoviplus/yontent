@@ -19,6 +19,7 @@ const RedeemButton: React.FC<RedeemButtonProps> = ({
         onClick={onRedeem}
         disabled={!canRedeem || isRedeeming} 
         className="w-full"
+        variant={isRedeeming ? "outline" : "default"}
       >
         {isRedeeming ? 'Processing...' : 'Send Redeem Request'}
       </Button>
