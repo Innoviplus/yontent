@@ -20,6 +20,23 @@ export const useAuthorActions = ({ reviewId, isAuthor }: UseAuthorActionsProps) 
     
     if (window.confirm('Are you sure you want to delete this review? This action cannot be undone.')) {
       try {
+        // First delete all related likes
+        const { error: likesError } = await supabase
+          .from('review_likes')
+          .delete()
+          .eq('review_id', reviewId);
+          
+        if (likesError) throw likesError;
+        
+        // Then delete any comments
+        const { error: commentsError } = await supabase
+          .from('review_comments')
+          .delete()
+          .eq('review_id', reviewId);
+          
+        if (commentsError) throw commentsError;
+        
+        // Finally delete the review itself
         const { error } = await supabase
           .from('reviews')
           .delete()
