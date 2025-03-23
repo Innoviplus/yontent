@@ -1,26 +1,29 @@
 
 import React from 'react';
+import { Loader2 } from 'lucide-react';
 
-interface EditImageUploadSectionProps {
+interface ImageUploadProps {
   imagePreviewUrls: string[];
   onFileSelect: (files: FileList | null) => void;
   onRemoveImage: (index: number) => void;
   error: string | null;
   uploading: boolean;
+  maxImages?: number;
 }
 
-const EditImageUploadSection: React.FC<EditImageUploadSectionProps> = ({ 
+const ImageUpload: React.FC<ImageUploadProps> = ({ 
   imagePreviewUrls, 
   onFileSelect, 
   onRemoveImage, 
   error, 
-  uploading 
+  uploading,
+  maxImages = 5
 }) => {
   return (
     <div className="mb-6">
       <div className="flex items-center justify-between mb-2">
         <h3 className="font-medium text-gray-900">Images</h3>
-        <span className="text-sm text-gray-500">Add up to 5 images</span>
+        <span className="text-sm text-gray-500">Add up to {maxImages} images</span>
       </div>
       
       <div className="flex flex-wrap gap-4 mb-4">
@@ -38,7 +41,7 @@ const EditImageUploadSection: React.FC<EditImageUploadSectionProps> = ({
           </div>
         ))}
         
-        {imagePreviewUrls.length < 5 && (
+        {imagePreviewUrls.length < maxImages && (
           <label className="w-20 h-20 border-2 border-dashed border-gray-300 rounded-md flex items-center justify-center cursor-pointer hover:bg-gray-50">
             <input
               type="file"
@@ -58,4 +61,4 @@ const EditImageUploadSection: React.FC<EditImageUploadSectionProps> = ({
   );
 };
 
-export default EditImageUploadSection;
+export default ImageUpload;

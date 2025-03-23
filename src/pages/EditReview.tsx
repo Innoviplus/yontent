@@ -6,7 +6,7 @@ import { Textarea } from '@/components/ui/textarea';
 import { Button } from '@/components/ui/button';
 import { Skeleton } from '@/components/ui/skeleton';
 import { Loader2 } from 'lucide-react';
-import EditImageUploadSection from '@/components/review/EditImageUploadSection';
+import ImageUpload from '@/components/review/ImageUpload';
 
 const EditReview = () => {
   const {
@@ -46,7 +46,7 @@ const EditReview = () => {
             ) : (
               <Form {...form}>
                 <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-6">
-                  <EditImageUploadSection
+                  <ImageUpload
                     imagePreviewUrls={imagePreviewUrls}
                     onFileSelect={handleImageSelection}
                     onRemoveImage={removeImage}
