@@ -2,13 +2,14 @@
 import { useState, useEffect } from 'react';
 import { toast } from 'sonner';
 import RewardCard from './RewardCard';
-import { getRedemptionItems } from '@/services/redemptionService';
 import { RedemptionItem } from '@/types/redemption';
+import { supabase } from '@/integrations/supabase/client';
 
 const RewardsList = () => {
   const [rewards, setRewards] = useState<RedemptionItem[]>([]);
   const [isLoading, setIsLoading] = useState(true);
 
+  // Mock rewards data as fallback
   const mockRewards: RedemptionItem[] = [
     {
       id: '1',
@@ -38,10 +39,49 @@ const RewardsList = () => {
   ];
 
   useEffect(() => {
-    // For now, use mock data
-    // In the future, we'll implement the backend to fetch actual rewards
-    setRewards(mockRewards);
-    setIsLoading(false);
+    const fetchRewards = async () => {
+      try {
+        // Fetch rewards from Supabase
+        const { data, error } = await supabase
+          .from('redemption_items')
+          .select('*')
+          .eq('is_active', true)
+          .order('points_required', { ascending: true });
+        
+        if (error) {
+          throw error;
+        }
+        
+        if (data && data.length > 0) {
+          console.log('Rewards data from API:', data);
+          // Transform data to match RedemptionItem type
+          const rewardsData: RedemptionItem[] = data.map(item => ({
+            id: item.id,
+            name: item.name,
+            description: item.description,
+            points_required: item.points_required,
+            image_url: item.image_url,
+            banner_image: item.banner_image,
+            is_active: item.is_active
+          }));
+          
+          setRewards(rewardsData);
+        } else {
+          // Fallback to mock data if no data in Supabase
+          console.log('No rewards found in API, using mock data');
+          setRewards(mockRewards);
+        }
+      } catch (error) {
+        console.error('Error fetching rewards:', error);
+        toast.error('Failed to load rewards. Using sample data instead.');
+        // Fallback to mock data on error
+        setRewards(mockRewards);
+      } finally {
+        setIsLoading(false);
+      }
+    };
+
+    fetchRewards();
   }, []);
 
   if (isLoading) {

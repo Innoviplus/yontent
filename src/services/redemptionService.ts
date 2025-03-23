@@ -1,6 +1,7 @@
 
 import { supabase } from "@/integrations/supabase/client";
 import { RedemptionRequest } from "@/lib/types";
+import { RedemptionItem } from "@/types/redemption";
 
 // Get total redeemed points for a user
 export const getRedeemedPoints = async (userId: string): Promise<number> => {
@@ -144,11 +145,34 @@ export const getUserRedemptionRequests = async (
 };
 
 // Get redemption items (rewards)
-export const getRedemptionItems = async () => {
+export const getRedemptionItems = async (): Promise<RedemptionItem[]> => {
   try {
-    // For now, we'll return mock data from the components
-    // In the future, we'll implement the actual database call
-    return [];
+    // Fetch redemption items from Supabase
+    const { data, error } = await supabase
+      .from('redemption_items')
+      .select('*')
+      .eq('is_active', true)
+      .order('points_required', { ascending: true });
+    
+    if (error) {
+      throw error;
+    }
+    
+    if (!data || data.length === 0) {
+      console.log('No redemption items found in database');
+      return [];
+    }
+    
+    // Transform data to match RedemptionItem type
+    return data.map(item => ({
+      id: item.id,
+      name: item.name,
+      description: item.description,
+      points_required: item.points_required,
+      image_url: item.image_url,
+      banner_image: item.banner_image,
+      is_active: item.is_active
+    }));
   } catch (error) {
     console.error("Error getting redemption items:", error);
     return [];
