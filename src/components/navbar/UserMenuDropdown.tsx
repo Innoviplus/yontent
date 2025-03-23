@@ -42,7 +42,7 @@ const UserMenuDropdown = () => {
         </div>
         <DropdownMenuItem asChild>
           <Link to="/dashboard" className="cursor-pointer">
-            <User className="h-4 w-4 mr-2" /> Profile
+            <User className="h-4 w-4 mr-2" /> My Dashboard
           </Link>
         </DropdownMenuItem>
         <DropdownMenuItem asChild>

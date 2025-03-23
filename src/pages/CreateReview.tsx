@@ -1,24 +1,19 @@
 
-import { useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { useAuth } from '@/contexts/AuthContext';
+import { useEffect } from 'react';
 
+// This component is just for redirection now since we've renamed to SubmitReview
 const CreateReview = () => {
   const { user } = useAuth();
   const navigate = useNavigate();
   
-  if (!user) {
-    return navigate('/login');
-  }
+  useEffect(() => {
+    // Redirect to the proper page
+    navigate('/submit-review', { replace: true });
+  }, [navigate]);
 
-  return (
-    <div className="container mx-auto py-8 px-4">
-      <h1 className="text-2xl font-bold mb-4">Create Review</h1>
-      <p className="text-gray-500">
-        This page is under construction. Review creation functionality will be available soon.
-      </p>
-    </div>
-  );
+  return null;
 };
 
 export default CreateReview;
