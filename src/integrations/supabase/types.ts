@@ -143,42 +143,6 @@ export type Database = {
         }
         Relationships: []
       }
-      redemption_requests: {
-        Row: {
-          admin_notes: string | null
-          created_at: string
-          id: string
-          payment_details: Json | null
-          points_amount: number
-          redemption_type: string
-          status: string
-          updated_at: string
-          user_id: string
-        }
-        Insert: {
-          admin_notes?: string | null
-          created_at?: string
-          id?: string
-          payment_details?: Json | null
-          points_amount: number
-          redemption_type: string
-          status?: string
-          updated_at?: string
-          user_id: string
-        }
-        Update: {
-          admin_notes?: string | null
-          created_at?: string
-          id?: string
-          payment_details?: Json | null
-          points_amount?: number
-          redemption_type?: string
-          status?: string
-          updated_at?: string
-          user_id?: string
-        }
-        Relationships: []
-      }
       review_comments: {
         Row: {
           content: string

@@ -1,62 +1,67 @@
 
 import { supabase } from "@/integrations/supabase/client";
-import { RedemptionItem } from "@/types/redemption";
-import { toast } from "sonner";
+import { RedemptionRequest } from "@/lib/types";
 
-/**
- * Fetches all active redemption items from the database
- */
-export const fetchRedemptionItems = async (): Promise<RedemptionItem[]> => {
+export const getRedeemedPoints = async (userId: string): Promise<number> => {
   try {
-    console.log("Fetching redemption items...");
     const { data, error } = await supabase
-      .from('redemption_items')
-      .select('*')
-      .eq('is_active', true)
-      .order('points_required', { ascending: true });
+      .from("redemption_requests")
+      .select("points_amount")
+      .eq("user_id", userId)
+      .eq("status", "APPROVED");
 
-    if (error) {
-      console.error("Error fetching redemption items:", error);
-      throw error;
-    }
-
-    console.log("Loaded redemption items:", data);
-    return data as RedemptionItem[];
-  } catch (error: any) {
-    console.error("Error fetching redemption items:", error.message);
-    toast.error("Failed to load redemption options");
-    return [];
+    if (error) throw error;
+    
+    return data?.reduce((sum, item) => sum + item.points_amount, 0) || 0;
+  } catch (error) {
+    console.error("Error getting redeemed points:", error);
+    return 0;
   }
 };
 
-/**
- * Submits a redemption request
- */
-export const submitRedemptionRequest = async (
+export const createRedemptionRequest = async (
   userId: string,
-  itemId: string,
   pointsAmount: number,
-  redemptionType: 'CASH' | 'GIFT_VOUCHER'
-): Promise<boolean> => {
+  redemptionType: "CASH" | "GIFT_VOUCHER",
+  paymentDetails?: any
+): Promise<RedemptionRequest | null> => {
   try {
-    const { error } = await supabase
-      .from('redemption_requests')
+    const { data, error } = await supabase
+      .from("redemption_requests")
       .insert({
         user_id: userId,
         points_amount: pointsAmount,
         redemption_type: redemptionType,
-        status: 'PENDING'
-      });
+        status: "PENDING",
+        payment_details: paymentDetails,
+      })
+      .select()
+      .single();
 
-    if (error) {
-      console.error("Error submitting redemption request:", error);
-      throw error;
-    }
+    if (error) throw error;
+    
+    return data;
+  } catch (error) {
+    console.error("Error creating redemption request:", error);
+    return null;
+  }
+};
 
-    return true;
-  } catch (error: any) {
-    console.error("Error submitting redemption request:", error.message);
-    toast.error("Failed to submit redemption request");
-    return false;
+export const getUserRedemptionRequests = async (
+  userId: string
+): Promise<RedemptionRequest[]> => {
+  try {
+    const { data, error } = await supabase
+      .from("redemption_requests")
+      .select("*")
+      .eq("user_id", userId)
+      .order("created_at", { ascending: false });
+
+    if (error) throw error;
+    
+    return data;
+  } catch (error) {
+    console.error("Error getting user redemption requests:", error);
+    return [];
   }
 };
