@@ -38,8 +38,8 @@ const RedeemPoints = () => {
       setIsLoading(true);
       try {
         const items = await fetchRedemptionItems();
-        setRedeemableItems(items);
-        console.log("Loaded redemption items:", items);
+        console.log("Retrieved redemption items in component:", items);
+        setRedeemableItems(items || []);
       } catch (error) {
         console.error("Failed to fetch redemption items:", error);
         toast.error("Failed to load redemption options");
