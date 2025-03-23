@@ -32,7 +32,9 @@ export const addPointsToUser = async (
       throw new Error(errorMsg);
     }
     
-    console.log("Current user points:", user.points);
+    // Ensure points is a number, defaulting to 0 if null
+    const currentPoints = user.points || 0;
+    console.log("Current user points:", currentPoints);
     
     // Add the point transaction
     const { error: transactionError } = await supabase
@@ -51,7 +53,7 @@ export const addPointsToUser = async (
     }
     
     // Update user's points directly in the profiles table
-    const newPointsTotal = (user.points || 0) + amount;
+    const newPointsTotal = currentPoints + amount;
     console.log("New points total:", newPointsTotal);
     
     const { error: updateError } = await supabase
@@ -68,7 +70,7 @@ export const addPointsToUser = async (
     return { success: true, newPointsTotal };
     
   } catch (error: any) {
-    console.error("Error in addPointsToUser:", error);
+    console.error("Error in addPointsToUser:", error.message, error);
     return { success: false, error: error.message };
   }
 };

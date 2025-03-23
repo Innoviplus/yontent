@@ -1,7 +1,7 @@
 
 import { useState, useEffect } from "react";
 import { useSearchParams, useNavigate } from "react-router-dom";
-import { useQuery } from "@tanstack/react-query";
+import { useQuery, useQueryClient } from "@tanstack/react-query";
 import { useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { toast } from "sonner";
@@ -18,6 +18,7 @@ interface UserData {
 export const usePointsManagement = () => {
   const [searchParams] = useSearchParams();
   const navigate = useNavigate();
+  const queryClient = useQueryClient();
   const [selectedUser, setSelectedUser] = useState<UserData | null>(null);
   
   // Set up form
@@ -52,6 +53,8 @@ export const usePointsManagement = () => {
   // Submit handler for adding points
   const handleAddPoints = async (values: PointsTransactionFormValues) => {
     try {
+      console.log("Submitting form values:", values);
+      
       const result = await addPointsToUser(
         values.userId,
         values.amount,
@@ -70,6 +73,9 @@ export const usePointsManagement = () => {
           });
         }
         
+        // Invalidate the users query to refetch updated data
+        queryClient.invalidateQueries({ queryKey: ["admin-users-for-points"] });
+        
         // Reset form except for userId
         form.reset({
           amount: 50,
@@ -82,7 +88,7 @@ export const usePointsManagement = () => {
       }
     } catch (error: any) {
       console.error("Error in handleAddPoints:", error);
-      toast.error(`Error adding points: ${error.message}`);
+      toast.error(`Error adding points: ${error.message || "Unknown error"}`);
     }
   };
   
