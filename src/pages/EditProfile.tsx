@@ -1,5 +1,5 @@
 
-import { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { useAuth } from '@/contexts/AuthContext';
 
@@ -7,8 +7,16 @@ const EditProfile = () => {
   const { user } = useAuth();
   const navigate = useNavigate();
   
+  // Use useEffect for navigation
+  useEffect(() => {
+    if (!user) {
+      navigate('/login');
+    }
+  }, [user, navigate]);
+
+  // Return JSX element instead of calling navigate directly
   if (!user) {
-    return navigate('/login');
+    return null; // Return null while redirecting
   }
 
   return (
