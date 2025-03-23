@@ -13,7 +13,13 @@ export const useRequestsAdmin = () => {
       setIsLoadingRequests(true);
       const { data, error } = await supabase
         .from('redemption_requests')
-        .select('*, profiles:user_id(username, avatar)')
+        .select(`
+          *,
+          profiles:user_id (
+            username,
+            avatar
+          )
+        `)
         .order('created_at', { ascending: false });
       
       if (error) {
