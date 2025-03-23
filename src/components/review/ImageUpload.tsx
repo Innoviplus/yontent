@@ -17,7 +17,7 @@ const ImageUpload: React.FC<ImageUploadProps> = ({
   onRemoveImage, 
   error, 
   uploading,
-  maxImages = 5
+  maxImages = 10
 }) => {
   return (
     <div className="mb-6">
