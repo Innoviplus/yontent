@@ -9,6 +9,7 @@ import { CreditCard, Coffee, Gift, Apple, Loader2 } from 'lucide-react';
 import { toast } from 'sonner';
 import { fetchRedemptionItems, submitRedemptionRequest } from '@/services/redemptionService';
 import { RedemptionItem } from '@/types/redemption';
+import PointsBadge from '@/components/PointsBadge';
 
 // Fallback icon mapping for different item types
 const getIconForItem = (title: string) => {
@@ -26,7 +27,7 @@ const getIconForItem = (title: string) => {
 };
 
 const RedeemPoints = () => {
-  const { user, userProfile } = useAuth();
+  const { user } = useAuth();
   const { userPoints, refreshPoints } = usePoints();
   const [isRedeeming, setIsRedeeming] = useState(false);
   const [redeemableItems, setRedeemableItems] = useState<RedemptionItem[]>([]);
@@ -93,9 +94,9 @@ const RedeemPoints = () => {
       <div className="container mx-auto px-4 pt-28 pb-16 max-w-5xl">
         <div className="mb-8">
           <h1 className="text-3xl font-bold">Redeem Your Points</h1>
-          <p className="text-gray-600 mt-2">
-            You currently have <span className="font-semibold text-brand-teal">{userPoints} points</span> to redeem
-          </p>
+          <div className="mt-2">
+            <PointsBadge points={userPoints} size="lg" />
+          </div>
         </div>
         
         {isLoading ? (
@@ -139,8 +140,15 @@ const RedeemPoints = () => {
                 </CardHeader>
                 <CardContent>
                   <div className="flex items-center justify-between">
-                    <div className="text-sm text-gray-500">
-                      Points required: <span className="font-semibold">{option.points_required}</span>
+                    <div className="flex items-center">
+                      <img 
+                        src="/lovable-uploads/15750ea6-ed41-4d3d-83e2-299853617c30.png" 
+                        alt="Points" 
+                        className="h-4 w-4 mr-1" 
+                      />
+                      <span className="text-sm text-gray-500">
+                        <span className="font-semibold">{option.points_required}</span> points required
+                      </span>
                     </div>
                     {userPoints < option.points_required && (
                       <div className="text-xs text-red-500">

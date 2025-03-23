@@ -8,6 +8,7 @@ import { toast } from "sonner";
  */
 export const fetchRedemptionItems = async (): Promise<RedemptionItem[]> => {
   try {
+    console.log("Fetching redemption items...");
     const { data, error } = await supabase
       .from('redemption_items')
       .select('*')
@@ -15,9 +16,11 @@ export const fetchRedemptionItems = async (): Promise<RedemptionItem[]> => {
       .order('points_required', { ascending: true });
 
     if (error) {
+      console.error("Error fetching redemption items:", error);
       throw error;
     }
 
+    console.log("Loaded redemption items:", data);
     return data as RedemptionItem[];
   } catch (error: any) {
     console.error("Error fetching redemption items:", error.message);
@@ -46,6 +49,7 @@ export const submitRedemptionRequest = async (
       });
 
     if (error) {
+      console.error("Error submitting redemption request:", error);
       throw error;
     }
 
