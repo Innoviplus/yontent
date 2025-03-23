@@ -1,7 +1,7 @@
 
 import * as React from "react";
 import { ChevronLeft, ChevronRight } from "lucide-react";
-import { DayPicker, CaptionProps } from "react-day-picker";
+import { DayPicker, CaptionProps, DropdownProps } from "react-day-picker";
 
 import { cn } from "@/lib/utils";
 import { buttonVariants } from "@/components/ui/button";
@@ -56,58 +56,86 @@ function Calendar({
       components={{
         IconLeft: ({ ..._props }) => <ChevronLeft className="h-4 w-4" />,
         IconRight: ({ ..._props }) => <ChevronRight className="h-4 w-4" />,
-        Dropdown: ({ value, onChange, children, ...props }: { value: string; onChange: (value: string) => void; children: React.ReactNode; name?: string }) => {
+        Dropdown: (props: DropdownProps) => {
+          const { value, onChange, children, ...rest } = props;
+          // Convert number values to string for Select component
+          const stringValue = value.toString();
+          
           return (
             <Select
-              value={value}
-              onValueChange={onChange}
+              value={stringValue}
+              onValueChange={(newValue) => onChange(newValue)}
             >
               <SelectTrigger className="w-[90px] focus:ring-0">
-                <SelectValue>{value}</SelectValue>
+                <SelectValue>{stringValue}</SelectValue>
               </SelectTrigger>
               <SelectContent>
                 {React.Children.map(children as React.ReactElement[], (child) => (
-                  <SelectItem value={child.props.value}>{child.props.children}</SelectItem>
+                  <SelectItem value={child.props.value.toString()}>{child.props.children}</SelectItem>
                 ))}
               </SelectContent>
             </Select>
           );
         },
         Caption: (props: CaptionProps) => {
+          // Handle the custom caption based on what's actually available in CaptionProps
           return (
             <div className="flex justify-center space-x-2 py-1 w-full">
-              {props.displayMonth && props.captionLayout === 'dropdown-buttons' && (
+              {props.displayMonth && (
                 <>
-                  {props.components?.Dropdown({
-                    value: props.monthLabel,
-                    onChange: (value) => {
+                  {/* Month dropdown */}
+                  <Select 
+                    value={props.displayMonth.getMonth().toString()} 
+                    onValueChange={(value) => {
                       const newDate = new Date(props.displayMonth);
-                      const monthIdx = props.months.findIndex(month => month === value);
-                      if (monthIdx !== -1) {
-                        newDate.setMonth(monthIdx);
-                        props.onMonthChange(newDate);
-                      }
-                    },
-                    name: 'months',
-                    children: props.months.map(month => (
-                      <option key={month} value={month}>{month}</option>
-                    ))
-                  })}
-                  {props.components?.Dropdown({
-                    value: props.yearLabel,
-                    onChange: (value) => {
-                      const newDate = new Date(props.displayMonth);
-                      newDate.setFullYear(Number(value));
+                      newDate.setMonth(parseInt(value));
                       props.onMonthChange(newDate);
-                    },
-                    name: 'years',
-                    children: props.years.map(year => (
-                      <option key={year} value={year}>{year}</option>
-                    ))
-                  })}
+                    }}
+                  >
+                    <SelectTrigger className="w-[90px] focus:ring-0">
+                      <SelectValue>
+                        {props.displayMonth.toLocaleString('default', { month: 'long' })}
+                      </SelectValue>
+                    </SelectTrigger>
+                    <SelectContent>
+                      {Array.from({ length: 12 }, (_, i) => (
+                        <SelectItem key={i} value={i.toString()}>
+                          {new Date(0, i).toLocaleString('default', { month: 'long' })}
+                        </SelectItem>
+                      ))}
+                    </SelectContent>
+                  </Select>
+                  
+                  {/* Year dropdown */}
+                  <Select 
+                    value={props.displayMonth.getFullYear().toString()} 
+                    onValueChange={(value) => {
+                      const newDate = new Date(props.displayMonth);
+                      newDate.setFullYear(parseInt(value));
+                      props.onMonthChange(newDate);
+                    }}
+                  >
+                    <SelectTrigger className="w-[90px] focus:ring-0">
+                      <SelectValue>
+                        {props.displayMonth.getFullYear()}
+                      </SelectValue>
+                    </SelectTrigger>
+                    <SelectContent>
+                      {Array.from(
+                        { length: 121 }, // 2000 to 1900 = 101 years
+                        (_, i) => {
+                          const year = 2024 - i;
+                          return (
+                            <SelectItem key={year} value={year.toString()}>
+                              {year}
+                            </SelectItem>
+                          );
+                        }
+                      )}
+                    </SelectContent>
+                  </Select>
                 </>
               )}
-              {props.captionLayout === 'buttons' && <div>{props.monthLabel} {props.yearLabel}</div>}
             </div>
           );
         }
