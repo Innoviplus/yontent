@@ -17,6 +17,7 @@ import MissionDetail from "./pages/MissionDetail";
 import RedeemPoints from "./pages/RedeemPoints";
 import MissionReceiptSubmission from "./pages/MissionReceiptSubmission";
 import Index from "./pages/Index";
+import UserRankings from "./pages/UserRankings";
 
 const routes = [
   {
@@ -54,6 +55,10 @@ const routes = [
   {
     path: "/mission-receipt/:id",
     element: <MissionReceiptSubmission />,
+  },
+  {
+    path: "/user-rankings",
+    element: <UserRankings />,
   },
 ];
 
