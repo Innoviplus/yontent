@@ -125,8 +125,9 @@ export const setUserAsSuperAdmin = async (userId: string) => {
     }
     
     // Create updated extended_data with isAdmin and isSuperAdmin flags
+    // Fix: Ensure extended_data is an object before spreading
     const extendedData = {
-      ...(user.extended_data || {}),
+      ...((user.extended_data && typeof user.extended_data === 'object') ? user.extended_data : {}),
       isAdmin: true,
       isSuperAdmin: true
     };
