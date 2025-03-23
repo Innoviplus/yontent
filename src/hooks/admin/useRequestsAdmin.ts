@@ -1,4 +1,3 @@
-
 import { useState, useEffect, useCallback } from 'react';
 import { toast } from 'sonner';
 import { supabase } from '@/integrations/supabase/client';
@@ -15,10 +14,7 @@ export const useRequestsAdmin = () => {
         .from('redemption_requests')
         .select(`
           *,
-          profiles:user_id (
-            username,
-            avatar
-          )
+          profiles(username, avatar)
         `)
         .order('created_at', { ascending: false });
       
@@ -26,7 +22,6 @@ export const useRequestsAdmin = () => {
         throw error;
       }
       
-      // Format the data to match the RedemptionRequest type
       const formattedRequests: RedemptionRequest[] = (data || []).map(item => ({
         id: item.id,
         userId: item.user_id,
@@ -87,7 +82,6 @@ export const useRequestsAdmin = () => {
 
   const rejectRequest = async (id: string, adminNotes?: string) => {
     try {
-      // First get the request to get the user and points amount
       const { data: requestData, error: requestError } = await supabase
         .from('redemption_requests')
         .select('user_id, points_amount')
@@ -98,7 +92,6 @@ export const useRequestsAdmin = () => {
         throw requestError;
       }
       
-      // Update the request status
       const { error: updateError } = await supabase
         .from('redemption_requests')
         .update({ 
@@ -112,7 +105,6 @@ export const useRequestsAdmin = () => {
         throw updateError;
       }
       
-      // Return points to user's account using the increment_points function
       const { data: pointsData, error: pointsError } = await supabase
         .rpc('increment_points', { 
           user_id_param: requestData.user_id, 
