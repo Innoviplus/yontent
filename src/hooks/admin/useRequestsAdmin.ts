@@ -11,6 +11,10 @@ export const useRequestsAdmin = () => {
   const fetchRequests = useCallback(async () => {
     try {
       setIsLoadingRequests(true);
+      
+      // Log when we're starting to fetch
+      console.log('Fetching redemption requests from Supabase...');
+      
       const { data, error } = await supabase
         .from('redemption_requests')
         .select('*')
@@ -19,6 +23,9 @@ export const useRequestsAdmin = () => {
       if (error) {
         throw error;
       }
+      
+      // Log the raw data we received
+      console.log('Raw redemption requests data:', data);
       
       // Create an array to store formatted requests
       const formattedRequests: RedemptionRequest[] = [];
@@ -57,6 +64,9 @@ export const useRequestsAdmin = () => {
         
         formattedRequests.push(request);
       }
+      
+      // Log the formatted requests
+      console.log('Formatted redemption requests:', formattedRequests);
       
       setRequests(formattedRequests);
     } catch (error) {
