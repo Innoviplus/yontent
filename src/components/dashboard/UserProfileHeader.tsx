@@ -1,6 +1,6 @@
 
 import { Link } from 'react-router-dom';
-import { User, Settings, Coins } from 'lucide-react';
+import { User, Settings } from 'lucide-react';
 import { User as UserType } from '@/lib/types';
 import { SocialMediaIcons } from '@/components/dashboard/SocialMediaIcons';
 
@@ -71,10 +71,14 @@ const UserProfileHeader = ({ user }: UserProfileHeaderProps) => {
             </Link>
             <Link to="/redeem" className="bg-gray-50 rounded-lg p-3 text-center hover:bg-gray-100 transition-colors group">
               <div className="flex items-center justify-center gap-1">
-                <Coins className="h-5 w-5 text-yellow-500" />
-                <span className="text-2xl font-semibold text-yellow-500 group-hover:text-yellow-600 transition-colors">{user.points}</span>
+                <img 
+                  src="/lovable-uploads/15750ea6-ed41-4d3d-83e2-299853617c30.png" 
+                  alt="Points" 
+                  className="h-5 w-5" 
+                />
+                <span className="text-2xl font-semibold text-brand-teal group-hover:text-brand-teal/80 transition-colors">{user.points}</span>
               </div>
-              <div className="text-sm text-gray-500 group-hover:text-yellow-500/80 transition-colors">Points</div>
+              <div className="text-sm text-gray-500 group-hover:text-brand-teal/80 transition-colors">Points</div>
             </Link>
           </div>
         </div>

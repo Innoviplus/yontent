@@ -29,7 +29,7 @@ const PointsBadge = ({ points, size = 'md', className }: PointsBadgeProps) => {
       )}
     >
       <img 
-        src="/lovable-uploads/2a6c24bb-50ef-4611-94de-27395a9d3289.png" 
+        src="/lovable-uploads/15750ea6-ed41-4d3d-83e2-299853617c30.png" 
         alt="Points" 
         className={cn(iconSizes[size])}
       />
