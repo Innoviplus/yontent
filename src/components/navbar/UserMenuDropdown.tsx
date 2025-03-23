@@ -9,11 +9,14 @@ import {
   DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu";
 import { useAuth } from "@/contexts/AuthContext";
+import { usePoints } from "@/contexts/PointsContext";
 import { Link } from "react-router-dom";
 import { LogOut, User, Settings, Award } from "lucide-react";
+import PointsBadge from "@/components/PointsBadge";
 
 const UserMenuDropdown = () => {
   const { user, userProfile, signOut } = useAuth();
+  const { userPoints } = usePoints();
   
   if (!user) return null;
   
@@ -34,6 +37,9 @@ const UserMenuDropdown = () => {
       </DropdownMenuTrigger>
       <DropdownMenuContent align="end" className="w-56">
         <DropdownMenuLabel>My Account</DropdownMenuLabel>
+        <div className="px-2 py-1.5">
+          <PointsBadge points={userPoints} size="sm" />
+        </div>
         <DropdownMenuItem asChild>
           <Link to="/dashboard" className="cursor-pointer">
             <User className="h-4 w-4 mr-2" /> Profile

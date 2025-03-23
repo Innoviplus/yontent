@@ -1,8 +1,7 @@
-
 import { useState } from 'react';
 import { Link, useNavigate } from 'react-router-dom';
 import { useQuery } from '@tanstack/react-query';
-import { Plus, Loader2 } from 'lucide-react';
+import { Loader2 } from 'lucide-react';
 import Navbar from '@/components/Navbar';
 import ReviewCard from '@/components/ReviewCard';
 import { Review } from '@/lib/types';
@@ -119,30 +118,19 @@ const Reviews = () => {
         <div className="flex flex-col md:flex-row justify-between items-start md:items-center mb-8 gap-4">
           <h1 className="text-2xl font-bold">Reviews</h1>
           
-          <div className="flex flex-col sm:flex-row gap-4 w-full md:w-auto">
-            <div className="w-full sm:w-48">
-              <Select value={sortBy} onValueChange={handleSortChange}>
-                <SelectTrigger>
-                  <SelectValue placeholder="Sort by" />
-                </SelectTrigger>
-                <SelectContent>
-                  {sortOptions.map(option => (
-                    <SelectItem key={option.value} value={option.value}>
-                      {option.label}
-                    </SelectItem>
-                  ))}
-                </SelectContent>
-              </Select>
-            </div>
-            
-            {user && (
-              <Link to="/submit-review" className="w-full sm:w-auto">
-                <Button className="bg-brand-teal hover:bg-brand-teal/90 w-full">
-                  <Plus className="h-4 w-4 mr-2" />
-                  Add Review
-                </Button>
-              </Link>
-            )}
+          <div className="w-full sm:w-48">
+            <Select value={sortBy} onValueChange={handleSortChange}>
+              <SelectTrigger>
+                <SelectValue placeholder="Sort by" />
+              </SelectTrigger>
+              <SelectContent>
+                {sortOptions.map(option => (
+                  <SelectItem key={option.value} value={option.value}>
+                    {option.label}
+                  </SelectItem>
+                ))}
+              </SelectContent>
+            </Select>
           </div>
         </div>
         
@@ -162,7 +150,6 @@ const Reviews = () => {
           </div>
         ) : paginatedReviews.length > 0 ? (
           <>
-            {/* 5-column grid with vertical cascading layout */}
             <div className="grid gap-6 grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 xl:grid-cols-5 masonry-grid">
               {paginatedReviews.map((review) => (
                 <div key={review.id} onClick={() => handleReviewClick(review.id)} className="mb-6">

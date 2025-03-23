@@ -1,6 +1,7 @@
 
 import { useState, useEffect } from 'react';
 import { useAuth } from '@/contexts/AuthContext';
+import { usePoints } from '@/contexts/PointsContext';
 import Navbar from '@/components/Navbar';
 import { Card, CardContent, CardDescription, CardFooter, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
@@ -26,11 +27,10 @@ const getIconForItem = (title: string) => {
 
 const RedeemPoints = () => {
   const { user, userProfile } = useAuth();
+  const { userPoints, refreshPoints } = usePoints();
   const [isRedeeming, setIsRedeeming] = useState(false);
   const [redeemableItems, setRedeemableItems] = useState<RedemptionItem[]>([]);
   const [isLoading, setIsLoading] = useState(true);
-  
-  const userPoints = userProfile?.points || 0;
   
   useEffect(() => {
     const loadRedemptionItems = async () => {
@@ -38,8 +38,10 @@ const RedeemPoints = () => {
       try {
         const items = await fetchRedemptionItems();
         setRedeemableItems(items);
+        console.log("Loaded redemption items:", items);
       } catch (error) {
         console.error("Failed to fetch redemption items:", error);
+        toast.error("Failed to load redemption options");
       } finally {
         setIsLoading(false);
       }
@@ -70,6 +72,7 @@ const RedeemPoints = () => {
         
         if (success) {
           toast.success(`Successfully redeemed ${option.name}! You'll receive it soon.`);
+          refreshPoints(); // Refresh points after successful redemption
         } else {
           toast.error("Failed to process redemption. Please try again.");
         }
