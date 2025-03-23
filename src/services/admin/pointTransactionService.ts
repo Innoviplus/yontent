@@ -3,7 +3,7 @@ import { supabase } from "@/integrations/supabase/client";
 import { toast } from "sonner";
 
 /**
- * Adds points to a user and creates a transaction record
+ * Adds points to a user by directly updating their profile
  */
 export const addPointsToUser = async (
   userId: string, 
@@ -14,7 +14,7 @@ export const addPointsToUser = async (
   try {
     console.log("Adding points to user:", userId, "Amount:", amount);
     
-    // First, fetch the current user points from profiles
+    // Fetch the current user points from profiles
     const { data: user, error: userError } = await supabase
       .from('profiles')
       .select('points')
@@ -36,26 +36,6 @@ export const addPointsToUser = async (
     const currentPoints = user.points || 0;
     console.log("Current user points:", currentPoints);
     
-    // Add the point transaction first
-    const { data: transaction, error: transactionError } = await supabase
-      .from('point_transactions')
-      .insert([{
-        user_id: userId,
-        amount: amount,
-        type: type,
-        source: 'ADMIN_ADJUSTMENT',
-        description: description
-      }])
-      .select()
-      .single();
-      
-    if (transactionError) {
-      console.error("Error adding transaction:", transactionError);
-      throw transactionError;
-    }
-    
-    console.log("Transaction created:", transaction);
-    
     // Update user's points directly in the profiles table
     const newPointsTotal = currentPoints + amount;
     console.log("New points total:", newPointsTotal);
@@ -73,7 +53,7 @@ export const addPointsToUser = async (
     console.log("Successfully updated user points to:", newPointsTotal);
     
     // Return the new points total for UI updates
-    return { success: true, newPointsTotal, transaction };
+    return { success: true, newPointsTotal };
     
   } catch (error: any) {
     console.error("Error in addPointsToUser:", error.message, error);
@@ -188,45 +168,6 @@ export const addInitialPointsToUser = async (username: string) => {
     );
   } catch (error: any) {
     console.error(`Error adding initial points to ${username}:`, error.message, error);
-    return { success: false, error: error.message };
-  }
-};
-
-/**
- * Adds a direct point transaction record to the database
- */
-export const addPointTransaction = async (
-  userId: string,
-  amount: number,
-  type: 'EARNED' | 'ADJUSTED' | 'REDEEMED' | 'REFUNDED',
-  source: 'MISSION_REVIEW' | 'RECEIPT_SUBMISSION' | 'REDEMPTION' | 'ADMIN_ADJUSTMENT',
-  description: string
-) => {
-  try {
-    console.log("Adding point transaction record:", { userId, amount, type, source, description });
-    
-    const { data: transaction, error } = await supabase
-      .from('point_transactions')
-      .insert([{
-        user_id: userId,
-        amount: amount,
-        type: type,
-        source: source,
-        description: description
-      }])
-      .select()
-      .single();
-      
-    if (error) {
-      console.error("Error adding point transaction record:", error);
-      throw error;
-    }
-    
-    console.log("Transaction record created:", transaction);
-    
-    return { success: true, transaction };
-  } catch (error: any) {
-    console.error("Error in addPointTransaction:", error.message, error);
     return { success: false, error: error.message };
   }
 };
