@@ -18,6 +18,7 @@ import RedeemPoints from "./pages/RedeemPoints";
 import MissionReceiptSubmission from "./pages/MissionReceiptSubmission";
 import Index from "./pages/Index";
 import UserRankings from "./pages/UserRankings";
+import ReviewDetail from "./pages/ReviewDetail";
 
 const routes = [
   {
@@ -39,6 +40,10 @@ const routes = [
   {
     path: "/reviews",
     element: <Reviews />,
+  },
+  {
+    path: "/reviews/:id",
+    element: <ReviewDetail />,
   },
   {
     path: "/missions",
