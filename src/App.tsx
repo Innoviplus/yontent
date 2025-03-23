@@ -19,6 +19,10 @@ import MissionReceiptSubmission from "./pages/MissionReceiptSubmission";
 import Index from "./pages/Index";
 import UserRankings from "./pages/UserRankings";
 import ReviewDetail from "./pages/ReviewDetail";
+import UserProfile from "./pages/UserProfile";
+import NotFound from "./pages/NotFound";
+import FollowersList from "./pages/FollowersList";
+import FollowingList from "./pages/FollowingList";
 
 const routes = [
   {
@@ -65,6 +69,22 @@ const routes = [
     path: "/user-rankings",
     element: <UserRankings />,
   },
+  {
+    path: "/user/:username",
+    element: <UserProfile />,
+  },
+  {
+    path: "/followers/:id",
+    element: <FollowersList />,
+  },
+  {
+    path: "/following/:id",
+    element: <FollowingList />,
+  },
+  {
+    path: "*",
+    element: <NotFound />,
+  }
 ];
 
 function App() {
