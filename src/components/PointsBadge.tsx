@@ -1,6 +1,5 @@
 
 import { cn } from '@/lib/utils';
-import { Award } from 'lucide-react';
 
 interface PointsBadgeProps {
   points: number;
@@ -15,6 +14,12 @@ const PointsBadge = ({ points, size = 'md', className }: PointsBadgeProps) => {
     lg: 'text-base py-1.5 px-4',
   };
 
+  const iconSizes = {
+    sm: 'h-3 w-3',
+    md: 'h-4 w-4',
+    lg: 'h-5 w-5',
+  };
+
   return (
     <div 
       className={cn(
@@ -23,11 +28,11 @@ const PointsBadge = ({ points, size = 'md', className }: PointsBadgeProps) => {
         className
       )}
     >
-      <Award className={cn('text-brand-teal', {
-        'h-3 w-3': size === 'sm',
-        'h-4 w-4': size === 'md',
-        'h-5 w-5': size === 'lg',
-      })} />
+      <img 
+        src="/lovable-uploads/2a6c24bb-50ef-4611-94de-27395a9d3289.png" 
+        alt="Points" 
+        className={cn(iconSizes[size])}
+      />
       <span>{points} points</span>
     </div>
   );

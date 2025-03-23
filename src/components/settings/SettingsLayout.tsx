@@ -7,6 +7,7 @@ import { AccountTab } from "./AccountTab";
 import { SocialMediaTab } from "./SocialMediaTab";
 import { AvatarUploader } from "./AvatarUploader";
 import { User } from "lucide-react";
+import PointsBadge from "../PointsBadge";
 
 export function SettingsLayout({
   userProfile,
@@ -42,7 +43,7 @@ export function SettingsLayout({
             />
             <h3 className="mt-4 text-lg font-medium">{userProfile?.username}</h3>
             {userProfile?.points !== undefined && (
-              <p className="text-sm text-gray-500">{userProfile.points} points</p>
+              <PointsBadge points={userProfile.points} className="mt-2" />
             )}
           </div>
         </div>
