@@ -7,7 +7,7 @@ import Navbar from '@/components/Navbar';
 import { toast } from 'sonner';
 import { useAuth } from '@/contexts/AuthContext';
 
-// Import our new components
+// Import our components
 import MissionBanner from '@/components/mission/MissionBanner';
 import MissionDetails from '@/components/mission/MissionDetails';
 import CommunityEngagement from '@/components/mission/CommunityEngagement';
@@ -16,6 +16,7 @@ import MissionStats from '@/components/mission/MissionStats';
 import MissionFAQ from '@/components/mission/MissionFAQ';
 import SupportSection from '@/components/mission/SupportSection';
 import MissionLoadingState from '@/components/mission/MissionLoadingState';
+import { initializeMissionService } from '@/services/missionService';
 
 const MissionDetail = () => {
   const { id } = useParams<{ id: string }>();
@@ -30,6 +31,11 @@ const MissionDetail = () => {
   const [loading, setLoading] = useState(true);
   const [participating, setParticipating] = useState(false);
   const [participationStatus, setParticipationStatus] = useState<string | null>(null);
+
+  // Initialize the mission service on first render
+  useEffect(() => {
+    initializeMissionService();
+  }, []);
 
   useEffect(() => {
     const fetchMission = async () => {

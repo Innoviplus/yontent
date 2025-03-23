@@ -1,5 +1,5 @@
-
 import { useState } from 'react';
+import { useNavigate } from 'react-router-dom';
 import { Mission } from '@/lib/types';
 import { Card, CardContent } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
@@ -24,6 +24,7 @@ const MissionStats = ({
   onParticipationUpdate 
 }: MissionStatsProps) => {
   const [loading, setLoading] = useState(false);
+  const navigate = useNavigate();
   
   const isExpired = mission.expiresAt ? isPast(mission.expiresAt) : false;
   const isCompleted = participationStatus === 'APPROVED';
@@ -36,6 +37,11 @@ const MissionStats = ({
     
     try {
       setLoading(true);
+      
+      if (mission.type === 'RECEIPT') {
+        navigate(`/mission-receipt/${mission.id}`);
+        return;
+      }
       
       const { error } = await supabase
         .from('mission_participations')
