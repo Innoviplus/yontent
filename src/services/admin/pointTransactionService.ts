@@ -191,3 +191,42 @@ export const addInitialPointsToUser = async (username: string) => {
     return { success: false, error: error.message };
   }
 };
+
+/**
+ * Adds a direct point transaction record to the database
+ */
+export const addPointTransaction = async (
+  userId: string,
+  amount: number,
+  type: 'EARNED' | 'ADJUSTED' | 'REDEEMED' | 'REFUNDED',
+  source: 'MISSION_REVIEW' | 'RECEIPT_SUBMISSION' | 'REDEMPTION' | 'ADMIN_ADJUSTMENT',
+  description: string
+) => {
+  try {
+    console.log("Adding point transaction record:", { userId, amount, type, source, description });
+    
+    const { data: transaction, error } = await supabase
+      .from('point_transactions')
+      .insert([{
+        user_id: userId,
+        amount: amount,
+        type: type,
+        source: source,
+        description: description
+      }])
+      .select()
+      .single();
+      
+    if (error) {
+      console.error("Error adding point transaction record:", error);
+      throw error;
+    }
+    
+    console.log("Transaction record created:", transaction);
+    
+    return { success: true, transaction };
+  } catch (error: any) {
+    console.error("Error in addPointTransaction:", error.message, error);
+    return { success: false, error: error.message };
+  }
+};

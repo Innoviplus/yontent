@@ -6,7 +6,14 @@ import { useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { toast } from "sonner";
 import { pointsTransactionSchema, PointsTransactionFormValues } from "@/components/admin/points/PointsFormCard";
-import { addPointsToUser, fetchUsersWithPoints, setUserAsSuperAdmin, addInitialPointsToUser } from "@/services/admin/pointTransactionService";
+import { 
+  addPointsToUser, 
+  fetchUsersWithPoints, 
+  setUserAsSuperAdmin, 
+  addInitialPointsToUser,
+  addPointTransaction
+} from "@/services/admin/pointTransactionService";
+import { transactionSchema, TransactionFormValues } from "@/components/admin/points/TransactionFormCard";
 
 interface UserData {
   id: string;
@@ -21,12 +28,24 @@ export const usePointsManagement = () => {
   const queryClient = useQueryClient();
   const [selectedUser, setSelectedUser] = useState<UserData | null>(null);
   
-  // Set up form
+  // Set up main points form
   const form = useForm<PointsTransactionFormValues>({
     resolver: zodResolver(pointsTransactionSchema),
     defaultValues: {
       amount: 50,
       type: "EARNED",
+      description: "",
+      userId: ""
+    }
+  });
+  
+  // Set up transaction form
+  const transactionForm = useForm<TransactionFormValues>({
+    resolver: zodResolver(transactionSchema),
+    defaultValues: {
+      amount: 100,
+      type: "EARNED",
+      source: "ADMIN_ADJUSTMENT", 
       description: "",
       userId: ""
     }
@@ -106,6 +125,41 @@ export const usePointsManagement = () => {
     }
   });
   
+  // Mutation for adding a transaction record
+  const addTransactionMutation = useMutation({
+    mutationFn: (values: TransactionFormValues) => 
+      addPointTransaction(
+        values.userId, 
+        values.amount, 
+        values.type, 
+        values.source, 
+        values.description
+      ),
+    onSuccess: (result) => {
+      if (result.success) {
+        toast.success("Transaction record added successfully");
+        
+        // Invalidate the users query to refetch updated data
+        queryClient.invalidateQueries({ queryKey: ["admin-users-for-points"] });
+        
+        // Reset form except for userId
+        transactionForm.reset({
+          amount: 100,
+          type: "EARNED",
+          source: "ADMIN_ADJUSTMENT",
+          description: "",
+          userId: selectedUser?.id || ""
+        });
+      } else {
+        toast.error(`Error adding transaction record: ${result.error}`);
+      }
+    },
+    onError: (error: any) => {
+      console.error("Error in addTransactionMutation:", error);
+      toast.error(`Error adding transaction record: ${error.message || "Unknown error"}`);
+    }
+  });
+  
   // Check for userId in URL and set selected user
   useEffect(() => {
     const userId = searchParams.get('userId');
@@ -114,9 +168,10 @@ export const usePointsManagement = () => {
       if (user) {
         setSelectedUser(user);
         form.setValue('userId', user.id);
+        transactionForm.setValue('userId', user.id);
       }
     }
-  }, [searchParams, users, form]);
+  }, [searchParams, users, form, transactionForm]);
   
   // Submit handler for adding points
   const handleAddPoints = async (values: PointsTransactionFormValues) => {
@@ -124,16 +179,24 @@ export const usePointsManagement = () => {
     addPointsMutation.mutate(values);
   };
   
+  // Submit handler for adding a transaction
+  const handleAddTransaction = async (values: TransactionFormValues) => {
+    console.log("Submitting transaction form values:", values);
+    addTransactionMutation.mutate(values);
+  };
+  
   // Handler for selecting a user
   const handleSelectUser = (user: UserData) => {
     setSelectedUser(user);
     form.setValue('userId', user.id);
+    transactionForm.setValue('userId', user.id);
   };
   
   // Handler for clearing selected user
   const handleClearUser = () => {
     setSelectedUser(null);
     form.setValue('userId', "");
+    transactionForm.setValue('userId', "");
     navigate('/admin/points');
   };
   
@@ -152,13 +215,16 @@ export const usePointsManagement = () => {
     isLoading,
     selectedUser,
     form,
+    transactionForm,
     handleAddPoints,
+    handleAddTransaction,
     handleSelectUser,
     handleClearUser,
     handleSetAsSuperAdmin,
     handleAddInitialPoints,
     isAddingPoints: addPointsMutation.isPending,
     isSettingSuperAdmin: setSuperAdminMutation.isPending,
-    isAddingInitialPoints: addInitialPointsMutation.isPending
+    isAddingInitialPoints: addInitialPointsMutation.isPending,
+    isAddingTransaction: addTransactionMutation.isPending
   };
 };

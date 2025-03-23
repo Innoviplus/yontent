@@ -1,10 +1,11 @@
 
-import { Loader2, Shield, CreditCard } from "lucide-react";
+import { Loader2, Shield, CreditCard, Database } from "lucide-react";
 import { usePointsManagement } from "@/hooks/admin/usePointsManagement";
 import UserSearchCard from "@/components/admin/points/UserSearchCard";
 import PointsFormCard from "@/components/admin/points/PointsFormCard";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
+import TransactionFormCard from "@/components/admin/points/TransactionFormCard";
 
 const PointsManagement = () => {
   const {
@@ -17,9 +18,12 @@ const PointsManagement = () => {
     handleClearUser,
     handleSetAsSuperAdmin,
     handleAddInitialPoints,
+    handleAddTransaction,
+    transactionForm,
     isAddingPoints,
     isSettingSuperAdmin,
-    isAddingInitialPoints
+    isAddingInitialPoints,
+    isAddingTransaction
   } = usePointsManagement();
   
   if (isLoading) {
@@ -58,6 +62,21 @@ const PointsManagement = () => {
           isSubmitting={isAddingPoints}
         />
       </div>
+      
+      {/* Transaction Form Card */}
+      <Card className="mb-6">
+        <CardHeader>
+          <CardTitle>Add Transaction Record</CardTitle>
+        </CardHeader>
+        <CardContent>
+          <TransactionFormCard 
+            form={transactionForm}
+            onSubmit={handleAddTransaction}
+            isUserSelected={!!selectedUser}
+            isSubmitting={isAddingTransaction}
+          />
+        </CardContent>
+      </Card>
       
       {/* Admin Actions Card */}
       <Card className="mb-6">
