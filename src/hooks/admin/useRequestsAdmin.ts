@@ -13,31 +13,50 @@ export const useRequestsAdmin = () => {
       setIsLoadingRequests(true);
       const { data, error } = await supabase
         .from('redemption_requests')
-        .select(`
-          *,
-          profiles(username, avatar)
-        `)
+        .select('*')
         .order('created_at', { ascending: false });
       
       if (error) {
         throw error;
       }
       
-      const formattedRequests: RedemptionRequest[] = (data || []).map(item => ({
-        id: item.id,
-        userId: item.user_id,
-        pointsAmount: item.points_amount,
-        redemptionType: item.redemption_type as "CASH" | "GIFT_VOUCHER",
-        status: item.status as "PENDING" | "APPROVED" | "REJECTED",
-        paymentDetails: item.payment_details,
-        adminNotes: item.admin_notes,
-        createdAt: new Date(item.created_at),
-        updatedAt: new Date(item.updated_at),
-        user: item.profiles ? {
-          username: item.profiles.username,
-          avatar: item.profiles.avatar
-        } : undefined
-      }));
+      // Create an array to store formatted requests
+      const formattedRequests: RedemptionRequest[] = [];
+      
+      // Process each request and fetch the associated user data
+      for (const item of data || []) {
+        // Create the base request object
+        const request: RedemptionRequest = {
+          id: item.id,
+          userId: item.user_id,
+          pointsAmount: item.points_amount,
+          redemptionType: item.redemption_type as "CASH" | "GIFT_VOUCHER",
+          status: item.status as "PENDING" | "APPROVED" | "REJECTED",
+          paymentDetails: item.payment_details,
+          adminNotes: item.admin_notes,
+          createdAt: new Date(item.created_at),
+          updatedAt: new Date(item.updated_at),
+          user: undefined
+        };
+        
+        // Fetch the associated user profile
+        if (item.user_id) {
+          const { data: userData, error: userError } = await supabase
+            .from('profiles')
+            .select('username, avatar')
+            .eq('id', item.user_id)
+            .single();
+          
+          if (!userError && userData) {
+            request.user = {
+              username: userData.username,
+              avatar: userData.avatar
+            };
+          }
+        }
+        
+        formattedRequests.push(request);
+      }
       
       setRequests(formattedRequests);
     } catch (error) {
