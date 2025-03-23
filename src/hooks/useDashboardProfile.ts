@@ -66,7 +66,6 @@ export const useDashboardProfile = (userId: string | undefined) => {
           createdAt: new Date(profile.created_at), // Convert string date to Date object
           completedReviews: reviewsCount || 0,
           completedMissions: missionsCount || 0,
-          isAdmin: false, // Default value for isAdmin
           extendedData: profile.extended_data || {},
           followersCount: profile.followers_count || 0,
           followingCount: profile.following_count || 0
