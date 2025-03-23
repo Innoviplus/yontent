@@ -1,7 +1,7 @@
 
 import * as React from "react";
 import { ChevronLeft, ChevronRight } from "lucide-react";
-import { DayPicker, CaptionProps, DropdownProps } from "react-day-picker";
+import { DayPicker, DropdownProps } from "react-day-picker";
 
 import { cn } from "@/lib/utils";
 import { buttonVariants } from "@/components/ui/button";
@@ -58,13 +58,15 @@ function Calendar({
         IconRight: ({ ..._props }) => <ChevronRight className="h-4 w-4" />,
         Dropdown: (props: DropdownProps) => {
           const { value, onChange, children, ...rest } = props;
-          // Convert number values to string for Select component
+          // Convert value to string for Select component
           const stringValue = value.toString();
           
           return (
             <Select
               value={stringValue}
-              onValueChange={(newValue) => onChange(newValue)}
+              onValueChange={(newValue) => {
+                onChange(newValue);
+              }}
             >
               <SelectTrigger className="w-[90px] focus:ring-0">
                 <SelectValue>{stringValue}</SelectValue>
@@ -77,24 +79,53 @@ function Calendar({
             </Select>
           );
         },
-        Caption: (props: CaptionProps) => {
-          // Handle the custom caption based on what's actually available in CaptionProps
+        Caption: ({ displayMonth, id }) => {
+          // Create handler functions for month and year changes
+          const handleMonthChange = (monthStr: string) => {
+            const newDate = new Date(displayMonth);
+            newDate.setMonth(parseInt(monthStr));
+            const customEvent = new CustomEvent("daypicker-month-change", { 
+              detail: { date: newDate }
+            });
+            document.dispatchEvent(customEvent);
+          };
+          
+          const handleYearChange = (yearStr: string) => {
+            const newDate = new Date(displayMonth);
+            newDate.setFullYear(parseInt(yearStr));
+            const customEvent = new CustomEvent("daypicker-month-change", { 
+              detail: { date: newDate }
+            });
+            document.dispatchEvent(customEvent);
+          };
+          
+          React.useEffect(() => {
+            const handler = (e: CustomEvent) => {
+              if (props.onMonthChange) {
+                props.onMonthChange(e.detail.date);
+              }
+            };
+            
+            // TypeScript needs this cast to use CustomEvent
+            document.addEventListener('daypicker-month-change', handler as EventListener);
+            
+            return () => {
+              document.removeEventListener('daypicker-month-change', handler as EventListener);
+            };
+          }, [props.onMonthChange]);
+
           return (
             <div className="flex justify-center space-x-2 py-1 w-full">
-              {props.displayMonth && (
+              {displayMonth && (
                 <>
                   {/* Month dropdown */}
                   <Select 
-                    value={props.displayMonth.getMonth().toString()} 
-                    onValueChange={(value) => {
-                      const newDate = new Date(props.displayMonth);
-                      newDate.setMonth(parseInt(value));
-                      props.onMonthChange(newDate);
-                    }}
+                    value={displayMonth.getMonth().toString()} 
+                    onValueChange={handleMonthChange}
                   >
                     <SelectTrigger className="w-[90px] focus:ring-0">
                       <SelectValue>
-                        {props.displayMonth.toLocaleString('default', { month: 'long' })}
+                        {displayMonth.toLocaleString('default', { month: 'long' })}
                       </SelectValue>
                     </SelectTrigger>
                     <SelectContent>
@@ -108,21 +139,17 @@ function Calendar({
                   
                   {/* Year dropdown */}
                   <Select 
-                    value={props.displayMonth.getFullYear().toString()} 
-                    onValueChange={(value) => {
-                      const newDate = new Date(props.displayMonth);
-                      newDate.setFullYear(parseInt(value));
-                      props.onMonthChange(newDate);
-                    }}
+                    value={displayMonth.getFullYear().toString()} 
+                    onValueChange={handleYearChange}
                   >
                     <SelectTrigger className="w-[90px] focus:ring-0">
                       <SelectValue>
-                        {props.displayMonth.getFullYear()}
+                        {displayMonth.getFullYear()}
                       </SelectValue>
                     </SelectTrigger>
                     <SelectContent>
                       {Array.from(
-                        { length: 121 }, // 2000 to 1900 = 101 years
+                        { length: 121 }, // 2024 to 1904 = 121 years
                         (_, i) => {
                           const year = 2024 - i;
                           return (
