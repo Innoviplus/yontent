@@ -6,12 +6,18 @@ import { usePoints } from '@/contexts/PointsContext';
 import { toast } from 'sonner';
 import Navbar from '@/components/Navbar';
 import { Toaster } from '@/components/ui/sonner';
+import { AlertCircle } from 'lucide-react';
 import { Button } from '@/components/ui/button';
-import { ArrowLeft, Gift, AlertCircle, Check } from 'lucide-react';
-import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
+import { Card, CardContent, CardDescription, CardHeader } from '@/components/ui/card';
 import { Alert, AlertDescription, AlertTitle } from '@/components/ui/alert';
 import { RedemptionItem } from '@/types/redemption';
 import { createRedemptionRequest } from '@/services/redemptionService';
+import RewardHeader from '@/components/rewards/RewardHeader';
+import RewardInfo from '@/components/rewards/RewardInfo';
+import RedemptionDetails from '@/components/rewards/RedemptionDetails';
+import PointsBalance from '@/components/rewards/PointsBalance';
+import RedeemButton from '@/components/rewards/RedeemButton';
+import TermsAndConditions from '@/components/rewards/TermsAndConditions';
 
 const RewardDetail = () => {
   const { id } = useParams<{ id: string }>();
@@ -158,17 +164,7 @@ const RewardDetail = () => {
     <div className="min-h-screen bg-gray-50">
       <Navbar />
       <div className="container mx-auto px-4 pt-28 pb-16 max-w-3xl">
-        <div className="flex items-center gap-2 mb-8">
-          <Button 
-            variant="ghost" 
-            size="icon" 
-            onClick={() => navigate('/redeem')}
-            className="rounded-full"
-          >
-            <ArrowLeft className="h-5 w-5" />
-          </Button>
-          <h1 className="text-2xl font-bold text-gray-900">Reward Details</h1>
-        </div>
+        <RewardHeader title="Reward Details" />
         
         <Card className="mb-6">
           <CardHeader className="pb-3">
@@ -185,113 +181,24 @@ const RewardDetail = () => {
                 />
               </div>
             )}
-            <div className="flex flex-row items-start">
-              <div className="w-20 h-20 rounded-lg bg-gray-100 flex items-center justify-center mr-4 overflow-hidden">
-                {reward.image_url ? (
-                  <img 
-                    src={reward.image_url} 
-                    alt={reward.name} 
-                    className="w-16 h-16 object-contain"
-                    onError={(e) => {
-                      (e.target as HTMLImageElement).onerror = null; 
-                      (e.target as HTMLImageElement).src = "/placeholder.svg";
-                    }}
-                  />
-                ) : (
-                  <Gift className="w-10 h-10 text-gray-400" />
-                )}
-              </div>
-              <div>
-                <CardTitle className="text-xl">{reward.name}</CardTitle>
-                <div className="flex items-center gap-1 text-brand-teal font-semibold mt-1">
-                  <img 
-                    src="/lovable-uploads/15750ea6-ed41-4d3d-83e2-299853617c30.png" 
-                    alt="Points" 
-                    className="h-4 w-4" 
-                  />
-                  <span>{reward.points_required} points required</span>
-                </div>
-                <div className="text-sm text-gray-600 mt-1">Quantity: 1</div>
-              </div>
-            </div>
+            <RewardInfo reward={reward} />
           </CardHeader>
           <CardContent>
             <CardDescription className="text-gray-700 whitespace-pre-line mb-6">
               {reward.description}
             </CardDescription>
             
-            <div className="bg-gray-50 p-4 rounded-lg mb-6">
-              <h3 className="font-medium mb-2">Redemption Details</h3>
-              <ul className="space-y-2 text-sm">
-                <li className="flex items-start gap-2">
-                  <Check className="h-5 w-5 text-green-500 shrink-0 mt-0.5" />
-                  <span>Redemption requests are typically processed within 3-5 business days.</span>
-                </li>
-                <li className="flex items-start gap-2">
-                  <Check className="h-5 w-5 text-green-500 shrink-0 mt-0.5" />
-                  <span>You will receive a notification once your redemption is approved.</span>
-                </li>
-                <li className="flex items-start gap-2">
-                  <Check className="h-5 w-5 text-green-500 shrink-0 mt-0.5" />
-                  <span>Gift cards will be sent to your registered email address.</span>
-                </li>
-              </ul>
-            </div>
-            
-            <div className="flex items-center justify-between bg-brand-teal/10 rounded-lg p-4 mb-6">
-              <div>
-                <span className="text-sm text-gray-600">Your current balance</span>
-                <div className="flex items-center gap-1 font-bold text-brand-teal">
-                  <img 
-                    src="/lovable-uploads/15750ea6-ed41-4d3d-83e2-299853617c30.png" 
-                    alt="Points" 
-                    className="h-5 w-5" 
-                  />
-                  <span>{userPoints} points</span>
-                </div>
-              </div>
-              {!canRedeem && (
-                <div className="text-right">
-                  <span className="text-sm text-gray-600">You need</span>
-                  <div className="font-bold text-red-500">
-                    {reward.points_required - userPoints} more points
-                  </div>
-                </div>
-              )}
-            </div>
-            
-            <Button 
-              onClick={handleRedeem}
-              disabled={!canRedeem || isRedeeming} 
-              className="w-full"
-            >
-              {isRedeeming ? 'Processing...' : 'Send Redeem Request'}
-            </Button>
-            
-            {!canRedeem && (
-              <p className="text-center text-sm text-gray-500 mt-4">
-                You don't have enough points yet. Complete more missions to earn points!
-              </p>
-            )}
+            <RedemptionDetails />
+            <PointsBalance userPoints={userPoints} reward={reward} />
+            <RedeemButton 
+              canRedeem={canRedeem} 
+              isRedeeming={isRedeeming} 
+              onRedeem={handleRedeem} 
+            />
           </CardContent>
         </Card>
         
-        <div className="bg-white rounded-lg p-6 shadow-sm">
-          <h2 className="text-xl font-bold mb-4">Terms & Conditions</h2>
-          <div className="prose text-sm text-gray-700">
-            <p>By redeeming this reward, you agree to the following terms and conditions:</p>
-            <ol className="list-decimal pl-5 space-y-2 mt-2">
-              <li>Redemption requests are subject to review and approval.</li>
-              <li>Points will be deducted from your account upon approval of your redemption request.</li>
-              <li>Rewards cannot be exchanged for cash or other rewards once the redemption request is approved.</li>
-              <li>Gift cards and vouchers are subject to the terms and conditions of the issuing company.</li>
-              <li>We reserve the right to modify or cancel rewards at any time.</li>
-              <li>Please allow 3-5 business days for processing of redemption requests.</li>
-              <li>If you choose bank transfer, you must provide valid banking information upon request.</li>
-              <li>Rewards are non-transferable and cannot be sold or transferred to another account.</li>
-            </ol>
-          </div>
-        </div>
+        <TermsAndConditions />
       </div>
       <Toaster />
     </div>
