@@ -6,7 +6,7 @@ import { useAuth } from '@/contexts/AuthContext';
 import { supabase } from '@/integrations/supabase/client';
 import Navbar from '@/components/Navbar';
 import { Mission } from '@/lib/types';
-import { Button } from '@/components/ui/card';
+import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardFooter, CardHeader } from '@/components/ui/card';
 import { Loader2, Upload, AlertCircle } from 'lucide-react';
 import FileUpload from '@/components/FileUpload';
