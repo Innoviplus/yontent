@@ -26,6 +26,8 @@ import EditReview from "./pages/EditReview";
 import SubmitReview from "./pages/SubmitReview";
 import Settings from "./pages/Settings";
 import Profile from "./pages/Profile";
+import Redeem from "./pages/Redeem";
+import RewardDetail from "./pages/RewardDetail";
 
 const routes = [
   {
@@ -95,6 +97,14 @@ const routes = [
   {
     path: "/profile",
     element: <Profile />,
+  },
+  {
+    path: "/redeem",
+    element: <Redeem />,
+  },
+  {
+    path: "/rewards/:id",
+    element: <RewardDetail />,
   },
   {
     path: "*",
