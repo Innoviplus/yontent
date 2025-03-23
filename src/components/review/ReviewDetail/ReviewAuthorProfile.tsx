@@ -7,7 +7,7 @@ import { Card, CardContent } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Skeleton } from '@/components/ui/skeleton';
 import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
-import { User, FileText, Users } from 'lucide-react';
+import UserStatsCard, { UserStats } from '@/components/user/UserStatsCard';
 
 interface ReviewAuthorProfileProps {
   userId: string;
@@ -16,10 +16,11 @@ interface ReviewAuthorProfileProps {
 const ReviewAuthorProfile = ({ userId }: ReviewAuthorProfileProps) => {
   const [author, setAuthor] = useState<UserType | null>(null);
   const [loading, setLoading] = useState(true);
-  const [stats, setStats] = useState({
+  const [stats, setStats] = useState<UserStats>({
     reviewsCount: 0,
     followersCount: 0,
-    followingCount: 0
+    followingCount: 0,
+    pointsCount: 0
   });
 
   useEffect(() => {
@@ -58,7 +59,8 @@ const ReviewAuthorProfile = ({ userId }: ReviewAuthorProfileProps) => {
         setStats({
           reviewsCount: reviewsCount || 0,
           followersCount: profileData.followers_count || 0,
-          followingCount: profileData.following_count || 0
+          followingCount: profileData.following_count || 0,
+          pointsCount: profileData.points || 0
         });
       } catch (error) {
         console.error('Error fetching author profile:', error);
@@ -91,7 +93,7 @@ const ReviewAuthorProfile = ({ userId }: ReviewAuthorProfileProps) => {
   return (
     <Card>
       <CardContent className="p-6">
-        <div className="flex flex-col sm:flex-row items-start sm:items-center gap-4">
+        <div className="flex flex-col sm:flex-row items-start gap-4">
           <Avatar className="h-16 w-16">
             <AvatarImage src={author.avatar} alt={author.username} />
             <AvatarFallback className="bg-brand-teal/10 text-brand-teal">
@@ -100,24 +102,11 @@ const ReviewAuthorProfile = ({ userId }: ReviewAuthorProfileProps) => {
           </Avatar>
           
           <div className="flex-1">
-            <h3 className="text-lg font-semibold">{author.username}</h3>
-            <div className="flex flex-wrap gap-4 mt-2">
-              <div className="flex items-center gap-1">
-                <FileText className="h-4 w-4 text-gray-500" />
-                <span className="text-sm text-gray-600">{stats.reviewsCount} Reviews</span>
-              </div>
-              <div className="flex items-center gap-1">
-                <Users className="h-4 w-4 text-gray-500" />
-                <span className="text-sm text-gray-600">{stats.followersCount} Followers</span>
-              </div>
-              <div className="flex items-center gap-1">
-                <User className="h-4 w-4 text-gray-500" />
-                <span className="text-sm text-gray-600">Following {stats.followingCount}</span>
-              </div>
-            </div>
+            <h3 className="text-lg font-semibold mb-2">{author.username}</h3>
+            <UserStatsCard user={author} stats={stats} variant="compact" />
           </div>
           
-          <Button asChild variant="outline" size="sm">
+          <Button asChild variant="outline" size="sm" className="self-start">
             <Link to={`/user/${author.username}`}>View Profile</Link>
           </Button>
         </div>

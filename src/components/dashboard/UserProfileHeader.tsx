@@ -3,7 +3,7 @@ import { Link } from 'react-router-dom';
 import { User, Settings } from 'lucide-react';
 import { User as UserType } from '@/lib/types';
 import { SocialMediaIcons } from '@/components/dashboard/SocialMediaIcons';
-import { formatNumber } from '@/lib/formatUtils';
+import UserStatsCard, { UserStats } from '@/components/user/UserStatsCard';
 
 interface UserProfileHeaderProps {
   user: UserType & {
@@ -22,6 +22,14 @@ const UserProfileHeader = ({ user }: UserProfileHeaderProps) => {
   const hasSocialMedia = !!extendedData?.websiteUrl || !!extendedData?.facebookUrl || 
                         !!extendedData?.instagramUrl || !!extendedData?.youtubeUrl || 
                         !!extendedData?.tiktokUrl;
+  
+  // Prepare stats for UserStatsCard
+  const userStats: UserStats = {
+    reviewsCount: user.completedReviews,
+    followersCount: user.followersCount || 0,
+    followingCount: user.followingCount || 0,
+    pointsCount: user.points
+  };
   
   return (
     <div className="bg-white rounded-xl shadow-card p-6 sm:p-8 mb-8 animate-fade-in">
@@ -57,31 +65,7 @@ const UserProfileHeader = ({ user }: UserProfileHeaderProps) => {
             </Link>
           )}
           
-          <div className="grid grid-cols-2 sm:grid-cols-4 gap-4 mt-6">
-            <div className="bg-gray-50 hover:bg-gray-100 transition-colors rounded-lg p-3 text-center cursor-pointer">
-              <div className="text-2xl font-semibold text-brand-slate">{formatNumber(user.completedReviews)}</div>
-              <div className="text-sm text-gray-500">Reviews</div>
-            </div>
-            <Link to={`/followers/${user.id}`} className="bg-gray-50 rounded-lg p-3 text-center hover:bg-gray-100 transition-colors group">
-              <div className="text-2xl font-semibold text-brand-slate group-hover:text-brand-teal transition-colors">{formatNumber(user.followersCount || 0)}</div>
-              <div className="text-sm text-gray-500 group-hover:text-brand-teal/80 transition-colors">Followers</div>
-            </Link>
-            <Link to={`/following/${user.id}`} className="bg-gray-50 rounded-lg p-3 text-center hover:bg-gray-100 transition-colors group">
-              <div className="text-2xl font-semibold text-brand-slate group-hover:text-brand-teal transition-colors">{formatNumber(user.followingCount || 0)}</div>
-              <div className="text-sm text-gray-500 group-hover:text-brand-teal/80 transition-colors">Following</div>
-            </Link>
-            <Link to="/redeem" className="bg-gray-50 rounded-lg p-3 text-center hover:bg-gray-100 transition-colors group">
-              <div className="flex items-center justify-center gap-1">
-                <img 
-                  src="/lovable-uploads/15750ea6-ed41-4d3d-83e2-299853617c30.png" 
-                  alt="Points" 
-                  className="h-5 w-5" 
-                />
-                <span className="text-2xl font-semibold text-brand-teal group-hover:text-brand-teal/80 transition-colors">{formatNumber(user.points)}</span>
-              </div>
-              <div className="text-sm text-gray-500 group-hover:text-brand-teal/80 transition-colors">Points</div>
-            </Link>
-          </div>
+          <UserStatsCard user={user} stats={userStats} className="mt-6" />
         </div>
         
         {/* Actions */}

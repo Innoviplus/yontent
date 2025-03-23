@@ -1,8 +1,10 @@
 
-import { User, Calendar, MapPin, Users, Grid } from 'lucide-react';
+import { User, Calendar, MapPin } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { format } from 'date-fns';
 import { Link } from 'react-router-dom';
+import UserStatsCard, { UserStats } from '@/components/user/UserStatsCard';
+import { User as UserType } from '@/lib/types';
 
 interface ProfileHeaderProps {
   profile: any;
@@ -21,6 +23,23 @@ const ProfileHeader = ({
   handleFollow,
   reviews
 }: ProfileHeaderProps) => {
+  // Create a user object that matches the User type
+  const user: UserType = {
+    id: profile.id,
+    username: profile.username,
+    email: '',
+    points: profile.points || 0,
+    createdAt: new Date(profile.created_at)
+  };
+
+  // Prepare stats for UserStatsCard
+  const userStats: UserStats = {
+    reviewsCount: reviews.length,
+    followersCount: profile.followers_count || 0,
+    followingCount: profile.following_count || 0,
+    pointsCount: profile.points || 0
+  };
+
   return (
     <div className="bg-white rounded-xl overflow-hidden shadow-card mb-8">
       <div className="p-6 md:p-8">
@@ -55,20 +74,7 @@ const ProfileHeader = ({
               </div>
             </div>
             
-            <div className="flex flex-wrap justify-center sm:justify-start gap-6 text-sm">
-              <div className="flex items-center">
-                <Grid className="h-4 w-4 mr-1.5 text-gray-600" />
-                <span><strong>{reviews.length}</strong> reviews</span>
-              </div>
-              <Link to={`/followers/${profile.id}`} className="flex items-center hover:text-brand-teal">
-                <Users className="h-4 w-4 mr-1.5 text-gray-600" />
-                <span><strong>{profile.followers_count}</strong> followers</span>
-              </Link>
-              <Link to={`/following/${profile.id}`} className="flex items-center hover:text-brand-teal">
-                <Users className="h-4 w-4 mr-1.5 text-gray-600" />
-                <span><strong>{profile.following_count}</strong> following</span>
-              </Link>
-            </div>
+            <UserStatsCard user={user} stats={userStats} className="mt-4" />
           </div>
           
           {/* Follow button - only show if not viewing own profile */}
