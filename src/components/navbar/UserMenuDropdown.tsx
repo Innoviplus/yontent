@@ -48,7 +48,7 @@ const UserMenuDropdown = () => {
           </Link>
         </DropdownMenuItem>
         <DropdownMenuItem asChild>
-          <Link to="/redeem-points" className="cursor-pointer">
+          <Link to="/redeem" className="cursor-pointer">
             <Award className="h-4 w-4 mr-2" /> Redeem Points
           </Link>
         </DropdownMenuItem>

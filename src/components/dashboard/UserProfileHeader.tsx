@@ -69,7 +69,7 @@ const UserProfileHeader = ({ user }: UserProfileHeaderProps) => {
               <div className="text-2xl font-semibold text-brand-slate group-hover:text-brand-teal transition-colors">{user.followingCount || 0}</div>
               <div className="text-sm text-gray-500 group-hover:text-brand-teal/80 transition-colors">Following</div>
             </Link>
-            <Link to="/redeem-points" className="bg-gray-50 rounded-lg p-3 text-center hover:bg-gray-100 transition-colors group">
+            <Link to="/redeem" className="bg-gray-50 rounded-lg p-3 text-center hover:bg-gray-100 transition-colors group">
               <div className="flex items-center justify-center gap-1">
                 <img 
                   src="/lovable-uploads/87f7987e-62e4-4871-b384-8c77779df418.png" 

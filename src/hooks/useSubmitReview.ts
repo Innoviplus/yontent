@@ -73,6 +73,13 @@ export const useSubmitReview = () => {
       return;
     }
     
+    // Check for maximum image count
+    const totalImageCount = selectedImages.length + existingImages.length;
+    if (totalImageCount > 10) {
+      setImageError(`You can only upload up to 10 images. Please remove ${totalImageCount - 10} images.`);
+      return;
+    }
+    
     // For published reviews, validate that at least one image is selected or exists
     if (!isDraft && selectedImages.length === 0 && existingImages.length === 0) {
       setImageError("At least one image is required");

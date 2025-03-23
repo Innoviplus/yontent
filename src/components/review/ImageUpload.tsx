@@ -19,6 +19,22 @@ const ImageUpload: React.FC<ImageUploadProps> = ({
   uploading,
   maxImages = 10
 }) => {
+  const handleFileSelect = (e: React.ChangeEvent<HTMLInputElement>) => {
+    const files = e.target.files;
+    
+    // Validate maximum number of images
+    if (files && imagePreviewUrls.length + files.length > maxImages) {
+      // Clear the input
+      e.target.value = '';
+      // Call onFileSelect with null to indicate error
+      onFileSelect(null);
+      // We're assuming the parent component will handle setting the error message
+      return;
+    }
+    
+    onFileSelect(files);
+  };
+
   return (
     <div className="mb-6">
       <div className="flex items-center justify-between mb-2">
@@ -48,7 +64,7 @@ const ImageUpload: React.FC<ImageUploadProps> = ({
               type="file"
               accept="image/*"
               className="hidden"
-              onChange={(e) => onFileSelect(e.target.files)}
+              onChange={handleFileSelect}
               multiple
               disabled={uploading}
             />

@@ -25,6 +25,8 @@ import FollowersList from "./pages/FollowersList";
 import FollowingList from "./pages/FollowingList";
 import EditReview from "./pages/EditReview";
 import SubmitReview from "./pages/SubmitReview";
+import Settings from "./pages/Settings";
+import Profile from "./pages/Profile";
 
 const routes = [
   {
@@ -90,6 +92,14 @@ const routes = [
   {
     path: "/submit-review",
     element: <SubmitReview />,
+  },
+  {
+    path: "/settings",
+    element: <Settings />,
+  },
+  {
+    path: "/profile",
+    element: <Profile />,
   },
   {
     path: "*",
