@@ -1,4 +1,3 @@
-
 export interface User {
   id: string;
   username: string;
@@ -43,6 +42,10 @@ export interface RedemptionRequest {
   adminNotes?: string;
   createdAt: Date;
   updatedAt: Date;
+  user?: {
+    username?: string;
+    avatar?: string;
+  };
 }
 
 export interface ExtendedProfile {

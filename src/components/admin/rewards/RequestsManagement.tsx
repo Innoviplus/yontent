@@ -40,7 +40,7 @@ const RequestsManagement = ({
   const [actionType, setActionType] = useState<'approve' | 'reject' | null>(null);
 
   const handleAction = async (notes?: string) => {
-    if (!actioningRequest?.id || !actionType) return;
+    if (!actioningRequest?.id || !actionType) return false;
     
     let success = false;
     if (actionType === 'approve') {
@@ -53,6 +53,8 @@ const RequestsManagement = ({
       setActioningRequest(null);
       setActionType(null);
     }
+    
+    return success;
   };
 
   const getStatusBadge = (status: RedemptionRequest['status']) => {

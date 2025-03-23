@@ -106,16 +106,12 @@ export const useRequestsAdmin = () => {
         throw updateError;
       }
       
-      // Return points to user's account
-      const { error: pointsError } = await supabase
-        .from('profiles')
-        .update({ 
-          points: supabase.rpc('increment_points', { 
-            user_id_param: requestData.user_id, 
-            points_amount_param: requestData.points_amount 
-          })
-        })
-        .eq('id', requestData.user_id);
+      // Return points to user's account using the increment_points function
+      const { data: pointsData, error: pointsError } = await supabase
+        .rpc('increment_points', { 
+          user_id_param: requestData.user_id, 
+          points_amount_param: requestData.points_amount 
+        });
       
       if (pointsError) {
         console.error('Error returning points to user:', pointsError);

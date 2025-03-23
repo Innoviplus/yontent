@@ -361,6 +361,13 @@ export type Database = {
         }
         Returns: number
       }
+      increment_points: {
+        Args: {
+          user_id_param: string
+          points_amount_param: number
+        }
+        Returns: number
+      }
       increment_view_count: {
         Args: {
           review_id: string

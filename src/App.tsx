@@ -9,6 +9,7 @@ import Profile from './pages/Profile';
 import EditProfile from './pages/EditProfile';
 import AdminPanel from './pages/AdminPanel';
 import RewardDetail from './pages/RewardDetail';
+import Redeem from './pages/Redeem';
 
 function App() {
   return (
@@ -22,7 +23,7 @@ function App() {
         <Route path="/profile/:id" element={<Profile />} />
         <Route path="/profile" element={<Profile />} />
         <Route path="/edit-profile" element={<EditProfile />} />
-        <Route path="/redeem" element={<Index />} /> {/* Temporary redirect to Index until we create Rewards page */}
+        <Route path="/redeem" element={<Redeem />} />
         <Route path="/rewards/:id" element={<RewardDetail />} />
       </Routes>
     </Router>

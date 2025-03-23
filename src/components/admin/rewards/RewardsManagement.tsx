@@ -42,28 +42,34 @@ const RewardsManagement = ({
   const [deletingRewardId, setDeletingRewardId] = useState<string | null>(null);
 
   const handleAddSubmit = async (reward: Omit<RedemptionItem, 'id'>) => {
+    if (!reward.name || !reward.description || !reward.points_required) {
+      return false;
+    }
     const success = await onAdd(reward);
     if (success) {
       setShowAddForm(false);
     }
+    return success;
   };
 
   const handleEditSubmit = async (updates: Partial<RedemptionItem>) => {
-    if (!editingReward?.id) return;
+    if (!editingReward?.id) return false;
     
     const success = await onUpdate(editingReward.id, updates);
     if (success) {
       setEditingReward(null);
     }
+    return success;
   };
 
   const handleDeleteConfirm = async () => {
-    if (!deletingRewardId) return;
+    if (!deletingRewardId) return false;
     
     const success = await onDelete(deletingRewardId);
     if (success) {
       setDeletingRewardId(null);
     }
+    return success;
   };
 
   if (isLoading) {
