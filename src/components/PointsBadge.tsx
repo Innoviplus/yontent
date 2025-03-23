@@ -1,5 +1,6 @@
 
 import { cn } from '@/lib/utils';
+import { formatNumber } from '@/lib/formatUtils';
 
 interface PointsBadgeProps {
   points: number;
@@ -33,7 +34,7 @@ const PointsBadge = ({ points, size = 'md', className }: PointsBadgeProps) => {
         alt="Points" 
         className={cn(iconSizes[size])}
       />
-      <span>{points} points</span>
+      <span>{formatNumber(points)} points</span>
     </div>
   );
 };

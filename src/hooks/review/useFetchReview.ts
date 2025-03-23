@@ -75,6 +75,8 @@ export const useFetchReview = (id: string | undefined) => {
   useEffect(() => {
     if (id) {
       fetchReview();
+    } else {
+      setLoading(false);
     }
   }, [id]);
   

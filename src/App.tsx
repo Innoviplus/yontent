@@ -13,7 +13,7 @@ import Redeem from './pages/Redeem';
 import UserProfile from './pages/UserProfile';
 import Dashboard from './pages/Dashboard';
 import Reviews from './pages/Reviews';
-import SubmitReview from './pages/SubmitReview'; // Changed from CreateReview to SubmitReview
+import SubmitReview from './pages/SubmitReview';
 import EditReview from './pages/EditReview';
 import ProtectedRoute from './components/ProtectedRoute';
 import ReviewDetail from './pages/ReviewDetail';
