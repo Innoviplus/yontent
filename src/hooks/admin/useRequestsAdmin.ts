@@ -15,7 +15,7 @@ export const useRequestsAdmin = () => {
         .from('redemption_requests')
         .select(`
           *,
-          profiles!redemption_requests_user_id_fkey(username, avatar)
+          profiles(username, avatar)
         `)
         .order('created_at', { ascending: false });
       
