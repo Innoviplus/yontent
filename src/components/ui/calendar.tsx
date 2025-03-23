@@ -65,7 +65,21 @@ function Calendar({
             <Select
               value={stringValue}
               onValueChange={(newValue) => {
-                onChange?.(newValue);
+                // Create a synthetic event to satisfy the onChange prop type
+                const syntheticEvent = {
+                  target: {
+                    value: newValue,
+                    name: props.name
+                  },
+                  currentTarget: {
+                    value: newValue,
+                    name: props.name
+                  },
+                  preventDefault: () => {},
+                  stopPropagation: () => {}
+                } as React.ChangeEvent<HTMLSelectElement>;
+                
+                onChange?.(syntheticEvent);
               }}
             >
               <SelectTrigger className="w-[90px] focus:ring-0">
