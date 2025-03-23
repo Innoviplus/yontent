@@ -124,8 +124,7 @@ export const setUserAsSuperAdmin = async (userId: string) => {
       throw new Error("User not found");
     }
     
-    // Create updated extended_data with isAdmin and isSuperAdmin flags
-    // Fix: Properly check extended_data type and provide fallback
+    // Create a properly typed extended_data object
     let extendedData = {};
     
     if (user.extended_data && typeof user.extended_data === 'object' && !Array.isArray(user.extended_data)) {
