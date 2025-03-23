@@ -32,12 +32,15 @@ const ImageUploader = ({
       const fileName = `${Math.random().toString(36).substring(2)}.${fileExt}`;
       const filePath = `${folderName}/${fileName}`;
       
+      console.log(`Uploading to bucket: rewards, path: ${filePath}`);
+      
       // Upload file to storage
       const { error: uploadError } = await supabase.storage
         .from('rewards')
         .upload(filePath, file);
         
       if (uploadError) {
+        console.error('Upload error:', uploadError);
         throw uploadError;
       }
       
@@ -46,6 +49,7 @@ const ImageUploader = ({
         .from('rewards')
         .getPublicUrl(filePath);
         
+      console.log('Upload successful, URL:', urlData.publicUrl);
       return urlData.publicUrl;
     } catch (error: any) {
       console.error(`Error uploading ${folderName} image:`, error);
