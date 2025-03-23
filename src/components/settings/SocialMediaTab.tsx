@@ -2,6 +2,7 @@
 import React from 'react';
 import { UseFormReturn } from 'react-hook-form';
 import { Loader2 } from 'lucide-react';
+import { toast } from 'sonner';
 import {
   Form,
   FormControl,
@@ -31,7 +32,21 @@ export const SocialMediaTab: React.FC<SocialMediaTabProps> = ({
 }) => {
   // Use either profileForm or settingsForm - prioritize profileForm
   const formToUse = profileForm || settingsForm;
-  const submitHandler = onSubmit || (onSettingsSubmit ? () => onSettingsSubmit(formToUse?.getValues()) : undefined);
+  
+  const submitHandler = async () => {
+    try {
+      if (onSubmit) {
+        onSubmit();
+        toast.success('Social media profiles saved successfully!');
+      } else if (onSettingsSubmit && formToUse) {
+        await onSettingsSubmit(formToUse.getValues());
+        toast.success('Social media profiles saved successfully!');
+      }
+    } catch (error) {
+      toast.error('Failed to save social media profiles');
+      console.error('Error saving social media profiles:', error);
+    }
+  };
   
   if (!formToUse) {
     console.error("No form provided to SocialMediaTab");

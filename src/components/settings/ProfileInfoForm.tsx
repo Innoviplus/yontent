@@ -2,6 +2,7 @@
 import React from 'react';
 import { UseFormReturn } from 'react-hook-form';
 import { Loader2 } from 'lucide-react';
+import { toast } from 'sonner';
 import {
   Form,
   FormControl,
@@ -39,9 +40,19 @@ export const ProfileInfoForm: React.FC<ProfileInfoFormProps> = ({
     return <div>Loading profile form...</div>;
   }
 
+  const handleSubmit = async (values: any) => {
+    try {
+      await onProfileSubmit(values);
+      toast.success('Profile updated successfully!');
+    } catch (error) {
+      toast.error('Failed to update profile');
+      console.error('Error updating profile:', error);
+    }
+  };
+
   return (
     <Form {...profileForm}>
-      <form onSubmit={profileForm.handleSubmit(onProfileSubmit)} className="space-y-6">
+      <form onSubmit={profileForm.handleSubmit(handleSubmit)} className="space-y-6">
         <FormField
           control={profileForm.control}
           name="username"
