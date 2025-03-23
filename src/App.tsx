@@ -34,13 +34,14 @@ function App() {
         <Route path="/review/:id" element={<ReviewDetail />} />
         <Route path="/missions" element={<Missions />} />
         <Route path="/user-rankings" element={<UserRankings />} />
+        <Route path="/user/:username" element={<UserProfile />} />
         
         {/* Redirect /profile to /settings */}
         <Route path="/profile" element={<Navigate to="/settings" replace />} />
         
         {/* Protected routes */}
         <Route element={<ProtectedRoute />}>
-          <Route path="/profile/:id" element={<UserProfile />} />
+          <Route path="/profile/:id" element={<Navigate to="/user/:username" replace />} />
           <Route path="/followers/:id" element={<FollowersList />} />
           <Route path="/following/:id" element={<FollowingList />} />
           <Route path="/settings" element={<Settings />} />

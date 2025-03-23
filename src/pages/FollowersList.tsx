@@ -1,14 +1,12 @@
-
 import { useState, useEffect } from 'react';
 import { useParams, Link } from 'react-router-dom';
-import { ArrowLeft, User } from 'lucide-react';
+import { ArrowLeft } from 'lucide-react';
 import Navbar from '@/components/Navbar';
 import { supabase } from '@/integrations/supabase/client';
 import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
 import { toast } from 'sonner';
 import { Button } from '@/components/ui/button';
 import { useAuth } from '@/contexts/AuthContext';
-import { formatNumber } from '@/lib/formatUtils';
 
 const FollowersList = () => {
   const { id } = useParams<{ id: string }>();
@@ -82,8 +80,8 @@ const FollowersList = () => {
       <Navbar />
       
       <div className="container mx-auto px-4 pt-28 pb-16 max-w-4xl">
-        {/* Back button - Fixed link to profile/:id instead of user/:username */}
-        <Link to={`/profile/${id}`} className="flex items-center text-brand-teal mb-6 hover:underline">
+        {/* Back button - Fixed to use /user/:username instead of /profile/:id */}
+        <Link to={`/user/${username}`} className="flex items-center text-brand-teal mb-6 hover:underline">
           <ArrowLeft className="h-4 w-4 mr-2" />
           Back to {username}'s Profile
         </Link>
@@ -105,7 +103,7 @@ const FollowersList = () => {
             <div className="space-y-4">
               {followers.map((follower) => (
                 <div key={follower.id} className="flex items-center justify-between p-4 bg-gray-50 rounded-lg">
-                  <Link to={`/profile/${follower.id}`} className="flex items-center gap-3 hover:text-brand-teal">
+                  <Link to={`/user/${follower.username}`} className="flex items-center gap-3 hover:text-brand-teal">
                     <Avatar>
                       <AvatarImage src={follower.avatar} />
                       <AvatarFallback className="bg-brand-teal/10 text-brand-teal">
@@ -122,7 +120,7 @@ const FollowersList = () => {
                       className="ml-auto"
                       asChild
                     >
-                      <Link to={`/profile/${follower.id}`}>View Profile</Link>
+                      <Link to={`/user/${follower.username}`}>View Profile</Link>
                     </Button>
                   )}
                 </div>
