@@ -26,7 +26,7 @@ import {
 } from "@/components/ui/select";
 import { Textarea } from "@/components/ui/textarea";
 import { UseFormReturn } from "react-hook-form";
-import { CreditCard } from "lucide-react";
+import { CreditCard, Loader2 } from "lucide-react";
 import { z } from "zod";
 
 // Schema for the form
@@ -43,9 +43,10 @@ interface PointsFormCardProps {
   form: UseFormReturn<PointsTransactionFormValues>;
   onSubmit: (values: PointsTransactionFormValues) => Promise<void>;
   isUserSelected: boolean;
+  isSubmitting?: boolean;
 }
 
-const PointsFormCard = ({ form, onSubmit, isUserSelected }: PointsFormCardProps) => {
+const PointsFormCard = ({ form, onSubmit, isUserSelected, isSubmitting = false }: PointsFormCardProps) => {
   return (
     <Card>
       <CardHeader>
@@ -115,10 +116,19 @@ const PointsFormCard = ({ form, onSubmit, isUserSelected }: PointsFormCardProps)
             <Button 
               type="submit" 
               className="w-full bg-brand-teal hover:bg-brand-teal/90"
-              disabled={!isUserSelected}
+              disabled={!isUserSelected || isSubmitting}
             >
-              <CreditCard className="h-4 w-4 mr-2" /> 
-              Add Points
+              {isSubmitting ? (
+                <>
+                  <Loader2 className="h-4 w-4 mr-2 animate-spin" /> 
+                  Processing...
+                </>
+              ) : (
+                <>
+                  <CreditCard className="h-4 w-4 mr-2" /> 
+                  Add Points
+                </>
+              )}
             </Button>
           </form>
         </Form>

@@ -36,8 +36,8 @@ export const addPointsToUser = async (
     const currentPoints = user.points || 0;
     console.log("Current user points:", currentPoints);
     
-    // Add the point transaction
-    const { error: transactionError } = await supabase
+    // Add the point transaction first
+    const { data: transaction, error: transactionError } = await supabase
       .from('point_transactions')
       .insert([{
         user_id: userId,
@@ -45,12 +45,16 @@ export const addPointsToUser = async (
         type: type,
         source: 'ADMIN_ADJUSTMENT',
         description: description
-      }]);
+      }])
+      .select()
+      .single();
       
     if (transactionError) {
       console.error("Error adding transaction:", transactionError);
       throw transactionError;
     }
+    
+    console.log("Transaction created:", transaction);
     
     // Update user's points directly in the profiles table
     const newPointsTotal = currentPoints + amount;
@@ -66,8 +70,10 @@ export const addPointsToUser = async (
       throw updateError;
     }
     
+    console.log("Successfully updated user points to:", newPointsTotal);
+    
     // Return the new points total for UI updates
-    return { success: true, newPointsTotal };
+    return { success: true, newPointsTotal, transaction };
     
   } catch (error: any) {
     console.error("Error in addPointsToUser:", error.message, error);
@@ -94,5 +100,87 @@ export const fetchUsersWithPoints = async () => {
   } catch (error: any) {
     console.error("Error in fetchUsersWithPoints:", error);
     throw error;
+  }
+};
+
+/**
+ * Sets a user as super admin
+ */
+export const setUserAsSuperAdmin = async (userId: string) => {
+  try {
+    // First, get the current extended_data
+    const { data: user, error: fetchError } = await supabase
+      .from('profiles')
+      .select('extended_data')
+      .eq('id', userId)
+      .single();
+      
+    if (fetchError) {
+      console.error("Error fetching user profile:", fetchError);
+      throw fetchError;
+    }
+    
+    if (!user) {
+      throw new Error("User not found");
+    }
+    
+    // Create updated extended_data with isAdmin and isSuperAdmin flags
+    const extendedData = {
+      ...(user.extended_data || {}),
+      isAdmin: true,
+      isSuperAdmin: true
+    };
+    
+    console.log("Setting user as super admin:", userId, extendedData);
+    
+    // Update the user profile
+    const { error: updateError } = await supabase
+      .from('profiles')
+      .update({ extended_data: extendedData })
+      .eq('id', userId);
+      
+    if (updateError) {
+      console.error("Error updating user to super admin:", updateError);
+      throw updateError;
+    }
+    
+    return { success: true };
+  } catch (error: any) {
+    console.error("Error in setUserAsSuperAdmin:", error.message, error);
+    return { success: false, error: error.message };
+  }
+};
+
+/**
+ * Adds 100 points to specified user as a one-time setup
+ */
+export const addInitialPointsToUser = async (username: string) => {
+  try {
+    // First, find the user by username
+    const { data: user, error: userError } = await supabase
+      .from('profiles')
+      .select('id, points')
+      .eq('username', username)
+      .single();
+      
+    if (userError) {
+      console.error("Error finding user by username:", userError);
+      throw userError;
+    }
+    
+    if (!user) {
+      throw new Error(`User '${username}' not found`);
+    }
+    
+    // Now add 100 points to this user
+    return await addPointsToUser(
+      user.id,
+      100,
+      'ADJUSTED',
+      'Initial 100 points bonus'
+    );
+  } catch (error: any) {
+    console.error(`Error adding initial points to ${username}:`, error.message, error);
+    return { success: false, error: error.message };
   }
 };
