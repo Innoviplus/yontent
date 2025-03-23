@@ -16,11 +16,12 @@ import Missions from "./pages/Missions";
 import MissionDetail from "./pages/MissionDetail";
 import RedeemPoints from "./pages/RedeemPoints";
 import MissionReceiptSubmission from "./pages/MissionReceiptSubmission";
+import Index from "./pages/Index";
 
 const routes = [
   {
     path: "/",
-    element: <Navigate to="/dashboard" />,
+    element: <Index />,
   },
   {
     path: "/dashboard",
