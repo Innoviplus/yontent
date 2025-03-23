@@ -21,6 +21,12 @@ export const useRewardDetail = (id: string | undefined) => {
       try {
         setIsLoading(true);
         
+        // Validate UUID format before querying
+        const uuidRegex = /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i;
+        if (!uuidRegex.test(id)) {
+          throw new Error('Invalid reward ID format');
+        }
+        
         // Fetch reward from Supabase
         const { data, error } = await supabase
           .from('redemption_items')
@@ -56,19 +62,20 @@ export const useRewardDetail = (id: string | undefined) => {
             console.log('Reward found in mock data:', foundReward);
             setReward(foundReward);
           } else {
-            toast.error('Reward not found');
-            navigate('/redeem');
+            console.error('Reward not found in API or mock data');
+            setReward(null);
           }
         }
       } catch (error) {
         console.error('Error loading reward:', error);
-        toast.error('Failed to load reward details');
         
         // Try to find the reward in mock data as fallback
         const foundReward = mockRewards.find(r => r.id === id);
         if (foundReward) {
           console.log('Using mock data as fallback after error');
           setReward(foundReward);
+        } else {
+          setReward(null);
         }
       } finally {
         setIsLoading(false);
