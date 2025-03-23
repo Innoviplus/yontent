@@ -14,12 +14,11 @@ const RewardsList = () => {
     const fetchRewards = async () => {
       try {
         // Fetch rewards from Supabase
-        // To fix the type error, we need to use a different approach with typecasting
         const { data, error } = await supabase
           .from('redemption_items')
           .select('*')
           .eq('is_active', true)
-          .order('points_required', { ascending: true }) as any;
+          .order('points_required', { ascending: true });
         
         if (error) {
           throw error;
@@ -27,8 +26,8 @@ const RewardsList = () => {
         
         if (data && data.length > 0) {
           console.log('Rewards data from API:', data);
-          // Transform data to match RedemptionItem type
-          const rewardsData: RedemptionItem[] = data.map((item: any) => ({
+          // Map data to RedemptionItem interface
+          const rewardsData: RedemptionItem[] = data.map(item => ({
             id: item.id,
             name: item.name,
             description: item.description,

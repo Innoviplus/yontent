@@ -153,7 +153,7 @@ export const getRedemptionItems = async (): Promise<RedemptionItem[]> => {
       .from('redemption_items')
       .select('*')
       .eq('is_active', true)
-      .order('points_required', { ascending: true }) as any;
+      .order('points_required', { ascending: true });
     
     if (error) {
       throw error;
@@ -164,8 +164,8 @@ export const getRedemptionItems = async (): Promise<RedemptionItem[]> => {
       return mockRewards;
     }
     
-    // Transform data to match RedemptionItem type
-    return data.map((item: any) => ({
+    // Map data to RedemptionItem interface
+    return data.map(item => ({
       id: item.id,
       name: item.name,
       description: item.description,

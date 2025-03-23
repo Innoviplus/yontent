@@ -143,6 +143,42 @@ export type Database = {
         }
         Relationships: []
       }
+      redemption_items: {
+        Row: {
+          banner_image: string | null
+          created_at: string | null
+          description: string
+          id: string
+          image_url: string | null
+          is_active: boolean | null
+          name: string
+          points_required: number
+          updated_at: string | null
+        }
+        Insert: {
+          banner_image?: string | null
+          created_at?: string | null
+          description: string
+          id?: string
+          image_url?: string | null
+          is_active?: boolean | null
+          name: string
+          points_required: number
+          updated_at?: string | null
+        }
+        Update: {
+          banner_image?: string | null
+          created_at?: string | null
+          description?: string
+          id?: string
+          image_url?: string | null
+          is_active?: boolean | null
+          name?: string
+          points_required?: number
+          updated_at?: string | null
+        }
+        Relationships: []
+      }
       redemption_requests: {
         Row: {
           admin_notes: string | null

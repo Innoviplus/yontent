@@ -22,12 +22,11 @@ export const useRewardDetail = (id: string | undefined) => {
         setIsLoading(true);
         
         // Fetch reward from Supabase
-        // To fix the type error, we need to use a different approach with typecasting
         const { data, error } = await supabase
           .from('redemption_items')
           .select('*')
           .eq('id', id)
-          .maybeSingle() as any;
+          .single();
         
         if (error) {
           throw error;
@@ -35,7 +34,8 @@ export const useRewardDetail = (id: string | undefined) => {
         
         if (data) {
           console.log('Reward data from API:', data);
-          // Transform data to match RedemptionItem type
+          
+          // Map data to RedemptionItem interface
           const rewardData: RedemptionItem = {
             id: data.id,
             name: data.name,
