@@ -1,3 +1,4 @@
+
 import { useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { Mission } from '@/lib/types';
@@ -7,6 +8,7 @@ import { Clock, Users, MapPin, Target } from 'lucide-react';
 import { format, isPast } from 'date-fns';
 import { toast } from 'sonner';
 import { supabase } from '@/integrations/supabase/client';
+import { formatNumber } from '@/lib/formatUtils';
 
 interface MissionStatsProps {
   mission: Mission;
@@ -74,7 +76,7 @@ const MissionStats = ({
               alt="Points" 
               className="w-5 h-5 mr-1"
             />
-            <span>{mission.pointsReward}</span>
+            <span>{formatNumber(mission.pointsReward)}</span>
           </div>
         </div>
         

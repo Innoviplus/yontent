@@ -1,6 +1,7 @@
 
 import React from 'react';
 import { RedemptionItem } from '@/types/redemption';
+import { formatNumber } from '@/lib/formatUtils';
 
 interface PointsBalanceProps {
   userPoints: number;
@@ -20,14 +21,14 @@ const PointsBalance: React.FC<PointsBalanceProps> = ({ userPoints, reward }) => 
             alt="Points" 
             className="h-5 w-5" 
           />
-          <span>{userPoints} points</span>
+          <span>{formatNumber(userPoints)} points</span>
         </div>
       </div>
       {!canRedeem && (
         <div className="text-right">
           <span className="text-sm text-gray-600">You need</span>
           <div className="font-bold text-red-500">
-            {reward.points_required - userPoints} more points
+            {formatNumber(reward.points_required - userPoints)} more points
           </div>
         </div>
       )}

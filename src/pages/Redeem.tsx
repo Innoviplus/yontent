@@ -1,3 +1,4 @@
+
 import { useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { useAuth } from '@/contexts/AuthContext';
@@ -7,6 +8,8 @@ import Navbar from '@/components/Navbar';
 import RewardsList from '@/components/rewards/RewardsList';
 import { Button } from '@/components/ui/button';
 import { ArrowLeft } from 'lucide-react';
+import { formatNumber } from '@/lib/formatUtils';
+
 const Redeem = () => {
   const {
     user
@@ -16,6 +19,7 @@ const Redeem = () => {
   } = usePoints();
   const navigate = useNavigate();
   const [isLoading, setIsLoading] = useState(false);
+
   return <div className="min-h-screen bg-gray-50">
       <Navbar />
       <div className="container mx-auto px-4 pt-28 pb-16 max-w-6xl">
@@ -28,7 +32,7 @@ const Redeem = () => {
           </div>
           <div className="flex items-center gap-2 bg-brand-teal/10 rounded-full px-4 py-2">
             <img src="/lovable-uploads/15750ea6-ed41-4d3d-83e2-299853617c30.png" alt="Points" className="h-5 w-5" />
-            <span className="font-semibold text-brand-teal">{userPoints} points available</span>
+            <span className="font-semibold text-brand-teal">{formatNumber(userPoints)} points available</span>
           </div>
         </div>
         

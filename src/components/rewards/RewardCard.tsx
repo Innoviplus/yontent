@@ -5,6 +5,7 @@ import { Button } from '@/components/ui/button';
 import { RedemptionItem } from '@/types/redemption';
 import { usePoints } from '@/contexts/PointsContext';
 import { Gift, ExternalLink } from 'lucide-react';
+import { formatNumber } from '@/lib/formatUtils';
 
 interface RewardCardProps {
   reward: RedemptionItem;
@@ -46,7 +47,7 @@ const RewardCard = ({ reward }: RewardCardProps) => {
             alt="Points" 
             className="h-4 w-4" 
           />
-          <span>{reward.points_required} points</span>
+          <span>{formatNumber(reward.points_required)} points</span>
         </div>
       </CardHeader>
       <CardContent className="flex-grow">

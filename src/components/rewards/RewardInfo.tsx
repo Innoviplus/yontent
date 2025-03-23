@@ -3,6 +3,7 @@ import React from 'react';
 import { Gift } from 'lucide-react';
 import { RedemptionItem } from '@/types/redemption';
 import { CardTitle } from '@/components/ui/card';
+import { formatNumber } from '@/lib/formatUtils';
 
 interface RewardInfoProps {
   reward: RedemptionItem;
@@ -36,7 +37,7 @@ const RewardInfo: React.FC<RewardInfoProps> = ({ reward }) => {
             alt="Points" 
             className="h-4 w-4" 
           />
-          <span>{reward.points_required} points required</span>
+          <span>{formatNumber(reward.points_required)} points required</span>
         </div>
         <div className="text-sm text-gray-600 mt-1">Quantity: 1</div>
       </div>
