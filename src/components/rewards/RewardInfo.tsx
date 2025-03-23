@@ -11,7 +11,7 @@ interface RewardInfoProps {
 const RewardInfo: React.FC<RewardInfoProps> = ({ reward }) => {
   return (
     <div className="flex flex-row items-start">
-      <div className="w-20 h-20 rounded-lg bg-gray-100 flex items-center justify-center mr-4 overflow-hidden">
+      <div className="w-20 h-20 rounded-lg bg-gradient-to-br from-slate-100 to-slate-200 flex items-center justify-center mr-4 overflow-hidden shadow-sm">
         {reward.image_url ? (
           <img 
             src={reward.image_url} 
@@ -23,7 +23,9 @@ const RewardInfo: React.FC<RewardInfoProps> = ({ reward }) => {
             }}
           />
         ) : (
-          <Gift className="w-10 h-10 text-gray-400" />
+          <div className="bg-gradient-to-br from-blue-50 to-blue-100 w-full h-full flex items-center justify-center">
+            <Gift className="w-10 h-10 text-blue-400" />
+          </div>
         )}
       </div>
       <div>

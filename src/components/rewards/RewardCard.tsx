@@ -22,7 +22,7 @@ const RewardCard = ({ reward }: RewardCardProps) => {
   return (
     <Card className="h-full flex flex-col transition-all hover:shadow-md">
       <CardHeader className="pb-3">
-        <div className="w-16 h-16 rounded-lg bg-gray-100 flex items-center justify-center mb-2 overflow-hidden">
+        <div className="w-16 h-16 rounded-lg bg-gradient-to-br from-slate-100 to-slate-200 flex items-center justify-center mb-2 overflow-hidden shadow-sm">
           {reward.image_url ? (
             <img 
               src={reward.image_url} 
@@ -34,7 +34,9 @@ const RewardCard = ({ reward }: RewardCardProps) => {
               }}
             />
           ) : (
-            <Gift className="w-8 h-8 text-gray-400" />
+            <div className="bg-gradient-to-br from-blue-50 to-blue-100 w-full h-full flex items-center justify-center">
+              <Gift className="w-8 h-8 text-blue-400" />
+            </div>
           )}
         </div>
         <CardTitle className="text-lg">{reward.name}</CardTitle>
