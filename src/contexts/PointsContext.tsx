@@ -35,9 +35,9 @@ export const PointsProvider = ({ children }: { children: ReactNode }) => {
     try {
       setIsLoading(true);
       const { data, error } = await supabase
-        .from('user_profiles')
+        .from('profiles')
         .select('points')
-        .eq('user_id', user.id)
+        .eq('id', user.id)
         .single();
 
       if (error) throw error;
