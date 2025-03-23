@@ -1,11 +1,10 @@
 
 import React from 'react';
-import { BrowserRouter as Router, Route, Routes } from 'react-router-dom';
+import { BrowserRouter as Router, Route, Routes, Navigate } from 'react-router-dom';
 import Index from './pages/Index';
 import Login from './pages/Login';
 import Register from './pages/Register';
 import NotFound from './pages/NotFound';
-import Profile from './pages/Profile';
 import Settings from './pages/Settings';
 import EditProfile from './pages/EditProfile';
 import AdminPanel from './pages/AdminPanel';
@@ -28,9 +27,11 @@ function App() {
         <Route path="/register" element={<Register />} />
         <Route path="/reviews" element={<Reviews />} />
         
+        {/* Redirect /profile to /settings */}
+        <Route path="/profile" element={<Navigate to="/settings" replace />} />
+        
         {/* Protected routes */}
         <Route element={<ProtectedRoute />}>
-          <Route path="/profile" element={<Profile />} />
           <Route path="/profile/:id" element={<UserProfile />} />
           <Route path="/settings" element={<Settings />} />
           <Route path="/edit-profile" element={<EditProfile />} />
