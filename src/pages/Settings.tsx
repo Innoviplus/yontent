@@ -1,6 +1,7 @@
 
 import { SettingsLayout } from '@/components/settings/SettingsLayout';
 import { useSettings } from '@/hooks/useSettings';
+import Navbar from '@/components/Navbar';
 
 const Settings = () => {
   const {
@@ -22,23 +23,28 @@ const Settings = () => {
   } = useSettings();
 
   return (
-    <SettingsLayout
-      userProfile={userProfile}
-      avatarUrl={avatarUrl}
-      uploading={uploading}
-      handleAvatarUpload={handleAvatarUpload}
-      profileForm={profileForm}
-      settingsForm={settingsForm}
-      onProfileSubmit={onProfileSubmit}
-      onSettingsSubmit={onSettingsSubmit}
-      isUpdating={isUpdating}
-      extendedProfile={extendedProfile}
-      handleResetPassword={handleResetPassword}
-      handleLogout={handleLogout}
-      handleDeleteAccount={handleDeleteAccount}
-      activeTab={activeTab}
-      setActiveTab={setActiveTab}
-    />
+    <>
+      <Navbar />
+      <div className="pt-24">
+        <SettingsLayout
+          userProfile={userProfile}
+          avatarUrl={avatarUrl}
+          uploading={uploading}
+          handleAvatarUpload={handleAvatarUpload}
+          profileForm={profileForm}
+          settingsForm={settingsForm}
+          onProfileSubmit={onProfileSubmit}
+          onSettingsSubmit={onSettingsSubmit}
+          isUpdating={isUpdating}
+          extendedProfile={extendedProfile}
+          handleResetPassword={handleResetPassword}
+          handleLogout={handleLogout}
+          handleDeleteAccount={handleDeleteAccount}
+          activeTab={activeTab}
+          setActiveTab={setActiveTab}
+        />
+      </div>
+    </>
   );
 };
 

@@ -6,8 +6,7 @@ import { GeneralTab } from "./GeneralTab";
 import { AccountTab } from "./AccountTab";
 import { SocialMediaTab } from "./SocialMediaTab";
 import { AvatarUploader } from "./AvatarUploader";
-import { User, ShieldCheck } from "lucide-react";
-import AdminPrivileges from "@/pages/Settings/AdminPrivileges";
+import { User } from "lucide-react";
 
 export function SettingsLayout({
   userProfile,
@@ -56,7 +55,7 @@ export function SettingsLayout({
 
         <div className="w-full md:w-2/3">
           <Tabs value={activeTab} onValueChange={setActiveTab} className="w-full">
-            <TabsList className="grid grid-cols-4 md:grid-cols-5 mb-8">
+            <TabsList className="grid grid-cols-4 mb-8">
               <TabsTrigger value="profile" className="flex items-center gap-2">
                 <User className="h-4 w-4" />
                 <span className="hidden sm:inline">Profile</span>
@@ -64,10 +63,6 @@ export function SettingsLayout({
               <TabsTrigger value="general">General</TabsTrigger>
               <TabsTrigger value="social">Social</TabsTrigger>
               <TabsTrigger value="account">Account</TabsTrigger>
-              <TabsTrigger value="admin" className="flex items-center gap-2">
-                <ShieldCheck className="h-4 w-4" />
-                <span className="hidden sm:inline">Admin</span>
-              </TabsTrigger>
             </TabsList>
             
             <TabsContent value="profile" className="mt-0">
@@ -107,10 +102,6 @@ export function SettingsLayout({
                 handleLogout={handleLogout}
                 handleDeleteAccount={handleDeleteAccount}
               />
-            </TabsContent>
-
-            <TabsContent value="admin" className="mt-0">
-              <AdminPrivileges />
             </TabsContent>
           </Tabs>
         </div>

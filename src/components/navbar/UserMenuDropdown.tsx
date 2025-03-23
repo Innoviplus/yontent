@@ -10,7 +10,7 @@ import {
 } from "@/components/ui/dropdown-menu";
 import { useAuth } from "@/contexts/AuthContext";
 import { Link } from "react-router-dom";
-import { LogOut, User, Settings, Award, Shield } from "lucide-react";
+import { LogOut, User, Settings, Award } from "lucide-react";
 import PointsBadge from "../PointsBadge";
 
 const UserMenuDropdown = () => {
@@ -19,7 +19,6 @@ const UserMenuDropdown = () => {
   if (!user) return null;
   
   const username = userProfile?.username || 'User';
-  const isAdmin = userProfile?.isAdmin === true;
   
   return (
     <DropdownMenu>
@@ -52,18 +51,6 @@ const UserMenuDropdown = () => {
             <Award className="h-4 w-4 mr-2" /> Redeem Points
           </Link>
         </DropdownMenuItem>
-        
-        {isAdmin && (
-          <>
-            <DropdownMenuSeparator />
-            <DropdownMenuLabel>Administration</DropdownMenuLabel>
-            <DropdownMenuItem asChild>
-              <Link to="/admin" className="cursor-pointer">
-                <Shield className="h-4 w-4 mr-2" /> Admin Panel
-              </Link>
-            </DropdownMenuItem>
-          </>
-        )}
         
         <DropdownMenuSeparator />
         <DropdownMenuItem onClick={signOut} className="cursor-pointer">

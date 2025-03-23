@@ -14,9 +14,19 @@ const Profile = () => {
     }
   }, [user, navigate]);
 
-  // Return loading state or null while checking authentication
+  // Always return a JSX element even during authentication check
   if (!user) {
-    return null;
+    return (
+      <div>
+        <Navbar />
+        <div className="container mx-auto py-8 px-4 pt-28">
+          <div className="animate-pulse">
+            <div className="h-8 w-1/3 bg-gray-200 rounded mb-4"></div>
+            <div className="h-4 w-1/2 bg-gray-200 rounded"></div>
+          </div>
+        </div>
+      </div>
+    );
   }
 
   return (

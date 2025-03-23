@@ -6,7 +6,6 @@ export interface User {
   avatar?: string;
   points: number;
   createdAt: Date;
-  isAdmin?: boolean;
 }
 
 export interface Review {
