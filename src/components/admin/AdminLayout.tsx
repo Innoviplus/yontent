@@ -1,10 +1,14 @@
 
-import { useEffect } from "react";
-import { Outlet, useNavigate, Link } from "react-router-dom";
+import { useEffect, ReactNode } from "react";
+import { useNavigate, Link } from "react-router-dom";
 import { useAuth } from "@/contexts/AuthContext";
-import { Shield, Users, Gift, CreditCard, LayoutDashboard } from "lucide-react";
+import { Shield, Users, Gift, CreditCard, LayoutDashboard, FileText, Target } from "lucide-react";
 
-const AdminLayout = () => {
+interface AdminLayoutProps {
+  children: ReactNode;
+}
+
+const AdminLayout = ({ children }: AdminLayoutProps) => {
   const { userProfile, user } = useAuth();
   const navigate = useNavigate();
   
@@ -68,6 +72,18 @@ const AdminLayout = () => {
           >
             <CreditCard className="h-4 w-4 mr-2 text-gray-500" /> Points Management
           </Link>
+          <Link 
+            to="/admin/reviews" 
+            className="flex items-center px-3 py-2 text-sm font-medium rounded-md text-gray-700 hover:bg-gray-100"
+          >
+            <FileText className="h-4 w-4 mr-2 text-gray-500" /> Review Management
+          </Link>
+          <Link 
+            to="/admin/missions" 
+            className="flex items-center px-3 py-2 text-sm font-medium rounded-md text-gray-700 hover:bg-gray-100"
+          >
+            <Target className="h-4 w-4 mr-2 text-gray-500" /> Mission Management
+          </Link>
         </nav>
       </div>
       
@@ -117,11 +133,23 @@ const AdminLayout = () => {
             >
               Points Management
             </Link>
+            <Link 
+              to="/admin/reviews" 
+              className="block px-3 py-2 text-base font-medium rounded-md text-gray-700 hover:bg-gray-100"
+            >
+              Review Management
+            </Link>
+            <Link 
+              to="/admin/missions" 
+              className="block px-3 py-2 text-base font-medium rounded-md text-gray-700 hover:bg-gray-100"
+            >
+              Mission Management
+            </Link>
           </nav>
         </header>
         
         <main className="flex-1 overflow-auto bg-gray-50 p-6">
-          <Outlet />
+          {children}
         </main>
       </div>
     </div>
