@@ -93,9 +93,6 @@ export const AvatarUploader: React.FC<AvatarUploaderProps> = ({
     img.src = objectUrl;
   };
 
-  console.log("Avatar URL in uploader:", avatarUrl);
-  console.log("Preview URL in uploader:", preview);
-
   return (
     <div className="flex flex-col items-center">
       <Avatar className="w-32 h-32 mb-4">

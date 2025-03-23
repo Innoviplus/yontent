@@ -1,9 +1,11 @@
+
 import * as React from "react";
 import { ChevronLeft, ChevronRight } from "lucide-react";
-import { DayPicker } from "react-day-picker";
+import { DayPicker, CaptionProps } from "react-day-picker";
 
 import { cn } from "@/lib/utils";
 import { buttonVariants } from "@/components/ui/button";
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 
 export type CalendarProps = React.ComponentProps<typeof DayPicker>;
 
@@ -16,7 +18,7 @@ function Calendar({
   return (
     <DayPicker
       showOutsideDays={showOutsideDays}
-      className={cn("p-3", className)}
+      className={cn("p-3 pointer-events-auto", className)}
       classNames={{
         months: "flex flex-col sm:flex-row space-y-4 sm:space-x-4 sm:space-y-0",
         month: "space-y-4",
@@ -54,6 +56,61 @@ function Calendar({
       components={{
         IconLeft: ({ ..._props }) => <ChevronLeft className="h-4 w-4" />,
         IconRight: ({ ..._props }) => <ChevronRight className="h-4 w-4" />,
+        Dropdown: ({ value, onChange, children, ...props }: { value: string; onChange: (value: string) => void; children: React.ReactNode; name?: string }) => {
+          return (
+            <Select
+              value={value}
+              onValueChange={onChange}
+            >
+              <SelectTrigger className="w-[90px] focus:ring-0">
+                <SelectValue>{value}</SelectValue>
+              </SelectTrigger>
+              <SelectContent>
+                {React.Children.map(children as React.ReactElement[], (child) => (
+                  <SelectItem value={child.props.value}>{child.props.children}</SelectItem>
+                ))}
+              </SelectContent>
+            </Select>
+          );
+        },
+        Caption: (props: CaptionProps) => {
+          return (
+            <div className="flex justify-center space-x-2 py-1 w-full">
+              {props.displayMonth && props.captionLayout === 'dropdown-buttons' && (
+                <>
+                  {props.components?.Dropdown({
+                    value: props.monthLabel,
+                    onChange: (value) => {
+                      const newDate = new Date(props.displayMonth);
+                      const monthIdx = props.months.findIndex(month => month === value);
+                      if (monthIdx !== -1) {
+                        newDate.setMonth(monthIdx);
+                        props.onMonthChange(newDate);
+                      }
+                    },
+                    name: 'months',
+                    children: props.months.map(month => (
+                      <option key={month} value={month}>{month}</option>
+                    ))
+                  })}
+                  {props.components?.Dropdown({
+                    value: props.yearLabel,
+                    onChange: (value) => {
+                      const newDate = new Date(props.displayMonth);
+                      newDate.setFullYear(Number(value));
+                      props.onMonthChange(newDate);
+                    },
+                    name: 'years',
+                    children: props.years.map(year => (
+                      <option key={year} value={year}>{year}</option>
+                    ))
+                  })}
+                </>
+              )}
+              {props.captionLayout === 'buttons' && <div>{props.monthLabel} {props.yearLabel}</div>}
+            </div>
+          );
+        }
       }}
       {...props}
     />

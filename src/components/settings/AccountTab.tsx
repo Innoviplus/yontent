@@ -15,6 +15,7 @@ import { Input } from '@/components/ui/input';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { PhoneInput } from './PhoneInput';
+import { toast } from 'sonner';
 
 export interface AccountTabProps {
   settingsForm: UseFormReturn<any>;
@@ -35,6 +36,21 @@ export const AccountTab: React.FC<AccountTabProps> = ({
 }) => {
   const handleContactUs = () => {
     window.open('https://api.whatsapp.com/send?phone=85254278104', '_blank');
+  };
+
+  const [isResettingPassword, setIsResettingPassword] = React.useState(false);
+  
+  const onResetPassword = async () => {
+    try {
+      setIsResettingPassword(true);
+      await handleResetPassword();
+      toast.success('Password reset link sent to your email');
+    } catch (error) {
+      toast.error('Failed to send password reset link');
+      console.error(error);
+    } finally {
+      setIsResettingPassword(false);
+    }
   };
 
   return (
@@ -88,7 +104,7 @@ export const AccountTab: React.FC<AccountTabProps> = ({
               name="country"
               render={({ field }) => (
                 <FormItem>
-                  <FormLabel>Country</FormLabel>
+                  <FormLabel>Current Country</FormLabel>
                   <FormControl>
                     <Input placeholder="United States" {...field} value={field.value || ''} />
                   </FormControl>
@@ -106,7 +122,12 @@ export const AccountTab: React.FC<AccountTabProps> = ({
         
         <div className="pt-6 border-t">
           <h3 className="text-lg font-medium mb-4">Password</h3>
-          <Button variant="outline" onClick={handleResetPassword}>
+          <Button 
+            variant="outline" 
+            onClick={onResetPassword}
+            disabled={isResettingPassword}
+          >
+            {isResettingPassword && <Loader2 className="mr-2 h-4 w-4 animate-spin" />}
             Reset Password
           </Button>
         </div>

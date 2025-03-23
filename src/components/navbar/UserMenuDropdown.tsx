@@ -11,7 +11,6 @@ import {
 import { useAuth } from "@/contexts/AuthContext";
 import { Link } from "react-router-dom";
 import { LogOut, User, Settings, Award } from "lucide-react";
-import PointsBadge from "../PointsBadge";
 
 const UserMenuDropdown = () => {
   const { user, userProfile, signOut } = useAuth();
@@ -30,7 +29,6 @@ const UserMenuDropdown = () => {
           </Avatar>
           <div className="hidden md:block">
             <div className="text-sm font-medium text-gray-700">{username}</div>
-            <PointsBadge points={userProfile?.points || 0} size="sm" />
           </div>
         </div>
       </DropdownMenuTrigger>

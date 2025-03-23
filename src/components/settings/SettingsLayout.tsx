@@ -44,12 +44,6 @@ export function SettingsLayout({
             {userProfile?.points !== undefined && (
               <p className="text-sm text-gray-500">{userProfile.points} points</p>
             )}
-            <button
-              onClick={() => fileInputRef.current?.click()}
-              className="mt-4 px-4 py-2 bg-gray-100 rounded-md text-sm text-gray-700 hover:bg-gray-200 transition-colors"
-            >
-              Change Avatar
-            </button>
           </div>
         </div>
 

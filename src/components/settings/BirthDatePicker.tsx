@@ -59,6 +59,9 @@ export const BirthDatePicker: React.FC<BirthDatePickerProps> = ({ control }) => 
                 }
                 initialFocus
                 className="p-3 pointer-events-auto"
+                captionLayout="dropdown-buttons"
+                fromYear={1900}
+                toYear={maxDate.getFullYear()}
               />
             </PopoverContent>
           </Popover>
