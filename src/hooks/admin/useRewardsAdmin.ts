@@ -37,14 +37,19 @@ export const useRewardsAdmin = () => {
     try {
       console.log('Adding reward:', reward);
       
-      // Remove any undefined or null values from the reward object
-      const cleanedReward = Object.fromEntries(
-        Object.entries(reward).filter(([_, v]) => v !== null && v !== undefined)
-      );
+      // Ensure the reward has all required fields
+      const rewardData: Omit<RedemptionItem, 'id'> = {
+        name: reward.name,
+        description: reward.description,
+        points_required: reward.points_required,
+        image_url: reward.image_url,
+        banner_image: reward.banner_image,
+        is_active: reward.is_active
+      };
       
       const { data, error } = await supabase
         .from('redemption_items')
-        .insert(cleanedReward)
+        .insert(rewardData)
         .select('*')
         .single();
       
@@ -65,14 +70,19 @@ export const useRewardsAdmin = () => {
 
   const updateReward = async (id: string, updates: Partial<RedemptionItem>) => {
     try {
-      // Remove any undefined values from the updates object
-      const cleanedUpdates = Object.fromEntries(
-        Object.entries(updates).filter(([_, v]) => v !== undefined)
-      );
+      // Ensure we're only sending valid fields to update
+      const validUpdates: Partial<RedemptionItem> = {};
+      
+      if (updates.name !== undefined) validUpdates.name = updates.name;
+      if (updates.description !== undefined) validUpdates.description = updates.description;
+      if (updates.points_required !== undefined) validUpdates.points_required = updates.points_required;
+      if (updates.image_url !== undefined) validUpdates.image_url = updates.image_url;
+      if (updates.banner_image !== undefined) validUpdates.banner_image = updates.banner_image;
+      if (updates.is_active !== undefined) validUpdates.is_active = updates.is_active;
       
       const { data, error } = await supabase
         .from('redemption_items')
-        .update(cleanedUpdates)
+        .update(validUpdates)
         .eq('id', id)
         .select('*')
         .single();
