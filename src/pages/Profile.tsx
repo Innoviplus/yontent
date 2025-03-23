@@ -15,7 +15,8 @@ const Profile = () => {
     if (!user) {
       navigate('/login');
     } else {
-      navigate('/dashboard'); // Redirect to dashboard if logged in
+      // Changed to redirect to /settings instead of dashboard
+      navigate('/settings');
     }
   }, [user, navigate]);
 

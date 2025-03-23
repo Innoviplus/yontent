@@ -35,31 +35,44 @@ export const useRewardsAdmin = () => {
 
   const addReward = async (reward: Omit<RedemptionItem, 'id'>) => {
     try {
+      console.log('Adding reward:', reward);
+      
+      // Remove any undefined or null values from the reward object
+      const cleanedReward = Object.fromEntries(
+        Object.entries(reward).filter(([_, v]) => v !== null && v !== undefined)
+      );
+      
       const { data, error } = await supabase
         .from('redemption_items')
-        .insert(reward)
+        .insert(cleanedReward)
         .select('*')
         .single();
       
       if (error) {
+        console.error('Error creating reward:', error);
         throw error;
       }
       
       setRewards(prev => [...prev, data as RedemptionItem]);
       toast.success('Reward created successfully');
       return true;
-    } catch (error) {
+    } catch (error: any) {
       console.error('Error creating reward:', error);
-      toast.error('Failed to create reward');
+      toast.error(`Failed to create reward: ${error.message || 'Unknown error'}`);
       return false;
     }
   };
 
   const updateReward = async (id: string, updates: Partial<RedemptionItem>) => {
     try {
+      // Remove any undefined values from the updates object
+      const cleanedUpdates = Object.fromEntries(
+        Object.entries(updates).filter(([_, v]) => v !== undefined)
+      );
+      
       const { data, error } = await supabase
         .from('redemption_items')
-        .update(updates)
+        .update(cleanedUpdates)
         .eq('id', id)
         .select('*')
         .single();
