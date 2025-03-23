@@ -11,7 +11,7 @@ import {
 import { useAuth } from "@/contexts/AuthContext";
 import { usePoints } from "@/contexts/PointsContext";
 import { Link } from "react-router-dom";
-import { LogOut, User, Settings, Award } from "lucide-react";
+import { LogOut, User, Settings } from "lucide-react";
 import PointsBadge from "@/components/PointsBadge";
 
 const UserMenuDropdown = () => {
@@ -48,11 +48,6 @@ const UserMenuDropdown = () => {
         <DropdownMenuItem asChild>
           <Link to="/settings" className="cursor-pointer">
             <Settings className="h-4 w-4 mr-2" /> Settings
-          </Link>
-        </DropdownMenuItem>
-        <DropdownMenuItem asChild>
-          <Link to="/redeem" className="cursor-pointer">
-            <Award className="h-4 w-4 mr-2" /> Redeem Points
           </Link>
         </DropdownMenuItem>
         
