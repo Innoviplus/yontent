@@ -1,6 +1,6 @@
 
 import React from 'react';
-import { Loader2 } from 'lucide-react';
+import { Loader2, Image as ImageIcon, X } from 'lucide-react';
 
 interface ImageUploadProps {
   imagePreviewUrls: string[];
@@ -28,21 +28,22 @@ const ImageUpload: React.FC<ImageUploadProps> = ({
       
       <div className="flex flex-wrap gap-4 mb-4">
         {imagePreviewUrls.map((url, index) => (
-          <div key={index} className="relative w-20 h-20 bg-gray-100 rounded-md overflow-hidden">
+          <div key={index} className="relative w-20 h-20 bg-gray-100 rounded-md overflow-hidden group">
             <img src={url} alt={`Preview ${index}`} className="w-full h-full object-cover" />
             <button
               type="button"
-              className="absolute top-0 right-0 bg-red-500 text-white p-1 rounded-bl-md"
+              className="absolute top-0 right-0 bg-red-500 text-white p-1 rounded-bl-md opacity-80 hover:opacity-100 transition-opacity"
               onClick={() => onRemoveImage(index)}
               disabled={uploading}
+              aria-label="Remove image"
             >
-              ×
+              <X className="h-3 w-3" />
             </button>
           </div>
         ))}
         
         {imagePreviewUrls.length < maxImages && (
-          <label className="w-20 h-20 border-2 border-dashed border-gray-300 rounded-md flex items-center justify-center cursor-pointer hover:bg-gray-50">
+          <label className="w-20 h-20 border-2 border-dashed border-gray-300 rounded-md flex flex-col items-center justify-center cursor-pointer hover:bg-gray-50 transition-colors">
             <input
               type="file"
               accept="image/*"
@@ -51,10 +52,18 @@ const ImageUpload: React.FC<ImageUploadProps> = ({
               multiple
               disabled={uploading}
             />
-            <span className="text-3xl text-gray-400">+</span>
+            <ImageIcon className="h-6 w-6 text-gray-400 mb-1" />
+            <span className="text-xs text-gray-500">Add</span>
           </label>
         )}
       </div>
+      
+      {uploading && (
+        <div className="flex items-center text-sm text-gray-500 mb-2">
+          <Loader2 className="h-4 w-4 animate-spin mr-2" />
+          Uploading images...
+        </div>
+      )}
       
       {error && <p className="text-sm text-red-500 mt-1">{error}</p>}
     </div>
