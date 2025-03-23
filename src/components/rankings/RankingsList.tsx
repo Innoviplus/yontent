@@ -39,7 +39,7 @@ const RankingsList = ({ users, activeTab }: RankingsListProps) => {
       {users.map((user) => (
         <Link 
           key={user.id} 
-          to={`/profile/${user.id}`}
+          to={`/user/${user.username}`}
           className="flex items-center p-4 rounded-lg border hover:bg-gray-50 transition-colors"
         >
           <div className="flex items-center justify-center w-10 mr-4">
