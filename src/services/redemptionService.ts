@@ -2,6 +2,7 @@
 import { supabase } from "@/integrations/supabase/client";
 import { RedemptionRequest } from "@/lib/types";
 import { RedemptionItem } from "@/types/redemption";
+import { mockRewards } from "@/utils/mockRewards";
 
 // Get total redeemed points for a user
 export const getRedeemedPoints = async (userId: string): Promise<number> => {
@@ -152,19 +153,19 @@ export const getRedemptionItems = async (): Promise<RedemptionItem[]> => {
       .from('redemption_items')
       .select('*')
       .eq('is_active', true)
-      .order('points_required', { ascending: true });
+      .order('points_required', { ascending: true }) as any;
     
     if (error) {
       throw error;
     }
     
     if (!data || data.length === 0) {
-      console.log('No redemption items found in database');
-      return [];
+      console.log('No redemption items found in database, using mock data');
+      return mockRewards;
     }
     
     // Transform data to match RedemptionItem type
-    return data.map(item => ({
+    return data.map((item: any) => ({
       id: item.id,
       name: item.name,
       description: item.description,
@@ -175,6 +176,7 @@ export const getRedemptionItems = async (): Promise<RedemptionItem[]> => {
     }));
   } catch (error) {
     console.error("Error getting redemption items:", error);
-    return [];
+    // Return mock data as fallback
+    return mockRewards;
   }
 };

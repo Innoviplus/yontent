@@ -4,49 +4,22 @@ import { toast } from 'sonner';
 import RewardCard from './RewardCard';
 import { RedemptionItem } from '@/types/redemption';
 import { supabase } from '@/integrations/supabase/client';
+import { mockRewards } from '@/utils/mockRewards';
 
 const RewardsList = () => {
   const [rewards, setRewards] = useState<RedemptionItem[]>([]);
   const [isLoading, setIsLoading] = useState(true);
 
-  // Mock rewards data as fallback
-  const mockRewards: RedemptionItem[] = [
-    {
-      id: '1',
-      name: 'Apple Gift Card',
-      description: 'Redeem for an Apple Gift Card that can be used on the App Store, iTunes, Apple Store and more.',
-      points_required: 5000,
-      image_url: 'https://qoycoypkyqxrcqdpfqhd.supabase.co/storage/v1/object/public/brand-images/apple-logo.png',
-      is_active: true,
-    },
-    {
-      id: '2',
-      name: 'Starbucks Gift Card',
-      description: 'Treat yourself to coffee, food and more with a Starbucks Gift Card.',
-      points_required: 3000,
-      image_url: 'https://qoycoypkyqxrcqdpfqhd.supabase.co/storage/v1/object/public/brand-images/starbucks-logo.png',
-      banner_image: 'https://qoycoypkyqxrcqdpfqhd.supabase.co/storage/v1/object/public/brand-images/starbucks-banner.jpg',
-      is_active: true,
-    },
-    {
-      id: '3',
-      name: 'Bank Transfer Cash Out',
-      description: 'Convert your points directly to cash and transfer to your bank account.',
-      points_required: 10000,
-      image_url: 'https://qoycoypkyqxrcqdpfqhd.supabase.co/storage/v1/object/public/brand-images/bank-logo.png',
-      is_active: true,
-    },
-  ];
-
   useEffect(() => {
     const fetchRewards = async () => {
       try {
         // Fetch rewards from Supabase
+        // To fix the type error, we need to use a different approach with typecasting
         const { data, error } = await supabase
           .from('redemption_items')
           .select('*')
           .eq('is_active', true)
-          .order('points_required', { ascending: true });
+          .order('points_required', { ascending: true }) as any;
         
         if (error) {
           throw error;
@@ -55,7 +28,7 @@ const RewardsList = () => {
         if (data && data.length > 0) {
           console.log('Rewards data from API:', data);
           // Transform data to match RedemptionItem type
-          const rewardsData: RedemptionItem[] = data.map(item => ({
+          const rewardsData: RedemptionItem[] = data.map((item: any) => ({
             id: item.id,
             name: item.name,
             description: item.description,

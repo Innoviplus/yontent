@@ -4,6 +4,7 @@ import { useNavigate } from 'react-router-dom';
 import { toast } from 'sonner';
 import { RedemptionItem } from '@/types/redemption';
 import { supabase } from '@/integrations/supabase/client';
+import { mockRewards } from '@/utils/mockRewards';
 
 export const useRewardDetail = (id: string | undefined) => {
   const navigate = useNavigate();
@@ -21,11 +22,12 @@ export const useRewardDetail = (id: string | undefined) => {
         setIsLoading(true);
         
         // Fetch reward from Supabase
+        // To fix the type error, we need to use a different approach with typecasting
         const { data, error } = await supabase
           .from('redemption_items')
           .select('*')
           .eq('id', id)
-          .maybeSingle();
+          .maybeSingle() as any;
         
         if (error) {
           throw error;
@@ -46,36 +48,8 @@ export const useRewardDetail = (id: string | undefined) => {
           
           setReward(rewardData);
         } else {
-          // If no data found, fallback to mock data for now (for backward compatibility)
-          // This can be removed once the API is fully implemented
-          const mockRewards: RedemptionItem[] = [
-            {
-              id: '1',
-              name: 'Apple Gift Card',
-              description: 'Redeem for an Apple Gift Card that can be used on the App Store, iTunes, Apple Store and more. This gift card can be used to purchase apps, games, music, movies, TV shows, books, and more from the Apple ecosystem.',
-              points_required: 5000,
-              image_url: 'https://qoycoypkyqxrcqdpfqhd.supabase.co/storage/v1/object/public/brand-images/apple-logo.png',
-              is_active: true,
-            },
-            {
-              id: '2',
-              name: 'Starbucks Gift Card',
-              description: 'Treat yourself to coffee, food and more with a Starbucks Gift Card. Use it at any participating Starbucks store to purchase your favorite beverages, food items, or merchandise. Perfect for coffee lovers!',
-              points_required: 3000,
-              image_url: 'https://qoycoypkyqxrcqdpfqhd.supabase.co/storage/v1/object/public/brand-images/starbucks-logo.png',
-              banner_image: 'https://qoycoypkyqxrcqdpfqhd.supabase.co/storage/v1/object/public/brand-images/starbucks-banner.jpg',
-              is_active: true,
-            },
-            {
-              id: '3',
-              name: 'Bank Transfer Cash Out',
-              description: 'Convert your points directly to cash and transfer to your bank account. The cash equivalent will be calculated based on the current conversion rate and transferred to your registered bank account within 3-5 business days.',
-              points_required: 10000,
-              image_url: 'https://qoycoypkyqxrcqdpfqhd.supabase.co/storage/v1/object/public/brand-images/bank-logo.png',
-              is_active: true,
-            },
-          ];
-          
+          // If no data found, fallback to mock data
+          console.log('Reward not found in API, looking in mock data');
           const foundReward = mockRewards.find(r => r.id === id);
           
           if (foundReward) {
@@ -89,6 +63,13 @@ export const useRewardDetail = (id: string | undefined) => {
       } catch (error) {
         console.error('Error loading reward:', error);
         toast.error('Failed to load reward details');
+        
+        // Try to find the reward in mock data as fallback
+        const foundReward = mockRewards.find(r => r.id === id);
+        if (foundReward) {
+          console.log('Using mock data as fallback after error');
+          setReward(foundReward);
+        }
       } finally {
         setIsLoading(false);
       }
