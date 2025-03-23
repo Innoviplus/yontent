@@ -1,7 +1,7 @@
 
 import * as React from "react";
 import { ChevronLeft, ChevronRight } from "lucide-react";
-import { DayPicker, DropdownProps } from "react-day-picker";
+import { DayPicker, DropdownProps, CaptionProps } from "react-day-picker";
 
 import { cn } from "@/lib/utils";
 import { buttonVariants } from "@/components/ui/button";
@@ -59,13 +59,13 @@ function Calendar({
         Dropdown: (props: DropdownProps) => {
           const { value, onChange, children, ...rest } = props;
           // Convert value to string for Select component
-          const stringValue = value.toString();
+          const stringValue = String(value);
           
           return (
             <Select
               value={stringValue}
               onValueChange={(newValue) => {
-                onChange(newValue);
+                onChange?.(newValue);
               }}
             >
               <SelectTrigger className="w-[90px] focus:ring-0">
@@ -79,7 +79,7 @@ function Calendar({
             </Select>
           );
         },
-        Caption: ({ displayMonth, id }) => {
+        Caption: ({ displayMonth, id }: CaptionProps) => {
           // Create handler functions for month and year changes
           const handleMonthChange = (monthStr: string) => {
             const newDate = new Date(displayMonth);
@@ -100,17 +100,17 @@ function Calendar({
           };
           
           React.useEffect(() => {
-            const handler = (e: CustomEvent) => {
+            const handler = (e: Event) => {
+              const customEvent = e as CustomEvent;
               if (props.onMonthChange) {
-                props.onMonthChange(e.detail.date);
+                props.onMonthChange(customEvent.detail.date);
               }
             };
             
-            // TypeScript needs this cast to use CustomEvent
-            document.addEventListener('daypicker-month-change', handler as EventListener);
+            document.addEventListener('daypicker-month-change', handler);
             
             return () => {
-              document.removeEventListener('daypicker-month-change', handler as EventListener);
+              document.removeEventListener('daypicker-month-change', handler);
             };
           }, [props.onMonthChange]);
 
