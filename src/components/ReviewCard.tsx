@@ -17,7 +17,7 @@ const ReviewCard = ({ review, className }: ReviewCardProps) => {
 
   const handleCardClick = () => {
     trackReviewView(review.id);
-    navigate(`/reviews/${review.id}`);
+    navigate(`/review/${review.id}`);
   };
   
   const handleUserClick = (e: React.MouseEvent) => {
