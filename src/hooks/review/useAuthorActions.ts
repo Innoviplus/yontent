@@ -20,8 +20,6 @@ export const useAuthorActions = ({ reviewId, isAuthor }: UseAuthorActionsProps) 
     
     if (window.confirm('Are you sure you want to delete this review? This action cannot be undone.')) {
       try {
-        // Delete in proper sequence for foreign key constraints
-        
         // First delete all related likes
         const { error: likesError } = await supabase
           .from('review_likes')
@@ -30,6 +28,7 @@ export const useAuthorActions = ({ reviewId, isAuthor }: UseAuthorActionsProps) 
           
         if (likesError) {
           console.error('Error deleting likes:', likesError);
+          throw likesError;
         }
         
         // Then delete any comments
@@ -40,6 +39,7 @@ export const useAuthorActions = ({ reviewId, isAuthor }: UseAuthorActionsProps) 
           
         if (commentsError) {
           console.error('Error deleting comments:', commentsError);
+          throw commentsError;
         }
         
         // Finally delete the review itself

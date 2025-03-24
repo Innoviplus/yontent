@@ -2,11 +2,11 @@
 import { useEditReview } from '@/hooks/review/useEditReview';
 import Navbar from '@/components/Navbar';
 import { Form, FormControl, FormField, FormItem, FormLabel, FormMessage } from '@/components/ui/form';
-import { Textarea } from '@/components/ui/textarea';
 import { Button } from '@/components/ui/button';
 import { Skeleton } from '@/components/ui/skeleton';
 import { Loader2 } from 'lucide-react';
 import ImageUpload from '@/components/review/ImageUpload';
+import RichTextEditor from '@/components/RichTextEditor';
 
 const EditReview = () => {
   const {
@@ -61,10 +61,10 @@ const EditReview = () => {
                       <FormItem>
                         <FormLabel>Review</FormLabel>
                         <FormControl>
-                          <Textarea 
+                          <RichTextEditor 
+                            value={field.value}
+                            onChange={field.onChange}
                             placeholder="Share your experience..."
-                            className="min-h-32"
-                            {...field}
                           />
                         </FormControl>
                         <FormMessage />

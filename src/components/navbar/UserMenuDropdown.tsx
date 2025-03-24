@@ -37,7 +37,8 @@ const UserMenuDropdown = () => {
       </DropdownMenuTrigger>
       <DropdownMenuContent align="end" className="w-56">
         <DropdownMenuLabel>My Account</DropdownMenuLabel>
-        <div className="px-2 py-1.5">
+        <div className="px-2 py-1.5 flex items-center">
+          <span className="text-sm text-gray-500 mr-2">Point balance:</span>
           <PointsBadge points={userPoints} size="sm" />
         </div>
         <DropdownMenuItem asChild>

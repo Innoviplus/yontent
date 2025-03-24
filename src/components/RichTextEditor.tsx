@@ -2,31 +2,29 @@
 import { useState, useEffect } from 'react';
 import { useEditor, EditorContent } from '@tiptap/react';
 import StarterKit from '@tiptap/starter-kit';
-import Link from '@tiptap/extension-link';
 import { Button } from '@/components/ui/button';
 import { 
-  Bold, Italic, Link as LinkIcon, 
-  List, ListOrdered, Undo, Redo 
+  Bold, Italic, List, ListOrdered, Undo, Redo 
 } from 'lucide-react';
 
 interface RichTextEditorProps {
   value: string;
   onChange: (value: string) => void;
   placeholder?: string;
+  includeLink?: boolean;
 }
 
-const RichTextEditor = ({ value, onChange, placeholder }: RichTextEditorProps) => {
+const RichTextEditor = ({ 
+  value, 
+  onChange, 
+  placeholder,
+  includeLink = false
+}: RichTextEditorProps) => {
   const [isFocused, setIsFocused] = useState(false);
 
   const editor = useEditor({
     extensions: [
       StarterKit,
-      Link.configure({
-        openOnClick: false,
-        HTMLAttributes: {
-          class: 'text-blue-500 underline',
-        },
-      }),
     ],
     content: value,
     onUpdate: ({ editor }) => {
@@ -45,22 +43,6 @@ const RichTextEditor = ({ value, onChange, placeholder }: RichTextEditorProps) =
       editor.commands.setContent(value);
     }
   }, [value, editor]);
-
-  const handleLinkClick = () => {
-    if (!editor) return;
-    
-    const previousUrl = editor.getAttributes('link').href;
-    const url = window.prompt('URL', previousUrl);
-    
-    if (url === null) return;
-    
-    if (url === '') {
-      editor.chain().focus().extendMarkRange('link').unsetLink().run();
-      return;
-    }
-    
-    editor.chain().focus().extendMarkRange('link').setLink({ href: url }).run();
-  };
 
   return (
     <div 
@@ -86,15 +68,6 @@ const RichTextEditor = ({ value, onChange, placeholder }: RichTextEditorProps) =
           type="button"
         >
           <Italic className="h-4 w-4" />
-        </Button>
-        <Button
-          variant="ghost"
-          size="sm"
-          onClick={handleLinkClick}
-          className={editor?.isActive('link') ? 'bg-accent' : ''}
-          type="button"
-        >
-          <LinkIcon className="h-4 w-4" />
         </Button>
         <Button
           variant="ghost"

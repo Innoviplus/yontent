@@ -1,3 +1,4 @@
+
 import { Link } from 'react-router-dom';
 import { Card, CardContent } from '@/components/ui/card';
 import { formatNumber } from '@/lib/formatUtils';
@@ -44,7 +45,8 @@ const UserStatsCard = ({
             <div className="text-sm text-gray-500 group-hover:text-brand-teal/80 transition-colors">Following</div>
           </Link>
           
-          {isCurrentUser ? <Link to="/redeem" className="bg-gray-50 rounded-lg p-3 text-center hover:bg-gray-100 transition-colors group">
+          {isCurrentUser ? (
+            <Link to="/redeem" className="bg-gray-50 rounded-lg p-3 text-center hover:bg-gray-100 transition-colors group">
               <div className="flex items-center justify-center gap-1">
                 <img alt="Points" width="20" height="20" className="h-5 w-5" src="/lovable-uploads/8273d306-96cc-45cd-a7d8-ded89e18e195.png" />
                 <span className="text-2xl font-semibold text-brand-teal group-hover:text-brand-teal/80 transition-colors">
@@ -52,7 +54,9 @@ const UserStatsCard = ({
                 </span>
               </div>
               <div className="text-sm text-gray-500 group-hover:text-brand-teal/80 transition-colors">Points</div>
-            </Link> : <div className="bg-gray-50 rounded-lg p-3 text-center">
+            </Link>
+          ) : (
+            <div className="bg-gray-50 rounded-lg p-3 text-center">
               <div className="flex items-center justify-center gap-1">
                 <img alt="Points" width="20" height="20" className="h-5 w-5" src="/lovable-uploads/1f90692d-9a7e-4deb-a401-0e1ebe07bdfb.png" />
                 <span className="text-2xl font-semibold text-brand-teal">
@@ -60,7 +64,8 @@ const UserStatsCard = ({
                 </span>
               </div>
               <div className="text-sm text-gray-500">Points</div>
-            </div>}
+            </div>
+          )}
         </div>
       </CardContent>
     </Card>;
