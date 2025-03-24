@@ -54,7 +54,7 @@ const UserStatsCard = ({
               <div className="text-sm text-gray-500 group-hover:text-brand-teal/80 transition-colors">Points</div>
             </Link> : <div className="bg-gray-50 rounded-lg p-3 text-center">
               <div className="flex items-center justify-center gap-1">
-                <img src="/images/points-coin.svg" alt="Points" width="20" height="20" className="h-5 w-5" />
+                <img alt="Points" width="20" height="20" className="h-5 w-5" src="/lovable-uploads/1f90692d-9a7e-4deb-a401-0e1ebe07bdfb.png" />
                 <span className="text-2xl font-semibold text-brand-teal">
                   {formatNumber(stats.pointsCount)}
                 </span>
