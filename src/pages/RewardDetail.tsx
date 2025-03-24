@@ -1,3 +1,4 @@
+
 import { useParams } from 'react-router-dom';
 import { Toaster } from '@/components/ui/sonner';
 import Navbar from '@/components/Navbar';
@@ -14,50 +15,62 @@ import TermsAndConditions from '@/components/rewards/TermsAndConditions';
 import RewardDetailLoading from '@/components/rewards/RewardDetailLoading';
 import RewardDetailError from '@/components/rewards/RewardDetailError';
 import RewardBanner from '@/components/rewards/RewardBanner';
+
 const RewardDetail = () => {
-  const {
-    id
-  } = useParams<{
-    id: string;
-  }>();
-  const {
-    userPoints
-  } = usePoints();
-  const {
-    reward,
-    isLoading
-  } = useRewardDetail(id);
-  const {
-    canRedeem,
-    isRedeeming,
-    handleRedeem
-  } = useRewardRedemption(reward);
-  return <div className="min-h-screen bg-gray-50">
+  const { id } = useParams<{ id: string; }>();
+  const { userPoints } = usePoints();
+  const { reward, isLoading } = useRewardDetail(id);
+  const { canRedeem, isRedeeming, handleRedeem } = useRewardRedemption(reward);
+
+  return (
+    <div className="min-h-screen bg-gray-50">
       <Navbar />
-      <div className="container mx-auto px-4 pt-28 pb-16 max-w-3xl py-[90px]">
+      <div className="container mx-auto px-4 pt-28 pb-16 max-w-5xl py-[90px]">
         <RewardHeader title="Reward Details" />
         
-        {isLoading ? <RewardDetailLoading /> : !reward ? <RewardDetailError /> : <>
-            <Card className="mb-6">
-              <CardHeader className="pb-3">
-                <RewardBanner bannerImage={reward.banner_image} name={reward.name} />
-                <RewardInfo reward={reward} />
-              </CardHeader>
-              <CardContent>
-                <CardDescription className="text-gray-700 whitespace-pre-line mb-6">
-                  {reward.description}
-                </CardDescription>
-                
-                <RedemptionDetails redemptionDetails={reward.redemption_details} />
-                <PointsBalance userPoints={userPoints} reward={reward} />
-                <RedeemButton canRedeem={canRedeem} isRedeeming={isRedeeming} onRedeem={handleRedeem} />
-              </CardContent>
-            </Card>
+        {isLoading ? (
+          <RewardDetailLoading />
+        ) : !reward ? (
+          <RewardDetailError />
+        ) : (
+          <>
+            <div className="mb-6">
+              <Card>
+                <div className="md:grid md:grid-cols-2 md:gap-6">
+                  {/* Left column - Banner image */}
+                  <div className="md:col-span-1">
+                    <CardHeader className="pb-3">
+                      <RewardBanner bannerImage={reward.banner_image} name={reward.name} />
+                    </CardHeader>
+                  </div>
+                  
+                  {/* Right column - Reward info and actions */}
+                  <div className="md:col-span-1">
+                    <CardHeader className="pb-3">
+                      <RewardInfo reward={reward} />
+                    </CardHeader>
+                    <CardContent>
+                      <CardDescription className="text-gray-700 whitespace-pre-line mb-6">
+                        {reward.description}
+                      </CardDescription>
+                      
+                      <RedemptionDetails redemptionDetails={reward.redemption_details} />
+                      <PointsBalance userPoints={userPoints} reward={reward} />
+                      <RedeemButton canRedeem={canRedeem} isRedeeming={isRedeeming} onRedeem={handleRedeem} />
+                    </CardContent>
+                  </div>
+                </div>
+              </Card>
+            </div>
             
+            {/* Terms and conditions section remains below the main card */}
             <TermsAndConditions termsConditions={reward.terms_conditions} />
-          </>}
+          </>
+        )}
       </div>
       <Toaster />
-    </div>;
+    </div>
+  );
 };
+
 export default RewardDetail;
