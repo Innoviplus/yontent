@@ -35,7 +35,7 @@ const ImageUploader = ({
       console.log(`Uploading to bucket: rewards, path: ${filePath}`);
       
       // Upload file to storage
-      const { error: uploadError } = await supabase.storage
+      const { data: uploadData, error: uploadError } = await supabase.storage
         .from('rewards')
         .upload(filePath, file);
         
@@ -71,7 +71,10 @@ const ImageUploader = ({
       if (imageUrl) {
         setPreview(imageUrl);
         onImageChange(imageUrl);
+        toast.success('Image uploaded successfully');
       }
+    } catch (error) {
+      console.error('Error in file upload:', error);
     } finally {
       setIsUploading(false);
     }
