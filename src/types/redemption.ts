@@ -9,4 +9,6 @@ export interface RedemptionItem {
   is_active?: boolean;
   created_at?: string;
   updated_at?: string;
+  terms_conditions?: string;
+  redemption_details?: string;
 }

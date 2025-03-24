@@ -11,6 +11,7 @@ const RewardInfo: React.FC<RewardInfoProps> = ({ reward }) => {
   return (
     <div className="space-y-2">
       <h2 className="text-xl font-semibold text-gray-900">{reward.name}</h2>
+      <div className="text-sm text-gray-600">Quantity: 1</div>
       <div className="flex items-center gap-1 text-brand-teal font-medium">
         <span>Redeem</span>
         <img 

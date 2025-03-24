@@ -27,6 +27,12 @@ const ReviewCard = ({ review, className }: ReviewCardProps) => {
     }
   };
 
+  // Function to strip HTML tags from content
+  const stripHtml = (html: string) => {
+    const doc = new DOMParser().parseFromString(html, 'text/html');
+    return doc.body.textContent || '';
+  };
+
   return (
     <div 
       onClick={handleCardClick}
@@ -56,10 +62,10 @@ const ReviewCard = ({ review, className }: ReviewCardProps) => {
       )}
       
       <div className="p-4">
-        {/* Content - max 2 lines with truncation */}
+        {/* Content - max 2 lines with truncation, with HTML tags stripped */}
         <div className="text-gray-600 text-sm mb-4">
           <p className="line-clamp-2">
-            {review.content}
+            {stripHtml(review.content)}
           </p>
         </div>
         

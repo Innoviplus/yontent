@@ -44,7 +44,7 @@ const RewardDetail = () => {
                   {reward.description}
                 </CardDescription>
                 
-                <RedemptionDetails />
+                <RedemptionDetails redemptionDetails={reward.redemption_details} />
                 <PointsBalance userPoints={userPoints} reward={reward} />
                 <RedeemButton 
                   canRedeem={canRedeem} 
@@ -54,7 +54,7 @@ const RewardDetail = () => {
               </CardContent>
             </Card>
             
-            <TermsAndConditions />
+            <TermsAndConditions termsConditions={reward.terms_conditions} />
           </>
         )}
       </div>

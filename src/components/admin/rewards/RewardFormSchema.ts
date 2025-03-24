@@ -7,7 +7,9 @@ export const rewardSchema = z.object({
   points_required: z.coerce.number().min(1, { message: 'Points must be at least 1' }),
   image_url: z.string().optional().or(z.literal('')),
   banner_image: z.string().optional().or(z.literal('')),
-  is_active: z.boolean().default(true)
+  is_active: z.boolean().default(true),
+  terms_conditions: z.string().optional().or(z.literal('')),
+  redemption_details: z.string().optional().or(z.literal(''))
 });
 
 export type RewardFormData = z.infer<typeof rewardSchema>;

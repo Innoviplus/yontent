@@ -26,6 +26,7 @@ import { Textarea } from '@/components/ui/textarea';
 import { RedemptionItem } from '@/types/redemption';
 import { rewardSchema, RewardFormData } from './RewardFormSchema';
 import ImageUploader from './ImageUploader';
+import RichTextEditor from '@/components/RichTextEditor';
 
 interface RewardFormProps {
   reward?: RedemptionItem;
@@ -50,7 +51,9 @@ const RewardForm = ({
       points_required: reward?.points_required || 100,
       image_url: reward?.image_url || '',
       banner_image: reward?.banner_image || '',
-      is_active: reward?.is_active !== false // default to true if not provided
+      is_active: reward?.is_active !== false, // default to true if not provided
+      terms_conditions: reward?.terms_conditions || '',
+      redemption_details: reward?.redemption_details || ''
     }
   });
 
@@ -65,7 +68,7 @@ const RewardForm = ({
 
   return (
     <Dialog open onOpenChange={onCancel}>
-      <DialogContent className="sm:max-w-[600px]">
+      <DialogContent className="sm:max-w-[600px] max-h-[90vh] overflow-y-auto">
         <DialogHeader>
           <DialogTitle>{title}</DialogTitle>
           <DialogDescription>
@@ -169,7 +172,7 @@ const RewardForm = ({
               name="banner_image"
               render={({ field }) => (
                 <FormItem>
-                  <FormLabel>Banner Image</FormLabel>
+                  <FormLabel>Banner Image (16:9 ratio, 820x360px recommended)</FormLabel>
                   <FormControl>
                     <ImageUploader
                       label="Banner Image"
@@ -181,6 +184,48 @@ const RewardForm = ({
                   </FormControl>
                   <FormDescription>
                     Banner image for the reward detail page
+                  </FormDescription>
+                  <FormMessage />
+                </FormItem>
+              )}
+            />
+
+            <FormField
+              control={form.control}
+              name="redemption_details"
+              render={({ field }) => (
+                <FormItem>
+                  <FormLabel>Redemption Details</FormLabel>
+                  <FormControl>
+                    <RichTextEditor
+                      value={field.value || ''}
+                      onChange={field.onChange}
+                      placeholder="Enter redemption details here..."
+                    />
+                  </FormControl>
+                  <FormDescription>
+                    This content will be displayed in the Redemption Details section
+                  </FormDescription>
+                  <FormMessage />
+                </FormItem>
+              )}
+            />
+            
+            <FormField
+              control={form.control}
+              name="terms_conditions"
+              render={({ field }) => (
+                <FormItem>
+                  <FormLabel>Terms & Conditions</FormLabel>
+                  <FormControl>
+                    <RichTextEditor
+                      value={field.value || ''}
+                      onChange={field.onChange}
+                      placeholder="Enter terms and conditions here..."
+                    />
+                  </FormControl>
+                  <FormDescription>
+                    Terms and conditions for this reward
                   </FormDescription>
                   <FormMessage />
                 </FormItem>
