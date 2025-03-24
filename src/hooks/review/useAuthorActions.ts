@@ -20,29 +20,8 @@ export const useAuthorActions = ({ reviewId, isAuthor }: UseAuthorActionsProps) 
     
     if (window.confirm('Are you sure you want to delete this review? This action cannot be undone.')) {
       try {
-        // First delete all related likes
-        const { error: likesError } = await supabase
-          .from('review_likes')
-          .delete()
-          .eq('review_id', reviewId);
-          
-        if (likesError) {
-          console.error('Error deleting likes:', likesError);
-          throw likesError;
-        }
-        
-        // Then delete any comments
-        const { error: commentsError } = await supabase
-          .from('review_comments')
-          .delete()
-          .eq('review_id', reviewId);
-          
-        if (commentsError) {
-          console.error('Error deleting comments:', commentsError);
-          throw commentsError;
-        }
-        
-        // Finally delete the review itself
+        // With the ON DELETE CASCADE constraints now in place,
+        // we can directly delete the review without manually deleting related records
         const { error } = await supabase
           .from('reviews')
           .delete()
