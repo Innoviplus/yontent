@@ -24,19 +24,21 @@ const ReviewComments = ({ reviewId }: ReviewCommentsProps) => {
   };
   
   return (
-    <div className="bg-white rounded-xl shadow-subtle p-6">
-      <h3 className="text-xl font-bold mb-6">Comments</h3>
+    <div className="bg-white rounded-xl shadow-subtle p-6 md:p-8">
+      <h3 className="text-xl font-bold mb-6 text-gray-800 border-b pb-3">Comments</h3>
       
       <CommentsList comments={comments} loading={loading} />
       
-      <CommentForm
-        user={user}
-        userProfile={userProfile}
-        newComment={newComment}
-        onCommentChange={setNewComment}
-        onSubmit={submitComment}
-        isSubmitting={isSubmitting}
-      />
+      <div className="mt-6">
+        <CommentForm
+          user={user}
+          userProfile={userProfile}
+          newComment={newComment}
+          onCommentChange={setNewComment}
+          onSubmit={submitComment}
+          isSubmitting={isSubmitting}
+        />
+      </div>
     </div>
   );
 };

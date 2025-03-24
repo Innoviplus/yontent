@@ -52,7 +52,7 @@ export const ProfileInfoForm: React.FC<ProfileInfoFormProps> = ({
 
   // Check if gender has been set previously
   const currentGender = profileForm.getValues('gender');
-  const hasSetGender = !!currentGender;
+  const hasSetGender = !!currentGender && currentGender !== 'Select gender';
   
   // Check if birth date has been set previously
   const currentBirthDate = profileForm.getValues('birthDate');
@@ -138,7 +138,7 @@ export const ProfileInfoForm: React.FC<ProfileInfoFormProps> = ({
                 <FormLabel>Gender</FormLabel>
                 <Select 
                   onValueChange={field.onChange} 
-                  defaultValue={field.value}
+                  value={field.value || ''}
                   disabled={hasSetGender}
                 >
                   <FormControl>
@@ -146,7 +146,7 @@ export const ProfileInfoForm: React.FC<ProfileInfoFormProps> = ({
                       <SelectValue placeholder="Select gender" />
                     </SelectTrigger>
                   </FormControl>
-                  <SelectContent>
+                  <SelectContent className="pointer-events-auto">
                     <SelectItem value="male">Male</SelectItem>
                     <SelectItem value="female">Female</SelectItem>
                     <SelectItem value="non-binary">Non-binary</SelectItem>

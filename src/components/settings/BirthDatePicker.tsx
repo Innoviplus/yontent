@@ -54,7 +54,7 @@ export const BirthDatePicker: React.FC<BirthDatePickerProps> = ({ control, disab
                 </Button>
               </FormControl>
             </PopoverTrigger>
-            <PopoverContent className="w-auto p-0" align="start">
+            <PopoverContent className="w-auto p-0 pointer-events-auto" align="start">
               <Calendar
                 mode="single"
                 selected={field.value}
@@ -65,6 +65,7 @@ export const BirthDatePicker: React.FC<BirthDatePickerProps> = ({ control, disab
                 initialFocus
                 fromYear={1900}
                 toYear={maxDate.getFullYear()}
+                className="p-3 pointer-events-auto"
               />
             </PopoverContent>
           </Popover>

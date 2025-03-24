@@ -1,12 +1,22 @@
 
+import { useEffect, useRef } from 'react';
+
 interface ReviewContentProps {
   content: string;
 }
 
 const ReviewContent = ({ content }: ReviewContentProps) => {
+  const contentRef = useRef<HTMLDivElement>(null);
+
+  useEffect(() => {
+    if (contentRef.current) {
+      contentRef.current.innerHTML = content;
+    }
+  }, [content]);
+
   return (
     <div className="prose max-w-none">
-      <p className="whitespace-pre-line text-gray-800">{content}</p>
+      <div ref={contentRef} className="text-gray-800"></div>
     </div>
   );
 };
