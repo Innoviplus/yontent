@@ -16,13 +16,15 @@ interface UserStatsCardProps {
   stats: UserStats;
   className?: string;
   variant?: 'default' | 'compact';
+  isCurrentUser?: boolean;
 }
 
 const UserStatsCard = ({ 
   user, 
   stats, 
   className = '', 
-  variant = 'default' 
+  variant = 'default',
+  isCurrentUser = false
 }: UserStatsCardProps) => {
   return (
     <Card className={className}>
@@ -47,19 +49,39 @@ const UserStatsCard = ({
             <div className="text-sm text-gray-500 group-hover:text-brand-teal/80 transition-colors">Following</div>
           </Link>
           
-          <Link to="/redeem" className="bg-gray-50 rounded-lg p-3 text-center hover:bg-gray-100 transition-colors group">
-            <div className="flex items-center justify-center gap-1">
-              <img 
-                src="/lovable-uploads/87f7987e-62e4-4871-b384-8c77779df418.png" 
-                alt="Points" 
-                className="h-5 w-5" 
-              />
-              <span className="text-2xl font-semibold text-brand-teal group-hover:text-brand-teal/80 transition-colors">
-                {formatNumber(stats.pointsCount)}
-              </span>
+          {isCurrentUser ? (
+            <Link to="/redeem" className="bg-gray-50 rounded-lg p-3 text-center hover:bg-gray-100 transition-colors group">
+              <div className="flex items-center justify-center gap-1">
+                <img 
+                  src="/images/points-coin.svg" 
+                  alt="Points"
+                  width="20"
+                  height="20"
+                  className="h-5 w-5" 
+                />
+                <span className="text-2xl font-semibold text-brand-teal group-hover:text-brand-teal/80 transition-colors">
+                  {formatNumber(stats.pointsCount)}
+                </span>
+              </div>
+              <div className="text-sm text-gray-500 group-hover:text-brand-teal/80 transition-colors">Points</div>
+            </Link>
+          ) : (
+            <div className="bg-gray-50 rounded-lg p-3 text-center">
+              <div className="flex items-center justify-center gap-1">
+                <img 
+                  src="/images/points-coin.svg" 
+                  alt="Points"
+                  width="20"
+                  height="20"
+                  className="h-5 w-5" 
+                />
+                <span className="text-2xl font-semibold text-brand-teal">
+                  {formatNumber(stats.pointsCount)}
+                </span>
+              </div>
+              <div className="text-sm text-gray-500">Points</div>
             </div>
-            <div className="text-sm text-gray-500 group-hover:text-brand-teal/80 transition-colors">Points</div>
-          </Link>
+          )}
         </div>
       </CardContent>
     </Card>

@@ -17,8 +17,10 @@ const PointsBalance: React.FC<PointsBalanceProps> = ({ userPoints, reward }) => 
         <span className="text-sm text-gray-600">Your current balance</span>
         <div className="flex items-center gap-1 font-bold text-brand-teal">
           <img 
-            src="/lovable-uploads/15750ea6-ed41-4d3d-83e2-299853617c30.png" 
+            src="/images/points-coin.svg" 
             alt="Points" 
+            width="20"
+            height="20"
             className="h-5 w-5" 
           />
           <span>{formatNumber(userPoints)} points</span>

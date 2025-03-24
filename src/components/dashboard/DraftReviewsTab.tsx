@@ -20,6 +20,43 @@ const DraftReviewsTab = ({ reviews }: DraftReviewsTabProps) => {
     try {
       setDeletingId(reviewId);
       
+      // First, check if there are any likes for this review
+      const { data: likesData } = await supabase
+        .from('review_likes')
+        .select('id')
+        .eq('review_id', reviewId);
+        
+      // Delete likes if they exist
+      if (likesData && likesData.length > 0) {
+        const { error: likesError } = await supabase
+          .from('review_likes')
+          .delete()
+          .eq('review_id', reviewId);
+          
+        if (likesError) {
+          console.error('Error deleting likes:', likesError);
+        }
+      }
+      
+      // Check for comments
+      const { data: commentsData } = await supabase
+        .from('review_comments')
+        .select('id')
+        .eq('review_id', reviewId);
+        
+      // Delete comments if they exist
+      if (commentsData && commentsData.length > 0) {
+        const { error: commentsError } = await supabase
+          .from('review_comments')
+          .delete()
+          .eq('review_id', reviewId);
+          
+        if (commentsError) {
+          console.error('Error deleting comments:', commentsError);
+        }
+      }
+      
+      // Now delete the review
       const { error } = await supabase
         .from('reviews')
         .delete()

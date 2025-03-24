@@ -11,6 +11,7 @@ export const useUserProfile = (username: string | undefined) => {
   const [loading, setLoading] = useState(true);
   const [isFollowing, setIsFollowing] = useState(false);
   const [followLoading, setFollowLoading] = useState(false);
+  const [isCurrentUser, setIsCurrentUser] = useState(false);
   const { user } = useAuth();
   
   const fetchUserProfile = async () => {
@@ -34,6 +35,7 @@ export const useUserProfile = (username: string | undefined) => {
       
       // Check if current user is following this profile
       if (user && profileData.id !== user.id) {
+        setIsCurrentUser(false);
         const { data: followData } = await supabase
           .from('user_follows')
           .select('*')
@@ -42,6 +44,8 @@ export const useUserProfile = (username: string | undefined) => {
           .single();
           
         setIsFollowing(!!followData);
+      } else if (user && profileData.id === user.id) {
+        setIsCurrentUser(true);
       }
       
       // Fetch user's reviews
@@ -155,6 +159,7 @@ export const useUserProfile = (username: string | undefined) => {
     reviews,
     loading,
     isFollowing,
+    isCurrentUser,
     followLoading,
     handleFollow,
     user

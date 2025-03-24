@@ -99,7 +99,7 @@ export const useEditReview = () => {
       if (error) throw error;
       
       toast.success('Review updated successfully!');
-      navigate(`/reviews/${id}`);
+      navigate(`/review/${id}`);
     } catch (error) {
       console.error('Unexpected error:', error);
       toast.error('An unexpected error occurred');

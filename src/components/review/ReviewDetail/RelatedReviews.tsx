@@ -26,7 +26,7 @@ const RelatedReviews = ({ reviewId, relatedReviews }: RelatedReviewsProps) => {
           {relatedReviews.slice(0, 5).map((review) => (
             <Link 
               key={review.id} 
-              to={`/reviews/${review.id}`} 
+              to={`/review/${review.id}`} 
               className="flex items-start gap-3 p-3 hover:bg-gray-50 rounded-md transition-colors"
             >
               {review.images && review.images.length > 0 ? (

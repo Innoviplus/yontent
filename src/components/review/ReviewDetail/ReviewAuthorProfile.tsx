@@ -8,6 +8,7 @@ import { Button } from '@/components/ui/button';
 import { Skeleton } from '@/components/ui/skeleton';
 import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
 import UserStatsCard, { UserStats } from '@/components/user/UserStatsCard';
+import { useAuth } from '@/contexts/AuthContext';
 
 interface ReviewAuthorProfileProps {
   userId: string;
@@ -22,6 +23,8 @@ const ReviewAuthorProfile = ({ userId }: ReviewAuthorProfileProps) => {
     followingCount: 0,
     pointsCount: 0
   });
+  const { user } = useAuth();
+  const isCurrentUser = user?.id === userId;
 
   useEffect(() => {
     const fetchAuthorProfile = async () => {
@@ -70,7 +73,7 @@ const ReviewAuthorProfile = ({ userId }: ReviewAuthorProfileProps) => {
     };
     
     fetchAuthorProfile();
-  }, [userId]);
+  }, [userId, user]);
   
   if (loading) {
     return (
@@ -103,7 +106,7 @@ const ReviewAuthorProfile = ({ userId }: ReviewAuthorProfileProps) => {
           
           <div className="flex-1">
             <h3 className="text-lg font-semibold mb-2">{author.username}</h3>
-            <UserStatsCard user={author} stats={stats} variant="compact" />
+            <UserStatsCard user={author} stats={stats} variant="compact" isCurrentUser={isCurrentUser} />
           </div>
           
           <Button asChild variant="outline" size="sm" className="self-start">

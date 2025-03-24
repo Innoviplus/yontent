@@ -18,6 +18,7 @@ import EditReview from './pages/EditReview';
 import ProtectedRoute from './components/ProtectedRoute';
 import ReviewDetail from './pages/ReviewDetail';
 import Missions from './pages/Missions';
+import MissionDetail from './pages/MissionDetail';
 import UserRankings from './pages/UserRankings';
 import FollowersList from './pages/FollowersList';
 import FollowingList from './pages/FollowingList';
@@ -33,6 +34,7 @@ function App() {
         <Route path="/reviews" element={<Reviews />} />
         <Route path="/review/:id" element={<ReviewDetail />} />
         <Route path="/missions" element={<Missions />} />
+        <Route path="/mission/:id" element={<MissionDetail />} />
         <Route path="/user-rankings" element={<UserRankings />} />
         <Route path="/user/:username" element={<UserProfile />} />
         
