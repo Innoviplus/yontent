@@ -20,6 +20,9 @@ const UserProfile = () => {
     user
   } = useUserProfile(username);
 
+  // Check if the current user is viewing their own profile
+  const isCurrentUser = user && profile && user.id === profile.id;
+
   return (
     <div className="min-h-screen bg-gray-50">
       <Navbar />
@@ -38,7 +41,7 @@ const UserProfile = () => {
             {/* Profile Header */}
             <ProfileHeader
               profile={profile}
-              isCurrentUser={user && user.id === profile.id}
+              isCurrentUser={isCurrentUser}
               isFollowing={isFollowing}
               followLoading={followLoading}
               handleFollow={handleFollow}
@@ -50,6 +53,7 @@ const UserProfile = () => {
               reviews={reviews}
               user={user}
               profile={profile}
+              isCurrentUser={isCurrentUser}
             />
           </>
         ) : (

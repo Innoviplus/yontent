@@ -74,7 +74,7 @@ const ProfileHeader = ({
               </div>
             </div>
             
-            <UserStatsCard user={user} stats={userStats} className="mt-4" />
+            <UserStatsCard user={user} stats={userStats} className="mt-4" isCurrentUser={isCurrentUser} />
           </div>
           
           {/* Follow button - only show if not viewing own profile */}

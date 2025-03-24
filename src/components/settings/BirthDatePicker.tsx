@@ -9,6 +9,7 @@ import {
   FormItem,
   FormLabel,
   FormMessage,
+  FormDescription,
 } from '@/components/ui/form';
 import { Button } from '@/components/ui/button';
 import {
@@ -20,9 +21,10 @@ import { Calendar } from '@/components/ui/calendar';
 
 interface BirthDatePickerProps {
   control: Control<any>;
+  disabled?: boolean;
 }
 
-export const BirthDatePicker: React.FC<BirthDatePickerProps> = ({ control }) => {
+export const BirthDatePicker: React.FC<BirthDatePickerProps> = ({ control, disabled = false }) => {
   // Calculate date for 18 years ago from today
   const maxDate = subYears(new Date(), 18);
   
@@ -38,7 +40,10 @@ export const BirthDatePicker: React.FC<BirthDatePickerProps> = ({ control }) => 
               <FormControl>
                 <Button
                   variant={"outline"}
-                  className={`w-full justify-start text-left font-normal ${!field.value && "text-muted-foreground"}`}
+                  className={`w-full justify-start text-left font-normal ${
+                    !field.value && "text-muted-foreground"
+                  } ${disabled ? "bg-gray-100" : ""}`}
+                  disabled={disabled}
                 >
                   {field.value ? (
                     format(field.value, "PPP")
@@ -63,6 +68,9 @@ export const BirthDatePicker: React.FC<BirthDatePickerProps> = ({ control }) => 
               />
             </PopoverContent>
           </Popover>
+          <FormDescription>
+            {disabled ? 'Date of birth cannot be changed once set.' : 'Select your date of birth.'}
+          </FormDescription>
           <FormMessage />
         </FormItem>
       )}

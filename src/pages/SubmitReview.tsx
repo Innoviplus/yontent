@@ -1,12 +1,12 @@
 
 import { Loader2, Save } from 'lucide-react';
 import { Button } from '@/components/ui/button';
-import { Textarea } from '@/components/ui/textarea';
 import { Form, FormControl, FormField, FormItem, FormLabel, FormMessage } from '@/components/ui/form';
 import Navbar from '@/components/Navbar';
 import { useSubmitReview } from '@/hooks/useSubmitReview';
 import { Skeleton } from '@/components/ui/skeleton';
 import ImageUpload from '@/components/review/ImageUpload';
+import RichTextEditor from '@/components/RichTextEditor';
 
 const SubmitReview = () => {
   const {
@@ -65,10 +65,10 @@ const SubmitReview = () => {
                       <FormItem>
                         <FormLabel>Review</FormLabel>
                         <FormControl>
-                          <Textarea 
+                          <RichTextEditor 
+                            value={field.value}
+                            onChange={field.onChange}
                             placeholder="Share your experience..."
-                            className="min-h-32"
-                            {...field}
                           />
                         </FormControl>
                         <FormMessage />

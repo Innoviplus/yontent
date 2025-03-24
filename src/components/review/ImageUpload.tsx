@@ -35,16 +35,19 @@ const ImageUpload: React.FC<ImageUploadProps> = ({
     onFileSelect(files);
   };
 
+  // Create an array of empty slots to show all possible upload positions
+  const emptySlots = maxImages - imagePreviewUrls.length;
+
   return (
     <div className="mb-6">
       <div className="flex items-center justify-between mb-2">
         <h3 className="font-medium text-gray-900">Images</h3>
-        <span className="text-sm text-gray-500">Add up to {maxImages} images</span>
+        <span className="text-sm text-gray-500">Add up to {maxImages} images ({imagePreviewUrls.length}/{maxImages})</span>
       </div>
       
       <div className="flex flex-wrap gap-4 mb-4">
         {imagePreviewUrls.map((url, index) => (
-          <div key={index} className="relative w-20 h-20 bg-gray-100 rounded-md overflow-hidden group">
+          <div key={`image-${index}`} className="relative w-20 h-20 bg-gray-100 rounded-md overflow-hidden group">
             <img src={url} alt={`Preview ${index}`} className="w-full h-full object-cover" />
             <button
               type="button"
@@ -58,8 +61,11 @@ const ImageUpload: React.FC<ImageUploadProps> = ({
           </div>
         ))}
         
-        {imagePreviewUrls.length < maxImages && (
-          <label className="w-20 h-20 border-2 border-dashed border-gray-300 rounded-md flex flex-col items-center justify-center cursor-pointer hover:bg-gray-50 transition-colors">
+        {Array.from({ length: emptySlots }).map((_, index) => (
+          <label 
+            key={`slot-${index}`} 
+            className="w-20 h-20 border-2 border-dashed border-gray-300 rounded-md flex flex-col items-center justify-center cursor-pointer hover:bg-gray-50 transition-colors"
+          >
             <input
               type="file"
               accept="image/*"
@@ -71,7 +77,7 @@ const ImageUpload: React.FC<ImageUploadProps> = ({
             <ImageIcon className="h-6 w-6 text-gray-400 mb-1" />
             <span className="text-xs text-gray-500">Add</span>
           </label>
-        )}
+        ))}
       </div>
       
       {uploading && (

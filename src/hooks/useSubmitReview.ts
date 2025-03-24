@@ -1,4 +1,3 @@
-
 import { useState, useEffect } from 'react';
 import { useSearchParams, useNavigate } from 'react-router-dom';
 import { toast } from 'sonner';
@@ -66,6 +65,17 @@ export const useSubmitReview = () => {
     
     fetchReview();
   }, [reviewId, user, form, setExistingImages, setImagePreviewUrls]);
+  
+  // Custom image selection handler that sets error if too many files are selected
+  const handleImageSelectionWithValidation = (files: FileList | null) => {
+    if (!files) {
+      setImageError("You can only upload up to 10 images. Please select fewer images.");
+      return;
+    }
+    
+    // Otherwise use the regular handler
+    handleImageSelection(files);
+  };
   
   const onSubmit = async (values: ReviewFormValues, isDraft: boolean = false) => {
     if (!user) {
@@ -156,7 +166,7 @@ export const useSubmitReview = () => {
     isEditing: !!reviewId,
     onSubmit,
     saveDraft,
-    handleImageSelection,
+    handleImageSelection: handleImageSelectionWithValidation,
     removeImage,
     setImageError
   };

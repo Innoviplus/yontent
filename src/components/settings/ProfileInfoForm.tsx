@@ -50,6 +50,14 @@ export const ProfileInfoForm: React.FC<ProfileInfoFormProps> = ({
     }
   };
 
+  // Check if gender has been set previously
+  const currentGender = profileForm.getValues('gender');
+  const hasSetGender = !!currentGender;
+  
+  // Check if birth date has been set previously
+  const currentBirthDate = profileForm.getValues('birthDate');
+  const hasSetBirthDate = !!currentBirthDate;
+
   return (
     <Form {...profileForm}>
       <form onSubmit={profileForm.handleSubmit(handleSubmit)} className="space-y-6">
@@ -60,7 +68,7 @@ export const ProfileInfoForm: React.FC<ProfileInfoFormProps> = ({
             <FormItem>
               <FormLabel>Username</FormLabel>
               <FormControl>
-                <Input {...field} readOnly />
+                <Input {...field} readOnly className="bg-gray-100" />
               </FormControl>
               <FormDescription>
                 Your username cannot be changed.
@@ -131,9 +139,10 @@ export const ProfileInfoForm: React.FC<ProfileInfoFormProps> = ({
                 <Select 
                   onValueChange={field.onChange} 
                   defaultValue={field.value}
+                  disabled={hasSetGender}
                 >
                   <FormControl>
-                    <SelectTrigger>
+                    <SelectTrigger className={hasSetGender ? "bg-gray-100" : ""}>
                       <SelectValue placeholder="Select gender" />
                     </SelectTrigger>
                   </FormControl>
@@ -144,12 +153,15 @@ export const ProfileInfoForm: React.FC<ProfileInfoFormProps> = ({
                     <SelectItem value="prefer-not-to-say">Prefer not to say</SelectItem>
                   </SelectContent>
                 </Select>
+                <FormDescription>
+                  {hasSetGender ? 'Gender cannot be changed once set.' : 'Select your gender.'}
+                </FormDescription>
                 <FormMessage />
               </FormItem>
             )}
           />
           
-          <BirthDatePicker control={profileForm.control} />
+          <BirthDatePicker control={profileForm.control} disabled={hasSetBirthDate} />
         </div>
         
         <Button type="submit" disabled={isUpdating}>
