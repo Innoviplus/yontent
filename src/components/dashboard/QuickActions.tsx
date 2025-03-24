@@ -34,7 +34,7 @@ const QuickActions = () => {
       </Link>
       
       <Link 
-        to="/missions" 
+        to="/redeem" 
         className="flex items-center gap-3 bg-white p-5 rounded-xl shadow-subtle hover:-translate-y-1 transition-transform duration-200"
       >
         <div className="bg-brand-teal/10 w-12 h-12 rounded-xl flex items-center justify-center">

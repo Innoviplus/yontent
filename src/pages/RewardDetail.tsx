@@ -37,27 +37,26 @@ const RewardDetail = () => {
             <div className="mb-6">
               <Card>
                 <div className="md:grid md:grid-cols-2 md:gap-6">
-                  {/* Left column - Banner image */}
+                  {/* Left column - Banner image and basic reward info */}
                   <div className="md:col-span-1">
                     <CardHeader className="pb-3">
                       <RewardBanner bannerImage={reward.banner_image} name={reward.name} />
                     </CardHeader>
-                  </div>
-                  
-                  {/* Right column - Reward info and actions */}
-                  <div className="md:col-span-1">
-                    <CardHeader className="pb-3">
-                      <RewardInfo reward={reward} />
-                    </CardHeader>
                     <CardContent>
-                      <CardDescription className="text-gray-700 whitespace-pre-line mb-6">
+                      <RewardInfo reward={reward} />
+                      <CardDescription className="text-gray-700 whitespace-pre-line mt-4 mb-6">
                         {reward.description}
                       </CardDescription>
-                      
+                    </CardContent>
+                  </div>
+                  
+                  {/* Right column - Redemption details and actions */}
+                  <div className="md:col-span-1">
+                    <CardHeader className="pb-3 md:pt-10">
                       <RedemptionDetails redemptionDetails={reward.redemption_details} />
                       <PointsBalance userPoints={userPoints} reward={reward} />
                       <RedeemButton canRedeem={canRedeem} isRedeeming={isRedeeming} onRedeem={handleRedeem} />
-                    </CardContent>
+                    </CardHeader>
                   </div>
                 </div>
               </Card>
