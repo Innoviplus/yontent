@@ -7,9 +7,10 @@ interface ProfileTabsProps {
   reviews: Review[];
   user: any;
   profile: any;
+  isCurrentUser: boolean;
 }
 
-const ProfileTabs = ({ reviews, user, profile }: ProfileTabsProps) => {
+const ProfileTabs = ({ reviews, user, profile, isCurrentUser }: ProfileTabsProps) => {
   return (
     <Tabs defaultValue="reviews">
       <TabsList className="mb-6">
@@ -27,7 +28,7 @@ const ProfileTabs = ({ reviews, user, profile }: ProfileTabsProps) => {
           <div className="bg-white rounded-xl p-8 text-center shadow-card">
             <h3 className="text-lg font-medium text-gray-900 mb-2">No reviews yet</h3>
             <p className="text-gray-600">
-              {user && user.id === profile.id
+              {isCurrentUser
                 ? "You haven't posted any reviews yet. Start sharing your experiences!"
                 : `${profile.username} hasn't posted any reviews yet.`}
             </p>
