@@ -36,7 +36,10 @@ const RequestActionDialog = ({
   const handleSubmit = async () => {
     setIsProcessing(true);
     try {
-      await onAction(notes);
+      const success = await onAction(notes);
+      if (success) {
+        onCancel(); // Close dialog on success
+      }
     } finally {
       setIsProcessing(false);
     }
@@ -46,7 +49,10 @@ const RequestActionDialog = ({
     setIsProcessing(true);
     try {
       if (onSaveNotes) {
-        await onSaveNotes(notes);
+        const success = await onSaveNotes(notes);
+        if (success) {
+          onCancel(); // Close dialog on success
+        }
       }
     } finally {
       setIsProcessing(false);

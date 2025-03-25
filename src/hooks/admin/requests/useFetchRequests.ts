@@ -43,7 +43,7 @@ export const useFetchRequests = () => {
           paymentDetails: item.payment_details,
           adminNotes: item.admin_notes,
           createdAt: new Date(item.created_at),
-          updatedAt: new Date(item.updated_at),
+          updatedAt: item.updated_at ? new Date(item.updated_at) : new Date(item.created_at),
           user: undefined
         };
         

@@ -12,6 +12,8 @@ import RequestActionDialog from './RequestActionDialog';
 import RequestsLoadingState from './RequestsLoadingState';
 import EmptyRequestsState from './EmptyRequestsState';
 import RequestsTable from './RequestsTable';
+import { Button } from '@/components/ui/button';
+import { RefreshCw } from 'lucide-react';
 
 interface RequestsManagementProps {
   requests: RedemptionRequest[];
@@ -31,30 +33,33 @@ const RequestsManagement = ({
   const [actioningRequest, setActioningRequest] = useState<RedemptionRequest | null>(null);
   const [actionType, setActionType] = useState<'approve' | 'reject' | null>(null);
   const [viewingRequest, setViewingRequest] = useState<RedemptionRequest | null>(null);
+  const [isRefreshing, setIsRefreshing] = useState(false);
 
   const handleAction = async (notes?: string) => {
     if (!actioningRequest?.id || !actionType) return false;
     
     let success = false;
-    if (actionType === 'approve') {
-      success = await onApprove(actioningRequest.id, notes);
-    } else {
-      success = await onReject(actioningRequest.id, notes);
-    }
-    
-    if (success) {
-      setActioningRequest(null);
-      setActionType(null);
-      
-      // Refresh the requests list after successful action
-      if (refreshRequests) {
-        setTimeout(() => {
-          refreshRequests();
-        }, 500); // Small delay to ensure DB has updated
+    try {
+      if (actionType === 'approve') {
+        success = await onApprove(actioningRequest.id, notes);
+      } else {
+        success = await onReject(actioningRequest.id, notes);
       }
+      
+      if (success) {
+        // Don't close the dialog yet, we'll do that in the component
+        
+        // Refresh the requests list after successful action
+        if (refreshRequests) {
+          await refreshRequests();
+        }
+      }
+      
+      return success;
+    } catch (error) {
+      console.error(`Error during ${actionType} action:`, error);
+      return false;
     }
-    
-    return success;
   };
 
   const handleRowClick = (request: RedemptionRequest) => {
@@ -65,34 +70,30 @@ const RequestsManagement = ({
     if (viewingRequest) {
       // We'll use the approve action with the same status to just update notes
       const success = await onApprove(viewingRequest.id, notes);
-      if (success) {
-        setViewingRequest(null);
-        
-        // Refresh after saving notes
-        if (refreshRequests) {
-          setTimeout(() => {
-            refreshRequests();
-          }, 500);
-        }
+      if (success && refreshRequests) {
+        await refreshRequests();
       }
       return success;
     } else if (actioningRequest) {
       // Update UI optimistically, but don't change status
       const success = await onApprove(actioningRequest.id, notes);
-      if (success) {
-        setActioningRequest(null);
-        setActionType(null);
-        
-        // Refresh after saving notes
-        if (refreshRequests) {
-          setTimeout(() => {
-            refreshRequests();
-          }, 500);
-        }
+      if (success && refreshRequests) {
+        await refreshRequests();
       }
       return success;
     }
     return false;
+  };
+
+  const handleRefresh = async () => {
+    if (refreshRequests) {
+      setIsRefreshing(true);
+      try {
+        await refreshRequests();
+      } finally {
+        setIsRefreshing(false);
+      }
+    }
   };
 
   if (isLoading) {
@@ -102,9 +103,20 @@ const RequestsManagement = ({
   return (
     <>
       <Card>
-        <CardHeader>
-          <CardTitle>Redemption Requests</CardTitle>
-          <CardDescription>Review and manage user redemption requests</CardDescription>
+        <CardHeader className="flex flex-row items-center justify-between">
+          <div>
+            <CardTitle>Redemption Requests</CardTitle>
+            <CardDescription>Review and manage user redemption requests</CardDescription>
+          </div>
+          <Button 
+            variant="outline" 
+            size="sm" 
+            onClick={handleRefresh} 
+            disabled={isRefreshing}
+          >
+            <RefreshCw className={`h-4 w-4 mr-2 ${isRefreshing ? 'animate-spin' : ''}`} />
+            Refresh
+          </Button>
         </CardHeader>
         
         {requests.length === 0 ? (
