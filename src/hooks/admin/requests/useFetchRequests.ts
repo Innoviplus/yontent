@@ -21,6 +21,7 @@ export const useFetchRequests = () => {
         .order('created_at', { ascending: false });
       
       if (error) {
+        console.error('Error fetching redemption requests:', error);
         throw error;
       }
       

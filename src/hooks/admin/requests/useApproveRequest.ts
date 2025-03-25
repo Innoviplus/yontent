@@ -1,4 +1,3 @@
-
 import { toast } from 'sonner';
 import { supabase } from '@/integrations/supabase/client';
 import { RedemptionRequest } from '@/lib/types';
@@ -35,6 +34,7 @@ export const useApproveRequest = ({ setRequests }: UseApproveRequestProps) => {
           .eq('id', id);
         
         if (error) {
+          console.error('Error updating admin notes:', error);
           throw error;
         }
         
@@ -48,6 +48,7 @@ export const useApproveRequest = ({ setRequests }: UseApproveRequestProps) => {
       }
       
       // Otherwise, perform full approval
+      console.log('Updating redemption request status to APPROVED');
       const { error } = await supabase
         .from('redemption_requests')
         .update({ 
@@ -61,6 +62,8 @@ export const useApproveRequest = ({ setRequests }: UseApproveRequestProps) => {
         console.error('Database error during approval:', error);
         throw error;
       }
+      
+      console.log('Request approved successfully with id:', id);
       
       // Update the UI optimistically
       setRequests(prev => prev.map(req => 

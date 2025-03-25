@@ -36,6 +36,7 @@ export const useRejectRequest = ({ setRequests }: UseRejectRequestProps) => {
           .eq('id', id);
         
         if (error) {
+          console.error('Error updating notes:', error);
           throw error;
         }
         
@@ -48,6 +49,7 @@ export const useRejectRequest = ({ setRequests }: UseRejectRequestProps) => {
         return true;
       }
       
+      console.log('Updating redemption request status to REJECTED');
       // Update the request status to REJECTED
       const { error: updateError } = await supabase
         .from('redemption_requests')
@@ -62,6 +64,8 @@ export const useRejectRequest = ({ setRequests }: UseRejectRequestProps) => {
         console.error('Error updating request status for rejection:', updateError);
         throw updateError;
       }
+      
+      console.log('Request rejected successfully with id:', id);
       
       // Return points to the user after status update is successful
       if (requestData) {

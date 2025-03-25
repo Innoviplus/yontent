@@ -18,13 +18,15 @@ interface RequestsManagementProps {
   isLoading: boolean;
   onApprove: (id: string, adminNotes?: string) => Promise<boolean>;
   onReject: (id: string, adminNotes?: string) => Promise<boolean>;
+  refreshRequests?: () => Promise<void>;
 }
 
 const RequestsManagement = ({ 
   requests, 
   isLoading, 
   onApprove, 
-  onReject 
+  onReject,
+  refreshRequests
 }: RequestsManagementProps) => {
   const [actioningRequest, setActioningRequest] = useState<RedemptionRequest | null>(null);
   const [actionType, setActionType] = useState<'approve' | 'reject' | null>(null);
@@ -43,6 +45,13 @@ const RequestsManagement = ({
     if (success) {
       setActioningRequest(null);
       setActionType(null);
+      
+      // Refresh the requests list after successful action
+      if (refreshRequests) {
+        setTimeout(() => {
+          refreshRequests();
+        }, 500); // Small delay to ensure DB has updated
+      }
     }
     
     return success;
@@ -58,6 +67,13 @@ const RequestsManagement = ({
       const success = await onApprove(viewingRequest.id, notes);
       if (success) {
         setViewingRequest(null);
+        
+        // Refresh after saving notes
+        if (refreshRequests) {
+          setTimeout(() => {
+            refreshRequests();
+          }, 500);
+        }
       }
       return success;
     } else if (actioningRequest) {
@@ -66,6 +82,13 @@ const RequestsManagement = ({
       if (success) {
         setActioningRequest(null);
         setActionType(null);
+        
+        // Refresh after saving notes
+        if (refreshRequests) {
+          setTimeout(() => {
+            refreshRequests();
+          }, 500);
+        }
       }
       return success;
     }
