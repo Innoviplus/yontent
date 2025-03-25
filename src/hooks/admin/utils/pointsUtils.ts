@@ -206,8 +206,8 @@ export const logPointsTransaction = async (
       id: data.id,
       userId: data.user_id,
       amount: data.amount,
-      type: data.type,
-      source: data.source,
+      type: data.type as 'EARNED' | 'REDEEMED' | 'REFUNDED' | 'ADJUSTED',
+      source: data.source as 'MISSION_REVIEW' | 'RECEIPT_SUBMISSION' | 'REDEMPTION' | 'ADMIN_ADJUSTMENT',
       sourceId: data.source_id,
       description: data.description,
       createdAt: new Date(data.created_at)
@@ -241,8 +241,8 @@ export const getUserTransactionHistory = async (
       id: item.id,
       userId: item.user_id,
       amount: item.amount,
-      type: item.type,
-      source: item.source,
+      type: item.type as 'EARNED' | 'REDEEMED' | 'REFUNDED' | 'ADJUSTED',
+      source: item.source as 'MISSION_REVIEW' | 'RECEIPT_SUBMISSION' | 'REDEMPTION' | 'ADMIN_ADJUSTMENT',
       sourceId: item.source_id,
       description: item.description,
       createdAt: new Date(item.created_at)
