@@ -7,22 +7,14 @@ import {
   CardHeader, 
   CardTitle 
 } from '@/components/ui/card';
-import { 
-  Table, 
-  TableBody, 
-  TableCell, 
-  TableHead, 
-  TableHeader, 
-  TableRow 
-} from '@/components/ui/table';
 import { Button } from '@/components/ui/button';
-import { Badge } from '@/components/ui/badge';
-import { Plus, Pencil, Trash2, Gift, CreditCard, Wallet } from 'lucide-react';
-import { Switch } from '@/components/ui/switch';
+import { Plus } from 'lucide-react';
 import { toast } from 'sonner';
 import { RedemptionItem } from '@/types/redemption';
-import RewardForm from './RewardForm';
+import RewardList from './RewardList';
+import RewardFormWrapper from './RewardFormWrapper';
 import DeleteConfirmationDialog from './DeleteConfirmationDialog';
+import RewardsLoadingState from './RewardsLoadingState';
 
 interface RewardsManagementProps {
   rewards: RedemptionItem[];
@@ -85,28 +77,8 @@ const RewardsManagement = ({
     return success;
   };
 
-  const getRedemptionTypeIcon = (type: string) => {
-    if (!type || type === 'GIFT_VOUCHER') {
-      return <Gift className="h-4 w-4 text-purple-500" />;
-    } else {
-      return <Wallet className="h-4 w-4 text-blue-500" />;
-    }
-  };
-
   if (isLoading) {
-    return (
-      <Card>
-        <CardHeader>
-          <CardTitle>Rewards Management</CardTitle>
-          <CardDescription>Loading rewards...</CardDescription>
-        </CardHeader>
-        <CardContent>
-          <div className="h-64 flex items-center justify-center">
-            <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-blue-500"></div>
-          </div>
-        </CardContent>
-      </Card>
-    );
+    return <RewardsLoadingState />;
   }
 
   return (
@@ -123,109 +95,34 @@ const RewardsManagement = ({
           </Button>
         </CardHeader>
         <CardContent>
-          {rewards.length === 0 ? (
-            <div className="text-center py-8">
-              <Gift className="mx-auto h-12 w-12 text-gray-400 mb-3" />
-              <h3 className="text-lg font-medium">No rewards found</h3>
-              <p className="text-sm text-gray-500 mt-1">Add a reward to get started</p>
-            </div>
-          ) : (
-            <Table>
-              <TableHeader>
-                <TableRow>
-                  <TableHead className="w-[80px]">Image</TableHead>
-                  <TableHead>Name</TableHead>
-                  <TableHead>Description</TableHead>
-                  <TableHead className="w-[100px]">Points</TableHead>
-                  <TableHead className="w-[100px]">Type</TableHead>
-                  <TableHead className="w-[100px]">Status</TableHead>
-                  <TableHead className="w-[120px] text-right">Actions</TableHead>
-                </TableRow>
-              </TableHeader>
-              <TableBody>
-                {rewards.map((reward) => (
-                  <TableRow key={reward.id}>
-                    <TableCell>
-                      <div className="w-16 h-16 bg-gradient-to-br from-slate-100 to-slate-200 rounded-md flex items-center justify-center overflow-hidden">
-                        {reward.image_url ? (
-                          <img
-                            src={reward.image_url}
-                            alt={reward.name}
-                            className="w-12 h-12 object-contain"
-                          />
-                        ) : (
-                          <Gift className="h-8 w-8 text-gray-400" />
-                        )}
-                      </div>
-                    </TableCell>
-                    <TableCell className="font-medium">{reward.name}</TableCell>
-                    <TableCell className="max-w-xs">
-                      <div className="line-clamp-2">{reward.description}</div>
-                    </TableCell>
-                    <TableCell>{reward.points_required}</TableCell>
-                    <TableCell>
-                      <div className="flex items-center gap-1.5">
-                        {getRedemptionTypeIcon(reward.redemption_type)}
-                        <span className="text-sm">
-                          {reward.redemption_type === 'CASH' ? 'Cash Out' : 'Gift Voucher'}
-                        </span>
-                      </div>
-                    </TableCell>
-                    <TableCell>
-                      <div className="flex items-center space-x-2">
-                        <Switch 
-                          checked={reward.is_active} 
-                          onCheckedChange={() => handleToggleActive(reward)}
-                          aria-label={`${reward.is_active ? 'Deactivate' : 'Activate'} ${reward.name}`}
-                        />
-                        <Badge variant={reward.is_active ? "default" : "secondary"}>
-                          {reward.is_active ? "Active" : "Inactive"}
-                        </Badge>
-                      </div>
-                    </TableCell>
-                    <TableCell className="text-right">
-                      <div className="flex justify-end gap-2">
-                        <Button 
-                          variant="outline" 
-                          size="sm" 
-                          onClick={() => setEditingReward(reward)}
-                        >
-                          <Pencil className="h-4 w-4" />
-                        </Button>
-                        <Button 
-                          variant="outline" 
-                          size="sm" 
-                          onClick={() => setDeletingRewardId(reward.id)}
-                        >
-                          <Trash2 className="h-4 w-4" />
-                        </Button>
-                      </div>
-                    </TableCell>
-                  </TableRow>
-                ))}
-              </TableBody>
-            </Table>
-          )}
+          <RewardList 
+            rewards={rewards}
+            onEdit={setEditingReward}
+            onDelete={setDeletingRewardId}
+            onToggleStatus={handleToggleActive}
+          />
         </CardContent>
       </Card>
 
+      {/* Form modals */}
       {showAddForm && (
-        <RewardForm 
+        <RewardFormWrapper 
+          isAdding={true}
           onSubmit={handleAddSubmit}
           onCancel={() => setShowAddForm(false)}
-          title="Add New Reward"
         />
       )}
 
       {editingReward && (
-        <RewardForm 
+        <RewardFormWrapper 
           reward={editingReward}
+          isAdding={false}
           onSubmit={handleEditSubmit}
           onCancel={() => setEditingReward(null)}
-          title="Edit Reward"
         />
       )}
 
+      {/* Confirmation dialog */}
       {deletingRewardId && (
         <DeleteConfirmationDialog
           title="Delete Reward"
