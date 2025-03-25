@@ -1,6 +1,6 @@
 
 import { Button } from "@/components/ui/button";
-import { ShoppingBag } from "lucide-react";
+import { ClipboardList, ShoppingBag } from "lucide-react";
 
 interface RedeemButtonProps {
   canRedeem: boolean;
@@ -29,7 +29,8 @@ const RedeemButton = ({
         </div>
       ) : (
         <div className="flex items-center gap-2">
-          <ShoppingBag className="h-5 w-5" />
+          {/* Use ClipboardList icon for cash out, ShoppingBag for gift vouchers */}
+          <ClipboardList className="h-5 w-5" />
           <span>{label}</span>
         </div>
       )}

@@ -68,7 +68,7 @@ const CashOutForm = ({ onSubmit, onCancel, pointsAmount }: CashOutFormProps) => 
 
   return (
     <Dialog open onOpenChange={onCancel}>
-      <DialogContent className="sm:max-w-[500px]">
+      <DialogContent className="sm:max-w-[500px] max-h-[90vh] overflow-y-auto">
         <DialogHeader>
           <DialogTitle>Cash Out Request</DialogTitle>
           <DialogDescription>

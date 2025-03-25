@@ -159,33 +159,38 @@ const RequestActionDialog = ({
         </div>
         
         <DialogFooter className="flex space-x-2 mt-4">
-          <Button type="button" variant="outline" onClick={onCancel}>
-            Cancel
-          </Button>
-          <Button
-            type="button"
-            variant={action === 'approve' ? 'default' : 'destructive'}
-            onClick={handleSubmit}
-            disabled={isProcessing}
-            className="min-w-[100px]"
-          >
-            {isProcessing ? (
-              <>
-                <span className="animate-spin mr-2">⟳</span>
-                Processing
-              </>
-            ) : action === 'approve' ? (
-              <>
-                <Check className="mr-2 h-4 w-4" />
-                Approve
-              </>
-            ) : (
-              <>
-                <X className="mr-2 h-4 w-4" />
-                Reject
-              </>
-            )}
-          </Button>
+          {request.status === 'PENDING' ? (
+            <>
+              <Button
+                type="button"
+                variant={action === 'approve' ? 'default' : 'destructive'}
+                onClick={handleSubmit}
+                disabled={isProcessing}
+                className="min-w-[100px]"
+              >
+                {isProcessing ? (
+                  <>
+                    <span className="animate-spin mr-2">⟳</span>
+                    Processing
+                  </>
+                ) : action === 'approve' ? (
+                  <>
+                    <Check className="mr-2 h-4 w-4" />
+                    Approve
+                  </>
+                ) : (
+                  <>
+                    <X className="mr-2 h-4 w-4" />
+                    Reject
+                  </>
+                )}
+              </Button>
+            </>
+          ) : (
+            <Button type="button" onClick={onCancel}>
+              Save Notes
+            </Button>
+          )}
         </DialogFooter>
       </DialogContent>
     </Dialog>
