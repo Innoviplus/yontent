@@ -40,11 +40,13 @@ const MissionStats = ({
     try {
       setLoading(true);
       
+      // For receipt type missions, navigate to the receipt submission page
       if (mission.type === 'RECEIPT') {
-        navigate(`/mission-receipt/${mission.id}`);
+        navigate(`/mission/${mission.id}/submit-receipt`);
         return;
       }
       
+      // For other mission types, create a participation record
       const { error } = await supabase
         .from('mission_participations')
         .insert({

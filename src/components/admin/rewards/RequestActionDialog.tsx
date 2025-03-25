@@ -26,21 +26,34 @@ interface RequestActionDialogProps {
   action: 'approve' | 'reject';
   onAction: (notes?: string) => Promise<boolean>;
   onCancel: () => void;
+  onSaveNotes?: (notes: string) => Promise<boolean>;
 }
 
 const RequestActionDialog = ({ 
   request, 
   action, 
   onAction, 
-  onCancel 
+  onCancel,
+  onSaveNotes
 }: RequestActionDialogProps) => {
-  const [notes, setNotes] = useState<string>('');
+  const [notes, setNotes] = useState<string>(request.adminNotes || '');
   const [isProcessing, setIsProcessing] = useState(false);
   
   const handleSubmit = async () => {
     setIsProcessing(true);
     try {
       await onAction(notes);
+    } finally {
+      setIsProcessing(false);
+    }
+  };
+
+  const handleSaveNotes = async () => {
+    setIsProcessing(true);
+    try {
+      if (onSaveNotes) {
+        await onSaveNotes(notes);
+      }
     } finally {
       setIsProcessing(false);
     }
@@ -163,6 +176,14 @@ const RequestActionDialog = ({
             <>
               <Button
                 type="button"
+                variant="outline"
+                onClick={handleSaveNotes}
+                disabled={isProcessing}
+              >
+                {isProcessing ? 'Saving...' : 'Save Notes'}
+              </Button>
+              <Button
+                type="button"
                 variant={action === 'approve' ? 'default' : 'destructive'}
                 onClick={handleSubmit}
                 disabled={isProcessing}
@@ -187,8 +208,8 @@ const RequestActionDialog = ({
               </Button>
             </>
           ) : (
-            <Button type="button" onClick={onCancel}>
-              Save Notes
+            <Button type="button" onClick={handleSaveNotes} disabled={isProcessing}>
+              {isProcessing ? 'Saving...' : 'Save Notes'}
             </Button>
           )}
         </DialogFooter>

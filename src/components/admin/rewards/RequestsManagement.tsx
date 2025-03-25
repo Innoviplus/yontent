@@ -62,6 +62,26 @@ const RequestsManagement = ({
     setViewingRequest(request);
   };
 
+  const handleSaveNotes = async (notes: string) => {
+    if (viewingRequest) {
+      // We'll use the approve action with the same status to just update notes
+      const success = await onApprove(viewingRequest.id, notes);
+      if (success) {
+        setViewingRequest(null);
+      }
+      return success;
+    } else if (actioningRequest) {
+      // Update UI optimistically, but don't change status
+      const success = await onApprove(actioningRequest.id, notes);
+      if (success) {
+        setActioningRequest(null);
+        setActionType(null);
+      }
+      return success;
+    }
+    return false;
+  };
+
   const getStatusBadge = (status: RedemptionRequest['status']) => {
     switch(status) {
       case 'APPROVED':
@@ -186,6 +206,7 @@ const RequestsManagement = ({
           request={actioningRequest}
           action={actionType}
           onAction={handleAction}
+          onSaveNotes={handleSaveNotes}
           onCancel={() => {
             setActioningRequest(null);
             setActionType(null);
@@ -201,6 +222,7 @@ const RequestsManagement = ({
             setViewingRequest(null);
             return true;
           }}
+          onSaveNotes={handleSaveNotes}
           onCancel={() => {
             setViewingRequest(null);
           }}

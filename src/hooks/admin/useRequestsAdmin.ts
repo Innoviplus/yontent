@@ -1,4 +1,3 @@
-
 import { useState, useEffect, useCallback } from 'react';
 import { toast } from 'sonner';
 import { supabase } from '@/integrations/supabase/client';
@@ -83,6 +82,34 @@ export const useRequestsAdmin = () => {
 
   const approveRequest = async (id: string, adminNotes?: string) => {
     try {
+      console.log(`Approving request ${id} with notes: ${adminNotes}`);
+      
+      // First check if it's just a note update for an existing approved/rejected request
+      const existingRequest = requests.find(req => req.id === id);
+      if (existingRequest && existingRequest.status !== 'PENDING') {
+        // Just update notes, don't change status
+        const { error } = await supabase
+          .from('redemption_requests')
+          .update({ 
+            admin_notes: adminNotes,
+            updated_at: new Date().toISOString()
+          })
+          .eq('id', id);
+        
+        if (error) {
+          throw error;
+        }
+        
+        setRequests(prev => prev.map(req => 
+          req.id === id 
+            ? { ...req, adminNotes, updatedAt: new Date() } 
+            : req
+        ));
+        toast.success('Notes updated successfully');
+        return true;
+      }
+      
+      // Otherwise, perform full approval
       const { error } = await supabase
         .from('redemption_requests')
         .update({ 
@@ -93,6 +120,7 @@ export const useRequestsAdmin = () => {
         .eq('id', id);
       
       if (error) {
+        console.error('Database error during approval:', error);
         throw error;
       }
       
@@ -112,6 +140,9 @@ export const useRequestsAdmin = () => {
 
   const rejectRequest = async (id: string, adminNotes?: string) => {
     try {
+      console.log(`Rejecting request ${id} with notes: ${adminNotes}`);
+      
+      // First, get the request data
       const { data: requestData, error: requestError } = await supabase
         .from('redemption_requests')
         .select('user_id, points_amount')
@@ -119,9 +150,11 @@ export const useRequestsAdmin = () => {
         .single();
       
       if (requestError) {
+        console.error('Error fetching request data for rejection:', requestError);
         throw requestError;
       }
       
+      // Update the request status
       const { error: updateError } = await supabase
         .from('redemption_requests')
         .update({ 
@@ -132,18 +165,41 @@ export const useRequestsAdmin = () => {
         .eq('id', id);
       
       if (updateError) {
+        console.error('Error updating request status for rejection:', updateError);
         throw updateError;
       }
       
-      const { data: pointsData, error: pointsError } = await supabase
-        .rpc('increment_points', { 
-          user_id_param: requestData.user_id, 
-          points_amount_param: requestData.points_amount 
-        });
-      
-      if (pointsError) {
-        console.error('Error returning points to user:', pointsError);
-        toast.error('Request rejected but points may not have been returned');
+      // Return points to the user
+      if (requestData) {
+        console.log(`Returning ${requestData.points_amount} points to user ${requestData.user_id}`);
+        
+        // First, get current user points
+        const { data: userData, error: userError } = await supabase
+          .from('profiles')
+          .select('points')
+          .eq('id', requestData.user_id)
+          .single();
+          
+        if (userError) {
+          console.error('Error fetching user points:', userError);
+          throw userError;
+        }
+        
+        // Calculate new points total
+        const newPointsTotal = (userData?.points || 0) + requestData.points_amount;
+        
+        // Update user points
+        const { error: pointsError } = await supabase
+          .from('profiles')
+          .update({ points: newPointsTotal })
+          .eq('id', requestData.user_id);
+        
+        if (pointsError) {
+          console.error('Error returning points to user:', pointsError);
+          toast.error('Request rejected but points may not have been returned');
+        } else {
+          console.log(`Successfully updated user points to ${newPointsTotal}`);
+        }
       }
       
       setRequests(prev => prev.map(req => 
