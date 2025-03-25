@@ -1,3 +1,4 @@
+
 import { toast } from 'sonner';
 import { supabase } from '@/integrations/supabase/client';
 import { RedemptionRequest } from '@/lib/types';
@@ -14,7 +15,7 @@ export const useApproveRequest = ({ setRequests }: UseApproveRequestProps) => {
       // First check if it's just a note update for an existing approved/rejected request
       const { data: requestData, error: requestError } = await supabase
         .from('redemption_requests')
-        .select('status')
+        .select('status, user_id, points_amount')
         .eq('id', id)
         .single();
       
@@ -23,8 +24,8 @@ export const useApproveRequest = ({ setRequests }: UseApproveRequestProps) => {
         throw requestError;
       }
       
+      // If already approved or rejected, just update notes
       if (requestData && requestData.status !== 'PENDING') {
-        // Just update notes, don't change status
         const { error } = await supabase
           .from('redemption_requests')
           .update({ 
@@ -61,11 +62,13 @@ export const useApproveRequest = ({ setRequests }: UseApproveRequestProps) => {
         throw error;
       }
       
+      // Update the UI optimistically
       setRequests(prev => prev.map(req => 
         req.id === id 
           ? { ...req, status: 'APPROVED', adminNotes, updatedAt: new Date() } 
           : req
       ));
+      
       toast.success('Request approved successfully');
       return true;
     } catch (error) {

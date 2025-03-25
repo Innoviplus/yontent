@@ -48,7 +48,7 @@ export const useRejectRequest = ({ setRequests }: UseRejectRequestProps) => {
         return true;
       }
       
-      // Update the request status
+      // Update the request status to REJECTED
       const { error: updateError } = await supabase
         .from('redemption_requests')
         .update({ 
@@ -63,21 +63,24 @@ export const useRejectRequest = ({ setRequests }: UseRejectRequestProps) => {
         throw updateError;
       }
       
-      // Return points to the user
+      // Return points to the user after status update is successful
       if (requestData) {
         try {
           await returnPointsToUser(requestData.user_id, requestData.points_amount);
+          console.log(`Successfully returned ${requestData.points_amount} points to user ${requestData.user_id}`);
         } catch (pointsError) {
           console.error('Error returning points to user:', pointsError);
           toast.error('Request rejected but points may not have been returned');
         }
       }
       
+      // Update UI optimistically
       setRequests(prev => prev.map(req => 
         req.id === id 
           ? { ...req, status: 'REJECTED', adminNotes, updatedAt: new Date() } 
           : req
       ));
+      
       toast.success('Request rejected and points returned to user');
       return true;
     } catch (error) {
