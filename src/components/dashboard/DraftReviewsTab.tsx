@@ -10,10 +10,10 @@ import { supabase } from '@/integrations/supabase/client';
 import { toast } from 'sonner';
 
 interface DraftReviewsTabProps {
-  reviews: Review[];
+  drafts: Review[];
 }
 
-const DraftReviewsTab = ({ reviews }: DraftReviewsTabProps) => {
+const DraftReviewsTab = ({ drafts }: DraftReviewsTabProps) => {
   const [deletingId, setDeletingId] = useState<string | null>(null);
   
   const deleteDraft = async (reviewId: string) => {
@@ -75,7 +75,7 @@ const DraftReviewsTab = ({ reviews }: DraftReviewsTabProps) => {
     }
   };
   
-  if (reviews.length === 0) {
+  if (drafts.length === 0) {
     return (
       <div className="text-center py-12 bg-white rounded-lg shadow-sm">
         <h3 className="text-lg font-medium text-gray-900 mb-2">No draft reviews</h3>
@@ -89,7 +89,7 @@ const DraftReviewsTab = ({ reviews }: DraftReviewsTabProps) => {
   
   return (
     <div className="space-y-4">
-      {reviews.map((review) => (
+      {drafts.map((review) => (
         <Card key={review.id}>
           <CardContent className="p-4">
             <div className="flex items-start justify-between">
