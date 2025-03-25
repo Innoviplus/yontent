@@ -188,8 +188,7 @@ export const logPointsTransaction = async (
         type: type,
         source: source,
         source_id: sourceId,
-        description: description,
-        created_at: new Date().toISOString()
+        description: description
       })
       .select()
       .single();
