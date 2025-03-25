@@ -17,7 +17,9 @@ import {
 } from '@/components/ui/table';
 import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
-import { Plus, Pencil, Trash2, Gift } from 'lucide-react';
+import { Plus, Pencil, Trash2, Gift, CreditCard, Wallet } from 'lucide-react';
+import { Switch } from '@/components/ui/switch';
+import { toast } from 'sonner';
 import { RedemptionItem } from '@/types/redemption';
 import RewardForm from './RewardForm';
 import DeleteConfirmationDialog from './DeleteConfirmationDialog';
@@ -72,6 +74,25 @@ const RewardsManagement = ({
     return success;
   };
 
+  const handleToggleActive = async (reward: RedemptionItem) => {
+    const newStatus = !reward.is_active;
+    const success = await onUpdate(reward.id, { is_active: newStatus });
+    
+    if (success) {
+      toast.success(`Reward ${newStatus ? 'activated' : 'deactivated'} successfully`);
+    }
+    
+    return success;
+  };
+
+  const getRedemptionTypeIcon = (type: string) => {
+    if (!type || type === 'GIFT_VOUCHER') {
+      return <Gift className="h-4 w-4 text-purple-500" />;
+    } else {
+      return <Wallet className="h-4 w-4 text-blue-500" />;
+    }
+  };
+
   if (isLoading) {
     return (
       <Card>
@@ -116,6 +137,7 @@ const RewardsManagement = ({
                   <TableHead>Name</TableHead>
                   <TableHead>Description</TableHead>
                   <TableHead className="w-[100px]">Points</TableHead>
+                  <TableHead className="w-[100px]">Type</TableHead>
                   <TableHead className="w-[100px]">Status</TableHead>
                   <TableHead className="w-[120px] text-right">Actions</TableHead>
                 </TableRow>
@@ -142,9 +164,24 @@ const RewardsManagement = ({
                     </TableCell>
                     <TableCell>{reward.points_required}</TableCell>
                     <TableCell>
-                      <Badge variant={reward.is_active ? "default" : "secondary"}>
-                        {reward.is_active ? "Active" : "Inactive"}
-                      </Badge>
+                      <div className="flex items-center gap-1.5">
+                        {getRedemptionTypeIcon(reward.redemption_type)}
+                        <span className="text-sm">
+                          {reward.redemption_type === 'CASH' ? 'Cash Out' : 'Gift Voucher'}
+                        </span>
+                      </div>
+                    </TableCell>
+                    <TableCell>
+                      <div className="flex items-center space-x-2">
+                        <Switch 
+                          checked={reward.is_active} 
+                          onCheckedChange={() => handleToggleActive(reward)}
+                          aria-label={`${reward.is_active ? 'Deactivate' : 'Activate'} ${reward.name}`}
+                        />
+                        <Badge variant={reward.is_active ? "default" : "secondary"}>
+                          {reward.is_active ? "Active" : "Inactive"}
+                        </Badge>
+                      </div>
                     </TableCell>
                     <TableCell className="text-right">
                       <div className="flex justify-end gap-2">

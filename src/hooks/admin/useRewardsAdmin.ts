@@ -46,7 +46,8 @@ export const useRewardsAdmin = () => {
         banner_image: reward.banner_image,
         is_active: reward.is_active,
         terms_conditions: reward.terms_conditions,
-        redemption_details: reward.redemption_details
+        redemption_details: reward.redemption_details,
+        redemption_type: reward.redemption_type
       };
       
       const { data, error } = await supabase
@@ -83,6 +84,7 @@ export const useRewardsAdmin = () => {
       if (updates.is_active !== undefined) validUpdates.is_active = updates.is_active;
       if (updates.terms_conditions !== undefined) validUpdates.terms_conditions = updates.terms_conditions;
       if (updates.redemption_details !== undefined) validUpdates.redemption_details = updates.redemption_details;
+      if (updates.redemption_type !== undefined) validUpdates.redemption_type = updates.redemption_type;
       
       const { data, error } = await supabase
         .from('redemption_items')

@@ -1,14 +1,13 @@
 
 export interface RedemptionItem {
-  id?: string;
+  id: string;
   name: string;
   description: string;
   points_required: number;
   image_url?: string;
   banner_image?: string;
   is_active?: boolean;
-  created_at?: string;
-  updated_at?: string;
   terms_conditions?: string;
   redemption_details?: string;
+  redemption_type?: 'GIFT_VOUCHER' | 'CASH';
 }

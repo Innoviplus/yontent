@@ -15,12 +15,30 @@ import TermsAndConditions from '@/components/rewards/TermsAndConditions';
 import RewardDetailLoading from '@/components/rewards/RewardDetailLoading';
 import RewardDetailError from '@/components/rewards/RewardDetailError';
 import RewardBanner from '@/components/rewards/RewardBanner';
+import CashOutForm from '@/components/rewards/CashOutForm';
+import { useState } from 'react';
 
 const RewardDetail = () => {
   const { id } = useParams<{ id: string; }>();
   const { userPoints } = usePoints();
   const { reward, isLoading } = useRewardDetail(id);
-  const { canRedeem, isRedeeming, handleRedeem } = useRewardRedemption(reward);
+  const [showCashOutForm, setShowCashOutForm] = useState(false);
+  const { canRedeem, isRedeeming, handleRedeem, handleCashOutRedeem } = useRewardRedemption(reward);
+  
+  const isCashOut = reward?.redemption_type === 'CASH';
+
+  const handleRedeemClick = () => {
+    if (isCashOut) {
+      setShowCashOutForm(true);
+    } else {
+      handleRedeem();
+    }
+  };
+
+  const handleCashOutSubmit = (bankDetails: any) => {
+    handleCashOutRedeem(bankDetails);
+    setShowCashOutForm(false);
+  };
 
   return (
     <div className="min-h-screen bg-gray-50">
@@ -55,7 +73,14 @@ const RewardDetail = () => {
                     <CardHeader className="pb-3 md:pt-10">
                       <RedemptionDetails redemptionDetails={reward.redemption_details} />
                       <PointsBalance userPoints={userPoints} reward={reward} />
-                      <RedeemButton canRedeem={canRedeem} isRedeeming={isRedeeming} onRedeem={handleRedeem} />
+                      <div className="mt-8">
+                        <RedeemButton 
+                          canRedeem={canRedeem} 
+                          isRedeeming={isRedeeming} 
+                          onRedeem={handleRedeemClick}
+                          label={isCashOut ? "Request Cash Out" : "Send Redeem Request"}
+                        />
+                      </div>
                     </CardHeader>
                   </div>
                 </div>
@@ -64,6 +89,15 @@ const RewardDetail = () => {
             
             {/* Terms and conditions section remains below the main card */}
             <TermsAndConditions termsConditions={reward.terms_conditions} />
+            
+            {/* Cash Out Form Dialog */}
+            {showCashOutForm && (
+              <CashOutForm 
+                onSubmit={handleCashOutSubmit}
+                onCancel={() => setShowCashOutForm(false)}
+                pointsAmount={reward.points_required}
+              />
+            )}
           </>
         )}
       </div>

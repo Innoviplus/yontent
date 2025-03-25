@@ -38,6 +38,7 @@ const RequestsManagement = ({
 }: RequestsManagementProps) => {
   const [actioningRequest, setActioningRequest] = useState<RedemptionRequest | null>(null);
   const [actionType, setActionType] = useState<'approve' | 'reject' | null>(null);
+  const [viewingRequest, setViewingRequest] = useState<RedemptionRequest | null>(null);
 
   const handleAction = async (notes?: string) => {
     if (!actioningRequest?.id || !actionType) return false;
@@ -55,6 +56,10 @@ const RequestsManagement = ({
     }
     
     return success;
+  };
+
+  const handleRowClick = (request: RedemptionRequest) => {
+    setViewingRequest(request);
   };
 
   const getStatusBadge = (status: RedemptionRequest['status']) => {
@@ -112,7 +117,11 @@ const RequestsManagement = ({
               </TableHeader>
               <TableBody>
                 {requests.map((request) => (
-                  <TableRow key={request.id}>
+                  <TableRow 
+                    key={request.id}
+                    className="cursor-pointer hover:bg-slate-50"
+                    onClick={() => handleRowClick(request)}
+                  >
                     <TableCell>
                       <div className="flex items-center gap-2">
                         <Avatar className="h-8 w-8">
@@ -128,14 +137,15 @@ const RequestsManagement = ({
                     <TableCell>{request.pointsAmount}</TableCell>
                     <TableCell>{getStatusBadge(request.status)}</TableCell>
                     <TableCell>{formatDistanceToNow(request.createdAt, { addSuffix: true })}</TableCell>
-                    <TableCell className="text-right">
+                    <TableCell className="text-right" onClick={(e) => e.stopPropagation()}>
                       {request.status === 'PENDING' ? (
                         <div className="flex justify-end gap-2">
                           <Button 
                             variant="outline" 
                             size="sm" 
                             className="text-green-600 border-green-200 hover:bg-green-50"
-                            onClick={() => {
+                            onClick={(e) => {
+                              e.stopPropagation();
                               setActioningRequest(request);
                               setActionType('approve');
                             }}
@@ -147,7 +157,8 @@ const RequestsManagement = ({
                             variant="outline" 
                             size="sm"
                             className="text-red-600 border-red-200 hover:bg-red-50"
-                            onClick={() => {
+                            onClick={(e) => {
+                              e.stopPropagation();
                               setActioningRequest(request);
                               setActionType('reject');
                             }}
@@ -178,6 +189,20 @@ const RequestsManagement = ({
           onCancel={() => {
             setActioningRequest(null);
             setActionType(null);
+          }}
+        />
+      )}
+
+      {viewingRequest && (
+        <RequestActionDialog
+          request={viewingRequest}
+          action={viewingRequest.status === 'PENDING' ? 'approve' : 'approve'}
+          onAction={async () => {
+            setViewingRequest(null);
+            return true;
+          }}
+          onCancel={() => {
+            setViewingRequest(null);
           }}
         />
       )}

@@ -23,6 +23,7 @@ import { Input } from '@/components/ui/input';
 import { Button } from '@/components/ui/button';
 import { Switch } from '@/components/ui/switch';
 import { Textarea } from '@/components/ui/textarea';
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { RedemptionItem } from '@/types/redemption';
 import { rewardSchema, RewardFormData } from './RewardFormSchema';
 import ImageUploader from './ImageUploader';
@@ -53,7 +54,8 @@ const RewardForm = ({
       banner_image: reward?.banner_image || '',
       is_active: reward?.is_active !== false, // default to true if not provided
       terms_conditions: reward?.terms_conditions || '',
-      redemption_details: reward?.redemption_details || ''
+      redemption_details: reward?.redemption_details || '',
+      redemption_type: reward?.redemption_type || 'GIFT_VOUCHER'
     }
   });
 
@@ -127,25 +129,53 @@ const RewardForm = ({
               
               <FormField
                 control={form.control}
-                name="is_active"
+                name="redemption_type"
                 render={({ field }) => (
-                  <FormItem className="flex flex-row items-center justify-between rounded-lg border p-3 shadow-sm">
-                    <div className="space-y-0.5">
-                      <FormLabel>Active Status</FormLabel>
-                      <FormDescription>
-                        Make this reward available for redemption
-                      </FormDescription>
-                    </div>
-                    <FormControl>
-                      <Switch
-                        checked={field.value}
-                        onCheckedChange={field.onChange}
-                      />
-                    </FormControl>
+                  <FormItem>
+                    <FormLabel>Redemption Type</FormLabel>
+                    <Select 
+                      onValueChange={field.onChange} 
+                      defaultValue={field.value}
+                    >
+                      <FormControl>
+                        <SelectTrigger>
+                          <SelectValue placeholder="Select type" />
+                        </SelectTrigger>
+                      </FormControl>
+                      <SelectContent>
+                        <SelectItem value="GIFT_VOUCHER">Gift Voucher</SelectItem>
+                        <SelectItem value="CASH">Cash Out</SelectItem>
+                      </SelectContent>
+                    </Select>
+                    <FormDescription>
+                      Type of redemption this reward represents
+                    </FormDescription>
+                    <FormMessage />
                   </FormItem>
                 )}
               />
             </div>
+            
+            <FormField
+              control={form.control}
+              name="is_active"
+              render={({ field }) => (
+                <FormItem className="flex flex-row items-center justify-between rounded-lg border p-3 shadow-sm">
+                  <div className="space-y-0.5">
+                    <FormLabel>Active Status</FormLabel>
+                    <FormDescription>
+                      Make this reward available for redemption
+                    </FormDescription>
+                  </div>
+                  <FormControl>
+                    <Switch
+                      checked={field.value}
+                      onCheckedChange={field.onChange}
+                    />
+                  </FormControl>
+                </FormItem>
+              )}
+            />
             
             <FormField
               control={form.control}
@@ -172,7 +202,7 @@ const RewardForm = ({
               name="banner_image"
               render={({ field }) => (
                 <FormItem>
-                  <FormLabel>Banner Image (16:9 ratio, 820x360px recommended)</FormLabel>
+                  <FormLabel>Banner Image (435 x 244px recommended)</FormLabel>
                   <FormControl>
                     <ImageUploader
                       label="Banner Image"

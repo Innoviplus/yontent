@@ -21,8 +21,8 @@ export const useRewardRedemption = (reward: RedemptionItem | null) => {
     setIsRedeeming(true);
     
     try {
-      // Determine redemption type based on reward name
-      const redemptionType = reward.name.toLowerCase().includes('bank') ? 'CASH' : 'GIFT_VOUCHER';
+      // Determine redemption type based on reward configuration
+      const redemptionType = reward.redemption_type || 'GIFT_VOUCHER';
       
       // Create redemption request
       const result = await createRedemptionRequest(
@@ -47,5 +47,43 @@ export const useRewardRedemption = (reward: RedemptionItem | null) => {
     }
   };
 
-  return { canRedeem, isRedeeming, handleRedeem };
+  const handleCashOutRedeem = async (bankDetails: any) => {
+    if (!user || !reward) return;
+    
+    setIsRedeeming(true);
+    
+    try {
+      // Create redemption request with bank details
+      const result = await createRedemptionRequest(
+        user.id, 
+        reward.points_required,
+        'CASH',
+        { 
+          reward_id: reward.id, 
+          reward_name: reward.name,
+          bank_details: bankDetails
+        }
+      );
+      
+      if (result) {
+        toast.success('Cash out request submitted successfully!');
+        refreshPoints(); // Refresh user points
+        navigate('/dashboard'); // Redirect to dashboard after successful redemption
+      } else {
+        throw new Error('Failed to create cash out request');
+      }
+    } catch (error) {
+      console.error('Error processing cash out:', error);
+      toast.error('Failed to process cash out. Please try again.');
+    } finally {
+      setIsRedeeming(false);
+    }
+  };
+
+  return { 
+    canRedeem, 
+    isRedeeming, 
+    handleRedeem,
+    handleCashOutRedeem
+  };
 };
