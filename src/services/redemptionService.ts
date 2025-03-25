@@ -2,7 +2,7 @@ import { supabase } from "@/integrations/supabase/client";
 import { RedemptionRequest } from "@/lib/types";
 import { RedemptionItem } from "@/types/redemption";
 import { mockRewards } from "@/utils/mockRewards";
-import { deductPointsFromUser } from "@/hooks/admin/utils/pointsUtils";
+import { deductPointsFromUser } from "@/hooks/admin/utils/points";
 
 // Get total redeemed points for a user
 export const getRedeemedPoints = async (userId: string): Promise<number> => {
