@@ -51,7 +51,8 @@ export const useRewardDetail = (id: string | undefined) => {
             banner_image: data.banner_image,
             is_active: data.is_active,
             terms_conditions: data.terms_conditions,
-            redemption_details: data.redemption_details
+            redemption_details: data.redemption_details,
+            redemption_type: data.redemption_type
           };
           
           setReward(rewardData);

@@ -172,7 +172,10 @@ export const getRedemptionItems = async (): Promise<RedemptionItem[]> => {
       points_required: item.points_required,
       image_url: item.image_url,
       banner_image: item.banner_image,
-      is_active: item.is_active
+      is_active: item.is_active,
+      terms_conditions: item.terms_conditions,
+      redemption_details: item.redemption_details,
+      redemption_type: item.redemption_type
     }));
   } catch (error) {
     console.error("Error getting redemption items:", error);

@@ -21,7 +21,7 @@ const RewardList = ({
   onToggleStatus 
 }: RewardListProps) => {
   
-  const getRedemptionTypeIcon = (type: string) => {
+  const getRedemptionTypeIcon = (type?: string) => {
     if (!type || type === 'GIFT_VOUCHER') {
       return <Gift className="h-4 w-4 text-purple-500" />;
     } else {

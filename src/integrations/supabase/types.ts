@@ -154,6 +154,7 @@ export type Database = {
           name: string
           points_required: number
           redemption_details: string | null
+          redemption_type: string | null
           terms_conditions: string | null
           updated_at: string | null
         }
@@ -167,6 +168,7 @@ export type Database = {
           name: string
           points_required: number
           redemption_details?: string | null
+          redemption_type?: string | null
           terms_conditions?: string | null
           updated_at?: string | null
         }
@@ -180,6 +182,7 @@ export type Database = {
           name?: string
           points_required?: number
           redemption_details?: string | null
+          redemption_type?: string | null
           terms_conditions?: string | null
           updated_at?: string | null
         }

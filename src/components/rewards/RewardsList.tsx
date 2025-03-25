@@ -34,7 +34,8 @@ const RewardsList = () => {
             points_required: item.points_required,
             image_url: item.image_url,
             banner_image: item.banner_image,
-            is_active: item.is_active
+            is_active: item.is_active,
+            redemption_type: item.redemption_type
           }));
           
           setRewards(rewardsData);

@@ -10,6 +10,7 @@ export const mockRewards: RedemptionItem[] = [
     points_required: 5000,
     image_url: 'https://qoycoypkyqxrcqdpfqhd.supabase.co/storage/v1/object/public/brand-images/apple-logo.png',
     is_active: true,
+    redemption_type: 'GIFT_VOUCHER'
   },
   {
     id: '2',
@@ -19,6 +20,7 @@ export const mockRewards: RedemptionItem[] = [
     image_url: 'https://qoycoypkyqxrcqdpfqhd.supabase.co/storage/v1/object/public/brand-images/starbucks-logo.png',
     banner_image: 'https://qoycoypkyqxrcqdpfqhd.supabase.co/storage/v1/object/public/brand-images/starbucks-banner.jpg',
     is_active: true,
+    redemption_type: 'GIFT_VOUCHER'
   },
   {
     id: '3',
@@ -27,5 +29,6 @@ export const mockRewards: RedemptionItem[] = [
     points_required: 10000,
     image_url: 'https://qoycoypkyqxrcqdpfqhd.supabase.co/storage/v1/object/public/brand-images/bank-logo.png',
     is_active: true,
+    redemption_type: 'CASH'
   },
 ];
