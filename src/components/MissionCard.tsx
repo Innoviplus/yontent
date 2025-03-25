@@ -94,7 +94,7 @@ const MissionCard = ({ mission, className }: MissionCardProps) => {
               variant="default"
               className="w-full bg-brand-teal hover:bg-brand-teal/90"
             >
-              <Link to={`/missions/${mission.id}`} className="flex items-center justify-center">
+              <Link to={`/mission/${mission.id}`} className="flex items-center justify-center">
                 <span>Join Mission</span>
                 <ArrowRight className="h-4 w-4 ml-1" />
               </Link>
@@ -107,7 +107,7 @@ const MissionCard = ({ mission, className }: MissionCardProps) => {
               variant="outline"
               className="w-full border-brand-teal text-brand-teal"
             >
-              <Link to={`/missions/${mission.id}`}>
+              <Link to={`/mission/${mission.id}`}>
                 Completed
               </Link>
             </Button>
@@ -119,7 +119,7 @@ const MissionCard = ({ mission, className }: MissionCardProps) => {
               variant="outline"
               className="w-full opacity-50"
             >
-              <Link to={`/missions/${mission.id}`}>
+              <Link to={`/mission/${mission.id}`}>
                 Expired
               </Link>
             </Button>

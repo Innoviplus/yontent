@@ -1,3 +1,4 @@
+
 import { toast } from 'sonner';
 import { supabase } from '@/integrations/supabase/client';
 import { RedemptionRequest } from '@/lib/types';
@@ -25,6 +26,7 @@ export const useApproveRequest = ({ setRequests }: UseApproveRequestProps) => {
       
       // If already approved or rejected, just update notes
       if (requestData && requestData.status !== 'PENDING') {
+        console.log('Request already processed, updating notes only');
         const { error } = await supabase
           .from('redemption_requests')
           .update({ 
