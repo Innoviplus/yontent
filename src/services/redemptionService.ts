@@ -1,8 +1,8 @@
-
 import { supabase } from "@/integrations/supabase/client";
 import { RedemptionRequest } from "@/lib/types";
 import { RedemptionItem } from "@/types/redemption";
 import { mockRewards } from "@/utils/mockRewards";
+import { deductPointsFromUser } from "@/hooks/admin/utils/pointsUtils";
 
 // Get total redeemed points for a user
 export const getRedeemedPoints = async (userId: string): Promise<number> => {
@@ -38,27 +38,16 @@ export const createRedemptionRequest = async (
       paymentDetails
     });
     
-    // First, get the current user points
-    const { data: userData, error: userError } = await supabase
-      .from('profiles')
-      .select('points')
-      .eq('id', userId)
-      .single();
-      
-    if (userError) {
-      console.error("Error fetching user points:", userError);
-      throw userError;
-    }
+    // Use the deductPointsFromUser utility to handle point deduction with transaction logging
+    const pointsResult = await deductPointsFromUser(
+      userId,
+      pointsAmount,
+      'REDEMPTION',
+      `${redemptionType} redemption request`
+    );
     
-    if (!userData) {
-      throw new Error("User profile not found");
-    }
-    
-    const currentPoints = userData.points || 0;
-    
-    // Verify user has enough points
-    if (currentPoints < pointsAmount) {
-      throw new Error("Not enough points to complete this redemption");
+    if (!pointsResult.success) {
+      throw new Error(pointsResult.error || "Failed to deduct points");
     }
     
     // Create the redemption request
@@ -84,20 +73,6 @@ export const createRedemptionRequest = async (
     // Verify the data exists before processing
     if (!data) {
       throw new Error("No data returned from redemption request creation");
-    }
-    
-    // Now deduct points from the user's profile
-    const newPointsTotal = currentPoints - pointsAmount;
-    const { error: updateError } = await supabase
-      .from('profiles')
-      .update({ points: newPointsTotal })
-      .eq('id', userId);
-    
-    if (updateError) {
-      console.error("Error updating user points:", updateError);
-      // Even if points update fails, we still return the created request
-    } else {
-      console.log("User points updated successfully to:", newPointsTotal);
     }
     
     return {
