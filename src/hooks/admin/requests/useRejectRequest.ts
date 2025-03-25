@@ -2,7 +2,7 @@
 import { toast } from 'sonner';
 import { supabase } from '@/integrations/supabase/client';
 import { RedemptionRequest } from '@/lib/types';
-import { returnPointsToUser } from '../utils/pointsUtils';
+import { returnPointsToUser } from '../utils/points';
 
 interface UseRejectRequestProps {
   setRequests: React.Dispatch<React.SetStateAction<RedemptionRequest[]>>;
