@@ -20,7 +20,12 @@ export const useRewardsAdmin = () => {
         throw error;
       }
       
-      setRewards(data || []);
+      const typedRewards: RedemptionItem[] = (data || []).map(item => ({
+        ...item,
+        redemption_type: (item.redemption_type === 'CASH' ? 'CASH' : 'GIFT_VOUCHER') as 'GIFT_VOUCHER' | 'CASH'
+      }));
+      
+      setRewards(typedRewards);
     } catch (error) {
       console.error('Error fetching rewards:', error);
       toast.error('Failed to load rewards');

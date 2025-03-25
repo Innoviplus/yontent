@@ -175,7 +175,8 @@ export const getRedemptionItems = async (): Promise<RedemptionItem[]> => {
       is_active: item.is_active,
       terms_conditions: item.terms_conditions,
       redemption_details: item.redemption_details,
-      redemption_type: item.redemption_type
+      // Cast string to union type
+      redemption_type: (item.redemption_type === 'CASH' ? 'CASH' : 'GIFT_VOUCHER') as 'GIFT_VOUCHER' | 'CASH'
     }));
   } catch (error) {
     console.error("Error getting redemption items:", error);

@@ -52,7 +52,8 @@ export const useRewardDetail = (id: string | undefined) => {
             is_active: data.is_active,
             terms_conditions: data.terms_conditions,
             redemption_details: data.redemption_details,
-            redemption_type: data.redemption_type
+            // Cast string to union type
+            redemption_type: (data.redemption_type === 'CASH' ? 'CASH' : 'GIFT_VOUCHER') as 'GIFT_VOUCHER' | 'CASH'
           };
           
           setReward(rewardData);

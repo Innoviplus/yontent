@@ -35,7 +35,8 @@ const RewardsList = () => {
             image_url: item.image_url,
             banner_image: item.banner_image,
             is_active: item.is_active,
-            redemption_type: item.redemption_type
+            // Cast string to union type 
+            redemption_type: (item.redemption_type === 'CASH' ? 'CASH' : 'GIFT_VOUCHER') as 'GIFT_VOUCHER' | 'CASH'
           }));
           
           setRewards(rewardsData);
