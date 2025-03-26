@@ -1,11 +1,10 @@
-
 import { useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { toast } from 'sonner';
 import { RedemptionItem } from '@/types/redemption';
 import { useAuth } from '@/contexts/AuthContext';
 import { usePoints } from '@/contexts/PointsContext';
-import { createRedemptionRequest } from '@/services/redemptionService';
+import { createRedemptionRequest } from '@/services/redemption';
 
 export const useRewardRedemption = (reward: RedemptionItem | null) => {
   const navigate = useNavigate();

@@ -2,7 +2,7 @@
 import { useState } from 'react';
 import { toast } from 'sonner';
 import { useFetchRequests } from './requests/useFetchRequests';
-import { approveRedemptionRequest } from '@/services/redemptionService';
+import { approveRedemptionRequest } from '@/services/redemption';
 import { RedemptionRequest } from '@/lib/types';
 
 export const useRequestsAdmin = () => {
