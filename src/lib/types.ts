@@ -63,6 +63,7 @@ export interface Mission {
   merchantLogo?: string;
   bannerImage?: string;
   maxSubmissionsPerUser?: number;
+  totalMaxSubmissions?: number;
   termsConditions?: string;
   startDate: Date;
   createdAt: Date;

@@ -73,6 +73,7 @@ const MissionForm = ({
       merchantLogo: mission?.merchantLogo || '',
       bannerImage: mission?.bannerImage || '',
       maxSubmissionsPerUser: mission?.maxSubmissionsPerUser || 1,
+      totalMaxSubmissions: mission?.totalMaxSubmissions || undefined,
       termsConditions: mission?.termsConditions || '',
     }
   });
@@ -306,22 +307,51 @@ const MissionForm = ({
                 />
               </div>
 
-              <FormField
-                control={form.control}
-                name="maxSubmissionsPerUser"
-                render={({ field }) => (
-                  <FormItem>
-                    <FormLabel>Max Submissions Per User (Quota)</FormLabel>
-                    <FormControl>
-                      <Input type="number" min="1" {...field} />
-                    </FormControl>
-                    <FormDescription>
-                      How many times can a user complete this mission?
-                    </FormDescription>
-                    <FormMessage />
-                  </FormItem>
-                )}
-              />
+              <div className="grid grid-cols-2 gap-4">
+                <FormField
+                  control={form.control}
+                  name="maxSubmissionsPerUser"
+                  render={({ field }) => (
+                    <FormItem>
+                      <FormLabel>Max Submissions Per User</FormLabel>
+                      <FormControl>
+                        <Input type="number" min="1" {...field} />
+                      </FormControl>
+                      <FormDescription>
+                        How many times can a user complete this mission?
+                      </FormDescription>
+                      <FormMessage />
+                    </FormItem>
+                  )}
+                />
+
+                <FormField
+                  control={form.control}
+                  name="totalMaxSubmissions"
+                  render={({ field }) => (
+                    <FormItem>
+                      <FormLabel>Total Submission Limit</FormLabel>
+                      <FormControl>
+                        <Input 
+                          type="number" 
+                          min="1" 
+                          placeholder="No limit" 
+                          {...field} 
+                          value={field.value || ''} 
+                          onChange={(e) => {
+                            const value = e.target.value === '' ? undefined : parseInt(e.target.value);
+                            field.onChange(value);
+                          }}
+                        />
+                      </FormControl>
+                      <FormDescription>
+                        Maximum total submissions allowed for this mission (optional)
+                      </FormDescription>
+                      <FormMessage />
+                    </FormItem>
+                  )}
+                />
+              </div>
             </div>
 
             {/* Brand Information */}

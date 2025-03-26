@@ -120,10 +120,16 @@ const MissionList: React.FC<MissionListProps> = ({ missions, onEdit, onDelete })
                       <Clock className="h-4 w-4 mr-1" />
                       {mission.expiresAt ? format(new Date(mission.expiresAt), 'MMM d, yyyy') : 'No expiration'}
                     </div>
-                    <div className="flex items-center text-sm text-muted-foreground col-span-2">
+                    <div className="flex items-center text-sm text-muted-foreground">
                       <Users className="h-4 w-4 mr-1" />
-                      Max submissions: {mission.maxSubmissionsPerUser || 1}
+                      Per user: {mission.maxSubmissionsPerUser || 1}
                     </div>
+                    {mission.totalMaxSubmissions && (
+                      <div className="flex items-center text-sm text-muted-foreground">
+                        <Users className="h-4 w-4 mr-1" />
+                        Total limit: {mission.totalMaxSubmissions}
+                      </div>
+                    )}
                   </div>
                 </div>
                 {mission.bannerImage && (

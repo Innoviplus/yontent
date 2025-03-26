@@ -32,6 +32,7 @@ export const useMissionsAdmin = () => {
         merchantLogo: mission.merchant_logo || undefined,
         bannerImage: mission.banner_image || undefined,
         maxSubmissionsPerUser: mission.max_submissions_per_user || 1,
+        totalMaxSubmissions: mission.total_max_submissions || undefined,
         termsConditions: mission.terms_conditions || undefined,
         requirementDescription: mission.requirement_description || undefined,
         startDate: new Date(mission.start_date),
@@ -96,6 +97,7 @@ export const useMissionsAdmin = () => {
         merchant_logo: missionData.merchantLogo,
         banner_image: missionData.bannerImage,
         max_submissions_per_user: missionData.maxSubmissionsPerUser,
+        total_max_submissions: missionData.totalMaxSubmissions,
         terms_conditions: missionData.termsConditions,
         requirement_description: missionData.requirementDescription,
         start_date: missionData.startDate.toISOString(),
@@ -130,6 +132,7 @@ export const useMissionsAdmin = () => {
       if (updates.merchantLogo !== undefined) dbUpdates.merchant_logo = updates.merchantLogo;
       if (updates.bannerImage !== undefined) dbUpdates.banner_image = updates.bannerImage;
       if (updates.maxSubmissionsPerUser !== undefined) dbUpdates.max_submissions_per_user = updates.maxSubmissionsPerUser;
+      if (updates.totalMaxSubmissions !== undefined) dbUpdates.total_max_submissions = updates.totalMaxSubmissions;
       if (updates.termsConditions !== undefined) dbUpdates.terms_conditions = updates.termsConditions;
       if (updates.requirementDescription !== undefined) dbUpdates.requirement_description = updates.requirementDescription;
       if (updates.startDate !== undefined) dbUpdates.start_date = updates.startDate.toISOString();
