@@ -4,7 +4,9 @@ import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { Toaster } from '@/components/ui/sonner';
 import Navbar from '@/components/Navbar';
 import { useRewardsAdmin } from '@/hooks/admin/useRewardsAdmin';
+import { useMissionsAdmin } from '@/hooks/admin/useMissionsAdmin';
 import RewardsManagement from '@/components/admin/rewards/RewardsManagement';
+import MissionsManagement from '@/components/admin/missions/MissionsManagement';
 
 const AdminPanel = () => {
   const [activeTab, setActiveTab] = useState('rewards');
@@ -16,6 +18,14 @@ const AdminPanel = () => {
     deleteReward 
   } = useRewardsAdmin();
 
+  const {
+    missions,
+    isLoading: isLoadingMissions,
+    addMission,
+    updateMission,
+    deleteMission
+  } = useMissionsAdmin();
+
   return (
     <div className="min-h-screen bg-gray-50">
       <Navbar />
@@ -23,12 +33,13 @@ const AdminPanel = () => {
         <div className="flex flex-col gap-8">
           <div>
             <h1 className="text-3xl font-bold mb-2">Admin Panel</h1>
-            <p className="text-gray-600">Manage rewards</p>
+            <p className="text-gray-600">Manage your application</p>
           </div>
           
-          <Tabs defaultValue="rewards" value={activeTab} onValueChange={setActiveTab} className="w-full">
+          <Tabs defaultValue={activeTab} value={activeTab} onValueChange={setActiveTab} className="w-full">
             <TabsList className="mb-6">
-              <TabsTrigger value="rewards">Rewards Management</TabsTrigger>
+              <TabsTrigger value="rewards">Rewards</TabsTrigger>
+              <TabsTrigger value="missions">Missions</TabsTrigger>
             </TabsList>
             
             <TabsContent value="rewards" className="space-y-4">
@@ -38,6 +49,16 @@ const AdminPanel = () => {
                 onAdd={addReward}
                 onUpdate={updateReward}
                 onDelete={deleteReward}
+              />
+            </TabsContent>
+
+            <TabsContent value="missions" className="space-y-4">
+              <MissionsManagement 
+                missions={missions}
+                isLoading={isLoadingMissions}
+                onAdd={addMission}
+                onUpdate={updateMission}
+                onDelete={deleteMission}
               />
             </TabsContent>
           </Tabs>
