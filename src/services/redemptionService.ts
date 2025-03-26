@@ -58,6 +58,7 @@ export const createRedemptionRequest = async (
         points_amount: pointsAmount,
         redemption_type: redemptionType,
         payment_details: paymentDetails,
+        status: 'PENDING'
       })
       .select()
       .single();
@@ -79,7 +80,7 @@ export const createRedemptionRequest = async (
       userId: data.user_id,
       pointsAmount: data.points_amount,
       redemptionType: data.redemption_type as "CASH" | "GIFT_VOUCHER",
-      status: "PENDING", // Default status since it's not in the database
+      status: data.status as "PENDING" | "APPROVED" | "REJECTED",
       paymentDetails: data.payment_details,
       adminNotes: data.admin_notes,
       createdAt: new Date(data.created_at),
@@ -109,7 +110,7 @@ export const getUserRedemptionRequests = async (
       userId: item.user_id,
       pointsAmount: item.points_amount,
       redemptionType: item.redemption_type as "CASH" | "GIFT_VOUCHER",
-      status: "PENDING", // Default status since it's not in the database
+      status: item.status as "PENDING" | "APPROVED" | "REJECTED",
       paymentDetails: item.payment_details,
       adminNotes: item.admin_notes,
       createdAt: new Date(item.created_at),
@@ -118,6 +119,31 @@ export const getUserRedemptionRequests = async (
   } catch (error) {
     console.error("Error getting user redemption requests:", error);
     return [];
+  }
+};
+
+// Approve a redemption request
+export const approveRedemptionRequest = async (
+  requestId: string
+): Promise<boolean> => {
+  try {
+    const { error } = await supabase
+      .from('redemption_requests')
+      .update({ 
+        status: 'APPROVED',
+        updated_at: new Date().toISOString()
+      })
+      .eq('id', requestId);
+    
+    if (error) {
+      console.error("Error approving redemption request:", error);
+      throw error;
+    }
+    
+    return true;
+  } catch (error) {
+    console.error("Error approving redemption request:", error);
+    return false;
   }
 };
 

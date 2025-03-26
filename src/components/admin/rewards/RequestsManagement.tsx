@@ -10,7 +10,7 @@ import { RedemptionRequest } from '@/lib/types';
 import RequestsLoadingState from './RequestsLoadingState';
 import EmptyRequestsState from './EmptyRequestsState';
 import { Button } from '@/components/ui/button';
-import { RefreshCw } from 'lucide-react';
+import { CheckCircle, RefreshCw } from 'lucide-react';
 import { 
   Table, 
   TableBody, 
@@ -29,12 +29,16 @@ interface RequestsManagementProps {
   requests: RedemptionRequest[];
   isLoading: boolean;
   refreshRequests?: () => Promise<void>;
+  approveRequest?: (requestId: string) => Promise<void>;
+  isApproving?: string | null;
 }
 
 const RequestsManagement = ({ 
   requests, 
   isLoading, 
-  refreshRequests
+  refreshRequests,
+  approveRequest,
+  isApproving
 }: RequestsManagementProps) => {
   const [isRefreshing, setIsRefreshing] = useState(false);
 
@@ -83,6 +87,7 @@ const RequestsManagement = ({
                 <TableHead className="w-[100px]">Points</TableHead>
                 <TableHead className="w-[120px]">Status</TableHead>
                 <TableHead className="w-[120px]">Date</TableHead>
+                <TableHead className="w-[120px]">Actions</TableHead>
               </TableRow>
             </TableHeader>
             <TableBody>
@@ -106,6 +111,29 @@ const RequestsManagement = ({
                   <TableCell>{request.pointsAmount}</TableCell>
                   <TableCell><RequestStatusBadge status={request.status} /></TableCell>
                   <TableCell>{formatDistanceToNow(request.createdAt, { addSuffix: true })}</TableCell>
+                  <TableCell>
+                    {request.status === 'PENDING' && approveRequest && (
+                      <Button 
+                        variant="outline" 
+                        size="sm"
+                        onClick={() => approveRequest(request.id)}
+                        disabled={isApproving === request.id}
+                        className="text-green-600 border-green-600 hover:bg-green-50"
+                      >
+                        {isApproving === request.id ? (
+                          <>
+                            <RefreshCw className="h-4 w-4 mr-2 animate-spin" />
+                            Processing...
+                          </>
+                        ) : (
+                          <>
+                            <CheckCircle className="h-4 w-4 mr-2" />
+                            Approve
+                          </>
+                        )}
+                      </Button>
+                    )}
+                  </TableCell>
                 </TableRow>
               ))}
             </TableBody>

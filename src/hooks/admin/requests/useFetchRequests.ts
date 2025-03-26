@@ -45,7 +45,7 @@ export const useFetchRequests = () => {
           userId: item.user_id,
           pointsAmount: item.points_amount,
           redemptionType: item.redemption_type as "CASH" | "GIFT_VOUCHER",
-          status: "PENDING", // Default to PENDING since the status field is missing
+          status: item.status as "PENDING" | "APPROVED" | "REJECTED",
           paymentDetails: item.payment_details,
           adminNotes: item.admin_notes,
           createdAt: new Date(item.created_at),
