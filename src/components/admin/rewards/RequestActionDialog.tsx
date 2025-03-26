@@ -60,19 +60,22 @@ const RequestActionDialog = ({
   };
 
   const isPending = request.status === 'PENDING';
+  const actionText = action === 'approve' ? 'Approve' : 'Reject';
+  const dialogTitle = isPending 
+    ? `${actionText} Redemption Request` 
+    : 'Update Request Notes';
+  const dialogDescription = isPending
+    ? (action === 'approve' 
+        ? 'Approve this request and mark it as processed.' 
+        : 'Reject this request and return points to the user.')
+    : 'Update notes for this request.';
 
   return (
     <Dialog open onOpenChange={onCancel}>
       <DialogContent className="sm:max-w-[600px] max-h-[90vh] overflow-y-auto">
         <DialogHeader>
-          <DialogTitle>
-            {action === 'approve' ? 'Approve Redemption Request' : 'Reject Redemption Request'}
-          </DialogTitle>
-          <DialogDescription>
-            {action === 'approve' 
-              ? 'Approve this request and mark it as processed.' 
-              : 'Reject this request and return points to the user.'}
-          </DialogDescription>
+          <DialogTitle>{dialogTitle}</DialogTitle>
+          <DialogDescription>{dialogDescription}</DialogDescription>
         </DialogHeader>
         
         <div className="py-4">
