@@ -1,3 +1,4 @@
+
 export interface User {
   id: string;
   username: string;
@@ -30,22 +31,6 @@ export interface PointTransaction {
   sourceId?: string;
   description?: string;
   createdAt: Date;
-}
-
-export interface RedemptionRequest {
-  id: string;
-  userId: string;
-  pointsAmount: number;
-  redemptionType: 'CASH' | 'GIFT_VOUCHER';
-  status: 'PENDING' | 'APPROVED' | 'REJECTED';
-  paymentDetails?: any;
-  adminNotes?: string;
-  createdAt: Date;
-  updatedAt: Date;
-  user?: {
-    username?: string;
-    avatar?: string;
-  };
 }
 
 export interface ExtendedProfile {

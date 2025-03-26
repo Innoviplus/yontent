@@ -78,7 +78,7 @@ const RewardDetail = () => {
                           canRedeem={canRedeem} 
                           isRedeeming={isRedeeming} 
                           onRedeem={handleRedeemClick}
-                          label={isCashOut ? "Request Cash Out" : "Send Redeem Request"}
+                          label={isCashOut ? "Request Cash Out" : "Redeem Reward"}
                         />
                       </div>
                     </CardHeader>

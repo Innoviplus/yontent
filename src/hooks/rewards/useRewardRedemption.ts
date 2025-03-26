@@ -1,87 +1,71 @@
+
 import { useState } from 'react';
-import { useNavigate } from 'react-router-dom';
-import { toast } from 'sonner';
-import { RedemptionItem } from '@/types/redemption';
 import { useAuth } from '@/contexts/AuthContext';
 import { usePoints } from '@/contexts/PointsContext';
-import { createRedemptionRequest } from '@/services/redemption';
+import { toast } from 'sonner';
+import { RedemptionItem } from '@/types/redemption';
 
 export const useRewardRedemption = (reward: RedemptionItem | null) => {
-  const navigate = useNavigate();
   const { user } = useAuth();
-  const { userPoints, refreshPoints } = usePoints();
+  const { userPoints } = usePoints();
   const [isRedeeming, setIsRedeeming] = useState(false);
-  
-  const canRedeem = userPoints >= (reward?.points_required || 0);
 
+  // Determine if user can redeem the reward
+  const canRedeem = 
+    !!user && 
+    !!reward && 
+    userPoints >= reward.points_required;
+
+  // Basic placeholder function for redemption
   const handleRedeem = async () => {
-    if (!user || !reward) return;
+    if (!canRedeem) {
+      toast.error("You don't have enough points to redeem this reward");
+      return false;
+    }
     
     setIsRedeeming(true);
     
     try {
-      // Determine redemption type based on reward configuration
-      const redemptionType = reward.redemption_type || 'GIFT_VOUCHER';
+      // Show a success message (actual redemption functionality has been removed)
+      toast.success('Reward redemption feature is not available at this time.');
       
-      // Create redemption request
-      const result = await createRedemptionRequest(
-        user.id, 
-        reward.points_required,
-        redemptionType,
-        { reward_id: reward.id, reward_name: reward.name }
-      );
-      
-      if (result) {
-        toast.success('Redemption request submitted successfully!');
-        refreshPoints(); // Refresh user points
-        navigate('/dashboard'); // Redirect to dashboard after successful redemption
-      } else {
-        throw new Error('Failed to create redemption request');
-      }
+      return true;
     } catch (error) {
-      console.error('Error redeeming reward:', error);
-      toast.error('Failed to redeem reward. Please try again.');
+      console.error('Error in redemption:', error);
+      toast.error('There was a problem processing your redemption request');
+      return false;
     } finally {
       setIsRedeeming(false);
     }
   };
 
+  // Basic placeholder function for cash out redemption
   const handleCashOutRedeem = async (bankDetails: any) => {
-    if (!user || !reward) return;
+    // Similar placeholder as handleRedeem
+    if (!canRedeem) {
+      toast.error("You don't have enough points to redeem this reward");
+      return false;
+    }
     
     setIsRedeeming(true);
     
     try {
-      // Create redemption request with bank details
-      const result = await createRedemptionRequest(
-        user.id, 
-        reward.points_required,
-        'CASH',
-        { 
-          reward_id: reward.id, 
-          reward_name: reward.name,
-          bank_details: bankDetails
-        }
-      );
+      // Show a success message (actual redemption functionality has been removed)
+      toast.success('Cash out feature is not available at this time.');
       
-      if (result) {
-        toast.success('Cash out request submitted successfully!');
-        refreshPoints(); // Refresh user points
-        navigate('/dashboard'); // Redirect to dashboard after successful redemption
-      } else {
-        throw new Error('Failed to create cash out request');
-      }
+      return true;
     } catch (error) {
-      console.error('Error processing cash out:', error);
-      toast.error('Failed to process cash out. Please try again.');
+      console.error('Error in cash out redemption:', error);
+      toast.error('There was a problem processing your cash out request');
+      return false;
     } finally {
       setIsRedeeming(false);
     }
   };
 
-  return { 
-    canRedeem, 
-    isRedeeming, 
+  return {
+    canRedeem,
+    isRedeeming,
     handleRedeem,
     handleCashOutRedeem
   };

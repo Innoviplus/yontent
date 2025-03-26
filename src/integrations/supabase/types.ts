@@ -104,39 +104,6 @@ export type Database = {
         }
         Relationships: []
       }
-      point_transactions: {
-        Row: {
-          amount: number
-          created_at: string
-          description: string | null
-          id: string
-          source: string
-          source_id: string | null
-          type: string
-          user_id: string
-        }
-        Insert: {
-          amount: number
-          created_at?: string
-          description?: string | null
-          id?: string
-          source: string
-          source_id?: string | null
-          type: string
-          user_id: string
-        }
-        Update: {
-          amount?: number
-          created_at?: string
-          description?: string | null
-          id?: string
-          source?: string
-          source_id?: string | null
-          type?: string
-          user_id?: string
-        }
-        Relationships: []
-      }
       profiles: {
         Row: {
           avatar: string | null
@@ -218,42 +185,6 @@ export type Database = {
           redemption_type?: string | null
           terms_conditions?: string | null
           updated_at?: string | null
-        }
-        Relationships: []
-      }
-      redemption_requests: {
-        Row: {
-          admin_notes: string | null
-          created_at: string
-          id: string
-          payment_details: Json | null
-          points_amount: number
-          redemption_type: string
-          status: string
-          updated_at: string
-          user_id: string
-        }
-        Insert: {
-          admin_notes?: string | null
-          created_at?: string
-          id?: string
-          payment_details?: Json | null
-          points_amount: number
-          redemption_type: string
-          status?: string
-          updated_at?: string
-          user_id: string
-        }
-        Update: {
-          admin_notes?: string | null
-          created_at?: string
-          id?: string
-          payment_details?: Json | null
-          points_amount?: number
-          redemption_type?: string
-          status?: string
-          updated_at?: string
-          user_id?: string
         }
         Relationships: []
       }
