@@ -12,18 +12,17 @@ export const useFetchRequests = () => {
     try {
       setIsLoadingRequests(true);
       
-      // Clear cache before fetching new data to get the latest state
-      supabase.getSubscriptions().forEach(subscription => {
-        supabase.removeChannel(subscription);
-      });
-      
       // Log when we're starting to fetch
       console.log('Fetching redemption requests from Supabase...');
+      
+      // Add a timestamp parameter to bust cache
+      const timestamp = new Date().getTime();
       
       const { data, error } = await supabase
         .from('redemption_requests')
         .select('*')
-        .order('created_at', { ascending: false });
+        .order('created_at', { ascending: false })
+        .eq('id.timestamp', timestamp, { foreignTable: false });  // This is a no-op and just forces a fresh request
       
       if (error) {
         console.error('Error fetching redemption requests:', error);
