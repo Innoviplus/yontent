@@ -34,6 +34,9 @@ export const useRequestsAdmin = () => {
               : request
           )
         );
+        
+        // Refresh the requests to ensure we have the latest data
+        await fetchRequests();
       } else {
         console.error('Failed to approve request:', requestId);
         toast.error('Failed to approve request');

@@ -129,6 +129,24 @@ export const approveRedemptionRequest = async (
   try {
     console.log('Approving redemption request with ID:', requestId);
     
+    // First, verify that the request exists and isn't already approved
+    const { data: checkData, error: checkError } = await supabase
+      .from('redemption_requests')
+      .select('status')
+      .eq('id', requestId)
+      .single();
+    
+    if (checkError || !checkData) {
+      console.error("Error checking redemption request:", checkError || "Request not found");
+      return false;
+    }
+    
+    if (checkData.status === 'APPROVED') {
+      console.log("Request already approved:", requestId);
+      return true; // Already approved, consider it a success
+    }
+    
+    // Update the status to APPROVED
     const { error, data } = await supabase
       .from('redemption_requests')
       .update({ 
@@ -144,6 +162,19 @@ export const approveRedemptionRequest = async (
     }
     
     console.log('Approval response:', data);
+    
+    // Verify the update was successful by checking if data was returned
+    if (!data || data.length === 0) {
+      console.error("No data returned after update, approval may have failed");
+      return false;
+    }
+    
+    // Check if the returned data has the correct status
+    if (data[0].status !== 'APPROVED') {
+      console.error("Status not updated correctly in response:", data[0].status);
+      return false;
+    }
+    
     return true;
   } catch (error) {
     console.error("Error approving redemption request:", error);
