@@ -24,6 +24,8 @@ import { User } from 'lucide-react';
 import { formatDistanceToNow } from 'date-fns';
 import RequestStatusBadge from './RequestStatusBadge';
 import { useState } from 'react';
+import { approveLatestPendingRequest } from '@/services/redemption/approveLatestPendingRequest';
+import { toast } from 'sonner';
 
 interface RequestsManagementProps {
   requests: RedemptionRequest[];
@@ -45,6 +47,7 @@ const RequestsManagement = ({
   isRejecting
 }: RequestsManagementProps) => {
   const [isRefreshing, setIsRefreshing] = useState(false);
+  const [isApprovingLatest, setIsApprovingLatest] = useState(false);
 
   const handleRefresh = async () => {
     if (refreshRequests) {
@@ -54,6 +57,26 @@ const RequestsManagement = ({
       } finally {
         setIsRefreshing(false);
       }
+    }
+  };
+
+  const handleApproveLatest = async () => {
+    setIsApprovingLatest(true);
+    try {
+      const success = await approveLatestPendingRequest();
+      if (success) {
+        toast.success('Latest pending request approved successfully');
+        if (refreshRequests) {
+          await refreshRequests();
+        }
+      } else {
+        toast.error('Failed to approve latest pending request');
+      }
+    } catch (error) {
+      console.error('Error approving latest request:', error);
+      toast.error('An error occurred while approving the latest request');
+    } finally {
+      setIsApprovingLatest(false);
     }
   };
 
@@ -68,7 +91,7 @@ const RequestsManagement = ({
           <CardTitle>Redemption Requests</CardTitle>
           <CardDescription>View user redemption requests</CardDescription>
         </div>
-        <div className="flex items-center">
+        <div className="flex items-center gap-2">
           <Button 
             variant="outline" 
             size="sm" 
@@ -77,6 +100,25 @@ const RequestsManagement = ({
           >
             <RefreshCw className={`h-4 w-4 mr-2 ${isRefreshing ? 'animate-spin' : ''}`} />
             Refresh
+          </Button>
+          <Button
+            variant="outline"
+            size="sm"
+            onClick={handleApproveLatest}
+            disabled={isApprovingLatest}
+            className="text-green-600 border-green-600 hover:bg-green-50"
+          >
+            {isApprovingLatest ? (
+              <>
+                <RefreshCw className="h-4 w-4 mr-2 animate-spin" />
+                Processing...
+              </>
+            ) : (
+              <>
+                <CheckCircle className="h-4 w-4 mr-2" />
+                Approve Latest
+              </>
+            )}
           </Button>
         </div>
       </CardHeader>

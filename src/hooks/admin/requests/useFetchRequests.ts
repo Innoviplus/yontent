@@ -12,6 +12,11 @@ export const useFetchRequests = () => {
     try {
       setIsLoadingRequests(true);
       
+      // Clear cache before fetching new data to get the latest state
+      supabase.getSubscriptions().forEach(subscription => {
+        supabase.removeChannel(subscription);
+      });
+      
       // Log when we're starting to fetch
       console.log('Fetching redemption requests from Supabase...');
       

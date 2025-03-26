@@ -71,19 +71,9 @@ export const approveLatestPendingRequest = async (): Promise<boolean> => {
       }
     }
     
-    // Execute the function immediately upon import
     return true;
   } catch (error) {
     console.error("Error in approveLatestPendingRequest:", error);
     return false;
   }
 };
-
-// Run the function immediately to approve the latest pending request
-approveLatestPendingRequest().then(success => {
-  if (success) {
-    console.log("✅ Latest pending redemption request has been approved");
-  } else {
-    console.error("❌ Failed to approve latest pending redemption request");
-  }
-});
