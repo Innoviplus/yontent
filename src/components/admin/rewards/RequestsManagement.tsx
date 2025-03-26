@@ -24,7 +24,6 @@ import { User } from 'lucide-react';
 import { formatDistanceToNow } from 'date-fns';
 import RequestStatusBadge from './RequestStatusBadge';
 import { useState } from 'react';
-import GenerateDemoRequests from './GenerateDemoRequests';
 
 interface RequestsManagementProps {
   requests: RedemptionRequest[];
@@ -79,9 +78,6 @@ const RequestsManagement = ({
             <RefreshCw className={`h-4 w-4 mr-2 ${isRefreshing ? 'animate-spin' : ''}`} />
             Refresh
           </Button>
-          {refreshRequests && (
-            <GenerateDemoRequests onSuccess={refreshRequests} />
-          )}
         </div>
       </CardHeader>
       

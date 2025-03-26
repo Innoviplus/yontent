@@ -6,4 +6,3 @@ export { getUserRedemptionRequests } from './getUserRedemptionRequests';
 export { approveRedemptionRequest } from './approveRedemptionRequest';
 export { rejectRedemptionRequest } from './rejectRedemptionRequest';
 export { getRedemptionItems } from './getRedemptionItems';
-export { createDemoRedemptionRequests } from './createDemoRedemptionRequests';
