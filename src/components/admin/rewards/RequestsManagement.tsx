@@ -24,6 +24,7 @@ import { User } from 'lucide-react';
 import { formatDistanceToNow } from 'date-fns';
 import RequestStatusBadge from './RequestStatusBadge';
 import { useState } from 'react';
+import GenerateDemoRequests from './GenerateDemoRequests';
 
 interface RequestsManagementProps {
   requests: RedemptionRequest[];
@@ -68,15 +69,20 @@ const RequestsManagement = ({
           <CardTitle>Redemption Requests</CardTitle>
           <CardDescription>View user redemption requests</CardDescription>
         </div>
-        <Button 
-          variant="outline" 
-          size="sm" 
-          onClick={handleRefresh} 
-          disabled={isRefreshing}
-        >
-          <RefreshCw className={`h-4 w-4 mr-2 ${isRefreshing ? 'animate-spin' : ''}`} />
-          Refresh
-        </Button>
+        <div className="flex items-center">
+          <Button 
+            variant="outline" 
+            size="sm" 
+            onClick={handleRefresh} 
+            disabled={isRefreshing}
+          >
+            <RefreshCw className={`h-4 w-4 mr-2 ${isRefreshing ? 'animate-spin' : ''}`} />
+            Refresh
+          </Button>
+          {refreshRequests && (
+            <GenerateDemoRequests onSuccess={refreshRequests} />
+          )}
+        </div>
       </CardHeader>
       
       {requests.length === 0 ? (
