@@ -23,7 +23,9 @@ const AdminPanel = () => {
     isLoadingRequests,
     refreshRequests,
     approveRequest,
-    isApproving
+    rejectRequest,
+    isApproving,
+    isRejecting
   } = useRequestsAdmin();
 
   return (
@@ -58,7 +60,9 @@ const AdminPanel = () => {
                 isLoading={isLoadingRequests}
                 refreshRequests={refreshRequests}
                 approveRequest={approveRequest}
+                rejectRequest={rejectRequest}
                 isApproving={isApproving}
+                isRejecting={isRejecting}
               />
             </TabsContent>
           </Tabs>

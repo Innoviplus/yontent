@@ -10,7 +10,7 @@ import { RedemptionRequest } from '@/lib/types';
 import RequestsLoadingState from './RequestsLoadingState';
 import EmptyRequestsState from './EmptyRequestsState';
 import { Button } from '@/components/ui/button';
-import { CheckCircle, RefreshCw } from 'lucide-react';
+import { CheckCircle, RefreshCw, XCircle } from 'lucide-react';
 import { 
   Table, 
   TableBody, 
@@ -30,7 +30,9 @@ interface RequestsManagementProps {
   isLoading: boolean;
   refreshRequests?: () => Promise<void>;
   approveRequest?: (requestId: string) => Promise<void>;
+  rejectRequest?: (requestId: string) => Promise<void>;
   isApproving?: string | null;
+  isRejecting?: string | null;
 }
 
 const RequestsManagement = ({ 
@@ -38,7 +40,9 @@ const RequestsManagement = ({
   isLoading, 
   refreshRequests,
   approveRequest,
-  isApproving
+  rejectRequest,
+  isApproving,
+  isRejecting
 }: RequestsManagementProps) => {
   const [isRefreshing, setIsRefreshing] = useState(false);
 
@@ -87,7 +91,7 @@ const RequestsManagement = ({
                 <TableHead className="w-[100px]">Points</TableHead>
                 <TableHead className="w-[120px]">Status</TableHead>
                 <TableHead className="w-[120px]">Date</TableHead>
-                <TableHead className="w-[120px]">Actions</TableHead>
+                <TableHead className="w-[180px]">Actions</TableHead>
               </TableRow>
             </TableHeader>
             <TableBody>
@@ -112,26 +116,52 @@ const RequestsManagement = ({
                   <TableCell><RequestStatusBadge status={request.status} /></TableCell>
                   <TableCell>{formatDistanceToNow(request.createdAt, { addSuffix: true })}</TableCell>
                   <TableCell>
-                    {request.status === 'PENDING' && approveRequest && (
-                      <Button 
-                        variant="outline" 
-                        size="sm"
-                        onClick={() => approveRequest(request.id)}
-                        disabled={isApproving === request.id}
-                        className="text-green-600 border-green-600 hover:bg-green-50"
-                      >
-                        {isApproving === request.id ? (
-                          <>
-                            <RefreshCw className="h-4 w-4 mr-2 animate-spin" />
-                            Processing...
-                          </>
-                        ) : (
-                          <>
-                            <CheckCircle className="h-4 w-4 mr-2" />
-                            Approve
-                          </>
+                    {request.status === 'PENDING' && (
+                      <div className="flex items-center gap-2">
+                        {approveRequest && (
+                          <Button 
+                            variant="outline" 
+                            size="sm"
+                            onClick={() => approveRequest(request.id)}
+                            disabled={isApproving === request.id || isRejecting === request.id}
+                            className="text-green-600 border-green-600 hover:bg-green-50"
+                          >
+                            {isApproving === request.id ? (
+                              <>
+                                <RefreshCw className="h-4 w-4 mr-2 animate-spin" />
+                                Processing...
+                              </>
+                            ) : (
+                              <>
+                                <CheckCircle className="h-4 w-4 mr-2" />
+                                Approve
+                              </>
+                            )}
+                          </Button>
                         )}
-                      </Button>
+                        
+                        {rejectRequest && (
+                          <Button 
+                            variant="outline" 
+                            size="sm"
+                            onClick={() => rejectRequest(request.id)}
+                            disabled={isRejecting === request.id || isApproving === request.id}
+                            className="text-red-600 border-red-600 hover:bg-red-50"
+                          >
+                            {isRejecting === request.id ? (
+                              <>
+                                <RefreshCw className="h-4 w-4 mr-2 animate-spin" />
+                                Processing...
+                              </>
+                            ) : (
+                              <>
+                                <XCircle className="h-4 w-4 mr-2" />
+                                Reject
+                              </>
+                            )}
+                          </Button>
+                        )}
+                      </div>
                     )}
                   </TableCell>
                 </TableRow>

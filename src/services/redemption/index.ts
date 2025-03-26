@@ -4,4 +4,5 @@ export { getRedeemedPoints } from './getRedemptionPoints';
 export { createRedemptionRequest } from './createRedemptionRequest';
 export { getUserRedemptionRequests } from './getUserRedemptionRequests';
 export { approveRedemptionRequest } from './approveRedemptionRequest';
+export { rejectRedemptionRequest } from './rejectRedemptionRequest';
 export { getRedemptionItems } from './getRedemptionItems';
