@@ -26,7 +26,7 @@ export const rejectRedemptionRequest = async (
       return true; // Already rejected, consider it a success
     }
     
-    // Begin transaction by updating the status
+    // Update the status to REJECTED
     console.log('Updating redemption request status to REJECTED...');
     
     const { error: updateError } = await supabase
@@ -40,27 +40,6 @@ export const rejectRedemptionRequest = async (
     
     if (updateError) {
       console.error("Error rejecting redemption request:", updateError);
-      return false;
-    }
-    
-    // Verify the update was successful with a separate query
-    console.log('Verifying status update...');
-    const { data: verifyData, error: verifyError } = await supabase
-      .from('redemption_requests')
-      .select('status')
-      .eq('id', requestId)
-      .single();
-      
-    if (verifyError) {
-      console.error("Error verifying update:", verifyError);
-      return false;
-    }
-    
-    console.log('Verification response:', verifyData);
-    
-    // Check if the status is now REJECTED
-    if (verifyData.status !== 'REJECTED') {
-      console.error("Status not updated correctly. Current status:", verifyData.status);
       return false;
     }
     

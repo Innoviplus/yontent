@@ -26,10 +26,10 @@ export const approveRedemptionRequest = async (
       return true; // Already approved, consider it a success
     }
     
-    // Begin transaction by updating the status
+    // Update the status to APPROVED
     console.log('Updating redemption request status to APPROVED...');
     
-    const updatePromise = supabase
+    const { error: updateError } = await supabase
       .from('redemption_requests')
       .update({ 
         status: 'APPROVED',
@@ -37,31 +37,8 @@ export const approveRedemptionRequest = async (
       })
       .eq('id', requestId);
     
-    const { error: updateError } = await updatePromise;
-    
     if (updateError) {
       console.error("Error approving redemption request:", updateError);
-      throw updateError;
-    }
-    
-    // Verify the update was successful with a separate query
-    console.log('Verifying status update...');
-    const { data: verifyData, error: verifyError } = await supabase
-      .from('redemption_requests')
-      .select('status')
-      .eq('id', requestId)
-      .single();
-      
-    if (verifyError) {
-      console.error("Error verifying update:", verifyError);
-      return false;
-    }
-    
-    console.log('Verification response:', verifyData);
-    
-    // Check if the status is now APPROVED
-    if (verifyData.status !== 'APPROVED') {
-      console.error("Status not updated correctly. Current status:", verifyData.status);
       return false;
     }
     
