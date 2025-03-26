@@ -127,19 +127,23 @@ export const approveRedemptionRequest = async (
   requestId: string
 ): Promise<boolean> => {
   try {
-    const { error } = await supabase
+    console.log('Approving redemption request with ID:', requestId);
+    
+    const { error, data } = await supabase
       .from('redemption_requests')
       .update({ 
         status: 'APPROVED',
         updated_at: new Date().toISOString()
       })
-      .eq('id', requestId);
+      .eq('id', requestId)
+      .select();
     
     if (error) {
       console.error("Error approving redemption request:", error);
       throw error;
     }
     
+    console.log('Approval response:', data);
     return true;
   } catch (error) {
     console.error("Error approving redemption request:", error);

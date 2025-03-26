@@ -18,10 +18,12 @@ export const useRequestsAdmin = () => {
   const handleApproveRequest = async (requestId: string) => {
     try {
       setIsApproving(requestId);
+      console.log('Starting approval process for request:', requestId);
       
       const success = await approveRedemptionRequest(requestId);
       
       if (success) {
+        console.log('Successfully approved request:', requestId);
         toast.success('Request approved successfully');
         
         // Update the local state to reflect the change
@@ -33,6 +35,7 @@ export const useRequestsAdmin = () => {
           )
         );
       } else {
+        console.error('Failed to approve request:', requestId);
         toast.error('Failed to approve request');
       }
     } catch (error) {
