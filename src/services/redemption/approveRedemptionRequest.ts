@@ -67,7 +67,18 @@ export const approveRedemptionRequest = async (
     
     // Record the transaction in point_transactions
     if (checkData.user_id && checkData.points_amount > 0) {
-      const rewardName = checkData.payment_details?.reward_name || 'Points Redemption';
+      // Safely extract reward_name from payment_details
+      let rewardName = 'Points Redemption';
+      
+      // Check if payment_details exists and is an object
+      if (checkData.payment_details && typeof checkData.payment_details === 'object') {
+        // Access reward_name safely with typecasting
+        const paymentDetails = checkData.payment_details as Record<string, any>;
+        if (paymentDetails.reward_name) {
+          rewardName = paymentDetails.reward_name as string;
+        }
+      }
+      
       const description = `Redemption approved: ${rewardName}`;
       
       console.log(`Recording transaction for user ${checkData.user_id}: ${description}`);
