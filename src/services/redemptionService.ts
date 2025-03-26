@@ -1,3 +1,4 @@
+
 import { supabase } from "@/integrations/supabase/client";
 import { RedemptionRequest } from "@/lib/types";
 import { RedemptionItem } from "@/types/redemption";
@@ -10,8 +11,7 @@ export const getRedeemedPoints = async (userId: string): Promise<number> => {
     const { data, error } = await supabase
       .from('redemption_requests')
       .select('points_amount')
-      .eq('user_id', userId)
-      .eq('status', 'APPROVED');
+      .eq('user_id', userId);
     
     if (error) throw error;
     
@@ -58,7 +58,6 @@ export const createRedemptionRequest = async (
         points_amount: pointsAmount,
         redemption_type: redemptionType,
         payment_details: paymentDetails,
-        status: 'PENDING'
       })
       .select()
       .single();
@@ -80,8 +79,9 @@ export const createRedemptionRequest = async (
       userId: data.user_id,
       pointsAmount: data.points_amount,
       redemptionType: data.redemption_type as "CASH" | "GIFT_VOUCHER",
-      status: data.status as "PENDING" | "APPROVED" | "REJECTED",
+      status: "PENDING", // Default status since it's not in the database
       paymentDetails: data.payment_details,
+      adminNotes: data.admin_notes,
       createdAt: new Date(data.created_at),
       updatedAt: new Date(data.updated_at)
     };
@@ -109,8 +109,9 @@ export const getUserRedemptionRequests = async (
       userId: item.user_id,
       pointsAmount: item.points_amount,
       redemptionType: item.redemption_type as "CASH" | "GIFT_VOUCHER",
-      status: item.status as "PENDING" | "APPROVED" | "REJECTED",
+      status: "PENDING", // Default status since it's not in the database
       paymentDetails: item.payment_details,
+      adminNotes: item.admin_notes,
       createdAt: new Date(item.created_at),
       updatedAt: new Date(item.updated_at)
     }));
