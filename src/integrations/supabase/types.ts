@@ -229,7 +229,6 @@ export type Database = {
           payment_details: Json | null
           points_amount: number
           redemption_type: string
-          status: string
           updated_at: string
           user_id: string
         }
@@ -240,7 +239,6 @@ export type Database = {
           payment_details?: Json | null
           points_amount: number
           redemption_type: string
-          status?: string
           updated_at?: string
           user_id: string
         }
@@ -251,7 +249,6 @@ export type Database = {
           payment_details?: Json | null
           points_amount?: number
           redemption_type?: string
-          status?: string
           updated_at?: string
           user_id?: string
         }

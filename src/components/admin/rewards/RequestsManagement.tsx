@@ -1,5 +1,4 @@
 
-import { useState } from 'react';
 import { 
   Card, 
   CardContent, 
@@ -8,79 +7,36 @@ import {
   CardTitle 
 } from '@/components/ui/card';
 import { RedemptionRequest } from '@/lib/types';
-import RequestActionDialog from './RequestActionDialog';
 import RequestsLoadingState from './RequestsLoadingState';
 import EmptyRequestsState from './EmptyRequestsState';
-import RequestsTable from './RequestsTable';
 import { Button } from '@/components/ui/button';
 import { RefreshCw } from 'lucide-react';
+import { 
+  Table, 
+  TableBody, 
+  TableCell, 
+  TableHead, 
+  TableHeader, 
+  TableRow 
+} from '@/components/ui/table';
+import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
+import { User } from 'lucide-react';
+import { formatDistanceToNow } from 'date-fns';
+import RequestStatusBadge from './RequestStatusBadge';
+import { useState } from 'react';
 
 interface RequestsManagementProps {
   requests: RedemptionRequest[];
   isLoading: boolean;
-  onApprove: (id: string, adminNotes?: string) => Promise<boolean>;
-  onReject: (id: string, adminNotes?: string) => Promise<boolean>;
   refreshRequests?: () => Promise<void>;
 }
 
 const RequestsManagement = ({ 
   requests, 
   isLoading, 
-  onApprove, 
-  onReject,
   refreshRequests
 }: RequestsManagementProps) => {
-  const [actioningRequest, setActioningRequest] = useState<RedemptionRequest | null>(null);
-  const [actionType, setActionType] = useState<'approve' | 'reject' | null>(null);
-  const [viewingRequest, setViewingRequest] = useState<RedemptionRequest | null>(null);
   const [isRefreshing, setIsRefreshing] = useState(false);
-
-  const handleAction = async (notes?: string) => {
-    if (!actioningRequest?.id || !actionType) return false;
-    
-    try {
-      let success = false;
-      
-      if (actionType === 'approve') {
-        success = await onApprove(actioningRequest.id, notes);
-      } else {
-        success = await onReject(actioningRequest.id, notes);
-      }
-      
-      if (success) {
-        // Refresh the requests list after successful action
-        if (refreshRequests) {
-          await refreshRequests();
-        }
-      }
-      
-      return success;
-    } catch (error) {
-      console.error(`Error during ${actionType} action:`, error);
-      return false;
-    }
-  };
-
-  const handleRowClick = (request: RedemptionRequest) => {
-    setViewingRequest(request);
-  };
-
-  const handleSaveNotes = async (notes: string) => {
-    if (viewingRequest) {
-      const success = await onApprove(viewingRequest.id, notes);
-      if (success && refreshRequests) {
-        await refreshRequests();
-      }
-      return success;
-    } else if (actioningRequest) {
-      const success = await onApprove(actioningRequest.id, notes);
-      if (success && refreshRequests) {
-        await refreshRequests();
-      }
-      return success;
-    }
-    return false;
-  };
 
   const handleRefresh = async () => {
     if (refreshRequests) {
@@ -98,72 +54,65 @@ const RequestsManagement = ({
   }
 
   return (
-    <>
-      <Card>
-        <CardHeader className="flex flex-row items-center justify-between">
-          <div>
-            <CardTitle>Redemption Requests</CardTitle>
-            <CardDescription>Review and manage user redemption requests</CardDescription>
-          </div>
-          <Button 
-            variant="outline" 
-            size="sm" 
-            onClick={handleRefresh} 
-            disabled={isRefreshing}
-          >
-            <RefreshCw className={`h-4 w-4 mr-2 ${isRefreshing ? 'animate-spin' : ''}`} />
-            Refresh
-          </Button>
-        </CardHeader>
-        
-        {requests.length === 0 ? (
-          <EmptyRequestsState />
-        ) : (
-          <CardContent>
-            <RequestsTable 
-              requests={requests}
-              onRowClick={handleRowClick}
-              onApprove={(request) => {
-                setActioningRequest(request);
-                setActionType('approve');
-              }}
-              onReject={(request) => {
-                setActioningRequest(request);
-                setActionType('reject');
-              }}
-            />
-          </CardContent>
-        )}
-      </Card>
-
-      {actioningRequest && actionType && (
-        <RequestActionDialog
-          request={actioningRequest}
-          action={actionType}
-          onAction={handleAction}
-          onSaveNotes={handleSaveNotes}
-          onCancel={() => {
-            setActioningRequest(null);
-            setActionType(null);
-          }}
-        />
+    <Card>
+      <CardHeader className="flex flex-row items-center justify-between">
+        <div>
+          <CardTitle>Redemption Requests</CardTitle>
+          <CardDescription>View user redemption requests</CardDescription>
+        </div>
+        <Button 
+          variant="outline" 
+          size="sm" 
+          onClick={handleRefresh} 
+          disabled={isRefreshing}
+        >
+          <RefreshCw className={`h-4 w-4 mr-2 ${isRefreshing ? 'animate-spin' : ''}`} />
+          Refresh
+        </Button>
+      </CardHeader>
+      
+      {requests.length === 0 ? (
+        <EmptyRequestsState />
+      ) : (
+        <CardContent>
+          <Table>
+            <TableHeader>
+              <TableRow>
+                <TableHead className="w-[180px]">User</TableHead>
+                <TableHead>Type</TableHead>
+                <TableHead className="w-[100px]">Points</TableHead>
+                <TableHead className="w-[120px]">Status</TableHead>
+                <TableHead className="w-[120px]">Date</TableHead>
+              </TableRow>
+            </TableHeader>
+            <TableBody>
+              {requests.map((request) => (
+                <TableRow 
+                  key={request.id}
+                  className="hover:bg-slate-50"
+                >
+                  <TableCell>
+                    <div className="flex items-center gap-2">
+                      <Avatar className="h-8 w-8">
+                        <AvatarImage src={request.user?.avatar} />
+                        <AvatarFallback>
+                          <User className="h-4 w-4" />
+                        </AvatarFallback>
+                      </Avatar>
+                      <span className="font-medium">{request.user?.username || request.userId.slice(0, 8)}</span>
+                    </div>
+                  </TableCell>
+                  <TableCell>{request.redemptionType === 'CASH' ? 'Cash Transfer' : 'Gift Voucher'}</TableCell>
+                  <TableCell>{request.pointsAmount}</TableCell>
+                  <TableCell><RequestStatusBadge status={request.status} /></TableCell>
+                  <TableCell>{formatDistanceToNow(request.createdAt, { addSuffix: true })}</TableCell>
+                </TableRow>
+              ))}
+            </TableBody>
+          </Table>
+        </CardContent>
       )}
-
-      {viewingRequest && (
-        <RequestActionDialog
-          request={viewingRequest}
-          action={viewingRequest.status === 'PENDING' ? 'approve' : 'approve'}
-          onAction={async () => {
-            setViewingRequest(null);
-            return true;
-          }}
-          onSaveNotes={handleSaveNotes}
-          onCancel={() => {
-            setViewingRequest(null);
-          }}
-        />
-      )}
-    </>
+    </Card>
   );
 };
 
