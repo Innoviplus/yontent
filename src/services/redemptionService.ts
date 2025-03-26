@@ -146,35 +146,41 @@ export const approveRedemptionRequest = async (
       return true; // Already approved, consider it a success
     }
     
-    // Update the status to APPROVED
-    const { error, data } = await supabase
+    // Use a simpler update approach without returning data in the same call
+    const { error } = await supabase
       .from('redemption_requests')
       .update({ 
         status: 'APPROVED',
         updated_at: new Date().toISOString()
       })
-      .eq('id', requestId)
-      .select();
+      .eq('id', requestId);
     
     if (error) {
       console.error("Error approving redemption request:", error);
       throw error;
     }
     
-    console.log('Approval response:', data);
-    
-    // Verify the update was successful by checking if data was returned
-    if (!data || data.length === 0) {
-      console.error("No data returned after update, approval may have failed");
+    // Verify the update was successful by making a separate query
+    const { data: verifyData, error: verifyError } = await supabase
+      .from('redemption_requests')
+      .select('status')
+      .eq('id', requestId)
+      .single();
+      
+    if (verifyError) {
+      console.error("Error verifying update:", verifyError);
       return false;
     }
     
-    // Check if the returned data has the correct status
-    if (data[0].status !== 'APPROVED') {
-      console.error("Status not updated correctly in response:", data[0].status);
+    console.log('Verification response:', verifyData);
+    
+    // Check if the status is now APPROVED
+    if (verifyData.status !== 'APPROVED') {
+      console.error("Status not updated correctly:", verifyData.status);
       return false;
     }
     
+    console.log('Successfully approved request:', requestId);
     return true;
   } catch (error) {
     console.error("Error approving redemption request:", error);
