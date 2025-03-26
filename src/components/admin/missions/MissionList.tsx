@@ -3,7 +3,7 @@ import React from 'react';
 import { Mission } from '@/lib/types';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
-import { Pencil, Trash2, Award, Clock, Tag, CalendarDays, Users } from 'lucide-react';
+import { Pencil, Trash2, Award, Clock, Tag, CalendarDays, Users, ToggleLeft, ToggleRight } from 'lucide-react';
 import { format, isPast, isAfter } from 'date-fns';
 import { Badge } from '@/components/ui/badge';
 import { Avatar, AvatarImage, AvatarFallback } from '@/components/ui/avatar';
@@ -13,9 +13,15 @@ interface MissionListProps {
   missions: Mission[];
   onEdit: (mission: Mission) => void;
   onDelete: (id: string) => void;
+  onToggleStatus?: (mission: Mission) => Promise<boolean>;
 }
 
-const MissionList: React.FC<MissionListProps> = ({ missions, onEdit, onDelete }) => {
+const MissionList: React.FC<MissionListProps> = ({ 
+  missions, 
+  onEdit, 
+  onDelete,
+  onToggleStatus 
+}) => {
   const getMissionStatusColor = (status: string, expiresAt?: Date) => {
     if (status === 'DRAFT') return 'bg-gray-200 text-gray-800';
     if (status === 'COMPLETED') return 'bg-green-100 text-green-800';
@@ -47,6 +53,12 @@ const MissionList: React.FC<MissionListProps> = ({ missions, onEdit, onDelete })
   const stripHtml = (html: string) => {
     const doc = new DOMParser().parseFromString(html, 'text/html');
     return doc.body.textContent || '';
+  };
+
+  const handleToggleStatus = async (mission: Mission) => {
+    if (onToggleStatus) {
+      await onToggleStatus(mission);
+    }
   };
 
   return (
@@ -86,6 +98,25 @@ const MissionList: React.FC<MissionListProps> = ({ missions, onEdit, onDelete })
                   </CardDescription>
                 </div>
                 <div className="flex space-x-2">
+                  {onToggleStatus && mission.status !== 'COMPLETED' && (
+                    <Button 
+                      variant="outline" 
+                      size="sm"
+                      onClick={() => handleToggleStatus(mission)}
+                    >
+                      {mission.status === 'ACTIVE' ? (
+                        <>
+                          <ToggleLeft className="h-4 w-4 mr-1" />
+                          Deactivate
+                        </>
+                      ) : (
+                        <>
+                          <ToggleRight className="h-4 w-4 mr-1" />
+                          Activate
+                        </>
+                      )}
+                    </Button>
+                  )}
                   <Button variant="outline" size="sm" onClick={() => onEdit(mission)}>
                     <Pencil className="h-4 w-4 mr-1" />
                     Edit

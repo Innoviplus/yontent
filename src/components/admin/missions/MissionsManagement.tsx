@@ -66,6 +66,18 @@ const MissionsManagement = ({
     return success;
   };
 
+  const handleToggleStatus = async (mission: Mission) => {
+    const newStatus = mission.status === 'ACTIVE' ? 'DRAFT' : 'ACTIVE';
+    const success = await onUpdate(mission.id, { status: newStatus });
+    
+    if (success) {
+      const actionText = newStatus === 'ACTIVE' ? 'activated' : 'deactivated';
+      toast.success(`Mission ${actionText} successfully`);
+    }
+    
+    return success;
+  };
+
   if (isLoading) {
     return <MissionsLoadingState />;
   }
@@ -88,6 +100,7 @@ const MissionsManagement = ({
             missions={missions}
             onEdit={setEditingMission}
             onDelete={setDeletingMissionId}
+            onToggleStatus={handleToggleStatus}
           />
         </CardContent>
       </Card>
