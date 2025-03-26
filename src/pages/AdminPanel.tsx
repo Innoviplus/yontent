@@ -5,8 +5,10 @@ import { Toaster } from '@/components/ui/sonner';
 import Navbar from '@/components/Navbar';
 import { useRewardsAdmin } from '@/hooks/admin/useRewardsAdmin';
 import { useMissionsAdmin } from '@/hooks/admin/useMissionsAdmin';
+import { useMissionParticipations } from '@/hooks/admin/useMissionParticipations';
 import RewardsManagement from '@/components/admin/rewards/RewardsManagement';
 import MissionsManagement from '@/components/admin/missions/MissionsManagement';
+import MissionsParticipation from '@/components/admin/missions/MissionsParticipation';
 
 const AdminPanel = () => {
   const [activeTab, setActiveTab] = useState('rewards');
@@ -26,6 +28,15 @@ const AdminPanel = () => {
     deleteMission
   } = useMissionsAdmin();
 
+  const {
+    participations,
+    isLoading: isLoadingParticipations,
+    isRefreshing: isRefreshingParticipations,
+    refreshParticipations,
+    approveParticipation,
+    rejectParticipation
+  } = useMissionParticipations();
+
   return (
     <div className="min-h-screen bg-gray-50">
       <Navbar />
@@ -40,6 +51,7 @@ const AdminPanel = () => {
             <TabsList className="mb-6">
               <TabsTrigger value="rewards">Rewards</TabsTrigger>
               <TabsTrigger value="missions">Missions</TabsTrigger>
+              <TabsTrigger value="participations">Participations</TabsTrigger>
             </TabsList>
             
             <TabsContent value="rewards" className="space-y-4">
@@ -59,6 +71,17 @@ const AdminPanel = () => {
                 onAdd={addMission}
                 onUpdate={updateMission}
                 onDelete={deleteMission}
+              />
+            </TabsContent>
+
+            <TabsContent value="participations" className="space-y-4">
+              <MissionsParticipation 
+                participations={participations}
+                isLoading={isLoadingParticipations}
+                isRefreshing={isRefreshingParticipations}
+                onRefresh={refreshParticipations}
+                onApprove={approveParticipation}
+                onReject={rejectParticipation}
               />
             </TabsContent>
           </Tabs>
