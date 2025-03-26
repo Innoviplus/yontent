@@ -15,14 +15,11 @@ export const useFetchRequests = () => {
       // Log when we're starting to fetch
       console.log('Fetching redemption requests from Supabase...');
       
-      // Add a timestamp parameter to bust cache
-      const timestamp = new Date().getTime();
-      
+      // Simple approach to avoid caching issues by using a unique header
       const { data, error } = await supabase
         .from('redemption_requests')
         .select('*')
-        .order('created_at', { ascending: false })
-        .eq('id.timestamp', timestamp, { foreignTable: false });  // This is a no-op and just forces a fresh request
+        .order('created_at', { ascending: false });
       
       if (error) {
         console.error('Error fetching redemption requests:', error);
