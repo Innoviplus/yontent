@@ -27,18 +27,21 @@ export const useApproveRequest = ({ setRequests }: UseApproveRequestProps) => {
       // If already approved or rejected, just update notes
       if (requestData && requestData.status !== 'PENDING') {
         console.log('Request already processed, updating notes only');
-        const { error } = await supabase
+        const { data: updatedData, error } = await supabase
           .from('redemption_requests')
           .update({ 
             admin_notes: adminNotes,
             updated_at: new Date().toISOString()
           })
-          .eq('id', id);
+          .eq('id', id)
+          .select();
         
         if (error) {
           console.error('Error updating admin notes:', error);
           throw error;
         }
+        
+        console.log('Notes updated successfully:', updatedData);
         
         setRequests(prev => prev.map(req => 
           req.id === id 
@@ -51,14 +54,15 @@ export const useApproveRequest = ({ setRequests }: UseApproveRequestProps) => {
       
       // Otherwise, perform full approval
       console.log('Updating redemption request status to APPROVED');
-      const { error } = await supabase
+      const { data: updatedData, error } = await supabase
         .from('redemption_requests')
         .update({ 
           status: 'APPROVED',
           admin_notes: adminNotes,
           updated_at: new Date().toISOString()
         })
-        .eq('id', id);
+        .eq('id', id)
+        .select();
       
       if (error) {
         console.error('Database error during approval:', error);
@@ -66,6 +70,7 @@ export const useApproveRequest = ({ setRequests }: UseApproveRequestProps) => {
       }
       
       console.log('Request approved successfully with id:', id);
+      console.log('Update response data:', updatedData);
       
       // Update the UI optimistically
       setRequests(prev => prev.map(req => 

@@ -38,8 +38,9 @@ const RequestsManagement = ({
   const handleAction = async (notes?: string) => {
     if (!actioningRequest?.id || !actionType) return false;
     
-    let success = false;
     try {
+      let success = false;
+      
       if (actionType === 'approve') {
         success = await onApprove(actioningRequest.id, notes);
       } else {
@@ -47,8 +48,6 @@ const RequestsManagement = ({
       }
       
       if (success) {
-        // Don't close the dialog yet, we'll do that in the component
-        
         // Refresh the requests list after successful action
         if (refreshRequests) {
           await refreshRequests();
@@ -68,14 +67,12 @@ const RequestsManagement = ({
 
   const handleSaveNotes = async (notes: string) => {
     if (viewingRequest) {
-      // We'll use the approve action with the same status to just update notes
       const success = await onApprove(viewingRequest.id, notes);
       if (success && refreshRequests) {
         await refreshRequests();
       }
       return success;
     } else if (actioningRequest) {
-      // Update UI optimistically, but don't change status
       const success = await onApprove(actioningRequest.id, notes);
       if (success && refreshRequests) {
         await refreshRequests();

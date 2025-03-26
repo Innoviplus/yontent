@@ -28,11 +28,17 @@ export const useFetchRequests = () => {
       // Log the raw data we received
       console.log('Raw redemption requests data:', data);
       
+      if (!data || data.length === 0) {
+        console.log('No redemption requests found');
+        setRequests([]);
+        return;
+      }
+      
       // Create an array to store formatted requests
       const formattedRequests: RedemptionRequest[] = [];
       
       // Process each request and fetch the associated user data
-      for (const item of data || []) {
+      for (const item of data) {
         // Create the base request object
         const request: RedemptionRequest = {
           id: item.id,

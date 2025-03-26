@@ -28,18 +28,21 @@ export const useRejectRequest = ({ setRequests }: UseRejectRequestProps) => {
       // If already rejected or approved, just update notes
       if (requestData && requestData.status !== 'PENDING') {
         console.log('Request already processed, updating notes only');
-        const { error } = await supabase
+        const { data: updatedData, error } = await supabase
           .from('redemption_requests')
           .update({ 
             admin_notes: adminNotes,
             updated_at: new Date().toISOString()
           })
-          .eq('id', id);
+          .eq('id', id)
+          .select();
         
         if (error) {
           console.error('Error updating notes:', error);
           throw error;
         }
+        
+        console.log('Notes updated successfully:', updatedData);
         
         setRequests(prev => prev.map(req => 
           req.id === id 
