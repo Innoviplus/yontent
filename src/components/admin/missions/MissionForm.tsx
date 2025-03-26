@@ -1,5 +1,5 @@
 
-import { useState } from 'react';
+import { useState, useRef } from 'react';
 import { useForm } from 'react-hook-form';
 import { zodResolver } from '@hookform/resolvers/zod';
 import { 
@@ -23,7 +23,7 @@ import { Input } from '@/components/ui/input';
 import { Button } from '@/components/ui/button';
 import { Calendar } from '@/components/ui/calendar';
 import { Popover, PopoverContent, PopoverTrigger } from '@/components/ui/popover';
-import { Calendar as CalendarIcon } from 'lucide-react';
+import { Calendar as CalendarIcon, Upload, ImageIcon } from 'lucide-react';
 import { format } from 'date-fns';
 import RichTextEditor from '@/components/RichTextEditor';
 import { cn } from '@/lib/utils';
@@ -36,22 +36,27 @@ import {
   SelectTrigger,
   SelectValue,
 } from "@/components/ui/select";
-import { Switch } from '@/components/ui/switch';
 
 interface MissionFormProps {
   mission?: Mission;
   title: string;
-  onSubmit: (data: MissionFormData) => Promise<boolean>;
+  onSubmit: (data: MissionFormData, files: { merchantLogo?: File | null, bannerImage?: File | null }) => Promise<boolean>;
   onCancel: () => void;
+  isUploading?: boolean;
 }
 
 const MissionForm = ({ 
   mission, 
   title, 
   onSubmit, 
-  onCancel 
+  onCancel,
+  isUploading = false
 }: MissionFormProps) => {
   const [isSubmitting, setIsSubmitting] = useState(false);
+  const [merchantLogoFile, setMerchantLogoFile] = useState<File | null>(null);
+  const [bannerImageFile, setBannerImageFile] = useState<File | null>(null);
+  const merchantLogoRef = useRef<HTMLInputElement>(null);
+  const bannerImageRef = useRef<HTMLInputElement>(null);
   
   const form = useForm<MissionFormData>({
     resolver: zodResolver(missionSchema),
@@ -75,9 +80,24 @@ const MissionForm = ({
   const handleSubmit = async (data: MissionFormData) => {
     setIsSubmitting(true);
     try {
-      await onSubmit(data);
+      const success = await onSubmit(data, {
+        merchantLogo: merchantLogoFile,
+        bannerImage: bannerImageFile
+      });
+      if (success) {
+        form.reset();
+      }
     } finally {
       setIsSubmitting(false);
+    }
+  };
+
+  const handleFileChange = (
+    e: React.ChangeEvent<HTMLInputElement>, 
+    setFile: React.Dispatch<React.SetStateAction<File | null>>
+  ) => {
+    if (e.target.files && e.target.files[0]) {
+      setFile(e.target.files[0]);
     }
   };
 
@@ -291,7 +311,7 @@ const MissionForm = ({
                 name="maxSubmissionsPerUser"
                 render={({ field }) => (
                   <FormItem>
-                    <FormLabel>Max Submissions Per User</FormLabel>
+                    <FormLabel>Max Submissions Per User (Quota)</FormLabel>
                     <FormControl>
                       <Input type="number" min="1" {...field} />
                     </FormControl>
@@ -327,10 +347,53 @@ const MissionForm = ({
                 name="merchantLogo"
                 render={({ field }) => (
                   <FormItem>
-                    <FormLabel>Merchant Logo URL</FormLabel>
-                    <FormControl>
-                      <Input placeholder="Enter logo URL" {...field} value={field.value || ''} />
-                    </FormControl>
+                    <FormLabel>Merchant Logo</FormLabel>
+                    <div className="space-y-2">
+                      {field.value && (
+                        <div className="w-20 h-20 rounded border overflow-hidden">
+                          <img 
+                            src={field.value}
+                            alt="Merchant logo" 
+                            className="w-full h-full object-contain"
+                          />
+                        </div>
+                      )}
+                      
+                      <input 
+                        type="file" 
+                        ref={merchantLogoRef}
+                        className="hidden"
+                        accept="image/*"
+                        onChange={(e) => handleFileChange(e, setMerchantLogoFile)}
+                      />
+                      
+                      <div className="flex items-center gap-2">
+                        <Button 
+                          type="button" 
+                          variant="outline" 
+                          size="sm" 
+                          onClick={() => merchantLogoRef.current?.click()}
+                        >
+                          <Upload className="h-4 w-4 mr-2" />
+                          Upload Logo
+                        </Button>
+                        
+                        {merchantLogoFile && (
+                          <span className="text-sm text-gray-500">
+                            {merchantLogoFile.name}
+                          </span>
+                        )}
+                      </div>
+                      
+                      <FormControl>
+                        <Input 
+                          placeholder="Or enter logo URL" 
+                          {...field} 
+                          value={field.value || ''}
+                          className="mt-2"
+                        />
+                      </FormControl>
+                    </div>
                     <FormMessage />
                   </FormItem>
                 )}
@@ -341,10 +404,53 @@ const MissionForm = ({
                 name="bannerImage"
                 render={({ field }) => (
                   <FormItem>
-                    <FormLabel>Banner Image URL</FormLabel>
-                    <FormControl>
-                      <Input placeholder="Enter banner image URL" {...field} value={field.value || ''} />
-                    </FormControl>
+                    <FormLabel>Banner Image</FormLabel>
+                    <div className="space-y-2">
+                      {field.value && (
+                        <div className="h-32 rounded border overflow-hidden">
+                          <img 
+                            src={field.value}
+                            alt="Banner image" 
+                            className="w-full h-full object-cover"
+                          />
+                        </div>
+                      )}
+                      
+                      <input 
+                        type="file" 
+                        ref={bannerImageRef}
+                        className="hidden"
+                        accept="image/*"
+                        onChange={(e) => handleFileChange(e, setBannerImageFile)}
+                      />
+                      
+                      <div className="flex items-center gap-2">
+                        <Button 
+                          type="button" 
+                          variant="outline" 
+                          size="sm" 
+                          onClick={() => bannerImageRef.current?.click()}
+                        >
+                          <ImageIcon className="h-4 w-4 mr-2" />
+                          Upload Banner
+                        </Button>
+                        
+                        {bannerImageFile && (
+                          <span className="text-sm text-gray-500">
+                            {bannerImageFile.name}
+                          </span>
+                        )}
+                      </div>
+                      
+                      <FormControl>
+                        <Input 
+                          placeholder="Or enter banner image URL" 
+                          {...field} 
+                          value={field.value || ''}
+                          className="mt-2"
+                        />
+                      </FormControl>
+                    </div>
                     <FormMessage />
                   </FormItem>
                 )}
@@ -396,8 +502,8 @@ const MissionForm = ({
               <Button type="button" variant="outline" onClick={onCancel}>
                 Cancel
               </Button>
-              <Button type="submit" disabled={isSubmitting}>
-                {isSubmitting ? 'Saving...' : 'Save Mission'}
+              <Button type="submit" disabled={isSubmitting || isUploading}>
+                {(isSubmitting || isUploading) ? 'Saving...' : 'Save Mission'}
               </Button>
             </DialogFooter>
           </form>

@@ -31,7 +31,7 @@ export const useMissionsAdmin = () => {
         merchantName: mission.merchant_name || undefined,
         merchantLogo: mission.merchant_logo || undefined,
         bannerImage: mission.banner_image || undefined,
-        maxSubmissionsPerUser: mission.max_submissions_per_user,
+        maxSubmissionsPerUser: mission.max_submissions_per_user || 1,
         termsConditions: mission.terms_conditions || undefined,
         requirementDescription: mission.requirement_description || undefined,
         startDate: new Date(mission.start_date),
@@ -56,8 +56,33 @@ export const useMissionsAdmin = () => {
   };
 
   useEffect(() => {
+    // Ensure the storage bucket exists
+    ensureMissionsStorageBucketExists();
     fetchMissions();
   }, []);
+
+  const ensureMissionsStorageBucketExists = async () => {
+    try {
+      // Check if the bucket already exists
+      const { data: buckets } = await supabase.storage.listBuckets();
+      const missionBucketExists = buckets?.some(bucket => bucket.name === 'missions');
+      
+      if (!missionBucketExists) {
+        // Create the bucket for mission images
+        const { error } = await supabase.storage.createBucket('missions', {
+          public: true
+        });
+        
+        if (error) {
+          console.error("Error creating missions bucket:", error);
+        } else {
+          console.log("Missions storage bucket created successfully");
+        }
+      }
+    } catch (error) {
+      console.error("Error checking/creating mission storage bucket:", error);
+    }
+  };
 
   const addMission = async (missionData: Omit<Mission, 'id' | 'createdAt' | 'updatedAt'>) => {
     try {
@@ -81,6 +106,7 @@ export const useMissionsAdmin = () => {
         throw error;
       }
 
+      toast.success("Mission added successfully");
       await refreshMissions();
       return true;
     } catch (error: any) {
@@ -118,6 +144,7 @@ export const useMissionsAdmin = () => {
         throw error;
       }
 
+      toast.success("Mission updated successfully");
       await refreshMissions();
       return true;
     } catch (error: any) {
@@ -138,6 +165,7 @@ export const useMissionsAdmin = () => {
         throw error;
       }
 
+      toast.success("Mission deleted successfully");
       setMissions(missions.filter(mission => mission.id !== id));
       return true;
     } catch (error: any) {

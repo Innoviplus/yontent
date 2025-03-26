@@ -13,7 +13,7 @@ export const missionSchema = z.object({
   merchantName: z.string().optional(),
   merchantLogo: z.string().optional(),
   bannerImage: z.string().optional(),
-  maxSubmissionsPerUser: z.coerce.number().int().positive().default(1),
+  maxSubmissionsPerUser: z.coerce.number().int().positive({ message: 'Max submissions must be a positive number' }).default(1),
   termsConditions: z.string().optional(),
 });
 
