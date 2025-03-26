@@ -63,6 +63,7 @@ export type Database = {
           status: string
           terms_conditions: string | null
           title: string
+          total_max_submissions: number | null
           type: string
           updated_at: string
         }
@@ -81,6 +82,7 @@ export type Database = {
           status: string
           terms_conditions?: string | null
           title: string
+          total_max_submissions?: number | null
           type: string
           updated_at?: string
         }
@@ -99,6 +101,7 @@ export type Database = {
           status?: string
           terms_conditions?: string | null
           title?: string
+          total_max_submissions?: number | null
           type?: string
           updated_at?: string
         }
