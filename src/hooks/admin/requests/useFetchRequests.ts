@@ -55,17 +55,22 @@ export const useFetchRequests = () => {
         
         // Fetch the associated user profile
         if (item.user_id) {
-          const { data: userData, error: userError } = await supabase
-            .from('profiles')
-            .select('username, avatar')
-            .eq('id', item.user_id)
-            .single();
-          
-          if (!userError && userData) {
-            request.user = {
-              username: userData.username,
-              avatar: userData.avatar
-            };
+          try {
+            const { data: userData, error: userError } = await supabase
+              .from('profiles')
+              .select('username, avatar')
+              .eq('id', item.user_id)
+              .single();
+            
+            if (!userError && userData) {
+              request.user = {
+                username: userData.username,
+                avatar: userData.avatar
+              };
+            }
+          } catch (profileError) {
+            console.error('Error fetching user profile:', profileError);
+            // Continue processing even if profile fetch fails
           }
         }
         

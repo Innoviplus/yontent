@@ -20,30 +20,45 @@ export const useRequestsAdmin = () => {
       setIsApproving(requestId);
       console.log('Starting approval process for request:', requestId);
       
+      // First update local state optimistically
+      setRequests(prevRequests => 
+        prevRequests.map(request => 
+          request.id === requestId 
+            ? { ...request, status: 'APPROVED' as const } 
+            : request
+        )
+      );
+      
       const success = await approveRedemptionRequest(requestId);
       
       if (success) {
         console.log('Successfully approved request:', requestId);
         toast.success('Request approved successfully');
         
-        // Update the local state to reflect the change
-        setRequests(prevRequests => 
-          prevRequests.map(request => 
-            request.id === requestId 
-              ? { ...request, status: 'APPROVED' as const } 
-              : request
-          )
-        );
-        
-        // Refresh the requests to ensure we have the latest data
+        // Refresh the requests to ensure we have the latest data from the server
         await fetchRequests();
       } else {
         console.error('Failed to approve request:', requestId);
         toast.error('Failed to approve request');
+        
+        // Revert the optimistic update since it failed
+        setRequests(prevRequests => 
+          prevRequests.map(request => 
+            request.id === requestId && request.status === 'APPROVED'
+              ? { ...request, status: 'PENDING' as const } 
+              : request
+          )
+        );
+        
+        // Try to fetch the latest data to ensure UI is in sync with server
+        await fetchRequests();
       }
     } catch (error) {
       console.error('Error approving request:', error);
       toast.error('An error occurred while approving the request');
+      
+      // Refresh to ensure UI is in sync with server state
+      await fetchRequests();
     } finally {
       setIsApproving(null);
     }
