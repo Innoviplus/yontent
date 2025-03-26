@@ -1,19 +1,18 @@
 
-// This is now just a re-export file for backward compatibility
-// All functionality has been moved to the redemption directory
+import { RedemptionItem } from '@/types/redemption';
+import { getRedemptionItems, getRedeemedPoints } from './redemption';
 
-import { 
-  getRedeemedPoints,
-  createRedemptionRequest,
-  getUserRedemptionRequests,
-  approveRedemptionRequest,
-  getRedemptionItems
-} from './redemption';
+// Provide mock implementations for removed functions
+const mockCreateRedemptionRequest = async () => ({ success: false, message: 'Redemption requests are no longer supported' });
+const mockGetUserRedemptionRequests = async () => ({ requests: [], totalCount: 0 });
+const mockApproveRedemptionRequest = async () => ({ success: false, message: 'Redemption requests are no longer supported' });
+const mockRejectRedemptionRequest = async () => ({ success: false, message: 'Redemption requests are no longer supported' });
 
 export {
+  getRedemptionItems,
   getRedeemedPoints,
-  createRedemptionRequest,
-  getUserRedemptionRequests,
-  approveRedemptionRequest,
-  getRedemptionItems
+  mockCreateRedemptionRequest as createRedemptionRequest,
+  mockGetUserRedemptionRequests as getUserRedemptionRequests,
+  mockApproveRedemptionRequest as approveRedemptionRequest,
+  mockRejectRedemptionRequest as rejectRedemptionRequest
 };

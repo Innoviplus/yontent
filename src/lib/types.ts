@@ -69,6 +69,28 @@ export interface Mission {
   updatedAt: Date;
 }
 
+// Add mock RedemptionRequest type for backward compatibility
+// This is just a placeholder to fix TypeScript errors
+export interface RedemptionRequest {
+  id: string;
+  userId: string;
+  itemId: string;
+  status: 'PENDING' | 'APPROVED' | 'REJECTED';
+  createdAt: Date;
+  updatedAt: Date;
+  paymentDetails?: {
+    bank_details?: {
+      bank_name: string;
+      account_name: string;
+      account_number: string;
+      swift_code?: string;
+      recipient_name: string;
+      recipient_address?: string;
+      recipient_mobile?: string;
+    }
+  }
+}
+
 // Define Json type to match Supabase's Json type
 export type Json =
   | string

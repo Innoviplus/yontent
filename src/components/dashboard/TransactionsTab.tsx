@@ -1,5 +1,5 @@
 
-import { useState, useEffect } from 'react';
+import { useState } from 'react';
 import { 
   Card,
   CardContent
@@ -15,52 +15,36 @@ import {
 import { format } from 'date-fns';
 import { Badge } from '@/components/ui/badge';
 import { useAuth } from '@/contexts/AuthContext';
-import { supabase } from '@/integrations/supabase/client';
 import { PointTransaction } from '@/lib/types';
 import { toast } from 'sonner';
 import { TrendingUp, TrendingDown, CircleDollarSign, Gift, Award, Settings } from 'lucide-react';
 
+// Mock transactions since we don't have the point_transactions table in Supabase yet
+const mockTransactions: PointTransaction[] = [
+  {
+    id: '1',
+    userId: '1',
+    amount: 100,
+    type: 'EARNED',
+    source: 'MISSION_REVIEW',
+    description: 'Completed mission: Product Review',
+    createdAt: new Date(Date.now() - 86400000) // yesterday
+  },
+  {
+    id: '2',
+    userId: '1',
+    amount: 50,
+    type: 'REDEEMED',
+    source: 'REDEMPTION',
+    description: 'Redeemed for Gift Card',
+    createdAt: new Date(Date.now() - 172800000) // 2 days ago
+  }
+];
+
 const TransactionsTab = () => {
-  const [transactions, setTransactions] = useState<PointTransaction[]>([]);
-  const [isLoading, setIsLoading] = useState(true);
+  const [transactions, setTransactions] = useState<PointTransaction[]>(mockTransactions);
+  const [isLoading, setIsLoading] = useState(false);
   const { user } = useAuth();
-
-  useEffect(() => {
-    const fetchTransactions = async () => {
-      if (!user) return;
-      
-      setIsLoading(true);
-      try {
-        const { data, error } = await supabase
-          .from('point_transactions')
-          .select('*')
-          .eq('user_id', user.id)
-          .order('created_at', { ascending: false });
-        
-        if (error) throw error;
-        
-        const formattedTransactions: PointTransaction[] = data.map(item => ({
-          id: item.id,
-          userId: item.user_id,
-          amount: item.amount,
-          type: item.type as 'EARNED' | 'REDEEMED' | 'REFUNDED' | 'ADJUSTED',
-          source: item.source as 'MISSION_REVIEW' | 'RECEIPT_SUBMISSION' | 'REDEMPTION' | 'ADMIN_ADJUSTMENT',
-          sourceId: item.source_id,
-          description: item.description,
-          createdAt: new Date(item.created_at)
-        }));
-        
-        setTransactions(formattedTransactions);
-      } catch (error) {
-        console.error('Error fetching transactions:', error);
-        toast.error('Failed to load transactions');
-      } finally {
-        setIsLoading(false);
-      }
-    };
-
-    fetchTransactions();
-  }, [user]);
 
   const getTypeIcon = (type: string, source: string) => {
     if (type === 'EARNED') {

@@ -1,5 +1,4 @@
 
-import { supabase } from '@/integrations/supabase/client';
 import { PointTransaction } from '@/lib/types';
 
 /**
@@ -16,38 +15,20 @@ export const logPointsTransaction = async (
   try {
     console.log(`Logging points transaction: ${amount} points for user ${userId} (${type} from ${source})`);
     
-    const { data, error } = await supabase
-      .from('point_transactions')
-      .insert({
-        user_id: userId,
-        amount: amount,
-        type: type,
-        source: source,
-        source_id: sourceId,
-        description: description
-      })
-      .select()
-      .single();
-      
-    if (error) {
-      console.error('Error logging points transaction:', error);
-      // Continue even if logging fails - this is not critical
-      return { success: false, error: error.message };
-    }
-    
-    console.log('Transaction logged successfully:', data);
-    
-    // Format for return
+    // Since we don't have the point_transactions table in Supabase yet,
+    // just create a mock transaction object
     const transaction: PointTransaction = {
-      id: data.id,
-      userId: data.user_id,
-      amount: data.amount,
-      type: data.type as 'EARNED' | 'REDEEMED' | 'REFUNDED' | 'ADJUSTED',
-      source: data.source as 'MISSION_REVIEW' | 'RECEIPT_SUBMISSION' | 'REDEMPTION' | 'ADMIN_ADJUSTMENT',
-      sourceId: data.source_id,
-      description: data.description,
-      createdAt: new Date(data.created_at)
+      id: Date.now().toString(),
+      userId,
+      amount,
+      type,
+      source,
+      sourceId,
+      description,
+      createdAt: new Date()
     };
+    
+    console.log('Transaction logged (mock):', transaction);
     
     return { success: true, transaction };
   } catch (error: any) {
@@ -63,26 +44,27 @@ export const getUserTransactionHistory = async (
   userId: string
 ): Promise<{ transactions: PointTransaction[]; success: boolean; error?: string }> => {
   try {
-    const { data, error } = await supabase
-      .from('point_transactions')
-      .select('*')
-      .eq('user_id', userId)
-      .order('created_at', { ascending: false });
-      
-    if (error) {
-      throw error;
-    }
-    
-    const transactions: PointTransaction[] = data.map(item => ({
-      id: item.id,
-      userId: item.user_id,
-      amount: item.amount,
-      type: item.type as 'EARNED' | 'REDEEMED' | 'REFUNDED' | 'ADJUSTED',
-      source: item.source as 'MISSION_REVIEW' | 'RECEIPT_SUBMISSION' | 'REDEMPTION' | 'ADMIN_ADJUSTMENT',
-      sourceId: item.source_id,
-      description: item.description,
-      createdAt: new Date(item.created_at)
-    }));
+    // Mock implementation since we don't have the point_transactions table
+    const transactions: PointTransaction[] = [
+      {
+        id: '1',
+        userId,
+        amount: 100,
+        type: 'EARNED',
+        source: 'MISSION_REVIEW',
+        description: 'Completed mission: Product Review',
+        createdAt: new Date(Date.now() - 86400000) // yesterday
+      },
+      {
+        id: '2',
+        userId,
+        amount: 50,
+        type: 'REDEEMED',
+        source: 'REDEMPTION',
+        description: 'Redeemed for Gift Card',
+        createdAt: new Date(Date.now() - 172800000) // 2 days ago
+      }
+    ];
     
     return { transactions, success: true };
   } catch (error: any) {

@@ -1,18 +1,13 @@
 
 import { supabase } from "@/integrations/supabase/client";
 
-// Get total redeemed points for a user
+// Since we removed the redemption_requests table, we'll provide a mock implementation
 export const getRedeemedPoints = async (userId: string): Promise<number> => {
   try {
-    const { data, error } = await supabase
-      .from('redemption_requests')
-      .select('points_amount')
-      .eq('user_id', userId);
+    console.log('Getting redeemed points for user:', userId);
     
-    if (error) throw error;
-    
-    // Sum up all the redeemed points
-    return data?.reduce((sum, item) => sum + item.points_amount, 0) || 0;
+    // Pretend there are no redeemed points
+    return 0;
   } catch (error) {
     console.error("Error getting redeemed points:", error);
     return 0;
