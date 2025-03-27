@@ -20,6 +20,7 @@ import ReviewDetail from './pages/ReviewDetail';
 import Missions from './pages/Missions';
 import MissionDetail from './pages/MissionDetail';
 import MissionReceiptSubmission from './pages/MissionReceiptSubmission';
+import MissionReviewSubmission from './pages/MissionReviewSubmission';
 import UserRankings from './pages/UserRankings';
 import FollowersList from './pages/FollowersList';
 import FollowingList from './pages/FollowingList';
@@ -53,6 +54,7 @@ function App() {
           <Route path="/redeem" element={<Redeem />} />
           <Route path="/rewards/:id" element={<RewardDetail />} />
           <Route path="/mission/:id/submit-receipt" element={<MissionReceiptSubmission />} />
+          <Route path="/mission/:id/submit-review" element={<MissionReviewSubmission />} />
           <Route path="/submit-review" element={<SubmitReview />} />
           <Route path="/edit-review/:id" element={<EditReview />} />
           <Route path="/admin" element={<AdminPanel />} />

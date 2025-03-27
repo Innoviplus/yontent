@@ -46,6 +46,12 @@ const MissionStats = ({
         return;
       }
       
+      // For review type missions, navigate to the review submission page
+      if (mission.type === 'REVIEW') {
+        navigate(`/mission/${mission.id}/submit-review`);
+        return;
+      }
+      
       // For other mission types, create a participation record
       const { error } = await supabase
         .from('mission_participations')

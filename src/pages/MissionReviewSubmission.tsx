@@ -1,0 +1,341 @@
+
+import { useState, useEffect } from 'react';
+import { useParams, useNavigate, Navigate } from 'react-router-dom';
+import { toast } from 'sonner';
+import { useAuth } from '@/contexts/AuthContext';
+import { supabase } from '@/integrations/supabase/client';
+import Navbar from '@/components/Navbar';
+import { Mission } from '@/lib/types';
+import { Button } from '@/components/ui/button';
+import { Card, CardContent, CardFooter, CardHeader } from '@/components/ui/card';
+import { Loader2, Upload, AlertCircle } from 'lucide-react';
+import { Form, FormControl, FormField, FormItem, FormLabel, FormMessage } from '@/components/ui/form';
+import { useForm } from 'react-hook-form';
+import { z } from 'zod';
+import { zodResolver } from '@hookform/resolvers/zod';
+import ImageUpload from '@/components/review/ImageUpload';
+import RichTextEditor from '@/components/RichTextEditor';
+
+// Form schema
+const reviewSchema = z.object({
+  content: z.string().min(20, { message: "Review must be at least 20 characters" }),
+});
+
+type ReviewFormValues = z.infer<typeof reviewSchema>;
+
+const MissionReviewSubmission = () => {
+  const { id } = useParams<{ id: string }>();
+  const navigate = useNavigate();
+  const { user } = useAuth();
+  
+  const [mission, setMission] = useState<Mission | null>(null);
+  const [isLoading, setIsLoading] = useState(true);
+  const [isSubmitting, setIsSubmitting] = useState(false);
+  const [selectedImages, setSelectedImages] = useState<File[]>([]);
+  const [imagePreviewUrls, setImagePreviewUrls] = useState<string[]>([]);
+  const [imageError, setImageError] = useState<string | null>(null);
+  
+  const form = useForm<ReviewFormValues>({
+    resolver: zodResolver(reviewSchema),
+    defaultValues: {
+      content: '',
+    },
+  });
+  
+  // Redirect if user is not logged in
+  if (!user) {
+    return <Navigate to="/login" replace />;
+  }
+  
+  useEffect(() => {
+    const fetchMission = async () => {
+      if (!id) return;
+      
+      try {
+        // Check if user has already submitted for this mission
+        const { data: participations, error: participationError } = await supabase
+          .from('mission_participations')
+          .select('*')
+          .eq('mission_id', id)
+          .eq('user_id', user.id);
+          
+        if (participationError) throw participationError;
+        
+        // If user has already submitted, redirect to mission detail page
+        if (participations && participations.length > 0) {
+          toast.info("You have already submitted a review for this mission");
+          navigate(`/mission/${id}`);
+          return;
+        }
+        
+        // Fetch mission details
+        const { data, error } = await supabase
+          .from('missions')
+          .select('*')
+          .eq('id', id)
+          .eq('type', 'REVIEW')  // Ensure this is a review mission
+          .single();
+          
+        if (error) throw error;
+        
+        if (!data) {
+          toast.error("Review mission not found");
+          navigate('/missions');
+          return;
+        }
+        
+        const transformedMission: Mission = {
+          id: data.id,
+          title: data.title,
+          description: data.description,
+          pointsReward: data.points_reward,
+          type: data.type as 'REVIEW' | 'RECEIPT',
+          status: data.status as 'ACTIVE' | 'COMPLETED' | 'DRAFT',
+          merchantName: data.merchant_name || undefined,
+          merchantLogo: data.merchant_logo || undefined,
+          bannerImage: data.banner_image || undefined,
+          maxSubmissionsPerUser: data.max_submissions_per_user,
+          termsConditions: data.terms_conditions || undefined,
+          requirementDescription: data.requirement_description || undefined,
+          startDate: new Date(data.start_date),
+          expiresAt: data.expires_at ? new Date(data.expires_at) : undefined,
+          createdAt: new Date(data.created_at),
+          updatedAt: new Date(data.updated_at)
+        };
+        
+        setMission(transformedMission);
+      } catch (error) {
+        console.error('Error fetching mission:', error);
+        setImageError('Failed to load mission details');
+      } finally {
+        setIsLoading(false);
+      }
+    };
+
+    fetchMission();
+  }, [id, user?.id, navigate]);
+
+  const handleImageSelection = (files: FileList | null) => {
+    if (!files) return;
+    
+    if (selectedImages.length + files.length > 10) {
+      setImageError('You can only upload up to 10 images in total');
+      return;
+    }
+    
+    const newFiles = Array.from(files);
+    setSelectedImages(prev => [...prev, ...newFiles]);
+    
+    newFiles.forEach(file => {
+      const reader = new FileReader();
+      reader.onloadend = () => {
+        setImagePreviewUrls(prev => [...prev, reader.result as string]);
+      };
+      reader.readAsDataURL(file);
+    });
+    
+    setImageError(null);
+  };
+
+  const removeImage = (index: number) => {
+    setSelectedImages(prev => prev.filter((_, i) => i !== index));
+    setImagePreviewUrls(prev => prev.filter((_, i) => i !== index));
+  };
+
+  const onSubmit = async (values: ReviewFormValues) => {
+    if (selectedImages.length === 0) {
+      setImageError('Please upload at least one image');
+      return;
+    }
+    
+    setIsSubmitting(true);
+    
+    try {
+      // Upload each image to Supabase storage
+      const uploadedUrls: string[] = [];
+      
+      for (const file of selectedImages) {
+        const fileExt = file.name.split('.').pop();
+        const fileName = `${Math.random().toString(36).substring(2, 15)}.${fileExt}`;
+        const filePath = `reviews/${user.id}/${id}/${fileName}`;
+        
+        const { error: uploadError } = await supabase.storage
+          .from('missions')
+          .upload(filePath, file);
+          
+        if (uploadError) {
+          throw uploadError;
+        }
+        
+        const { data } = supabase.storage
+          .from('missions')
+          .getPublicUrl(filePath);
+          
+        uploadedUrls.push(data.publicUrl);
+      }
+      
+      // Create a review in the reviews table
+      const { data: reviewData, error: reviewError } = await supabase
+        .from('reviews')
+        .insert({
+          user_id: user.id,
+          content: values.content,
+          images: uploadedUrls,
+          status: 'PUBLISHED'
+        })
+        .select('id')
+        .single();
+        
+      if (reviewError) throw reviewError;
+      
+      // Save the participation record with the review ID
+      const { error: insertError } = await supabase
+        .from('mission_participations')
+        .insert({
+          mission_id: id,
+          user_id: user.id,
+          status: 'PENDING',
+          submission_data: {
+            review_id: reviewData.id,
+            review_images: uploadedUrls,
+            submission_type: 'REVIEW'
+          }
+        });
+        
+      if (insertError) throw insertError;
+      
+      toast.success('Review submitted successfully!');
+      navigate(`/mission/${id}`);
+    } catch (error) {
+      console.error('Error submitting review:', error);
+      toast.error('Failed to submit review. Please try again.');
+    } finally {
+      setIsSubmitting(false);
+    }
+  };
+
+  if (isLoading) {
+    return (
+      <div className="min-h-screen bg-gray-50">
+        <Navbar />
+        <div className="container mx-auto px-4 pt-28 pb-16 max-w-3xl">
+          <div className="flex justify-center items-center h-64">
+            <Loader2 className="h-8 w-8 animate-spin text-brand-teal" />
+            <span className="ml-2 text-gray-600">Loading mission details...</span>
+          </div>
+        </div>
+      </div>
+    );
+  }
+
+  if (!mission) {
+    return (
+      <div className="min-h-screen bg-gray-50">
+        <Navbar />
+        <div className="container mx-auto px-4 pt-28 pb-16 max-w-3xl">
+          <Card className="text-center p-8">
+            <div className="flex flex-col items-center justify-center">
+              <AlertCircle className="h-12 w-12 text-red-500 mb-4" />
+              <h3 className="text-xl font-medium">Mission Not Found</h3>
+              <p className="text-gray-500 mt-2">
+                The mission you're looking for doesn't exist or isn't a review mission.
+              </p>
+              <Button onClick={() => navigate('/missions')} className="mt-6">
+                Go Back to Missions
+              </Button>
+            </div>
+          </Card>
+        </div>
+      </div>
+    );
+  }
+
+  return (
+    <div className="min-h-screen bg-gray-50">
+      <Navbar />
+      <div className="container mx-auto px-4 pt-28 pb-16 max-w-3xl">
+        <Card>
+          <CardHeader>
+            <h1 className="text-2xl font-bold">Submit Review for "{mission.title}"</h1>
+            <p className="text-gray-500 mt-2">
+              Share your experience and upload photos to complete this mission and earn {mission.pointsReward} points.
+            </p>
+          </CardHeader>
+          
+          <CardContent>
+            <div className="mb-6">
+              <h2 className="text-lg font-semibold mb-2">Review Requirements:</h2>
+              <ul className="list-disc list-inside space-y-2 text-gray-700">
+                <li>Write an honest, detailed review of the product</li>
+                <li>Upload at least one clear photo of the product</li>
+                <li>You can upload up to 10 images</li>
+                <li>Accepted formats: JPG, PNG, WEBP</li>
+              </ul>
+            </div>
+            
+            <Form {...form}>
+              <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-6">
+                <ImageUpload
+                  imagePreviewUrls={imagePreviewUrls}
+                  onFileSelect={handleImageSelection}
+                  onRemoveImage={removeImage}
+                  error={imageError}
+                  uploading={isSubmitting}
+                />
+                
+                <FormField
+                  control={form.control}
+                  name="content"
+                  render={({ field }) => (
+                    <FormItem>
+                      <FormLabel>Review</FormLabel>
+                      <FormControl>
+                        <RichTextEditor 
+                          value={field.value}
+                          onChange={field.onChange}
+                          placeholder="Share your experience with the product..."
+                          includeLink={false}
+                        />
+                      </FormControl>
+                      <FormMessage />
+                    </FormItem>
+                  )}
+                />
+                
+                <div className="flex justify-end space-x-4">
+                  <Button 
+                    variant="outline" 
+                    onClick={() => navigate(`/mission/${mission.id}`)}
+                    disabled={isSubmitting}
+                    type="button"
+                  >
+                    Cancel
+                  </Button>
+                  <Button 
+                    type="submit" 
+                    disabled={isSubmitting}
+                    className="bg-brand-teal hover:bg-brand-teal/90"
+                  >
+                    {isSubmitting ? (
+                      <>
+                        <Loader2 className="h-4 w-4 mr-2 animate-spin" />
+                        Submitting...
+                      </>
+                    ) : (
+                      <>
+                        <Upload className="h-4 w-4 mr-2" />
+                        Submit Review
+                      </>
+                    )}
+                  </Button>
+                </div>
+              </form>
+            </Form>
+          </CardContent>
+        </Card>
+      </div>
+    </div>
+  );
+};
+
+export default MissionReviewSubmission;
