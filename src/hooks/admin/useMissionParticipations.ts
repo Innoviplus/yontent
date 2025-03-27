@@ -2,6 +2,7 @@
 import { useState, useEffect } from 'react';
 import { toast } from 'sonner';
 import { supabase } from '@/integrations/supabase/client';
+import { Json } from '@/integrations/supabase/types';
 
 export type MissionParticipation = {
   id: string;
@@ -51,7 +52,11 @@ export const useMissionParticipations = () => {
         userId: participation.user_id,
         missionId: participation.mission_id,
         status: participation.status,
-        submissionData: participation.submission_data,
+        submissionData: participation.submission_data as {
+          receipt_images?: string[];
+          review_url?: string;
+          submission_type: 'RECEIPT' | 'REVIEW';
+        },
         createdAt: new Date(participation.created_at),
         userName: participation.profiles?.username || 'Unknown User',
         userAvatar: participation.profiles?.avatar || undefined,
