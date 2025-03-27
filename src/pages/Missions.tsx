@@ -46,18 +46,11 @@ const Missions = () => {
         createdAt: new Date(mission.created_at),
         updatedAt: new Date(mission.updated_at)
       }));
-
-      // Add console logging to debug expiration dates
-      console.log('Mission dates:', transformedMissions.map(m => ({
-        title: m.title,
-        expiresAt: m.expiresAt?.toISOString(),
-        isExpired: m.expiresAt ? (new Date() > m.expiresAt) : false,
-        now: new Date().toISOString()
-      })));
       
       // Only count missions that aren't expired
+      const now = new Date();
       const activeCount = transformedMissions.filter(
-        mission => !mission.expiresAt || new Date() > mission.expiresAt ? false : true
+        mission => !mission.expiresAt || now <= mission.expiresAt
       ).length;
       
       setActiveMissionsCount(activeCount);
@@ -75,8 +68,10 @@ const Missions = () => {
   }, []);
 
   useEffect(() => {
+    const now = new Date();
     const sortedMissions = [...missions];
     
+    // First sort by the selected sorting option
     switch (sortBy) {
       case 'recent':
         sortedMissions.sort((a, b) => 
@@ -94,8 +89,18 @@ const Missions = () => {
         break;
     }
     
+    // Then ensure expired missions are always at the bottom
+    sortedMissions.sort((a, b) => {
+      const aExpired = a.expiresAt && now > a.expiresAt;
+      const bExpired = b.expiresAt && now > b.expiresAt;
+      
+      if (aExpired && !bExpired) return 1; // a is expired, b is not -> a goes after b
+      if (!aExpired && bExpired) return -1; // a is not expired, b is -> a goes before b
+      return 0; // No change in order based on expiration
+    });
+    
     setMissions(sortedMissions);
-  }, [sortBy]);
+  }, [sortBy, missions]);
 
   return (
     <div className="min-h-screen bg-gray-50">

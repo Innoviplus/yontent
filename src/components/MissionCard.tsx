@@ -42,15 +42,6 @@ const MissionCard = ({ mission, className }: MissionCardProps) => {
         </div>
       )}
       
-      {/* Debug info - can be removed after testing */}
-      {process.env.NODE_ENV === 'development' && mission.expiresAt && (
-        <div className="absolute top-0 left-0 bg-black/70 text-white text-xs p-1 z-10">
-          Expires: {mission.expiresAt.toLocaleString()}<br/>
-          Now: {now.toLocaleString()}<br/>
-          Expired: {isExpired ? 'Yes' : 'No'}
-        </div>
-      )}
-      
       <div className="p-5 flex-1 flex flex-col">
         <div className="flex items-center mb-4">
           {mission.merchantLogo && (
