@@ -17,11 +17,9 @@ const UserProfile = () => {
     isFollowing,
     followLoading,
     handleFollow,
-    user
+    user,
+    isCurrentUser
   } = useUserProfile(username);
-
-  // Check if the current user is viewing their own profile
-  const isCurrentUser = user && profile && user.id === profile.id;
 
   return (
     <div className="min-h-screen bg-gray-50">
