@@ -3,6 +3,7 @@ import { useState, useEffect } from 'react';
 import { toast } from 'sonner';
 import { supabase } from '@/integrations/supabase/client';
 import { Json } from '@/integrations/supabase/types';
+import { addPointsToUser } from '@/hooks/admin/utils/points';
 
 export type MissionParticipation = {
   id: string;
@@ -111,16 +112,61 @@ export const useMissionParticipations = () => {
 
   const approveParticipation = async (id: string) => {
     try {
-      const { error } = await supabase
+      // First get the participation details to access user ID and mission points
+      const { data: participation, error: fetchError } = await supabase
+        .from('mission_participations')
+        .select('user_id, mission_id, status')
+        .eq('id', id)
+        .single();
+
+      if (fetchError) {
+        throw fetchError;
+      }
+
+      // Don't allow approving already approved participations
+      if (participation.status === 'APPROVED') {
+        toast.info('This submission is already approved');
+        return true;
+      }
+
+      // Get the mission details to know how many points to award
+      const { data: mission, error: missionError } = await supabase
+        .from('missions')
+        .select('title, points_reward')
+        .eq('id', participation.mission_id)
+        .single();
+
+      if (missionError) {
+        throw missionError;
+      }
+      
+      // Update the participation status
+      const { error: updateError } = await supabase
         .from('mission_participations')
         .update({ status: 'APPROVED' })
         .eq('id', id);
 
-      if (error) {
-        throw error;
+      if (updateError) {
+        throw updateError;
       }
 
-      toast.success('Participation approved successfully');
+      // Add points to the user
+      const pointsResult = await addPointsToUser(
+        participation.user_id,
+        mission.points_reward,
+        'EARNED',
+        'MISSION_REVIEW',
+        `Completed mission: ${mission.title}`,
+        participation.mission_id
+      );
+
+      if (!pointsResult.success) {
+        console.error('Error adding points:', pointsResult.error);
+        toast.error('Submission approved but failed to add points to user');
+        return true;
+      }
+
+      toast.success(`Participation approved and ${mission.points_reward} points awarded`);
       await refreshParticipations();
       return true;
     } catch (error: any) {
