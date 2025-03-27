@@ -65,7 +65,7 @@ const UserProfileHeader = ({ user }: UserProfileHeaderProps) => {
             </Link>
           )}
           
-          <UserStatsCard user={user} stats={userStats} className="mt-6" />
+          <UserStatsCard user={user} stats={userStats} className="mt-6" isCurrentUser={true} />
         </div>
         
         {/* Actions */}

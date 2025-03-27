@@ -106,6 +106,7 @@ const MissionsTab = () => {
                 <PointsBadge 
                   points={participation.mission.points_reward} 
                   size="sm"
+                  className={participation.status === 'REJECTED' ? 'line-through' : ''}
                 />
               </TableCell>
             </TableRow>

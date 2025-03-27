@@ -2,7 +2,6 @@
 import { Tabs, TabsList, TabsTrigger, TabsContent } from '@/components/ui/tabs';
 import { Review } from '@/lib/types';
 import ReviewCard from '@/components/ReviewCard';
-import UserMissionsTab from './UserMissionsTab';
 
 interface ProfileTabsProps {
   reviews: Review[];
@@ -16,7 +15,6 @@ const ProfileTabs = ({ reviews, user, profile, isCurrentUser }: ProfileTabsProps
     <Tabs defaultValue="reviews">
       <TabsList className="mb-6">
         <TabsTrigger value="reviews" className="flex-1">Reviews</TabsTrigger>
-        <TabsTrigger value="missions" className="flex-1">My Missions</TabsTrigger>
       </TabsList>
       
       <TabsContent value="reviews">
@@ -36,10 +34,6 @@ const ProfileTabs = ({ reviews, user, profile, isCurrentUser }: ProfileTabsProps
             </p>
           </div>
         )}
-      </TabsContent>
-
-      <TabsContent value="missions">
-        <UserMissionsTab userId={profile.id} isCurrentUser={isCurrentUser} username={profile.username} />
       </TabsContent>
     </Tabs>
   );
