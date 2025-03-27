@@ -81,10 +81,10 @@ const MissionCard = ({ mission, className }: MissionCardProps) => {
             </span>
           </div>
           
-          {mission.maxSubmissionsPerUser && (
+          {mission.totalMaxSubmissions && (
             <div className="flex items-center text-xs text-gray-500">
               <Users className="h-3 w-3 mr-1 flex-shrink-0" />
-              <span>Max submissions: {mission.maxSubmissionsPerUser}</span>
+              <span>Total max submissions: {mission.totalMaxSubmissions}</span>
             </div>
           )}
         </div>

@@ -1,13 +1,15 @@
 
 import { Card, CardContent } from '@/components/ui/card';
 import { Mission } from '@/lib/types';
-import { Check } from 'lucide-react';
+import { Check, Users } from 'lucide-react';
 
 interface MissionDetailsProps {
   mission: Mission;
+  currentSubmissions?: number;
+  totalSubmissions?: number;
 }
 
-const MissionDetails = ({ mission }: MissionDetailsProps) => {
+const MissionDetails = ({ mission, currentSubmissions = 0, totalSubmissions }: MissionDetailsProps) => {
   return (
     <Card>
       <CardContent className="p-6">
@@ -26,6 +28,25 @@ const MissionDetails = ({ mission }: MissionDetailsProps) => {
                   </li>
                 ))}
               </ul>
+            </div>
+          </div>
+        )}
+        
+        {mission.maxSubmissionsPerUser && (
+          <div className="mb-6">
+            <h3 className="text-lg font-semibold mb-2">Submissions</h3>
+            <div className="p-4 bg-gray-50 rounded-lg">
+              <div className="flex items-center mb-2">
+                <Users className="h-5 w-5 mr-2 text-gray-500 flex-shrink-0" />
+                <span>Max per user: {mission.maxSubmissionsPerUser}</span>
+              </div>
+              
+              {totalSubmissions !== undefined && (
+                <div className="flex items-center">
+                  <Users className="h-5 w-5 mr-2 text-gray-500 flex-shrink-0" />
+                  <span>Current progress: {currentSubmissions} / {totalSubmissions} total submissions</span>
+                </div>
+              )}
             </div>
           </div>
         )}

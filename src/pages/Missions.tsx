@@ -39,6 +39,7 @@ const Missions = () => {
         merchantLogo: mission.merchant_logo || undefined,
         bannerImage: mission.banner_image || undefined,
         maxSubmissionsPerUser: mission.max_submissions_per_user,
+        totalMaxSubmissions: mission.total_max_submissions,
         termsConditions: mission.terms_conditions || undefined,
         requirementDescription: mission.requirement_description || undefined,
         startDate: new Date(mission.start_date),
@@ -54,7 +55,10 @@ const Missions = () => {
       ).length;
       
       setActiveMissionsCount(activeCount);
-      setMissions(transformedMissions);
+      
+      // Sort the missions - first by expiration (expired at bottom), then by selected sort
+      const sortedMissions = sortMissionsByExpiration(transformedMissions);
+      setMissions(sortedMissions);
     } catch (error) {
       console.error('Error fetching missions:', error);
       toast.error('Failed to load missions');
@@ -67,40 +71,54 @@ const Missions = () => {
     fetchMissions();
   }, []);
 
-  useEffect(() => {
+  // Function to sort missions first by expiration (expired missions at the bottom)
+  // and then by the user's selected sort criteria
+  const sortMissionsByExpiration = (missionsToSort: Mission[]): Mission[] => {
     const now = new Date();
-    const sortedMissions = [...missions];
-    
-    // First sort by the selected sorting option
-    switch (sortBy) {
-      case 'recent':
-        sortedMissions.sort((a, b) => 
-          b.startDate.getTime() - a.startDate.getTime());
-        break;
-      case 'expiringSoon':
-        sortedMissions.sort((a, b) => {
-          if (!a.expiresAt) return 1;
-          if (!b.expiresAt) return -1;
-          return a.expiresAt.getTime() - b.expiresAt.getTime();
-        });
-        break;
-      case 'highestReward':
-        sortedMissions.sort((a, b) => b.pointsReward - a.pointsReward);
-        break;
-    }
-    
-    // Then ensure expired missions are always at the bottom
-    sortedMissions.sort((a, b) => {
+    return [...missionsToSort].sort((a, b) => {
       const aExpired = a.expiresAt && now > a.expiresAt;
       const bExpired = b.expiresAt && now > b.expiresAt;
       
-      if (aExpired && !bExpired) return 1; // a is expired, b is not -> a goes after b
-      if (!aExpired && bExpired) return -1; // a is not expired, b is -> a goes before b
-      return 0; // No change in order based on expiration
+      // First sort by expiration status
+      if (aExpired && !bExpired) return 1; // Expired missions go at the bottom
+      if (!aExpired && bExpired) return -1; // Active missions go at the top
+      
+      // If both have the same expiration status, sort by the selected criteria
+      if (!aExpired && !bExpired) {
+        switch (sortBy) {
+          case 'recent':
+            return b.startDate.getTime() - a.startDate.getTime();
+          case 'expiringSoon':
+            if (!a.expiresAt) return 1;
+            if (!b.expiresAt) return -1;
+            return a.expiresAt.getTime() - b.expiresAt.getTime();
+          case 'highestReward':
+            return b.pointsReward - a.pointsReward;
+          default:
+            return 0;
+        }
+      }
+      
+      // If both are expired, also sort them by the selected criteria
+      switch (sortBy) {
+        case 'recent':
+          return b.startDate.getTime() - a.startDate.getTime();
+        case 'expiringSoon':
+          if (!a.expiresAt) return 1;
+          if (!b.expiresAt) return -1;
+          return a.expiresAt.getTime() - b.expiresAt.getTime();
+        case 'highestReward':
+          return b.pointsReward - a.pointsReward;
+        default:
+          return 0;
+      }
     });
-    
-    setMissions(sortedMissions);
-  }, [sortBy]);  // Remove missions from dependency array to prevent infinite loop
+  };
+
+  // When sort option changes, resort the missions without refetching
+  useEffect(() => {
+    setMissions(sortMissionsByExpiration([...missions]));
+  }, [sortBy]);
 
   return (
     <div className="min-h-screen bg-gray-50">

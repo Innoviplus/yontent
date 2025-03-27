@@ -10,9 +10,9 @@ import { useAuth } from '@/contexts/AuthContext';
 // Import our components
 import MissionBanner from '@/components/mission/MissionBanner';
 import MissionDetails from '@/components/mission/MissionDetails';
+import MissionStats from '@/components/mission/MissionStats';
 import CommunityEngagement from '@/components/mission/CommunityEngagement';
 import MissionTestimonials from '@/components/mission/MissionTestimonials';
-import MissionStats from '@/components/mission/MissionStats';
 import MissionFAQ from '@/components/mission/MissionFAQ';
 import SupportSection from '@/components/mission/SupportSection';
 import MissionLoadingState from '@/components/mission/MissionLoadingState';
@@ -31,6 +31,8 @@ const MissionDetail = () => {
   const [loading, setLoading] = useState(true);
   const [participating, setParticipating] = useState(false);
   const [participationStatus, setParticipationStatus] = useState<string | null>(null);
+  const [currentSubmissions, setCurrentSubmissions] = useState<number>(0);
+  const [totalSubmissions, setTotalSubmissions] = useState<number | undefined>(undefined);
 
   // Initialize the mission service on first render
   useEffect(() => {
@@ -61,6 +63,7 @@ const MissionDetail = () => {
           merchantLogo: data.merchant_logo || undefined,
           bannerImage: data.banner_image || undefined,
           maxSubmissionsPerUser: data.max_submissions_per_user,
+          totalMaxSubmissions: data.total_max_submissions,
           termsConditions: data.terms_conditions || undefined,
           requirementDescription: data.requirement_description || undefined,
           startDate: new Date(data.start_date),
@@ -70,8 +73,10 @@ const MissionDetail = () => {
         };
         
         setMission(transformedMission);
+        setTotalSubmissions(data.total_max_submissions);
         
         if (user) {
+          // Check user participation
           const { data: participationData, error: participationError } = await supabase
             .from('mission_participations')
             .select('status')
@@ -86,6 +91,18 @@ const MissionDetail = () => {
           if (participationData) {
             setParticipating(true);
             setParticipationStatus(participationData.status);
+          }
+          
+          // Get total submissions count for this mission
+          const { count, error: countError } = await supabase
+            .from('mission_participations')
+            .select('*', { count: 'exact', head: true })
+            .eq('mission_id', id);
+            
+          if (countError) {
+            console.error('Error counting submissions:', countError);
+          } else {
+            setCurrentSubmissions(count || 0);
           }
         }
       } catch (error) {
@@ -121,12 +138,11 @@ const MissionDetail = () => {
       <div className="container mx-auto px-4 py-8">
         <div className="grid grid-cols-1 lg:grid-cols-3 gap-8">
           <div className="lg:col-span-2 space-y-6">
-            <MissionDetails mission={mission} />
-            <CommunityEngagement />
-            <MissionTestimonials />
-          </div>
-          
-          <div className="space-y-6">
+            <MissionDetails 
+              mission={mission} 
+              currentSubmissions={currentSubmissions}
+              totalSubmissions={totalSubmissions}
+            />
             <MissionStats 
               mission={mission} 
               participating={participating} 
@@ -134,8 +150,13 @@ const MissionDetail = () => {
               userId={user.id}
               onParticipationUpdate={handleParticipationUpdate}
             />
-            <MissionFAQ />
+            <CommunityEngagement />
+          </div>
+          
+          <div className="space-y-6">
             <SupportSection />
+            <MissionTestimonials />
+            <MissionFAQ />
           </div>
         </div>
       </div>
