@@ -32,13 +32,18 @@ export const useMissionParticipations = () => {
     try {
       setIsLoading(true);
       
-      // Fetch mission participations with mission and user details in a single query
+      // Fetch mission participations with mission and user details using the correct foreign key references
       const { data, error } = await supabase
         .from('mission_participations')
         .select(`
-          *,
-          missions:mission_id (title, description, points_reward, type),
-          profiles:user_id (username, avatar)
+          id,
+          user_id,
+          mission_id,
+          status,
+          submission_data,
+          created_at,
+          profiles (username, avatar),
+          missions (title, description, points_reward, type)
         `)
         .order('created_at', { ascending: false });
 

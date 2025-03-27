@@ -44,7 +44,7 @@ const MissionReceiptSubmission = () => {
         // If user has already submitted, redirect to mission detail page
         if (participations && participations.length > 0) {
           toast.info("You have already submitted a receipt for this mission");
-          navigate(`/missions/${id}`);
+          navigate(`/mission/${id}`);
           return;
         }
         
@@ -150,7 +150,8 @@ const MissionReceiptSubmission = () => {
       if (insertError) throw insertError;
       
       toast.success('Receipt submitted successfully!');
-      navigate(`/missions/${id}`);
+      // Fix the navigation path - use singular "mission" instead of plural "missions"
+      navigate(`/mission/${id}`);
     } catch (error) {
       console.error('Error submitting receipt:', error);
       toast.error('Failed to submit receipt. Please try again.');
@@ -236,7 +237,7 @@ const MissionReceiptSubmission = () => {
           <CardFooter className="flex justify-end space-x-4">
             <Button 
               variant="outline" 
-              onClick={() => navigate(`/missions/${mission.id}`)}
+              onClick={() => navigate(`/mission/${mission.id}`)}
               disabled={isSubmitting}
             >
               Cancel
