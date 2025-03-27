@@ -12,6 +12,8 @@ export type MissionParticipation = {
   status: string;
   submissionData: {
     receipt_images?: string[];
+    review_id?: string;
+    review_images?: string[];
     review_url?: string;
     submission_type: 'RECEIPT' | 'REVIEW';
   } | null;
@@ -78,6 +80,8 @@ export const useMissionParticipations = () => {
           status: participation.status,
           submissionData: participation.submission_data as {
             receipt_images?: string[];
+            review_id?: string;
+            review_images?: string[];
             review_url?: string;
             submission_type: 'RECEIPT' | 'REVIEW';
           },

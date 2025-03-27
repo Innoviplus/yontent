@@ -60,6 +60,12 @@ const MissionsParticipation = ({
       .join('')
       .toUpperCase();
   };
+  
+  const openReviewLink = (reviewId: string) => {
+    if (reviewId) {
+      window.open(`/review/${reviewId}`, '_blank');
+    }
+  };
 
   return (
     <>
@@ -138,10 +144,19 @@ const MissionsParticipation = ({
                                 </span>
                               </>
                             ) : (
-                              <>
+                              <Button 
+                                variant="link" 
+                                className="flex items-center p-0 h-auto text-sm text-blue-600"
+                                onClick={() => {
+                                  const reviewId = participation.submissionData?.review_id;
+                                  if (reviewId) {
+                                    openReviewLink(reviewId);
+                                  }
+                                }}
+                              >
                                 <ExternalLink className="h-4 w-4 mr-2" />
-                                <span className="text-sm">Review link available</span>
-                              </>
+                                <span>View Review</span>
+                              </Button>
                             )}
                           </div>
                         </div>
@@ -261,17 +276,39 @@ const MissionsParticipation = ({
                         </a>
                       ))}
                     </div>
-                  ) : viewingParticipation.missionType === 'REVIEW' && viewingParticipation.submissionData?.review_url ? (
-                    <div className="flex items-center space-x-2">
-                      <ExternalLink className="h-4 w-4" />
-                      <a 
-                        href={viewingParticipation.submissionData.review_url} 
-                        target="_blank" 
-                        rel="noopener noreferrer"
-                        className="text-blue-600 hover:underline"
+                  ) : viewingParticipation.missionType === 'REVIEW' && viewingParticipation.submissionData?.review_id ? (
+                    <div className="flex flex-col space-y-4">
+                      <Button 
+                        variant="outline" 
+                        className="flex items-center w-fit"
+                        onClick={() => openReviewLink(viewingParticipation.submissionData.review_id)}
                       >
-                        View Review
-                      </a>
+                        <ExternalLink className="h-4 w-4 mr-2" />
+                        Open Review in New Tab
+                      </Button>
+
+                      {viewingParticipation.submissionData.review_images && viewingParticipation.submissionData.review_images.length > 0 && (
+                        <div className="mt-4">
+                          <h5 className="text-sm font-medium mb-2">Review Images:</h5>
+                          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
+                            {viewingParticipation.submissionData.review_images.map((image, index) => (
+                              <a 
+                                key={index} 
+                                href={image} 
+                                target="_blank" 
+                                rel="noopener noreferrer" 
+                                className="block overflow-hidden rounded-md border"
+                              >
+                                <img 
+                                  src={image} 
+                                  alt={`Review image ${index + 1}`} 
+                                  className="w-full h-48 object-cover hover:opacity-90 transition-opacity" 
+                                />
+                              </a>
+                            ))}
+                          </div>
+                        </div>
+                      )}
                     </div>
                   ) : (
                     <p className="text-muted-foreground">No submission content available</p>
