@@ -150,13 +150,13 @@ const MissionDetail = () => {
               userId={user.id}
               onParticipationUpdate={handleParticipationUpdate}
             />
-            <CommunityEngagement />
+            <MissionFAQ />
           </div>
           
           <div className="space-y-6">
             <SupportSection />
             <MissionTestimonials />
-            <MissionFAQ />
+            <CommunityEngagement />
           </div>
         </div>
       </div>

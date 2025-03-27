@@ -1,7 +1,7 @@
 
 import { Card, CardContent } from '@/components/ui/card';
 import { Mission } from '@/lib/types';
-import { Check, Users } from 'lucide-react';
+import { Check, Gauge, Users } from 'lucide-react';
 
 interface MissionDetailsProps {
   mission: Mission;
@@ -43,8 +43,8 @@ const MissionDetails = ({ mission, currentSubmissions = 0, totalSubmissions }: M
               
               {totalSubmissions !== undefined && (
                 <div className="flex items-center">
-                  <Users className="h-5 w-5 mr-2 text-gray-500 flex-shrink-0" />
-                  <span>Current progress: {currentSubmissions} / {totalSubmissions} total submissions</span>
+                  <Gauge className="h-5 w-5 mr-2 text-gray-500 flex-shrink-0" />
+                  <span>Quota: {currentSubmissions} / {totalSubmissions} total submissions</span>
                 </div>
               )}
             </div>
