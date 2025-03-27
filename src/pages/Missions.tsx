@@ -100,7 +100,7 @@ const Missions = () => {
     });
     
     setMissions(sortedMissions);
-  }, [sortBy, missions]);
+  }, [sortBy]);  // Remove missions from dependency array to prevent infinite loop
 
   return (
     <div className="min-h-screen bg-gray-50">

@@ -1,4 +1,3 @@
-
 import { useState, useEffect } from 'react';
 import { Mission } from '@/lib/types';
 import MissionCard from '@/components/MissionCard';
@@ -42,24 +41,13 @@ const ActiveMissionsSection = () => {
           updatedAt: new Date(mission.updated_at)
         }));
         
-        // Filter out any expired missions with a more explicit check
-        const now = new Date();
-        const activeMissions = transformedMissions.filter(mission => {
-          if (!mission.expiresAt) return true; // No expiration date, so it's active
-          return now <= mission.expiresAt; // Keep only non-expired missions
-        });
+        console.log('Fetched missions:', transformedMissions);
         
-        // Sort missions: active ones first, then expired ones
-        const sortedMissions = [...transformedMissions].sort((a, b) => {
-          const aExpired = a.expiresAt && now > a.expiresAt;
-          const bExpired = b.expiresAt && now > b.expiresAt;
-          
-          if (aExpired && !bExpired) return 1; // a is expired, b is not -> a goes after b
-          if (!aExpired && bExpired) return -1; // a is not expired, b is -> a goes before b
-          return 0; // Both are in the same category, keep original order
-        });
-        
-        setMissions(sortedMissions);
+        if (transformedMissions.length === 0) {
+          console.log('No missions found');
+        }
+
+        setMissions(transformedMissions);
       } catch (error) {
         console.error('Error fetching missions:', error);
       } finally {

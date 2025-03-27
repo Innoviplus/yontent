@@ -1,4 +1,3 @@
-
 import { supabase } from "@/integrations/supabase/client";
 import { Mission } from "@/lib/types";
 import { toast } from "sonner";
@@ -8,6 +7,7 @@ import { toast } from "sonner";
  */
 export const fetchActiveMissions = async (): Promise<Mission[]> => {
   try {
+    console.log('Fetching active missions');
     const { data, error } = await supabase
       .from('missions')
       .select('*')
@@ -16,6 +16,12 @@ export const fetchActiveMissions = async (): Promise<Mission[]> => {
 
     if (error) {
       throw error;
+    }
+
+    if (!data || data.length === 0) {
+      console.log('No missions found in database');
+    } else {
+      console.log(`Found ${data.length} missions in database`);
     }
 
     const missions = data.map(mission => ({
@@ -37,20 +43,9 @@ export const fetchActiveMissions = async (): Promise<Mission[]> => {
       updatedAt: new Date(mission.updated_at)
     }));
 
-    // Filter out expired missions before returning
-    const activeMissions = missions.filter(mission => {
-      if (!mission.expiresAt) return true;
-      return new Date() <= mission.expiresAt;
-    });
+    console.log('Transformed missions:', missions);
 
-    console.log('Service mission dates:', missions.map(m => ({
-      title: m.title,
-      expiresAt: m.expiresAt?.toISOString(),
-      isExpired: m.expiresAt ? (new Date() > m.expiresAt) : false,
-      now: new Date().toISOString()
-    })));
-
-    return activeMissions;
+    return missions;
   } catch (error: any) {
     console.error("Error fetching missions:", error.message);
     toast.error("Failed to load missions");
@@ -152,17 +147,52 @@ export const updateMissionExpiryDate = async (
 // This will run when the file is loaded/imported
 (async () => {
   try {
+    // Get all missions to debug
+    const { data: allMissions, error: listError } = await supabase
+      .from('missions')
+      .select('id, title, status');
+    
+    if (listError) {
+      console.error("Error listing all missions:", listError.message);
+    } else {
+      console.log("All missions in database:", allMissions);
+    }
+    
     // Get the mission ID for "Review ITOEN"
     const { data, error } = await supabase
       .from('missions')
-      .select('id')
+      .select('id, title, status, expires_at')
       .eq('title', 'Review ITOEN')
       .single();
 
     if (error) {
       console.error("Error finding the Review ITOEN mission:", error.message);
+      
+      // Try creating a test mission if none exists
+      if (error.code === 'PGRST116') { // No rows returned
+        const { data: newData, error: createError } = await supabase
+          .from('missions')
+          .insert({
+            title: 'Review ITOEN',
+            description: 'Write a review about ITOEN products',
+            points_reward: 100,
+            type: 'REVIEW',
+            status: 'ACTIVE',
+            start_date: new Date().toISOString(),
+            expires_at: new Date('2025-03-26T23:59:59').toISOString()
+          })
+          .select();
+          
+        if (createError) {
+          console.error("Error creating test mission:", createError.message);
+        } else {
+          console.log("Created test mission:", newData);
+        }
+      }
       return;
     }
+
+    console.log("Found mission:", data);
 
     if (data) {
       // Set expiry date to March 26, 2025
