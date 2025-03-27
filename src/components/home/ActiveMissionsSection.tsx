@@ -42,7 +42,12 @@ const ActiveMissionsSection = () => {
           updatedAt: new Date(mission.updated_at)
         }));
         
-        setMissions(transformedMissions);
+        // Filter out any expired missions
+        const activeMissions = transformedMissions.filter(
+          mission => !mission.expiresAt || new Date() < mission.expiresAt
+        );
+        
+        setMissions(activeMissions);
       } catch (error) {
         console.error('Error fetching missions:', error);
       } finally {

@@ -1,3 +1,4 @@
+
 import { useState, useEffect } from 'react';
 import { Mission } from '@/lib/types';
 import MissionCard from '@/components/MissionCard';
@@ -20,7 +21,8 @@ const Missions = () => {
     try {
       let query = supabase
         .from('missions')
-        .select('*');
+        .select('*')
+        .eq('status', 'ACTIVE'); // Only fetch missions with ACTIVE status
       
       const { data, error } = await query;
       
@@ -45,9 +47,9 @@ const Missions = () => {
         updatedAt: new Date(mission.updated_at)
       }));
 
+      // Only count missions that aren't expired
       const activeCount = transformedMissions.filter(
-        mission => mission.status === 'ACTIVE' && 
-        (!mission.expiresAt || new Date() < mission.expiresAt)
+        mission => !mission.expiresAt || new Date() < mission.expiresAt
       ).length;
       
       setActiveMissionsCount(activeCount);
