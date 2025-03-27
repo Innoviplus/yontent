@@ -32,7 +32,7 @@ export const useMissionParticipations = () => {
     try {
       setIsLoading(true);
       
-      // Fetch mission participations with mission and user details using the correct foreign key references
+      // Fetch mission participations with mission and user details using explicit join syntax
       const { data, error } = await supabase
         .from('mission_participations')
         .select(`
@@ -42,8 +42,8 @@ export const useMissionParticipations = () => {
           status,
           submission_data,
           created_at,
-          profiles (username, avatar),
-          missions (title, description, points_reward, type)
+          missions!mission_id(title, description, points_reward, type),
+          profiles!user_id(username, avatar)
         `)
         .order('created_at', { ascending: false });
 
