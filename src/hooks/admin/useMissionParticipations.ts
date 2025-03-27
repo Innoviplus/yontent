@@ -32,46 +32,65 @@ export const useMissionParticipations = () => {
     try {
       setIsLoading(true);
       
-      // Fetch mission participations with mission and user details using explicit join syntax
-      const { data, error } = await supabase
+      // First, get all mission participations
+      const { data: participationsData, error: participationsError } = await supabase
         .from('mission_participations')
-        .select(`
-          id,
-          user_id,
-          mission_id,
-          status,
-          submission_data,
-          created_at,
-          missions!mission_id(title, description, points_reward, type),
-          profiles!user_id(username, avatar)
-        `)
+        .select('*')
         .order('created_at', { ascending: false });
 
-      if (error) {
-        throw error;
+      if (participationsError) {
+        throw participationsError;
       }
 
-      // Transform the data to match our frontend model
-      const formattedParticipations: MissionParticipation[] = data.map(participation => ({
-        id: participation.id,
-        userId: participation.user_id,
-        missionId: participation.mission_id,
-        status: participation.status,
-        submissionData: participation.submission_data as {
-          receipt_images?: string[];
-          review_url?: string;
-          submission_type: 'RECEIPT' | 'REVIEW';
-        },
-        createdAt: new Date(participation.created_at),
-        userName: participation.profiles?.username || 'Unknown User',
-        userAvatar: participation.profiles?.avatar || undefined,
-        missionTitle: participation.missions?.title || 'Unknown Mission',
-        missionDescription: participation.missions?.description || '',
-        missionPointsReward: participation.missions?.points_reward || 0,
-        missionType: participation.missions?.type as 'RECEIPT' | 'REVIEW' || 'RECEIPT',
-      }));
+      // Create an array to store all participations with joined data
+      const enrichedParticipations: MissionParticipation[] = [];
 
-      setParticipations(formattedParticipations);
+      // For each participation, get the associated user and mission data
+      for (const participation of participationsData) {
+        // Get user profile data
+        const { data: userData, error: userError } = await supabase
+          .from('profiles')
+          .select('username, avatar')
+          .eq('id', participation.user_id)
+          .single();
+
+        if (userError) {
+          console.error('Error fetching user data:', userError);
+        }
+
+        // Get mission data
+        const { data: missionData, error: missionError } = await supabase
+          .from('missions')
+          .select('title, description, points_reward, type')
+          .eq('id', participation.mission_id)
+          .single();
+
+        if (missionError) {
+          console.error('Error fetching mission data:', missionError);
+        }
+
+        // Transform the data to match our frontend model
+        enrichedParticipations.push({
+          id: participation.id,
+          userId: participation.user_id,
+          missionId: participation.mission_id,
+          status: participation.status,
+          submissionData: participation.submission_data as {
+            receipt_images?: string[];
+            review_url?: string;
+            submission_type: 'RECEIPT' | 'REVIEW';
+          },
+          createdAt: new Date(participation.created_at),
+          userName: userData?.username || 'Unknown User',
+          userAvatar: userData?.avatar || undefined,
+          missionTitle: missionData?.title || 'Unknown Mission',
+          missionDescription: missionData?.description || '',
+          missionPointsReward: missionData?.points_reward || 0,
+          missionType: missionData?.type as 'RECEIPT' | 'REVIEW' || 'RECEIPT',
+        });
+      }
+
+      setParticipations(enrichedParticipations);
     } catch (error: any) {
       console.error('Error fetching mission participations:', error.message);
       toast.error('Failed to load mission participations');
