@@ -119,3 +119,61 @@ export const ensureMissionStorageBucketExists = async () => {
 export const initializeMissionService = () => {
   ensureMissionStorageBucketExists();
 };
+
+/**
+ * Update a mission's expiry date
+ */
+export const updateMissionExpiryDate = async (
+  missionId: string,
+  expiryDate: Date
+): Promise<boolean> => {
+  try {
+    const { error } = await supabase
+      .from('missions')
+      .update({
+        expires_at: expiryDate.toISOString()
+      })
+      .eq('id', missionId);
+
+    if (error) {
+      throw error;
+    }
+
+    toast.success("Mission expiry date updated successfully");
+    return true;
+  } catch (error: any) {
+    console.error("Error updating mission expiry date:", error.message);
+    toast.error("Failed to update mission expiry date");
+    return false;
+  }
+};
+
+// Execute the update for "Review ITOEN" mission
+// This will run when the file is loaded/imported
+(async () => {
+  try {
+    // Get the mission ID for "Review ITOEN"
+    const { data, error } = await supabase
+      .from('missions')
+      .select('id')
+      .eq('title', 'Review ITOEN')
+      .single();
+
+    if (error) {
+      console.error("Error finding the Review ITOEN mission:", error.message);
+      return;
+    }
+
+    if (data) {
+      // Set expiry date to March 26, 2025
+      const newExpiryDate = new Date('2025-03-26T23:59:59');
+      const success = await updateMissionExpiryDate(data.id, newExpiryDate);
+      
+      if (success) {
+        console.log("Successfully updated Review ITOEN mission expiry date to:", newExpiryDate.toISOString());
+      }
+    }
+  } catch (err) {
+    console.error("Unexpected error updating mission expiry date:", err);
+  }
+})();
