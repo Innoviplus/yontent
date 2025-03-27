@@ -18,7 +18,7 @@ export const fetchActiveMissions = async (): Promise<Mission[]> => {
       throw error;
     }
 
-    return data.map(mission => ({
+    const missions = data.map(mission => ({
       id: mission.id,
       title: mission.title,
       description: mission.description,
@@ -36,6 +36,21 @@ export const fetchActiveMissions = async (): Promise<Mission[]> => {
       createdAt: new Date(mission.created_at),
       updatedAt: new Date(mission.updated_at)
     }));
+
+    // Filter out expired missions before returning
+    const activeMissions = missions.filter(mission => {
+      if (!mission.expiresAt) return true;
+      return new Date() <= mission.expiresAt;
+    });
+
+    console.log('Service mission dates:', missions.map(m => ({
+      title: m.title,
+      expiresAt: m.expiresAt?.toISOString(),
+      isExpired: m.expiresAt ? (new Date() > m.expiresAt) : false,
+      now: new Date().toISOString()
+    })));
+
+    return activeMissions;
   } catch (error: any) {
     console.error("Error fetching missions:", error.message);
     toast.error("Failed to load missions");

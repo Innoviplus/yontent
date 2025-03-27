@@ -47,9 +47,17 @@ const Missions = () => {
         updatedAt: new Date(mission.updated_at)
       }));
 
+      // Add console logging to debug expiration dates
+      console.log('Mission dates:', transformedMissions.map(m => ({
+        title: m.title,
+        expiresAt: m.expiresAt?.toISOString(),
+        isExpired: m.expiresAt ? (new Date() > m.expiresAt) : false,
+        now: new Date().toISOString()
+      })));
+      
       // Only count missions that aren't expired
       const activeCount = transformedMissions.filter(
-        mission => !mission.expiresAt || new Date() < mission.expiresAt
+        mission => !mission.expiresAt || new Date() > mission.expiresAt ? false : true
       ).length;
       
       setActiveMissionsCount(activeCount);

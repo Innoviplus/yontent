@@ -41,11 +41,22 @@ const ActiveMissionsSection = () => {
           createdAt: new Date(mission.created_at),
           updatedAt: new Date(mission.updated_at)
         }));
+
+        // Add console logging to debug expiration dates
+        console.log('Active section mission dates:', transformedMissions.map(m => ({
+          title: m.title,
+          expiresAt: m.expiresAt?.toISOString(),
+          isExpired: m.expiresAt ? (new Date() > m.expiresAt) : false,
+          now: new Date().toISOString()
+        })));
         
-        // Filter out any expired missions
-        const activeMissions = transformedMissions.filter(
-          mission => !mission.expiresAt || new Date() < mission.expiresAt
-        );
+        // Filter out any expired missions with a more explicit check
+        const activeMissions = transformedMissions.filter(mission => {
+          if (!mission.expiresAt) return true; // No expiration date, so it's active
+          const now = new Date();
+          const isExpired = now > mission.expiresAt;
+          return !isExpired; // Keep only non-expired missions
+        });
         
         setMissions(activeMissions);
       } catch (error) {

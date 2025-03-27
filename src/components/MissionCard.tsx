@@ -12,7 +12,9 @@ interface MissionCardProps {
 }
 
 const MissionCard = ({ mission, className }: MissionCardProps) => {
-  const isExpired = mission.expiresAt ? isPast(mission.expiresAt) : false;
+  // Force a re-evaluation of expiration date on each render
+  const now = new Date();
+  const isExpired = mission.expiresAt ? now > mission.expiresAt : false;
   const isCompleted = mission.status === 'COMPLETED';
   
   return (
@@ -37,6 +39,15 @@ const MissionCard = ({ mission, className }: MissionCardProps) => {
       {isExpired && !isCompleted && (
         <div className="absolute -top-1 -right-1 bg-gray-500 text-white text-xs font-medium px-2 py-0.5 rounded-bl-md rounded-tr-md z-10">
           Expired
+        </div>
+      )}
+      
+      {/* Debug info - can be removed after testing */}
+      {process.env.NODE_ENV === 'development' && mission.expiresAt && (
+        <div className="absolute top-0 left-0 bg-black/70 text-white text-xs p-1 z-10">
+          Expires: {mission.expiresAt.toLocaleString()}<br/>
+          Now: {now.toLocaleString()}<br/>
+          Expired: {isExpired ? 'Yes' : 'No'}
         </div>
       )}
       
