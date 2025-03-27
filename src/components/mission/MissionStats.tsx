@@ -31,7 +31,7 @@ const MissionStats = ({
   const isExpired = mission.expiresAt ? isPast(mission.expiresAt) : false;
   const isCompleted = participationStatus === 'APPROVED';
 
-  const joinMission = async () => {
+  const handleMissionParticipation = async () => {
     if (!userId) {
       toast.error('Please log in to join this mission');
       return;
@@ -40,19 +40,18 @@ const MissionStats = ({
     try {
       setLoading(true);
       
-      // For receipt type missions, navigate to the receipt submission page
+      // For receipt and review type missions, navigate to the appropriate submission page
       if (mission.type === 'RECEIPT') {
         navigate(`/mission/${mission.id}/submit-receipt`);
         return;
       }
       
-      // For review type missions, navigate to the review submission page
       if (mission.type === 'REVIEW') {
         navigate(`/mission/${mission.id}/submit-review`);
         return;
       }
       
-      // For other mission types, create a participation record
+      // For other mission types, create a participation record directly
       const { error } = await supabase
         .from('mission_participations')
         .insert({
@@ -71,6 +70,42 @@ const MissionStats = ({
     } finally {
       setLoading(false);
     }
+  };
+
+  const getMissionActionButton = () => {
+    if (isCompleted) {
+      return (
+        <Button disabled className="w-full border-brand-teal text-brand-teal bg-white hover:bg-gray-50">
+          Mission Completed
+        </Button>
+      );
+    }
+    
+    if (isExpired) {
+      return (
+        <Button disabled className="w-full">
+          Mission Expired
+        </Button>
+      );
+    }
+    
+    if (participating) {
+      return (
+        <Button disabled={loading} variant="outline" className="w-full border-brand-teal text-brand-teal bg-white hover:bg-gray-50">
+          {participationStatus === 'PENDING' ? 'Submission Pending' : 'Already Joined'}
+        </Button>
+      );
+    }
+    
+    return (
+      <Button
+        onClick={handleMissionParticipation}
+        disabled={loading || !userId}
+        className="w-full bg-brand-teal hover:bg-brand-teal/90"
+      >
+        {userId ? 'Join Mission' : 'Log in to Join'}
+      </Button>
+    );
   };
 
   return (
@@ -130,27 +165,7 @@ const MissionStats = ({
         </div>
         
         <div className="mt-6">
-          {isCompleted ? (
-            <Button disabled className="w-full border-brand-teal text-brand-teal bg-white hover:bg-gray-50">
-              Mission Completed
-            </Button>
-          ) : isExpired ? (
-            <Button disabled className="w-full">
-              Mission Expired
-            </Button>
-          ) : participating ? (
-            <Button disabled={loading} variant="outline" className="w-full border-brand-teal text-brand-teal bg-white hover:bg-gray-50">
-              {participationStatus === 'PENDING' ? 'Submission Pending' : 'Already Joined'}
-            </Button>
-          ) : (
-            <Button
-              onClick={joinMission}
-              disabled={loading || !userId}
-              className="w-full bg-brand-teal hover:bg-brand-teal/90"
-            >
-              {userId ? 'Join Mission' : 'Log in to Join'}
-            </Button>
-          )}
+          {getMissionActionButton()}
         </div>
       </CardContent>
     </Card>
