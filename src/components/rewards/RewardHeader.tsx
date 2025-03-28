@@ -16,7 +16,7 @@ const RewardHeader: React.FC<RewardHeaderProps> = ({ title }) => {
       <Button 
         variant="ghost" 
         size="icon" 
-        onClick={() => navigate('/redeem')}
+        onClick={() => navigate('/rewards')}
         className="rounded-full"
       >
         <ArrowLeft className="h-5 w-5" />

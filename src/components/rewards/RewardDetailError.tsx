@@ -18,7 +18,7 @@ const RewardDetailError: React.FC = () => {
         </AlertDescription>
       </Alert>
       <Button 
-        onClick={() => navigate('/redeem')}
+        onClick={() => navigate('/rewards')}
         className="mt-4"
       >
         Back to Rewards
