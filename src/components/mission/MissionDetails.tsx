@@ -44,7 +44,7 @@ const MissionDetails = ({ mission, currentSubmissions = 0, totalSubmissions }: M
               {totalSubmissions !== undefined && (
                 <div className="flex items-center">
                   <Gauge className="h-5 w-5 mr-2 text-gray-500 flex-shrink-0" />
-                  <span>Quota: {totalSubmissions} ({currentSubmissions === 1 ? '1 user has' : `${currentSubmissions} users have`} submitted already)</span>
+                  <span>Quota: {totalSubmissions} ({currentSubmissions === 1 ? '1 user has' : `${currentSubmissions} users have`} submitted)</span>
                 </div>
               )}
             </div>
