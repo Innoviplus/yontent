@@ -9,7 +9,6 @@ import Settings from './pages/Settings';
 import EditProfile from './pages/EditProfile';
 import AdminPanel from './pages/AdminPanel';
 import RewardDetail from './pages/RewardDetail';
-import Redeem from './pages/Redeem';
 import Rewards from './pages/Rewards';
 import UserProfile from './pages/UserProfile';
 import Dashboard from './pages/Dashboard';
@@ -53,7 +52,6 @@ function App() {
           <Route path="/settings" element={<Settings />} />
           <Route path="/edit-profile" element={<EditProfile />} />
           <Route path="/dashboard" element={<Dashboard />} />
-          <Route path="/redeem" element={<Redeem />} />
           <Route path="/rewards/:id" element={<RewardDetail />} />
           <Route path="/mission/:id/submit-receipt" element={<MissionReceiptSubmission />} />
           <Route path="/mission/:id/submit-review" element={<MissionReviewSubmission />} />
