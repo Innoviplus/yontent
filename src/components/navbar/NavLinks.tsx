@@ -1,6 +1,6 @@
 
 import { useLocation } from 'react-router-dom';
-import { FileText, Award, Medal, Pencil } from 'lucide-react';
+import { FileText, Award, Medal, Pencil, Gift } from 'lucide-react';
 import NavLink from './NavLink';
 import { useAuth } from '@/contexts/AuthContext';
 
@@ -27,6 +27,12 @@ const NavLinks = () => {
         label="Rankings" 
         icon={<Medal className="h-5 w-5" />}
         current={location.pathname.includes('/rankings') || location.pathname.includes('/user-rankings')}
+      />
+      <NavLink 
+        to="/rewards" 
+        label="Rewards" 
+        icon={<Gift className="h-5 w-5" />}
+        current={location.pathname === '/rewards' || location.pathname.includes('/reward/')}
       />
       
       {user && (

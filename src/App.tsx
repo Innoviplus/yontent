@@ -10,6 +10,7 @@ import EditProfile from './pages/EditProfile';
 import AdminPanel from './pages/AdminPanel';
 import RewardDetail from './pages/RewardDetail';
 import Redeem from './pages/Redeem';
+import Rewards from './pages/Rewards';
 import UserProfile from './pages/UserProfile';
 import Dashboard from './pages/Dashboard';
 import Reviews from './pages/Reviews';
@@ -39,6 +40,7 @@ function App() {
         <Route path="/mission/:id" element={<MissionDetail />} />
         <Route path="/user-rankings" element={<UserRankings />} />
         <Route path="/user/:username" element={<UserProfile />} />
+        <Route path="/rewards" element={<Rewards />} />
         
         {/* Redirect /profile to /settings */}
         <Route path="/profile" element={<Navigate to="/settings" replace />} />
