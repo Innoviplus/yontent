@@ -16,7 +16,7 @@ export const useRequestsAdmin = () => {
     try {
       setIsLoading(true);
       
-      // Fetch requests from Supabase
+      // Fetch requests from Supabase with proper joins
       const { data, error } = await supabase
         .from('redemption_requests')
         .select(`
@@ -28,8 +28,8 @@ export const useRequestsAdmin = () => {
           updated_at,
           payment_details,
           points_amount,
-          profiles(username),
-          item:item_id(name)
+          profiles!user_id(username),
+          item:redemption_items!item_id(name)
         `)
         .order('created_at', { ascending: false });
       
