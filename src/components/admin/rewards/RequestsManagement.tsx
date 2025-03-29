@@ -87,8 +87,8 @@ const RequestsManagement = ({
                 <TableBody>
                   {filteredRequests.map((request) => (
                     <TableRow key={request.id}>
-                      <TableCell className="font-medium">{request.userId.slice(0, 8)}...</TableCell>
-                      <TableCell>{request.itemId.slice(0, 8)}...</TableCell>
+                      <TableCell className="font-medium">{request.userName || request.userId.slice(0, 8)}</TableCell>
+                      <TableCell>{request.itemName || request.itemId.slice(0, 8)}</TableCell>
                       <TableCell>{new Date(request.createdAt).toLocaleDateString()}</TableCell>
                       <TableCell>
                         <RequestStatusBadge status={request.status} />

@@ -4,10 +4,12 @@ import { useAuth } from '@/contexts/AuthContext';
 import { usePoints } from '@/contexts/PointsContext';
 import { toast } from 'sonner';
 import { RedemptionItem } from '@/types/redemption';
+import { createRedemptionRequest } from '@/services/redemptionService';
+import { supabase } from '@/integrations/supabase/client';
 
 export const useRewardRedemption = (reward: RedemptionItem | null) => {
   const { user } = useAuth();
-  const { userPoints } = usePoints();
+  const { userPoints, refreshPoints } = usePoints();
   const [isRedeeming, setIsRedeeming] = useState(false);
 
   // Determine if user can redeem the reward
@@ -16,9 +18,9 @@ export const useRewardRedemption = (reward: RedemptionItem | null) => {
     !!reward && 
     userPoints >= reward.points_required;
 
-  // Basic placeholder function for redemption
+  // Handle reward redemption
   const handleRedeem = async () => {
-    if (!canRedeem) {
+    if (!canRedeem || !user || !reward) {
       toast.error("You don't have enough points to redeem this reward");
       return false;
     }
@@ -26,9 +28,21 @@ export const useRewardRedemption = (reward: RedemptionItem | null) => {
     setIsRedeeming(true);
     
     try {
-      // Show a success message (actual redemption functionality has been removed)
-      toast.success('Reward redemption feature is not available at this time.');
+      // Create redemption request
+      const result = await createRedemptionRequest({
+        userId: user.id,
+        itemId: reward.id,
+        pointsAmount: reward.points_required
+      });
       
+      if (!result.success) {
+        throw new Error(result.message);
+      }
+      
+      // Refresh user points after redemption
+      await refreshPoints();
+      
+      toast.success('Reward redemption request submitted successfully!');
       return true;
     } catch (error) {
       console.error('Error in redemption:', error);
@@ -39,10 +53,9 @@ export const useRewardRedemption = (reward: RedemptionItem | null) => {
     }
   };
 
-  // Basic placeholder function for cash out redemption
+  // Handle cash out redemption
   const handleCashOutRedeem = async (bankDetails: any) => {
-    // Similar placeholder as handleRedeem
-    if (!canRedeem) {
+    if (!canRedeem || !user || !reward) {
       toast.error("You don't have enough points to redeem this reward");
       return false;
     }
@@ -50,9 +63,24 @@ export const useRewardRedemption = (reward: RedemptionItem | null) => {
     setIsRedeeming(true);
     
     try {
-      // Show a success message (actual redemption functionality has been removed)
-      toast.success('Cash out feature is not available at this time.');
+      // Create redemption request with bank details
+      const result = await createRedemptionRequest({
+        userId: user.id,
+        itemId: reward.id,
+        pointsAmount: reward.points_required,
+        paymentDetails: {
+          bank_details: bankDetails
+        }
+      });
       
+      if (!result.success) {
+        throw new Error(result.message);
+      }
+      
+      // Refresh user points after redemption
+      await refreshPoints();
+      
+      toast.success('Cash out request submitted successfully!');
       return true;
     } catch (error) {
       console.error('Error in cash out redemption:', error);

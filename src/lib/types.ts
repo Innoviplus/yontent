@@ -70,8 +70,7 @@ export interface Mission {
   updatedAt: Date;
 }
 
-// Add mock RedemptionRequest type for backward compatibility
-// This is just a placeholder to fix TypeScript errors
+// RedemptionRequest type updated with more fields for the UI
 export interface RedemptionRequest {
   id: string;
   userId: string;
@@ -89,7 +88,10 @@ export interface RedemptionRequest {
       recipient_address?: string;
       recipient_mobile?: string;
     }
-  }
+  };
+  // Additional fields for display purposes
+  userName?: string;
+  itemName?: string;
 }
 
 // Define Json type to match Supabase's Json type
