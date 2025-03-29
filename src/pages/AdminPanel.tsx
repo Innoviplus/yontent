@@ -6,9 +6,11 @@ import Navbar from '@/components/Navbar';
 import { useRewardsAdmin } from '@/hooks/admin/useRewardsAdmin';
 import { useMissionsAdmin } from '@/hooks/admin/useMissionsAdmin';
 import { useMissionParticipations } from '@/hooks/admin/useMissionParticipations';
+import { useRequestsAdmin } from '@/hooks/admin/useRequestsAdmin';
 import RewardsManagement from '@/components/admin/rewards/RewardsManagement';
 import MissionsManagement from '@/components/admin/missions/MissionsManagement';
 import MissionsParticipation from '@/components/admin/missions/MissionsParticipation';
+import RequestsManagement from '@/components/admin/rewards/RequestsManagement';
 
 const AdminPanel = () => {
   const [activeTab, setActiveTab] = useState('rewards');
@@ -37,6 +39,17 @@ const AdminPanel = () => {
     rejectParticipation
   } = useMissionParticipations();
 
+  const {
+    requests,
+    isLoading: isLoadingRequests,
+    activeTab: requestsActiveTab,
+    setActiveTab: setRequestsActiveTab,
+    isRefreshing: isRefreshingRequests,
+    refreshRequests,
+    handleApproveRequest,
+    handleRejectRequest
+  } = useRequestsAdmin();
+
   return (
     <div className="min-h-screen bg-gray-50">
       <Navbar />
@@ -50,6 +63,7 @@ const AdminPanel = () => {
           <Tabs defaultValue={activeTab} value={activeTab} onValueChange={setActiveTab} className="w-full">
             <TabsList className="mb-6">
               <TabsTrigger value="rewards">Rewards</TabsTrigger>
+              <TabsTrigger value="requests">Redemption Requests</TabsTrigger>
               <TabsTrigger value="missions">Missions</TabsTrigger>
               <TabsTrigger value="participations">Participations</TabsTrigger>
             </TabsList>
@@ -61,6 +75,19 @@ const AdminPanel = () => {
                 onAdd={addReward}
                 onUpdate={updateReward}
                 onDelete={deleteReward}
+              />
+            </TabsContent>
+
+            <TabsContent value="requests" className="space-y-4">
+              <RequestsManagement 
+                requests={requests}
+                isLoading={isLoadingRequests}
+                isRefreshing={isRefreshingRequests}
+                activeTab={requestsActiveTab}
+                setActiveTab={setRequestsActiveTab}
+                onRefresh={refreshRequests}
+                onApprove={handleApproveRequest}
+                onReject={handleRejectRequest}
               />
             </TabsContent>
 
