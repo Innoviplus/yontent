@@ -28,8 +28,8 @@ export const useRequestsAdmin = () => {
           updated_at,
           payment_details,
           points_amount,
-          profiles:user_id(username),
-          item:redemption_items(name)
+          profiles(username),
+          redemption_items(name)
         `)
         .order('created_at', { ascending: false });
       
@@ -48,7 +48,7 @@ export const useRequestsAdmin = () => {
         paymentDetails: req.payment_details as RedemptionRequest['paymentDetails'],
         pointsAmount: req.points_amount,
         userName: req.profiles?.username || 'Unknown User',
-        itemName: req.item?.name || 'Unknown Item'
+        itemName: req.redemption_items?.name || 'Unknown Item'
       }));
       
       setRequests(formattedRequests);
