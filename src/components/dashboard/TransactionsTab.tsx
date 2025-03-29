@@ -92,9 +92,20 @@ const TransactionsTab = () => {
                   </Badge>
                 </TableCell>
                 <TableCell className="text-right">
-                  <Badge className="bg-red-100 text-red-800 border-red-200">
-                    -{request.pointsAmount}
-                  </Badge>
+                  {request.status === 'REJECTED' ? (
+                    <div className="flex flex-col items-end">
+                      <Badge className="bg-red-100 text-red-800 border-red-200 line-through">
+                        -{request.pointsAmount}
+                      </Badge>
+                      <span className="text-xs text-green-600 font-medium mt-1">
+                        Points returned
+                      </span>
+                    </div>
+                  ) : (
+                    <Badge className="bg-red-100 text-red-800 border-red-200">
+                      -{request.pointsAmount}
+                    </Badge>
+                  )}
                 </TableCell>
               </TableRow>
             ))}
