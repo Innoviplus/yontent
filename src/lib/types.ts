@@ -1,4 +1,3 @@
-
 export interface User {
   id: string;
   username: string;
@@ -78,6 +77,7 @@ export interface RedemptionRequest {
   status: 'PENDING' | 'APPROVED' | 'REJECTED';
   createdAt: Date;
   updatedAt: Date;
+  pointsAmount: number;
   paymentDetails?: {
     bank_details?: {
       bank_name: string;
@@ -88,7 +88,7 @@ export interface RedemptionRequest {
       recipient_address?: string;
       recipient_mobile?: string;
     }
-  };
+  } | null;
   // Additional fields for display purposes
   userName?: string;
   itemName?: string;
