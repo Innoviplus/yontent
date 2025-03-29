@@ -19,6 +19,19 @@ export const createRedemptionRequest = async ({
   try {
     console.log('Creating redemption request:', { userId, itemId, pointsAmount });
     
+    // Get the user's username from the profiles table
+    const { data: userData, error: userError } = await supabase
+      .from('profiles')
+      .select('username')
+      .eq('id', userId)
+      .single();
+    
+    if (userError) {
+      console.error('Error fetching user data:', userError);
+    }
+    
+    const username = userData?.username || null;
+    
     // First deduct points from the user's account
     const deductResult = await deductPointsFromUser(
       userId, 
@@ -40,7 +53,8 @@ export const createRedemptionRequest = async ({
         item_id: itemId,
         points_amount: pointsAmount,
         status: 'PENDING',
-        payment_details: paymentDetails
+        payment_details: paymentDetails,
+        username: username // Add the username to the request
       })
       .select()
       .single();
