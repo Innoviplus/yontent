@@ -28,8 +28,8 @@ export const useRequestsAdmin = () => {
           updated_at,
           payment_details,
           points_amount,
-          profiles!user_id(username),
-          item:redemption_items!item_id(name)
+          profiles:user_id(username),
+          item:redemption_items(name)
         `)
         .order('created_at', { ascending: false });
       
