@@ -27,7 +27,8 @@ export const useRequestsAdmin = () => {
           created_at,
           updated_at,
           payment_details,
-          user:user_id(username),
+          points_amount,
+          profiles:user_id(username),
           item:item_id(name)
         `)
         .order('created_at', { ascending: false });
@@ -45,7 +46,7 @@ export const useRequestsAdmin = () => {
         createdAt: new Date(req.created_at),
         updatedAt: new Date(req.updated_at),
         paymentDetails: req.payment_details,
-        userName: req.user?.username || 'Unknown User',
+        userName: req.profiles?.username || 'Unknown User',
         itemName: req.item?.name || 'Unknown Item'
       }));
       

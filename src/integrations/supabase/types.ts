@@ -191,6 +191,47 @@ export type Database = {
         }
         Relationships: []
       }
+      redemption_requests: {
+        Row: {
+          created_at: string
+          id: string
+          item_id: string
+          payment_details: Json | null
+          points_amount: number
+          status: string
+          updated_at: string
+          user_id: string
+        }
+        Insert: {
+          created_at?: string
+          id?: string
+          item_id: string
+          payment_details?: Json | null
+          points_amount: number
+          status?: string
+          updated_at?: string
+          user_id: string
+        }
+        Update: {
+          created_at?: string
+          id?: string
+          item_id?: string
+          payment_details?: Json | null
+          points_amount?: number
+          status?: string
+          updated_at?: string
+          user_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "redemption_requests_item_id_fkey"
+            columns: ["item_id"]
+            isOneToOne: false
+            referencedRelation: "redemption_items"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       review_comments: {
         Row: {
           content: string
