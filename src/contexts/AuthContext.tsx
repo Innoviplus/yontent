@@ -1,4 +1,3 @@
-
 import { createContext, useContext, useEffect, useState, ReactNode } from 'react';
 import { Session, User } from '@supabase/supabase-js';
 import { supabase } from '@/integrations/supabase/client';
@@ -9,7 +8,14 @@ interface AuthContextType {
   session: Session | null;
   user: User | null;
   signIn: (identifier: string, password: string) => Promise<{ error: any }>;
-  signUp: (email: string, password: string, username: string, phoneNumber?: string) => Promise<{ error: any }>;
+  signUp: (
+    username: string,
+    password: string, 
+    phoneNumber: string
+  ) => Promise<{ 
+    success: boolean; 
+    error: Error | null;
+  }>;
   signOut: () => Promise<void>;
   loading: boolean;
   userProfile: any | null;
@@ -120,49 +126,64 @@ export function AuthProvider({ children }: { children: ReactNode }) {
     }
   };
 
-  const signUp = async (email: string, password: string, username: string, phoneNumber?: string) => {
+  const signUp = async (
+    username: string, 
+    password: string, 
+    phoneNumber: string
+  ): Promise<{ 
+    success: boolean; 
+    error: Error | null;
+  }> => {
     try {
-      const { error } = await supabase.auth.signUp({
-        email,
+      // Create the auth user with phone
+      const { data: authData, error: authError } = await supabase.auth.signUp({
+        phone: phoneNumber,
         password,
         options: {
           data: {
             username,
-            phone: phoneNumber
           },
         },
       });
-      
-      if (error) {
-        toast({
-          title: "Registration Failed",
-          description: error.message,
-          variant: "destructive",
-        });
-        return { error };
+
+      if (authError) {
+        throw new Error(authError.message);
       }
-      
-      sonnerToast.success('Account created successfully! Please check your email for confirmation.');
-      return { error: null };
-    } catch (error: any) {
-      // Format error message to be more user-friendly
-      let errorMessage = error.message;
-      
-      if (errorMessage && (
-        errorMessage.includes('duplicate key') || 
-        errorMessage.includes('profiles_username_key') ||
-        errorMessage.includes('Database error saving new user')
-      )) {
-        errorMessage = 'This username is already taken. Please choose a different one.';
+
+      // Check if the user was created successfully
+      if (!authData.user) {
+        throw new Error('Failed to create user');
       }
+
+      // We successfully created a user, now create the profile
+      const { error: profileError } = await supabase
+        .from('profiles')
+        .insert([
+          {
+            id: authData.user.id,
+            username,
+            phone_number: phoneNumber,
+            points: 0,
+          },
+        ]);
+
+      if (profileError) {
+        // If there was an error creating the profile, delete the auth user and throw error
+        await supabase.auth.admin.deleteUser(authData.user.id);
+        throw new Error('Database error saving new user: ' + profileError.message);
+      }
+
+      // Update session if created successfully
+      setUser(authData.user);
+      setSession(authData.session);
       
-      toast({
-        title: "Registration Failed",
-        description: errorMessage,
-        variant: "destructive",
-      });
-      
-      return { error: { ...error, message: errorMessage } };
+      return { success: true, error: null };
+    } catch (error) {
+      console.error('Sign up error:', error);
+      return { 
+        success: false, 
+        error: error instanceof Error ? error : new Error(String(error)) 
+      };
     }
   };
 

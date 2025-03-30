@@ -1,7 +1,7 @@
 
 import { useState } from 'react';
 import { Link, useNavigate } from 'react-router-dom';
-import { Eye, EyeOff, Lock } from 'lucide-react';
+import { Eye, EyeOff } from 'lucide-react';
 import { useAuth } from '@/contexts/AuthContext';
 import { Input } from '@/components/ui/input';
 import { Form, FormControl, FormField, FormItem, FormLabel, FormMessage } from '@/components/ui/form';
@@ -15,7 +15,6 @@ const phoneRegex = /^\d{6,15}$/;
 
 const registerSchema = z.object({
   username: z.string().min(3, 'Username must be at least 3 characters'),
-  email: z.string().email('Please enter a valid email address'),
   password: z.string()
     .min(8, 'Password must be at least 8 characters')
     .regex(/\d/, 'Password must contain at least 1 number')
@@ -39,7 +38,6 @@ const RegisterForm = () => {
     resolver: zodResolver(registerSchema),
     defaultValues: {
       username: '',
-      email: '',
       password: '',
       phoneNumber: '',
       phoneCountryCode: '+1',
@@ -57,9 +55,8 @@ const RegisterForm = () => {
     const phoneWithCountryCode = `${values.phoneCountryCode}${values.phoneNumber}`;
     
     const { error } = await signUp(
-      values.email, 
+      values.username,
       values.password, 
-      values.username, 
       phoneWithCountryCode
     );
     
@@ -101,25 +98,6 @@ const RegisterForm = () => {
               {usernameError && (
                 <p className="text-sm font-medium text-destructive">{usernameError}</p>
               )}
-              <FormMessage />
-            </FormItem>
-          )}
-        />
-        
-        <FormField
-          control={form.control}
-          name="email"
-          render={({ field }) => (
-            <FormItem>
-              <FormLabel>Email Address</FormLabel>
-              <FormControl>
-                <Input 
-                  placeholder="yourname@example.com"
-                  type="email"
-                  autoComplete="email"
-                  {...field} 
-                />
-              </FormControl>
               <FormMessage />
             </FormItem>
           )}

@@ -9,7 +9,7 @@ const RegisterFormHeader = () => {
       </div>
       <h1 className="heading-3 mb-2">Create Your Account</h1>
       <p className="text-gray-600 text-sm">
-        Join Review Rewards to start earning points
+        Sign up with your phone number to start earning points
       </p>
     </div>
   );
