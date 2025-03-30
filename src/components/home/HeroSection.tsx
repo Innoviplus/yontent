@@ -27,7 +27,7 @@ const HeroSection = () => {
           
           <p className="text-xl text-gray-600 mb-8 animate-fade-up" style={{
           animationDelay: '200ms'
-        }}>Join our review community! Share feedback on everyday products and services, take on fun challenges, and earn points for cool rewards.</p>
+        }}>Join our review community! Share feedback on everyday products and services, take on fun missions, and earn points for cool rewards.</p>
           
           <div className="flex flex-col sm:flex-row gap-4 justify-center mb-8 animate-fade-up" style={{
           animationDelay: '300ms'
