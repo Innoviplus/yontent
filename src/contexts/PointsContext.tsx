@@ -1,8 +1,6 @@
 
-import { createContext, useContext, useState, useEffect, ReactNode } from 'react';
-import { supabase } from '@/integrations/supabase/client';
-import { useAuth } from './AuthContext';
-import { toast } from 'sonner';
+import { createContext, useContext, ReactNode } from 'react';
+import { usePointsData } from '@/hooks/points/usePointsData';
 
 interface PointsContextType {
   userPoints: number;
@@ -21,47 +19,7 @@ export const usePoints = () => {
 };
 
 export const PointsProvider = ({ children }: { children: ReactNode }) => {
-  const [userPoints, setUserPoints] = useState<number>(0);
-  const [isLoading, setIsLoading] = useState<boolean>(true);
-  const { user } = useAuth();
-
-  const fetchUserPoints = async () => {
-    if (!user) {
-      setUserPoints(0);
-      setIsLoading(false);
-      return;
-    }
-
-    try {
-      setIsLoading(true);
-      const { data, error } = await supabase
-        .from('profiles')
-        .select('points')
-        .eq('id', user.id)
-        .single();
-
-      if (error) {
-        // Only show error toast when we have a user but couldn't fetch their points
-        // This prevents showing errors on initial page load before auth is ready
-        console.error('Error fetching user points:', error);
-        return;
-      }
-      
-      setUserPoints(data?.points || 0);
-    } catch (error) {
-      console.error('Error fetching user points:', error);
-    } finally {
-      setIsLoading(false);
-    }
-  };
-
-  useEffect(() => {
-    fetchUserPoints();
-  }, [user]);
-
-  const refreshPoints = async () => {
-    await fetchUserPoints();
-  };
+  const { userPoints, isLoading, refreshPoints } = usePointsData();
 
   return (
     <PointsContext.Provider value={{ userPoints, isLoading, refreshPoints }}>
