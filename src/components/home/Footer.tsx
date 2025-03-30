@@ -1,6 +1,5 @@
 
 import { Link } from 'react-router-dom';
-import { MessageSquare } from 'lucide-react';
 
 const Footer = () => {
   return (
@@ -8,8 +7,7 @@ const Footer = () => {
       <div className="container mx-auto px-4 sm:px-6">
         <div className="flex flex-col md:flex-row justify-between items-center">
           <div className="flex items-center gap-2 mb-6 md:mb-0">
-            <MessageSquare className="h-6 w-6 text-brand-slate" />
-            <span className="font-bold text-xl text-brand-slate">Yontent</span>
+            <img src="/lovable-uploads/87f7987e-62e4-4871-b384-8c77779df418.png" alt="Logo" className="h-8" />
           </div>
           
           <div className="flex flex-wrap gap-8 justify-center">
@@ -18,6 +16,9 @@ const Footer = () => {
             </Link>
             <Link to="/missions" className="text-gray-600 hover:text-brand-slate transition-colors">
               Missions
+            </Link>
+            <Link to="/rewards" className="text-gray-600 hover:text-brand-slate transition-colors">
+              Rewards
             </Link>
             <Link to="/about" className="text-gray-600 hover:text-brand-slate transition-colors">
               About Us

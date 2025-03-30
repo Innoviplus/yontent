@@ -346,6 +346,33 @@ export type Database = {
           },
         ]
       }
+      site_content: {
+        Row: {
+          content: string
+          id: string
+          title: string
+          type: string
+          updated_at: string
+          updated_by: string | null
+        }
+        Insert: {
+          content: string
+          id?: string
+          title: string
+          type: string
+          updated_at?: string
+          updated_by?: string | null
+        }
+        Update: {
+          content?: string
+          id?: string
+          title?: string
+          type?: string
+          updated_at?: string
+          updated_by?: string | null
+        }
+        Relationships: []
+      }
       user_follows: {
         Row: {
           created_at: string

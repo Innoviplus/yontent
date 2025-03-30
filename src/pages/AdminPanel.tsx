@@ -11,6 +11,7 @@ import RewardsManagement from '@/components/admin/rewards/RewardsManagement';
 import MissionsManagement from '@/components/admin/missions/MissionsManagement';
 import MissionsParticipation from '@/components/admin/missions/MissionsParticipation';
 import RequestsManagement from '@/components/admin/rewards/RequestsManagement';
+import SiteContentTab from '@/components/admin/siteContent/SiteContentTab';
 
 const AdminPanel = () => {
   const [activeTab, setActiveTab] = useState('rewards');
@@ -66,6 +67,7 @@ const AdminPanel = () => {
               <TabsTrigger value="requests">Redemption Requests</TabsTrigger>
               <TabsTrigger value="missions">Missions</TabsTrigger>
               <TabsTrigger value="participations">Participations</TabsTrigger>
+              <TabsTrigger value="site-content">Site Content</TabsTrigger>
             </TabsList>
             
             <TabsContent value="rewards" className="space-y-4">
@@ -110,6 +112,10 @@ const AdminPanel = () => {
                 onApprove={approveParticipation}
                 onReject={rejectParticipation}
               />
+            </TabsContent>
+            
+            <TabsContent value="site-content" className="space-y-4">
+              <SiteContentTab />
             </TabsContent>
           </Tabs>
         </div>

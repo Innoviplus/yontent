@@ -24,6 +24,8 @@ import MissionReviewSubmission from './pages/MissionReviewSubmission';
 import UserRankings from './pages/UserRankings';
 import FollowersList from './pages/FollowersList';
 import FollowingList from './pages/FollowingList';
+import PrivacyPolicy from './pages/PrivacyPolicy';
+import TermsOfService from './pages/TermsOfService';
 
 function App() {
   return (
@@ -40,6 +42,8 @@ function App() {
         <Route path="/user-rankings" element={<UserRankings />} />
         <Route path="/user/:username" element={<UserProfile />} />
         <Route path="/rewards" element={<Rewards />} />
+        <Route path="/privacy" element={<PrivacyPolicy />} />
+        <Route path="/terms" element={<TermsOfService />} />
         
         {/* Redirect /profile to /settings */}
         <Route path="/profile" element={<Navigate to="/settings" replace />} />
