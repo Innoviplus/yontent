@@ -4,7 +4,6 @@ import FeaturedReviewsSection from '@/components/home/FeaturedReviewsSection';
 import HowItWorksSection from '@/components/home/HowItWorksSection';
 import CallToActionSection from '@/components/home/CallToActionSection';
 import ActiveMissionsSection from '@/components/home/ActiveMissionsSection';
-import Footer from '@/components/home/Footer';
 import Navbar from '@/components/Navbar';
 
 const Index = () => {
@@ -21,8 +20,6 @@ const Index = () => {
       <ActiveMissionsSection />
       
       <CallToActionSection />
-      
-      <Footer />
     </div>
   );
 };

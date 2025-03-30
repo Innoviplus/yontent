@@ -26,46 +26,57 @@ import FollowersList from './pages/FollowersList';
 import FollowingList from './pages/FollowingList';
 import PrivacyPolicy from './pages/PrivacyPolicy';
 import TermsOfService from './pages/TermsOfService';
+import Footer from './components/home/Footer';
+
+// Layout component to add Footer to all pages
+const Layout = ({ children }: { children: React.ReactNode }) => {
+  return (
+    <>
+      {children}
+      <Footer />
+    </>
+  );
+};
 
 function App() {
   return (
     <Router>
       <Routes>
         {/* Public routes */}
-        <Route path="/" element={<Index />} />
-        <Route path="/login" element={<Login />} />
-        <Route path="/register" element={<Register />} />
-        <Route path="/reviews" element={<Reviews />} />
-        <Route path="/review/:id" element={<ReviewDetail />} />
-        <Route path="/missions" element={<Missions />} />
-        <Route path="/mission/:id" element={<MissionDetail />} />
-        <Route path="/user-rankings" element={<UserRankings />} />
-        <Route path="/user/:username" element={<UserProfile />} />
-        <Route path="/rewards" element={<Rewards />} />
-        <Route path="/privacy" element={<PrivacyPolicy />} />
-        <Route path="/terms" element={<TermsOfService />} />
+        <Route path="/" element={<Layout><Index /></Layout>} />
+        <Route path="/login" element={<Layout><Login /></Layout>} />
+        <Route path="/register" element={<Layout><Register /></Layout>} />
+        <Route path="/reviews" element={<Layout><Reviews /></Layout>} />
+        <Route path="/review/:id" element={<Layout><ReviewDetail /></Layout>} />
+        <Route path="/missions" element={<Layout><Missions /></Layout>} />
+        <Route path="/mission/:id" element={<Layout><MissionDetail /></Layout>} />
+        <Route path="/user-rankings" element={<Layout><UserRankings /></Layout>} />
+        <Route path="/user/:username" element={<Layout><UserProfile /></Layout>} />
+        <Route path="/rewards" element={<Layout><Rewards /></Layout>} />
+        <Route path="/privacy" element={<Layout><PrivacyPolicy /></Layout>} />
+        <Route path="/terms" element={<Layout><TermsOfService /></Layout>} />
         
         {/* Redirect /profile to /settings */}
         <Route path="/profile" element={<Navigate to="/settings" replace />} />
         
         {/* Protected routes */}
         <Route element={<ProtectedRoute />}>
-          <Route path="/profile/:id" element={<Navigate to="/user/:username" replace />} />
-          <Route path="/followers/:id" element={<FollowersList />} />
-          <Route path="/following/:id" element={<FollowingList />} />
-          <Route path="/settings" element={<Settings />} />
-          <Route path="/edit-profile" element={<EditProfile />} />
-          <Route path="/dashboard" element={<Dashboard />} />
-          <Route path="/rewards/:id" element={<RewardDetail />} />
-          <Route path="/mission/:id/submit-receipt" element={<MissionReceiptSubmission />} />
-          <Route path="/mission/:id/submit-review" element={<MissionReviewSubmission />} />
-          <Route path="/submit-review" element={<SubmitReview />} />
-          <Route path="/edit-review/:id" element={<EditReview />} />
-          <Route path="/admin" element={<AdminPanel />} />
+          <Route path="/profile/:id" element={<Layout><Navigate to="/user/:username" replace /></Layout>} />
+          <Route path="/followers/:id" element={<Layout><FollowersList /></Layout>} />
+          <Route path="/following/:id" element={<Layout><FollowingList /></Layout>} />
+          <Route path="/settings" element={<Layout><Settings /></Layout>} />
+          <Route path="/edit-profile" element={<Layout><EditProfile /></Layout>} />
+          <Route path="/dashboard" element={<Layout><Dashboard /></Layout>} />
+          <Route path="/rewards/:id" element={<Layout><RewardDetail /></Layout>} />
+          <Route path="/mission/:id/submit-receipt" element={<Layout><MissionReceiptSubmission /></Layout>} />
+          <Route path="/mission/:id/submit-review" element={<Layout><MissionReviewSubmission /></Layout>} />
+          <Route path="/submit-review" element={<Layout><SubmitReview /></Layout>} />
+          <Route path="/edit-review/:id" element={<Layout><EditReview /></Layout>} />
+          <Route path="/admin" element={<Layout><AdminPanel /></Layout>} />
         </Route>
         
         {/* 404 route */}
-        <Route path="*" element={<NotFound />} />
+        <Route path="*" element={<Layout><NotFound /></Layout>} />
       </Routes>
     </Router>
   );
