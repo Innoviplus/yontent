@@ -11,7 +11,7 @@ import { useForm } from 'react-hook-form';
 import * as z from 'zod';
 
 const loginSchema = z.object({
-  email: z.string().email('Please enter a valid email address'),
+  identifier: z.string().min(1, 'Please enter your email or phone number'),
   password: z.string().min(6, 'Password must be at least 6 characters'),
 });
 
@@ -25,7 +25,7 @@ const Login = () => {
   const form = useForm<LoginFormValues>({
     resolver: zodResolver(loginSchema),
     defaultValues: {
-      email: '',
+      identifier: '',
       password: '',
     },
   });
@@ -33,7 +33,7 @@ const Login = () => {
   const isLoading = form.formState.isSubmitting;
 
   const onSubmit = async (values: LoginFormValues) => {
-    const { error } = await signIn(values.email, values.password);
+    const { error } = await signIn(values.identifier, values.password);
     if (!error) {
       navigate('/dashboard');
     }
@@ -60,15 +60,15 @@ const Login = () => {
               <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-5">
                 <FormField
                   control={form.control}
-                  name="email"
+                  name="identifier"
                   render={({ field }) => (
                     <FormItem>
-                      <FormLabel>Email Address</FormLabel>
+                      <FormLabel>Email or Phone Number</FormLabel>
                       <FormControl>
                         <Input 
-                          placeholder="yourname@example.com" 
-                          type="email"
-                          autoComplete="email"
+                          placeholder="yourname@example.com or +1234567890" 
+                          type="text"
+                          autoComplete="username"
                           {...field} 
                         />
                       </FormControl>

@@ -9,6 +9,9 @@ import { Form, FormControl, FormField, FormItem, FormLabel, FormMessage } from '
 import { zodResolver } from '@hookform/resolvers/zod';
 import { useForm } from 'react-hook-form';
 import * as z from 'zod';
+import { PhoneInput } from '@/components/settings/PhoneInput';
+
+const phoneRegex = /^\d{6,15}$/;
 
 const registerSchema = z.object({
   username: z.string().min(3, 'Username must be at least 3 characters'),
@@ -17,6 +20,8 @@ const registerSchema = z.object({
     .min(8, 'Password must be at least 8 characters')
     .regex(/\d/, 'Password must contain at least 1 number')
     .regex(/[!@#$%^&*(),.?":{}|<>]/, 'Password must contain at least 1 special character'),
+  phoneNumber: z.string().regex(phoneRegex, 'Please enter a valid phone number'),
+  phoneCountryCode: z.string().min(2, 'Please select a country code'),
   acceptTerms: z.boolean().refine(val => val === true, {
     message: 'You must accept the terms and conditions',
   }),
@@ -36,6 +41,8 @@ const Register = () => {
       username: '',
       email: '',
       password: '',
+      phoneNumber: '',
+      phoneCountryCode: '+1',
       acceptTerms: false,
     },
   });
@@ -62,7 +69,14 @@ const Register = () => {
     // Clear any previous username error
     setUsernameError(null);
     
-    const { error } = await signUp(values.email, values.password, values.username);
+    const phoneWithCountryCode = `${values.phoneCountryCode}${values.phoneNumber}`;
+    
+    const { error } = await signUp(
+      values.email, 
+      values.password, 
+      values.username, 
+      phoneWithCountryCode
+    );
     
     if (error) {
       // Check if error message contains information about duplicate username
@@ -135,6 +149,25 @@ const Register = () => {
                           type="email"
                           autoComplete="email"
                           {...field} 
+                        />
+                      </FormControl>
+                      <FormMessage />
+                    </FormItem>
+                  )}
+                />
+                
+                <FormField
+                  control={form.control}
+                  name="phoneNumber"
+                  render={({ field }) => (
+                    <FormItem>
+                      <FormLabel>Phone Number</FormLabel>
+                      <FormControl>
+                        <PhoneInput
+                          value={field.value}
+                          onChange={field.onChange}
+                          countryCode={form.watch('phoneCountryCode')}
+                          onCountryCodeChange={(code) => form.setValue('phoneCountryCode', code)}
                         />
                       </FormControl>
                       <FormMessage />

@@ -8,8 +8,8 @@ import { toast as sonnerToast } from 'sonner';
 interface AuthContextType {
   session: Session | null;
   user: User | null;
-  signIn: (email: string, password: string) => Promise<{ error: any }>;
-  signUp: (email: string, password: string, username: string) => Promise<{ error: any }>;
+  signIn: (identifier: string, password: string) => Promise<{ error: any }>;
+  signUp: (email: string, password: string, username: string, phoneNumber?: string) => Promise<{ error: any }>;
   signOut: () => Promise<void>;
   loading: boolean;
   userProfile: any | null;
@@ -76,12 +76,28 @@ export function AuthProvider({ children }: { children: ReactNode }) {
     setUserProfile(data);
   }
 
-  const signIn = async (email: string, password: string) => {
+  const signIn = async (identifier: string, password: string) => {
     try {
-      const { error } = await supabase.auth.signInWithPassword({
-        email,
-        password,
-      });
+      let error;
+      
+      // Check if the identifier is an email or phone number
+      const isEmail = identifier.includes('@');
+      
+      if (isEmail) {
+        // Sign in with email
+        const { error: emailError } = await supabase.auth.signInWithPassword({
+          email: identifier,
+          password,
+        });
+        error = emailError;
+      } else {
+        // Sign in with phone number
+        const { error: phoneError } = await supabase.auth.signInWithPassword({
+          phone: identifier,
+          password,
+        });
+        error = phoneError;
+      }
       
       if (error) {
         toast({
@@ -104,7 +120,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
     }
   };
 
-  const signUp = async (email: string, password: string, username: string) => {
+  const signUp = async (email: string, password: string, username: string, phoneNumber?: string) => {
     try {
       const { error } = await supabase.auth.signUp({
         email,
@@ -112,6 +128,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
         options: {
           data: {
             username,
+            phone: phoneNumber
           },
         },
       });
