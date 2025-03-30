@@ -40,12 +40,16 @@ export const PointsProvider = ({ children }: { children: ReactNode }) => {
         .eq('id', user.id)
         .single();
 
-      if (error) throw error;
+      if (error) {
+        // Only show error toast when we have a user but couldn't fetch their points
+        // This prevents showing errors on initial page load before auth is ready
+        console.error('Error fetching user points:', error);
+        return;
+      }
       
       setUserPoints(data?.points || 0);
     } catch (error) {
       console.error('Error fetching user points:', error);
-      toast.error('Failed to load points');
     } finally {
       setIsLoading(false);
     }

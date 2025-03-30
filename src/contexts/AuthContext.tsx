@@ -1,3 +1,4 @@
+
 import { createContext, useContext, useEffect, useState, ReactNode } from 'react';
 import { Session, User } from '@supabase/supabase-js';
 import { supabase } from '@/integrations/supabase/client';
@@ -155,7 +156,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
         throw new Error('Failed to create user');
       }
 
-      // We successfully created a user, now create the profile
+      // We successfully created a user, now create the profile with 10 initial points
       const { error: profileError } = await supabase
         .from('profiles')
         .insert([
@@ -163,7 +164,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
             id: authData.user.id,
             username,
             phone_number: phoneNumber,
-            points: 0,
+            points: 10, // Start with 10 points instead of 0
           },
         ]);
 
@@ -176,6 +177,9 @@ export function AuthProvider({ children }: { children: ReactNode }) {
       // Update session if created successfully
       setUser(authData.user);
       setSession(authData.session);
+      
+      // Show welcome message with points info
+      sonnerToast.success('Account created successfully! You received 10 welcome points.');
       
       return { success: true, error: null };
     } catch (error) {
