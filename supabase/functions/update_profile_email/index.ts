@@ -28,12 +28,18 @@ serve(async (req) => {
       { auth: { persistSession: false } }
     );
     
-    // Update the email in the profiles table
+    // Store email in the extended_data JSON field since there's no email column
     const { data, error } = await supabaseClient
       .from('profiles')
-      .update({ email: new_email })
+      .update({ 
+        extended_data: supabaseClient.rpc('update_profile_extended_data', { 
+          user_id_param: user_id,
+          key_param: 'email',
+          value_param: new_email
+        })
+      })
       .eq('id', user_id)
-      .select('email');
+      .select('extended_data');
     
     if (error) throw error;
     

@@ -1,3 +1,4 @@
+
 import { useForm } from 'react-hook-form';
 import { zodResolver } from '@hookform/resolvers/zod';
 import * as z from 'zod';
@@ -42,7 +43,7 @@ export const useSettingsForm = (
       // Get current extended data
       const { data, error: fetchError } = await supabase
         .from('profiles')
-        .select('extended_data, phone_number, phone_country_code, email')
+        .select('extended_data, phone_number, phone_country_code')
         .eq('id', user.id)
         .single();
       
@@ -69,24 +70,30 @@ export const useSettingsForm = (
       console.log('Updated extended data:', jsonData);
       console.log('Updating email to:', values.email);
       
-      // Direct SQL update to ensure email is saved in the profiles table
-      // This approach bypasses any potential issues with the ORM layer
-      const { error: directUpdateError } = await supabase.rpc('update_profile_email', {
-        user_id: user.id,
-        new_email: values.email || null
-      });
+      // Call the edge function to update the email in the profile's extended_data
+      const { data: edgeFunctionData, error: edgeFunctionError } = await supabase.functions.invoke(
+        'update_profile_email',
+        {
+          body: JSON.stringify({
+            user_id: user.id,
+            new_email: values.email || null
+          })
+        }
+      );
       
-      if (directUpdateError) {
-        console.error('Error updating email with RPC:', directUpdateError);
+      if (edgeFunctionError) {
+        console.error('Error calling edge function:', edgeFunctionError);
         
-        // Fallback to regular update if RPC fails
+        // Fallback to direct update if edge function fails
         const { error: updateError } = await supabase
           .from('profiles')
           .update({ 
-            extended_data: jsonData,
+            extended_data: {
+              ...jsonData,
+              email: values.email || null  // Store email in extended_data
+            },
             phone_country_code: values.phoneCountryCode || null,
-            phone_number: values.phoneNumber || null,
-            email: values.email // Store email directly (no null fallback)
+            phone_number: values.phoneNumber || null
           })
           .eq('id', user.id);
         
@@ -94,19 +101,22 @@ export const useSettingsForm = (
           console.error('Error updating profile:', updateError);
           throw updateError;
         }
-      }
-      
-      // Verify the email was saved by fetching the profile again
-      const { data: verifyData, error: verifyError } = await supabase
-        .from('profiles')
-        .select('email')
-        .eq('id', user.id)
-        .single();
-      
-      if (verifyError) {
-        console.error('Error verifying profile update:', verifyError);
       } else {
-        console.log('Profile email after update:', verifyData.email);
+        console.log('Edge function response:', edgeFunctionData);
+        
+        // Update other profile fields except email (which was handled by the edge function)
+        const { error: updateError } = await supabase
+          .from('profiles')
+          .update({ 
+            phone_country_code: values.phoneCountryCode || null,
+            phone_number: values.phoneNumber || null
+          })
+          .eq('id', user.id);
+          
+        if (updateError) {
+          console.error('Error updating profile fields:', updateError);
+          throw updateError;
+        }
       }
       
       // Update local state with the new extended profile data
