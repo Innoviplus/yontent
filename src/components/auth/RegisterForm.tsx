@@ -37,14 +37,20 @@ const RegisterForm = () => {
     setUsernameError(null);
     setPhoneError(null);
     
+    // Use the country code and phone number separately
     const phoneWithCountryCode = `${values.phoneCountryCode}${values.phoneNumber}`;
     
     try {
       console.log('Starting signup process');
+      console.log('Country code:', values.phoneCountryCode);
+      console.log('Phone number:', values.phoneNumber);
+      console.log('Full phone:', phoneWithCountryCode);
+      
       const { success, error } = await signUp(
         values.username,
         values.password, 
-        phoneWithCountryCode
+        phoneWithCountryCode,
+        values.phoneCountryCode
       );
       
       if (error) {

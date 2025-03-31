@@ -9,7 +9,8 @@ export function useSignUp() {
   const signUp = async (
     username: string, 
     password: string, 
-    phoneNumber: string
+    phoneNumber: string,
+    phoneCountryCode?: string
   ): Promise<{ 
     success: boolean; 
     error: Error | null;
@@ -27,6 +28,19 @@ export function useSignUp() {
         throw new Error('This username is already taken. Please choose a different one.');
       }
 
+      // Extract phone country code from the phone number if not provided separately
+      const formattedPhoneNumber = phoneNumber;
+      let countryCode = phoneCountryCode || '';
+
+      // If no country code was explicitly provided, try to extract it from the phoneNumber
+      if (!countryCode && phoneNumber.startsWith('+')) {
+        // Find the first non-digit after the + sign
+        const match = phoneNumber.match(/^\+(\d+)/);
+        if (match) {
+          countryCode = '+' + match[1];
+        }
+      }
+
       console.log('Creating auth user with phone:', phoneNumber);
       // Create the auth user with phone
       const { data: authData, error: authError } = await supabase.auth.signUp({
@@ -35,6 +49,8 @@ export function useSignUp() {
         options: {
           data: {
             username,
+            phone_country_code: countryCode,
+            phone_number: phoneNumber.replace(countryCode, '') // Store the number without country code
           },
         },
       });
@@ -54,9 +70,19 @@ export function useSignUp() {
         throw new Error('Failed to create user');
       }
 
-      // We don't need to manually insert into the profiles table anymore since 
-      // the DB trigger handle_new_user() will create the profile entry automatically.
-      // Just signing in is enough.
+      // Update the profiles table with the phone number and country code
+      // This might be redundant if the trigger already handles it, but we'll ensure it's set
+      const { error: profileUpdateError } = await supabase
+        .from('profiles')
+        .update({ 
+          phone_number: phoneNumber.replace(countryCode, ''),
+          phone_country_code: countryCode 
+        })
+        .eq('id', authData.user.id);
+      
+      if (profileUpdateError) {
+        console.error('Error updating profile with phone details:', profileUpdateError);
+      }
       
       console.log('Signing in after account creation');
       // Sign in the user after successful signup

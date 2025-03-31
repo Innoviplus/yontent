@@ -1,4 +1,3 @@
-
 import { useState, useEffect } from 'react';
 import { Session, User } from '@supabase/supabase-js';
 import { supabase } from '@/integrations/supabase/client';
@@ -36,6 +35,12 @@ export function useAuthProvider() {
         }
         
         setLoading(false);
+        
+        // Log user metadata when auth state changes
+        console.log("User auth state changed", {
+          user, 
+          metadata: user?.user_metadata
+        });
       }
     );
 

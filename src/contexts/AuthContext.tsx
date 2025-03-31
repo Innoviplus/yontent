@@ -11,7 +11,8 @@ interface AuthContextType {
   signUp: (
     username: string,
     password: string, 
-    phoneNumber: string
+    phoneNumber: string,
+    phoneCountryCode?: string
   ) => Promise<{ 
     success: boolean; 
     error: Error | null;
