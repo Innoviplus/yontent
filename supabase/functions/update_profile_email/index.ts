@@ -28,26 +28,32 @@ serve(async (req) => {
       { auth: { persistSession: false } }
     );
     
-    // Store email in the extended_data JSON field since there's no email column
+    console.log(`Updating email for user ${user_id} to ${new_email}`);
+    
+    // Update the extended_data directly in the profiles table
     const { data, error } = await supabaseClient
       .from('profiles')
       .update({ 
-        extended_data: supabaseClient.rpc('update_profile_extended_data', { 
-          user_id_param: user_id,
-          key_param: 'email',
-          value_param: new_email
-        })
+        extended_data: {
+          email: new_email
+        }
       })
       .eq('id', user_id)
       .select('extended_data');
     
-    if (error) throw error;
+    if (error) {
+      console.error('Error updating profile:', error);
+      throw error;
+    }
+    
+    console.log('Profile updated successfully:', data);
     
     return new Response(JSON.stringify({ success: true, data }), {
       headers: { 'Content-Type': 'application/json' },
       status: 200,
     });
   } catch (error) {
+    console.error('Error in update_profile_email function:', error);
     return new Response(JSON.stringify({ success: false, error: error.message }), {
       headers: { 'Content-Type': 'application/json' },
       status: 400,
