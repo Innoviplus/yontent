@@ -53,7 +53,7 @@ const RegisterForm = () => {
           setUsernameError(error.message);
           form.setError('username', { 
             type: 'manual', 
-            message: error.message
+            message: '' // Remove duplicate message
           });
         } else if (error.message && (error.message.includes('User already registered') || 
                  error.message.includes('already exists'))) {
@@ -101,7 +101,7 @@ const RegisterForm = () => {
               {usernameError && (
                 <p className="text-sm font-medium text-destructive">{usernameError}</p>
               )}
-              <FormMessage />
+              {/* Removing FormMessage here as it would show duplicate errors */}
             </FormItem>
           )}
         />
