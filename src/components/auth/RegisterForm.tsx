@@ -59,11 +59,11 @@ const RegisterForm = () => {
       
       if (success) {
         // Log successful registration before navigation
-        console.log('Registration successful, redirecting to settings');
-        toast.success('Account created successfully! Redirecting to profile setup...');
+        console.log('Registration successful, redirecting to homepage');
+        toast.success('Account created successfully!');
         
-        // Force immediate navigation
-        navigate('/settings?tab=profile', { replace: true });
+        // Navigate to homepage instead of settings
+        navigate('/', { replace: true });
       }
     } catch (error) {
       console.error('Signup error:', error);

@@ -50,8 +50,8 @@ export function useSignUp() {
         throw new Error('Failed to create user');
       }
 
-      console.log('Creating profile with initial points');
-      // We successfully created a user, now create the profile with 10 initial points
+      console.log('Creating profile with 0 initial points');
+      // We successfully created a user, now create the profile with 0 initial points
       const { error: profileError } = await supabase
         .from('profiles')
         .insert([
@@ -59,7 +59,7 @@ export function useSignUp() {
             id: authData.user.id,
             username,
             phone_number: phoneNumber,
-            points: 10, // Ensuring exactly 10 points for new users
+            points: 0, // Start with 0 points (changed from 10)
           },
         ]);
 
@@ -82,8 +82,8 @@ export function useSignUp() {
         throw new Error('Error signing in after account creation: ' + signInError.message);
       }
       
-      // Show welcome message with points info
-      sonnerToast.success('Account created successfully! You received 10 welcome points.');
+      // Show welcome message without points info
+      sonnerToast.success('Account created successfully!');
       
       return { success: true, error: null };
     } catch (error) {
