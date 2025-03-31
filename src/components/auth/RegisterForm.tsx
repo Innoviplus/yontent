@@ -1,4 +1,3 @@
-
 import { useState } from 'react';
 import { Link, useNavigate } from 'react-router-dom';
 import { Eye, EyeOff } from 'lucide-react';
@@ -54,7 +53,7 @@ const RegisterForm = () => {
     
     const phoneWithCountryCode = `${values.phoneCountryCode}${values.phoneNumber}`;
     
-    const { error } = await signUp(
+    const { success, error } = await signUp(
       values.username,
       values.password, 
       phoneWithCountryCode
@@ -62,21 +61,20 @@ const RegisterForm = () => {
     
     if (error) {
       // Check if error message contains information about duplicate username
-      if (error.message && (
-          error.message.includes('duplicate key') || 
-          error.message.includes('profiles_username_key') ||
-          error.message.includes('Database error saving new user')
-        )) {
-        setUsernameError('This username is already taken. Please choose a different one.');
+      if (error.message && error.message.includes('username is already taken')) {
+        setUsernameError(error.message);
         form.setError('username', { 
           type: 'manual', 
-          message: 'This username is already taken. Please choose a different one.' 
+          message: error.message
         });
       }
       return;
     }
     
-    navigate('/dashboard');
+    if (success) {
+      // Redirect to settings page with the profile tab active
+      navigate('/settings');
+    }
   };
 
   return (

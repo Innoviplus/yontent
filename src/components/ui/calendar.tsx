@@ -1,4 +1,3 @@
-
 import * as React from "react";
 import { ChevronLeft, ChevronRight } from "lucide-react";
 import { DayPicker, DropdownProps, CaptionProps } from "react-day-picker";
@@ -18,7 +17,7 @@ function Calendar({
   return (
     <DayPicker
       showOutsideDays={showOutsideDays}
-      className={cn("p-3 pointer-events-auto", className)}
+      className={cn("p-3", className)}
       classNames={{
         months: "flex flex-col sm:flex-row space-y-4 sm:space-x-4 sm:space-y-0",
         month: "space-y-4",
@@ -58,14 +57,12 @@ function Calendar({
         IconRight: ({ ..._props }) => <ChevronRight className="h-4 w-4" />,
         Dropdown: (props: DropdownProps) => {
           const { value, onChange, children, ...rest } = props;
-          // Convert value to string for Select component
           const stringValue = String(value);
           
           return (
             <Select
               value={stringValue}
               onValueChange={(newValue) => {
-                // Create a synthetic event to satisfy the onChange prop type
                 const syntheticEvent = {
                   target: {
                     value: newValue,
@@ -94,7 +91,6 @@ function Calendar({
           );
         },
         Caption: ({ displayMonth, id }: CaptionProps) => {
-          // Create handler functions for month and year changes
           const handleMonthChange = (monthStr: string) => {
             const newDate = new Date(displayMonth);
             newDate.setMonth(parseInt(monthStr));
@@ -128,11 +124,13 @@ function Calendar({
             };
           }, [props.onMonthChange]);
 
+          const fromYear = props.fromYear || new Date().getFullYear() - 100;
+          const toYear = props.toYear || new Date().getFullYear();
+          
           return (
-            <div className="flex justify-center space-x-2 py-1 w-full">
+            <div className="flex justify-center space-x-2 py-1 w-full pointer-events-auto">
               {displayMonth && (
                 <>
-                  {/* Month dropdown */}
                   <Select 
                     value={displayMonth.getMonth().toString()} 
                     onValueChange={handleMonthChange}
@@ -142,7 +140,7 @@ function Calendar({
                         {displayMonth.toLocaleString('default', { month: 'long' })}
                       </SelectValue>
                     </SelectTrigger>
-                    <SelectContent>
+                    <SelectContent className="pointer-events-auto">
                       {Array.from({ length: 12 }, (_, i) => (
                         <SelectItem key={i} value={i.toString()}>
                           {new Date(0, i).toLocaleString('default', { month: 'long' })}
@@ -151,7 +149,6 @@ function Calendar({
                     </SelectContent>
                   </Select>
                   
-                  {/* Year dropdown */}
                   <Select 
                     value={displayMonth.getFullYear().toString()} 
                     onValueChange={handleYearChange}
@@ -161,11 +158,11 @@ function Calendar({
                         {displayMonth.getFullYear()}
                       </SelectValue>
                     </SelectTrigger>
-                    <SelectContent>
+                    <SelectContent className="pointer-events-auto">
                       {Array.from(
-                        { length: 121 }, // 2024 to 1904 = 121 years
+                        { length: toYear - fromYear + 1 },
                         (_, i) => {
-                          const year = 2024 - i;
+                          const year = toYear - i;
                           return (
                             <SelectItem key={year} value={year.toString()}>
                               {year}

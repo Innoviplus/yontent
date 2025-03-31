@@ -18,6 +18,7 @@ import {
   PopoverTrigger,
 } from '@/components/ui/popover';
 import { Calendar } from '@/components/ui/calendar';
+import { DatePicker } from '@/components/ui/date-picker';
 
 interface BirthDatePickerProps {
   control: Control<any>;
@@ -35,40 +36,14 @@ export const BirthDatePicker: React.FC<BirthDatePickerProps> = ({ control, disab
       render={({ field }) => (
         <FormItem className="flex flex-col">
           <FormLabel>Date of Birth</FormLabel>
-          <Popover>
-            <PopoverTrigger asChild>
-              <FormControl>
-                <Button
-                  variant={"outline"}
-                  className={`w-full justify-start text-left font-normal ${
-                    !field.value && "text-muted-foreground"
-                  } ${disabled ? "bg-gray-100" : ""}`}
-                  disabled={disabled}
-                >
-                  {field.value ? (
-                    format(field.value, "PPP")
-                  ) : (
-                    <span>Pick a date</span>
-                  )}
-                  <CalendarIcon className="ml-auto h-4 w-4 opacity-50" />
-                </Button>
-              </FormControl>
-            </PopoverTrigger>
-            <PopoverContent className="w-auto p-0 pointer-events-auto" align="start">
-              <Calendar
-                mode="single"
-                selected={field.value}
-                onSelect={field.onChange}
-                disabled={(date) =>
-                  date > maxDate || date < new Date("1900-01-01")
-                }
-                initialFocus
-                fromYear={1900}
-                toYear={maxDate.getFullYear()}
-                className="p-3 pointer-events-auto"
-              />
-            </PopoverContent>
-          </Popover>
+          <DatePicker
+            value={field.value}
+            onChange={field.onChange}
+            placeholder="Pick a date"
+            disabled={disabled}
+            fromYear={1900}
+            toYear={maxDate.getFullYear()}
+          />
           <FormDescription>
             {disabled ? 'Date of birth cannot be changed once set.' : 'Select your date of birth.'}
           </FormDescription>

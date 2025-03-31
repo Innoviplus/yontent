@@ -60,6 +60,17 @@ export function useAuthMethods() {
     error: Error | null;
   }> => {
     try {
+      // Check if username already exists before creating the auth user
+      const { data: usernameCheck, error: usernameError } = await supabase
+        .from('profiles')
+        .select('username')
+        .eq('username', username)
+        .single();
+      
+      if (usernameCheck) {
+        throw new Error('This username is already taken. Please choose a different one.');
+      }
+
       // Create the auth user with phone
       const { data: authData, error: authError } = await supabase.auth.signUp({
         phone: phoneNumber,
@@ -88,7 +99,7 @@ export function useAuthMethods() {
             id: authData.user.id,
             username,
             phone_number: phoneNumber,
-            points: 10, // Start with 10 points instead of 0
+            points: 10, // Start with 10 points instead of 50
           },
         ]);
 
