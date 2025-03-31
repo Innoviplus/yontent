@@ -71,32 +71,7 @@ export const useSettingsForm = (
         email: values.email || null // Add email directly to the profiles table
       };
       
-      // Update email if provided and different from current email
-      if (values.email && values.email !== user.email) {
-        console.log('Updating email from', user.email || 'none', 'to', values.email);
-        
-        try {
-          // Update email in auth user
-          const { error: emailUpdateError } = await supabase.auth.updateUser({
-            email: values.email
-          });
-          
-          if (emailUpdateError) {
-            console.error('Error updating email:', emailUpdateError);
-            throw emailUpdateError;
-          }
-          
-          sonnerToast.success('Email update verification sent. Please check your inbox.');
-        } catch (emailErr: any) {
-          // Don't throw here - we still want to update other profile data
-          // Just show a toast for the email error
-          toast({
-            title: "Email Update Failed",
-            description: emailErr.message || "Failed to update email. Please try again later.",
-            variant: "destructive",
-          });
-        }
-      }
+      // We've removed the email verification process since we're using phone authentication
       
       // Update profile
       const { error: updateError } = await supabase
