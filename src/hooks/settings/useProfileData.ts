@@ -21,55 +21,59 @@ export const useProfileData = (
       const loadExtendedProfile = async () => {
         if (!user) return;
         
-        const { data, error } = await supabase
-          .from('profiles')
-          .select('extended_data, phone_country_code, phone_number, avatar')
-          .eq('id', user.id)
-          .single();
-          
-        if (error) {
-          console.error('Error fetching extended profile:', error);
-          return;
-        }
-        
-        if (data) {
-          console.log('Profile data loaded:', data);
-          
-          // Make sure avatar URL is set from profile data
-          if (data.avatar) {
-            setAvatarUrl(data.avatar);
+        try {
+          const { data, error } = await supabase
+            .from('profiles')
+            .select('extended_data, phone_country_code, phone_number, avatar')
+            .eq('id', user.id)
+            .single();
+            
+          if (error) {
+            console.error('Error fetching extended profile:', error);
+            return;
           }
           
-          const extData = data.extended_data as ExtendedProfile || {};
-          setExtendedProfile(extData);
-          
-          profileForm.reset({
-            username: userProfile.username || '',
-            firstName: extData.firstName || '',
-            lastName: extData.lastName || '',
-            bio: extData.bio || '',
-            gender: extData.gender || '',
-            birthDate: extData.birthDate ? new Date(extData.birthDate) : undefined,
-            websiteUrl: extData.websiteUrl || '',
-            facebookUrl: extData.facebookUrl || '',
-            instagramUrl: extData.instagramUrl || '',
-            youtubeUrl: extData.youtubeUrl || '',
-            tiktokUrl: extData.tiktokUrl || '',
-          });
-          
-          // Set the phone number in the settings form
-          // - First try phone_number from the profiles table
-          // - Then fall back to extended_data.phoneNumber if present
-          const phoneNumber = data.phone_number || extData.phoneNumber || '';
-          
-          settingsForm.reset({
-            email: user?.email || '',
-            phoneNumber: phoneNumber,
-            phoneCountryCode: data.phone_country_code || '+1',
-            country: extData.country || '',
-          });
-          
-          console.log('Set phone in form to:', phoneNumber);
+          if (data) {
+            console.log('Profile data loaded:', data);
+            
+            // Make sure avatar URL is set from profile data
+            if (data.avatar) {
+              setAvatarUrl(data.avatar);
+            }
+            
+            const extData = data.extended_data as ExtendedProfile || {};
+            setExtendedProfile(extData);
+            
+            profileForm.reset({
+              username: userProfile.username || '',
+              firstName: extData.firstName || '',
+              lastName: extData.lastName || '',
+              bio: extData.bio || '',
+              gender: extData.gender || '',
+              birthDate: extData.birthDate ? new Date(extData.birthDate) : undefined,
+              websiteUrl: extData.websiteUrl || '',
+              facebookUrl: extData.facebookUrl || '',
+              instagramUrl: extData.instagramUrl || '',
+              youtubeUrl: extData.youtubeUrl || '',
+              tiktokUrl: extData.tiktokUrl || '',
+            });
+            
+            // Set the phone number in the settings form
+            // - First try phone_number from the profiles table
+            // - Then fall back to extended_data.phoneNumber if present
+            const phoneNumber = data.phone_number || extData.phoneNumber || '';
+            
+            settingsForm.reset({
+              email: user?.email || '',
+              phoneNumber: phoneNumber,
+              phoneCountryCode: data.phone_country_code || '+1',
+              country: extData.country || '',
+            });
+            
+            console.log('Set phone in form to:', phoneNumber);
+          }
+        } catch (fetchErr) {
+          console.error('Error in loadExtendedProfile:', fetchErr);
         }
       };
       
