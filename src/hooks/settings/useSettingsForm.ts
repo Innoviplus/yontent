@@ -55,6 +55,7 @@ export const useSettingsForm = (
         ...currentExtendedData,
         phoneNumber: values.phoneNumber || null,
         country: values.country || null,
+        email: values.email || null, // Store email in extended_data as well
       };
       
       // Convert ExtendedProfile to a plain object for storage
@@ -66,7 +67,8 @@ export const useSettingsForm = (
       const updateData: any = { 
         extended_data: jsonData,
         phone_country_code: values.phoneCountryCode || null,
-        phone_number: values.phoneNumber || null
+        phone_number: values.phoneNumber || null,
+        email: values.email || null // Add email directly to the profiles table
       };
       
       // Update email if provided and different from current email

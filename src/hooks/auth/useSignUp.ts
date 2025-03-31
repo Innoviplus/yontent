@@ -97,6 +97,7 @@ export function useSignUp() {
       }
       
       // Show welcome message with points info
+      // Only show toast here, not in RegisterForm.tsx to prevent duplication
       sonnerToast.success('Account created successfully! You received 10 welcome points.');
       
       return { success: true, error: null };

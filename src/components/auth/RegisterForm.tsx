@@ -78,7 +78,8 @@ const RegisterForm = () => {
       if (success) {
         // Log successful registration before navigation
         console.log('Registration successful, redirecting to settings page');
-        toast.success('Account created successfully! You received 10 welcome points.');
+        
+        // Note: We've removed the toast here as it's now handled in the useSignUp hook
         
         // Navigate to settings page with replace:true to prevent back navigation to register page
         navigate('/settings', { replace: true });
