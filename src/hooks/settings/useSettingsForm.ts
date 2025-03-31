@@ -71,12 +71,15 @@ export const useSettingsForm = (
       
       // Update email if provided and different from current email
       if (values.email && values.email !== user.email) {
+        console.log('Updating email from', user.email, 'to', values.email);
+        
         // Update email in auth user
         const { error: emailUpdateError } = await supabase.auth.updateUser({
           email: values.email
         });
         
         if (emailUpdateError) {
+          console.error('Error updating email:', emailUpdateError);
           throw emailUpdateError;
         }
         
@@ -90,6 +93,7 @@ export const useSettingsForm = (
         .eq('id', user.id);
       
       if (updateError) {
+        console.error('Error updating profile:', updateError);
         throw updateError;
       }
       

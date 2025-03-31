@@ -54,25 +54,9 @@ export function useSignUp() {
         throw new Error('Failed to create user');
       }
 
-      console.log('Creating profile with 10 initial points');
-      // We successfully created a user, now create the profile with 10 initial points
-      const { error: profileError } = await supabase
-        .from('profiles')
-        .insert([
-          {
-            id: authData.user.id,
-            username,
-            phone_number: phoneNumber,
-            points: 10, // Set to 10 points to match the database function
-          },
-        ]);
-
-      if (profileError) {
-        // If there was an error creating the profile, delete the auth user and throw error
-        console.error('Profile creation error:', profileError);
-        // We can't use admin.deleteUser without service role, so we'll just report the error
-        throw new Error('Database error saving new user: ' + profileError.message);
-      }
+      // We don't need to manually insert into the profiles table anymore since 
+      // the DB trigger handle_new_user() will create the profile entry automatically.
+      // Just signing in is enough.
       
       console.log('Signing in after account creation');
       // Sign in the user after successful signup
