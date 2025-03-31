@@ -79,7 +79,10 @@ function Calendar({
       components={{
         IconLeft: ({ ...props }) => <ChevronLeft className="h-4 w-4" />,
         IconRight: ({ ...props }) => <ChevronRight className="h-4 w-4" />,
-        Dropdown: ({ value, onChange, options, ...rest }: DropdownProps) => {
+        Dropdown: ({ value, onChange, options = [], ...rest }: DropdownProps) => {
+          // Ensure options is always an array even if it's undefined
+          const safeOptions = Array.isArray(options) ? options : [];
+          
           return (
             <select
               value={value}
@@ -87,7 +90,7 @@ function Calendar({
               className="cursor-pointer text-center text-sm font-medium bg-transparent outline-none px-2"
               {...rest}
             >
-              {options.map((option) => (
+              {safeOptions.map((option) => (
                 <option key={option.value} value={option.value}>
                   {option.label}
                 </option>
