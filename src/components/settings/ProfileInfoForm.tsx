@@ -3,6 +3,7 @@ import React from 'react';
 import { UseFormReturn } from 'react-hook-form';
 import { Loader2 } from 'lucide-react';
 import { toast } from 'sonner';
+import { subYears } from 'date-fns';
 import {
   Form,
   FormControl,
@@ -15,7 +16,7 @@ import {
 import { Input } from '@/components/ui/input';
 import { Button } from '@/components/ui/button';
 import { Textarea } from '@/components/ui/textarea';
-import { BirthDatePicker } from './BirthDatePicker';
+import { DateOfBirthDropdowns } from './DateOfBirthDropdowns';
 import { 
   Select,
   SelectContent,
@@ -49,8 +50,32 @@ export const ProfileInfoForm: React.FC<ProfileInfoFormProps> = ({
   const hasSetBirthDate = !!extendedProfile.birthDate;
   const hasSetGender = !!extendedProfile.gender;
 
+  // Create validation function for date of birth
+  const validateAge = (date: Date | undefined) => {
+    if (!date) return true;
+    
+    const minAgeDate = subYears(new Date(), 18);
+    if (date > minAgeDate) {
+      return "You must be at least 18 years old";
+    }
+    return true;
+  };
+
   const handleSubmit = async (values: any) => {
     try {
+      // Check age validation
+      if (values.birthDate) {
+        const minAgeDate = subYears(new Date(), 18);
+        if (values.birthDate > minAgeDate) {
+          profileForm.setError('birthDate', {
+            type: 'manual', 
+            message: 'You must be at least 18 years old'
+          });
+          toast.error('You must be at least 18 years old to save your profile');
+          return;
+        }
+      }
+      
       // Store the current form values to determine what's being saved
       // This is used to track which fields should become read-only after saving
       values.__extendedProfile = {
@@ -169,7 +194,7 @@ export const ProfileInfoForm: React.FC<ProfileInfoFormProps> = ({
             )}
           />
           
-          <BirthDatePicker control={profileForm.control} disabled={hasSetBirthDate} />
+          <DateOfBirthDropdowns control={profileForm.control} disabled={hasSetBirthDate} />
         </div>
         
         <Button type="submit" disabled={isUpdating}>
