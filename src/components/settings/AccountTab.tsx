@@ -44,7 +44,6 @@ export const AccountTab: React.FC<AccountTabProps> = ({
     try {
       setIsResettingPassword(true);
       await handleResetPassword();
-      toast.success('Password reset link sent to your email');
     } catch (error) {
       toast.error('Failed to send password reset link');
       console.error(error);
@@ -69,7 +68,11 @@ export const AccountTab: React.FC<AccountTabProps> = ({
                 <FormItem>
                   <FormLabel>Email Address</FormLabel>
                   <FormControl>
-                    <Input type="email" {...field} />
+                    <Input 
+                      type="email" 
+                      placeholder="Your email address"
+                      {...field} 
+                    />
                   </FormControl>
                   <FormDescription>
                     Enter your preferred email address for notifications.
@@ -89,7 +92,7 @@ export const AccountTab: React.FC<AccountTabProps> = ({
                     <PhoneInput
                       value={field.value || ''}
                       onChange={field.onChange}
-                      countryCode={settingsForm.watch('phoneCountryCode') || ''}
+                      countryCode={settingsForm.watch('phoneCountryCode') || '+1'}
                       onCountryCodeChange={(code) => {
                         settingsForm.setValue('phoneCountryCode', code);
                       }}

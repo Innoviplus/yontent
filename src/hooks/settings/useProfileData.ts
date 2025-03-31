@@ -57,15 +57,19 @@ export const useProfileData = (
             tiktokUrl: extData.tiktokUrl || '',
           });
           
-          // Use the phone number directly from the profiles table if available
+          // Set the phone number in the settings form
+          // - First try phone_number from the profiles table
+          // - Then fall back to extended_data.phoneNumber if present
           const phoneNumber = data.phone_number || extData.phoneNumber || '';
           
           settingsForm.reset({
             email: user?.email || '',
             phoneNumber: phoneNumber,
-            phoneCountryCode: data.phone_country_code || '',
+            phoneCountryCode: data.phone_country_code || '+1',
             country: extData.country || '',
           });
+          
+          console.log('Set phone in form to:', phoneNumber);
         }
       };
       

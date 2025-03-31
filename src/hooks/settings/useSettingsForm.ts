@@ -9,7 +9,7 @@ import { ExtendedProfile } from '@/lib/types';
 
 // Form schema
 export const settingsFormSchema = z.object({
-  email: z.string().email("Please enter a valid email").optional(),
+  email: z.string().email("Please enter a valid email").optional().or(z.string().length(0)),
   phoneNumber: z.string().optional(),
   phoneCountryCode: z.string().optional(),
   country: z.string().optional(),
@@ -27,7 +27,7 @@ export const useSettingsForm = (
     defaultValues: {
       email: user?.email || '',
       phoneNumber: '',
-      phoneCountryCode: '',
+      phoneCountryCode: '+1',
       country: '',
     },
   });
@@ -71,7 +71,7 @@ export const useSettingsForm = (
       
       // Update email if provided and different from current email
       if (values.email && values.email !== user.email) {
-        console.log('Updating email from', user.email, 'to', values.email);
+        console.log('Updating email from', user.email || 'none', 'to', values.email);
         
         // Update email in auth user
         const { error: emailUpdateError } = await supabase.auth.updateUser({
@@ -102,6 +102,7 @@ export const useSettingsForm = (
       
       sonnerToast.success('Settings updated successfully!');
     } catch (error: any) {
+      console.error('Settings update error:', error);
       toast({
         title: "Update Failed",
         description: error.message,
@@ -113,7 +114,14 @@ export const useSettingsForm = (
   };
 
   const handleResetPassword = async () => {
-    if (!user?.email) return;
+    if (!user?.email) {
+      toast({
+        title: "Email Required",
+        description: "Please add an email address to your account before resetting your password.",
+        variant: "destructive",
+      });
+      return;
+    }
     
     try {
       const { error } = await supabase.auth.resetPasswordForEmail(user.email);
