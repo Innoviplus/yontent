@@ -24,8 +24,15 @@ export function DatePicker({
   fromYear,
   toYear
 }: DatePickerProps) {
+  const [open, setOpen] = React.useState(false);
+  
+  const handleSelect = (date: Date | undefined) => {
+    onChange(date || null);
+    setOpen(false);
+  };
+  
   return (
-    <Popover>
+    <Popover open={open && !disabled} onOpenChange={disabled ? undefined : setOpen}>
       <PopoverTrigger asChild>
         <Button
           variant={"outline"}
@@ -35,18 +42,22 @@ export function DatePicker({
             disabled && "opacity-50 cursor-not-allowed"
           )}
           disabled={disabled}
+          onClick={() => !disabled && setOpen(!open)}
         >
           <CalendarIcon className="mr-2 h-4 w-4" />
           {value ? format(value, "PPP") : <span>{placeholder}</span>}
         </Button>
       </PopoverTrigger>
-      <PopoverContent className="w-auto p-0" align="start">
+      <PopoverContent className="w-auto p-0 z-50" align="start">
         <Calendar
           mode="single"
           selected={value || undefined}
-          onSelect={onChange}
+          onSelect={handleSelect}
           initialFocus
-          disabled={disabled}
+          disabled={(date) => disabled || 
+            (toYear && date > new Date(`${toYear}-12-31`)) || 
+            (fromYear && date < new Date(`${fromYear}-01-01`))
+          }
           fromYear={fromYear}
           toYear={toYear}
           className="pointer-events-auto"

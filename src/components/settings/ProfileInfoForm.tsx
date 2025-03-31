@@ -40,8 +40,24 @@ export const ProfileInfoForm: React.FC<ProfileInfoFormProps> = ({
     return <div>Loading profile form...</div>;
   }
 
+  // Get the current profile data to determine if fields should be locked
+  const currentBirthDate = profileForm.getValues('birthDate');
+  const currentGender = profileForm.getValues('gender');
+  
+  // Check if these values already existed in the database (not just set in the current form session)
+  const extendedProfile = profileForm.getValues('__extendedProfile') || {};
+  const hasSetBirthDate = !!extendedProfile.birthDate;
+  const hasSetGender = !!extendedProfile.gender;
+
   const handleSubmit = async (values: any) => {
     try {
+      // Store the current form values to determine what's being saved
+      // This is used to track which fields should become read-only after saving
+      values.__extendedProfile = {
+        birthDate: values.birthDate,
+        gender: values.gender
+      };
+      
       await onProfileSubmit(values);
       toast.success('Profile updated successfully!');
     } catch (error) {
@@ -49,14 +65,6 @@ export const ProfileInfoForm: React.FC<ProfileInfoFormProps> = ({
       console.error('Error updating profile:', error);
     }
   };
-
-  // Check if gender has been set previously
-  const currentGender = profileForm.getValues('gender');
-  const hasSetGender = !!currentGender && currentGender !== 'Select gender';
-  
-  // Check if birth date has been set previously
-  const currentBirthDate = profileForm.getValues('birthDate');
-  const hasSetBirthDate = !!currentBirthDate;
 
   return (
     <Form {...profileForm}>

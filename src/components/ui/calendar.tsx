@@ -87,7 +87,7 @@ function Calendar({
             <select
               value={value}
               onChange={onChange}
-              className="cursor-pointer text-center text-sm font-medium bg-transparent outline-none px-2"
+              className="cursor-pointer text-center text-sm font-medium bg-transparent outline-none px-2 z-50"
               {...rest}
             >
               {safeOptions.map((option) => (

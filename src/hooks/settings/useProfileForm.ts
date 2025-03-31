@@ -20,6 +20,7 @@ export const profileFormSchema = z.object({
   instagramUrl: z.string().url("Please enter a valid URL").or(z.string().length(0)).optional(),
   youtubeUrl: z.string().url("Please enter a valid URL").or(z.string().length(0)).optional(),
   tiktokUrl: z.string().url("Please enter a valid URL").or(z.string().length(0)).optional(),
+  __extendedProfile: z.any().optional(), // Used to track which fields were previously saved
 });
 
 export const useProfileForm = (
@@ -45,6 +46,7 @@ export const useProfileForm = (
       instagramUrl: '',
       youtubeUrl: '',
       tiktokUrl: '',
+      __extendedProfile: {},
     },
   });
 
@@ -54,6 +56,9 @@ export const useProfileForm = (
     setIsUpdating(true);
     
     try {
+      // Store a copy of the extended profile to determine what fields have been previously saved
+      const savedExtendedProfile = { ...extendedProfile };
+      
       // Prepare extended data object
       const extendedData: ExtendedProfile = {
         firstName: values.firstName,
@@ -87,6 +92,9 @@ export const useProfileForm = (
       
       // Update local state
       setExtendedProfile(extendedData);
+      
+      // Update the form's internal tracking of what's been saved
+      profileForm.setValue('__extendedProfile', extendedData);
       
       sonnerToast.success('Profile updated successfully!');
     } catch (error: any) {
