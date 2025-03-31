@@ -32,10 +32,14 @@ export const useSettings = () => {
   useEffect(() => {
     const params = new URLSearchParams(location.search);
     const tabParam = params.get('tab');
+    
+    console.log('Settings tab param:', tabParam);
+    
     if (tabParam && ['profile', 'general', 'social', 'account'].includes(tabParam)) {
+      console.log('Setting active tab to:', tabParam);
       setActiveTab(tabParam);
     }
-  }, [location, setActiveTab]);
+  }, [location.search, setActiveTab]);
 
   const { handleAvatarUpload } = useAvatarUpload(user, setAvatarUrl, setUploading);
   

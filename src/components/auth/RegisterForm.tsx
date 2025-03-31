@@ -10,6 +10,7 @@ import { useForm } from 'react-hook-form';
 import * as z from 'zod';
 import { PhoneInput } from '@/components/settings/PhoneInput';
 import PasswordStrengthIndicator from './PasswordStrengthIndicator';
+import { toast } from 'sonner';
 
 const phoneRegex = /^\d{6,15}$/;
 
@@ -54,27 +55,38 @@ const RegisterForm = () => {
     
     const phoneWithCountryCode = `${values.phoneCountryCode}${values.phoneNumber}`;
     
-    const { success, error } = await signUp(
-      values.username,
-      values.password, 
-      phoneWithCountryCode
-    );
-    
-    if (error) {
-      // Check if error message contains information about duplicate username
-      if (error.message && error.message.includes('username is already taken')) {
-        setUsernameError(error.message);
-        form.setError('username', { 
-          type: 'manual', 
-          message: error.message
-        });
+    try {
+      console.log('Starting signup process');
+      const { success, error } = await signUp(
+        values.username,
+        values.password, 
+        phoneWithCountryCode
+      );
+      
+      if (error) {
+        // Check if error message contains information about duplicate username
+        if (error.message && error.message.includes('username is already taken')) {
+          setUsernameError(error.message);
+          form.setError('username', { 
+            type: 'manual', 
+            message: error.message
+          });
+        }
+        throw error;
       }
-      return;
-    }
-    
-    if (success) {
-      // Navigate to settings page with profile tab active
-      navigate('/settings?tab=profile');
+      
+      if (success) {
+        // Log successful registration before navigation
+        console.log('Registration successful, redirecting to settings');
+        toast.success('Account created successfully! Redirecting to profile setup...');
+        
+        // Force immediate navigation
+        setTimeout(() => {
+          navigate('/settings?tab=profile', { replace: true });
+        }, 100);
+      }
+    } catch (error) {
+      console.error('Signup error:', error);
     }
   };
 

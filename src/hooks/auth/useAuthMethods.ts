@@ -60,6 +60,7 @@ export function useAuthMethods() {
     error: Error | null;
   }> => {
     try {
+      console.log('Checking if username exists:', username);
       // Check if username already exists before creating the auth user
       const { data: usernameCheck, error: usernameError } = await supabase
         .from('profiles')
@@ -71,6 +72,7 @@ export function useAuthMethods() {
         throw new Error('This username is already taken. Please choose a different one.');
       }
 
+      console.log('Creating auth user with phone:', phoneNumber);
       // Create the auth user with phone
       const { data: authData, error: authError } = await supabase.auth.signUp({
         phone: phoneNumber,
@@ -83,14 +85,17 @@ export function useAuthMethods() {
       });
 
       if (authError) {
+        console.error('Auth error during signup:', authError);
         throw new Error(authError.message);
       }
 
       // Check if the user was created successfully
       if (!authData.user) {
+        console.error('No user data returned from signUp');
         throw new Error('Failed to create user');
       }
 
+      console.log('Creating profile with initial points');
       // We successfully created a user, now create the profile with 10 initial points
       const { error: profileError } = await supabase
         .from('profiles')
@@ -105,10 +110,12 @@ export function useAuthMethods() {
 
       if (profileError) {
         // If there was an error creating the profile, delete the auth user and throw error
+        console.error('Profile creation error:', profileError);
         await supabase.auth.admin.deleteUser(authData.user.id);
         throw new Error('Database error saving new user: ' + profileError.message);
       }
       
+      console.log('Signing in after account creation');
       // Sign in the user after successful signup
       const { error: signInError } = await supabase.auth.signInWithPassword({
         phone: phoneNumber,
@@ -116,6 +123,7 @@ export function useAuthMethods() {
       });
       
       if (signInError) {
+        console.error('Error signing in after signup:', signInError);
         throw new Error('Error signing in after account creation: ' + signInError.message);
       }
       
