@@ -11,6 +11,14 @@ export type CalendarProps = React.ComponentProps<typeof DayPicker> & {
   toYear?: number;
 }
 
+// Define the correct type for dropdown props
+interface DropdownProps extends React.SelectHTMLAttributes<HTMLSelectElement> {
+  value: string;
+  onChange: (event: React.ChangeEvent<HTMLSelectElement>) => void;
+  children?: React.ReactNode;
+  options: Array<{value: string; label: string}>;
+}
+
 function Calendar({
   className,
   classNames,
@@ -33,7 +41,7 @@ function Calendar({
   return (
     <DayPicker
       showOutsideDays={showOutsideDays}
-      className={cn("p-3", className)}
+      className={cn("p-3 pointer-events-auto", className)}
       classNames={{
         months: "flex flex-col sm:flex-row space-y-4 sm:space-x-4 sm:space-y-0",
         month: "space-y-4",
@@ -71,11 +79,11 @@ function Calendar({
       components={{
         IconLeft: ({ ...props }) => <ChevronLeft className="h-4 w-4" />,
         IconRight: ({ ...props }) => <ChevronRight className="h-4 w-4" />,
-        Dropdown: ({ value, onChange, options, ...rest }) => {
+        Dropdown: ({ value, onChange, options, ...rest }: DropdownProps) => {
           return (
             <select
               value={value}
-              onChange={e => onChange && onChange(e.target.value)}
+              onChange={onChange}
               className="cursor-pointer text-center text-sm font-medium bg-transparent outline-none px-2"
               {...rest}
             >
