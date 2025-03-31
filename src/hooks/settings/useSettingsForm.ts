@@ -1,4 +1,3 @@
-
 import { useForm } from 'react-hook-form';
 import { zodResolver } from '@hookform/resolvers/zod';
 import * as z from 'zod';
@@ -43,7 +42,7 @@ export const useSettingsForm = (
       // Get current extended data
       const { data, error: fetchError } = await supabase
         .from('profiles')
-        .select('extended_data, phone_number, phone_country_code')
+        .select('extended_data, phone_number, phone_country_code, email')
         .eq('id', user.id)
         .single();
       
@@ -52,13 +51,14 @@ export const useSettingsForm = (
         throw fetchError;
       }
       
+      console.log('Current profile data:', data);
+      
       // Update extended data with new settings
       const currentExtendedData = data.extended_data as ExtendedProfile || {};
       const updatedExtendedData: ExtendedProfile = {
         ...currentExtendedData,
         phoneNumber: values.phoneNumber || null,
         country: values.country || null,
-        email: values.email || null, // Store email in extended_data as well
       };
       
       // Convert ExtendedProfile to a plain object for storage
@@ -69,43 +69,53 @@ export const useSettingsForm = (
       console.log('Updated extended data:', jsonData);
       console.log('Updating email to:', values.email);
       
-      // Update profile with new extended data, phone country code and email
-      const { error: updateError } = await supabase
-        .from('profiles')
-        .update({ 
-          extended_data: jsonData,
-          phone_country_code: values.phoneCountryCode || null,
-          phone_number: values.phoneNumber || null,
-          email: values.email || null // Add email directly to the profiles table
-        })
-        .eq('id', user.id);
+      // Direct SQL update to ensure email is saved in the profiles table
+      // This approach bypasses any potential issues with the ORM layer
+      const { error: directUpdateError } = await supabase.rpc('update_profile_email', {
+        user_id: user.id,
+        new_email: values.email || null
+      });
       
-      if (updateError) {
-        console.error('Error updating profile:', updateError);
-        throw updateError;
-      }
-      
-      // Try to update the email in auth.users table as well (without verification)
-      if (values.email && values.email !== user.email) {
-        try {
-          // Just trying to update the email in the user's session metadata
-          // This won't trigger verification emails since we're not using updateUser with email param
-          const { error: sessionUpdateError } = await supabase.auth.updateUser({
-            data: { email: values.email }
-          });
-          
-          if (sessionUpdateError) {
-            console.log('Note: Could not update email in session data:', sessionUpdateError);
-            // Don't throw error here, as the main profile update succeeded
-          }
-        } catch (emailErr) {
-          console.log('Non-critical error updating session data:', emailErr);
-          // Don't throw here since we successfully updated the profiles table
+      if (directUpdateError) {
+        console.error('Error updating email with RPC:', directUpdateError);
+        
+        // Fallback to regular update if RPC fails
+        const { error: updateError } = await supabase
+          .from('profiles')
+          .update({ 
+            extended_data: jsonData,
+            phone_country_code: values.phoneCountryCode || null,
+            phone_number: values.phoneNumber || null,
+            email: values.email // Store email directly (no null fallback)
+          })
+          .eq('id', user.id);
+        
+        if (updateError) {
+          console.error('Error updating profile:', updateError);
+          throw updateError;
         }
       }
       
-      // Update local state
-      setExtendedProfile(updatedExtendedData);
+      // Verify the email was saved by fetching the profile again
+      const { data: verifyData, error: verifyError } = await supabase
+        .from('profiles')
+        .select('email')
+        .eq('id', user.id)
+        .single();
+      
+      if (verifyError) {
+        console.error('Error verifying profile update:', verifyError);
+      } else {
+        console.log('Profile email after update:', verifyData.email);
+      }
+      
+      // Update local state with the new extended profile data
+      const updatedProfile = {
+        ...currentExtendedData,
+        ...updatedExtendedData,
+        email: values.email || null
+      };
+      setExtendedProfile(updatedProfile);
       
       sonnerToast.success('Settings updated successfully!');
     } catch (error: any) {
