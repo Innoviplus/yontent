@@ -63,9 +63,7 @@ const RegisterForm = () => {
         toast.success('Account created successfully! Redirecting to profile setup...');
         
         // Force immediate navigation
-        setTimeout(() => {
-          navigate('/settings?tab=profile', { replace: true });
-        }, 100);
+        navigate('/settings?tab=profile', { replace: true });
       }
     } catch (error) {
       console.error('Signup error:', error);

@@ -59,7 +59,7 @@ export function useSignUp() {
             id: authData.user.id,
             username,
             phone_number: phoneNumber,
-            points: 10, // Start with 10 points
+            points: 10, // Ensuring exactly 10 points for new users
           },
         ]);
 
