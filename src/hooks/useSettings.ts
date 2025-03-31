@@ -6,6 +6,7 @@ import { useSettingsForm } from './settings/useSettingsForm';
 import { useAccountActions } from './settings/useAccountActions';
 import { useProfileData } from './settings/useProfileData';
 import { useEffect } from 'react';
+import { useLocation } from 'react-router-dom';
 
 export const useSettings = () => {
   const {
@@ -24,6 +25,17 @@ export const useSettings = () => {
     setExtendedProfile,
     navigate
   } = useSettingsState();
+
+  const location = useLocation();
+  
+  // Set active tab based on URL parameter if present
+  useEffect(() => {
+    const params = new URLSearchParams(location.search);
+    const tabParam = params.get('tab');
+    if (tabParam && ['profile', 'general', 'social', 'account'].includes(tabParam)) {
+      setActiveTab(tabParam);
+    }
+  }, [location, setActiveTab]);
 
   const { handleAvatarUpload } = useAvatarUpload(user, setAvatarUrl, setUploading);
   

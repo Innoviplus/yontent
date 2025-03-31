@@ -1,3 +1,4 @@
+
 import { useState } from 'react';
 import { Link, useNavigate } from 'react-router-dom';
 import { Eye, EyeOff } from 'lucide-react';
@@ -72,8 +73,8 @@ const RegisterForm = () => {
     }
     
     if (success) {
-      // Redirect to settings page with the profile tab active
-      navigate('/settings');
+      // Navigate to settings page with profile tab active
+      navigate('/settings?tab=profile');
     }
   };
 

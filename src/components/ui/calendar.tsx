@@ -1,19 +1,35 @@
-import * as React from "react";
-import { ChevronLeft, ChevronRight } from "lucide-react";
-import { DayPicker, DropdownProps, CaptionProps } from "react-day-picker";
 
-import { cn } from "@/lib/utils";
-import { buttonVariants } from "@/components/ui/button";
-import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
+import * as React from "react"
+import { ChevronLeft, ChevronRight } from "lucide-react"
+import { DayPicker } from "react-day-picker"
 
-export type CalendarProps = React.ComponentProps<typeof DayPicker>;
+import { cn } from "@/lib/utils"
+import { buttonVariants } from "@/components/ui/button"
+
+export type CalendarProps = React.ComponentProps<typeof DayPicker> & {
+  fromYear?: number;
+  toYear?: number;
+}
 
 function Calendar({
   className,
   classNames,
   showOutsideDays = true,
+  fromYear,
+  toYear,
   ...props
 }: CalendarProps) {
+  // Handle year selection capabilities
+  const years = React.useMemo(() => {
+    if (!fromYear || !toYear) return undefined;
+    
+    const yearsArray = [];
+    for (let year = fromYear; year <= toYear; year++) {
+      yearsArray.push(year);
+    }
+    return yearsArray;
+  }, [fromYear, toYear]);
+
   return (
     <DayPicker
       showOutsideDays={showOutsideDays}
@@ -53,135 +69,32 @@ function Calendar({
         ...classNames,
       }}
       components={{
-        IconLeft: ({ ..._props }) => <ChevronLeft className="h-4 w-4" />,
-        IconRight: ({ ..._props }) => <ChevronRight className="h-4 w-4" />,
-        Dropdown: (props: DropdownProps) => {
-          const { value, onChange, children, ...rest } = props;
-          const stringValue = String(value);
-          
+        IconLeft: ({ ...props }) => <ChevronLeft className="h-4 w-4" />,
+        IconRight: ({ ...props }) => <ChevronRight className="h-4 w-4" />,
+        Dropdown: ({ value, onChange, options, ...rest }) => {
           return (
-            <Select
-              value={stringValue}
-              onValueChange={(newValue) => {
-                const syntheticEvent = {
-                  target: {
-                    value: newValue,
-                    name: props.name
-                  },
-                  currentTarget: {
-                    value: newValue,
-                    name: props.name
-                  },
-                  preventDefault: () => {},
-                  stopPropagation: () => {}
-                } as React.ChangeEvent<HTMLSelectElement>;
-                
-                onChange?.(syntheticEvent);
-              }}
+            <select
+              value={value}
+              onChange={e => onChange && onChange(e.target.value)}
+              className="cursor-pointer text-center text-sm font-medium bg-transparent outline-none px-2"
+              {...rest}
             >
-              <SelectTrigger className="w-[90px] focus:ring-0">
-                <SelectValue>{stringValue}</SelectValue>
-              </SelectTrigger>
-              <SelectContent>
-                {React.Children.map(children as React.ReactElement[], (child) => (
-                  <SelectItem value={child.props.value.toString()}>{child.props.children}</SelectItem>
-                ))}
-              </SelectContent>
-            </Select>
+              {options.map((option) => (
+                <option key={option.value} value={option.value}>
+                  {option.label}
+                </option>
+              ))}
+            </select>
           );
         },
-        Caption: ({ displayMonth, id }: CaptionProps) => {
-          const handleMonthChange = (monthStr: string) => {
-            const newDate = new Date(displayMonth);
-            newDate.setMonth(parseInt(monthStr));
-            const customEvent = new CustomEvent("daypicker-month-change", { 
-              detail: { date: newDate }
-            });
-            document.dispatchEvent(customEvent);
-          };
-          
-          const handleYearChange = (yearStr: string) => {
-            const newDate = new Date(displayMonth);
-            newDate.setFullYear(parseInt(yearStr));
-            const customEvent = new CustomEvent("daypicker-month-change", { 
-              detail: { date: newDate }
-            });
-            document.dispatchEvent(customEvent);
-          };
-          
-          React.useEffect(() => {
-            const handler = (e: Event) => {
-              const customEvent = e as CustomEvent;
-              if (props.onMonthChange) {
-                props.onMonthChange(customEvent.detail.date);
-              }
-            };
-            
-            document.addEventListener('daypicker-month-change', handler);
-            
-            return () => {
-              document.removeEventListener('daypicker-month-change', handler);
-            };
-          }, [props.onMonthChange]);
-
-          const fromYear = props.fromYear || new Date().getFullYear() - 100;
-          const toYear = props.toYear || new Date().getFullYear();
-          
-          return (
-            <div className="flex justify-center space-x-2 py-1 w-full pointer-events-auto">
-              {displayMonth && (
-                <>
-                  <Select 
-                    value={displayMonth.getMonth().toString()} 
-                    onValueChange={handleMonthChange}
-                  >
-                    <SelectTrigger className="w-[90px] focus:ring-0">
-                      <SelectValue>
-                        {displayMonth.toLocaleString('default', { month: 'long' })}
-                      </SelectValue>
-                    </SelectTrigger>
-                    <SelectContent className="pointer-events-auto">
-                      {Array.from({ length: 12 }, (_, i) => (
-                        <SelectItem key={i} value={i.toString()}>
-                          {new Date(0, i).toLocaleString('default', { month: 'long' })}
-                        </SelectItem>
-                      ))}
-                    </SelectContent>
-                  </Select>
-                  
-                  <Select 
-                    value={displayMonth.getFullYear().toString()} 
-                    onValueChange={handleYearChange}
-                  >
-                    <SelectTrigger className="w-[90px] focus:ring-0">
-                      <SelectValue>
-                        {displayMonth.getFullYear()}
-                      </SelectValue>
-                    </SelectTrigger>
-                    <SelectContent className="pointer-events-auto">
-                      {Array.from(
-                        { length: toYear - fromYear + 1 },
-                        (_, i) => {
-                          const year = toYear - i;
-                          return (
-                            <SelectItem key={year} value={year.toString()}>
-                              {year}
-                            </SelectItem>
-                          );
-                        }
-                      )}
-                    </SelectContent>
-                  </Select>
-                </>
-              )}
-            </div>
-          );
-        }
       }}
+      captionLayout={fromYear && toYear ? "dropdown-buttons" : "buttons"}
+      fromYear={fromYear}
+      toYear={toYear}
       {...props}
     />
-  );
+  )
 }
-Calendar.displayName = "Calendar";
+Calendar.displayName = "Calendar"
 
-export { Calendar };
+export { Calendar }

@@ -99,7 +99,7 @@ export function useAuthMethods() {
             id: authData.user.id,
             username,
             phone_number: phoneNumber,
-            points: 10, // Start with 10 points instead of 50
+            points: 10, // Start with 10 points
           },
         ]);
 
@@ -107,6 +107,16 @@ export function useAuthMethods() {
         // If there was an error creating the profile, delete the auth user and throw error
         await supabase.auth.admin.deleteUser(authData.user.id);
         throw new Error('Database error saving new user: ' + profileError.message);
+      }
+      
+      // Sign in the user after successful signup
+      const { error: signInError } = await supabase.auth.signInWithPassword({
+        phone: phoneNumber,
+        password,
+      });
+      
+      if (signInError) {
+        throw new Error('Error signing in after account creation: ' + signInError.message);
       }
       
       // Show welcome message with points info
