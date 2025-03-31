@@ -15,6 +15,7 @@ import { SubmitButton } from './SubmitButton';
 
 const RegisterForm = () => {
   const [usernameError, setUsernameError] = useState<string | null>(null);
+  const [phoneError, setPhoneError] = useState<string | null>(null);
   const { signUp } = useAuth();
   const navigate = useNavigate();
 
@@ -32,8 +33,9 @@ const RegisterForm = () => {
   const isLoading = form.formState.isSubmitting;
 
   const onSubmit = async (values: RegisterFormValues) => {
-    // Clear any previous username error
+    // Clear any previous errors
     setUsernameError(null);
+    setPhoneError(null);
     
     const phoneWithCountryCode = `${values.phoneCountryCode}${values.phoneNumber}`;
     
@@ -46,13 +48,23 @@ const RegisterForm = () => {
       );
       
       if (error) {
-        // Check if error message contains information about duplicate username
+        // Check if error message contains information about duplicate username or phone
         if (error.message && error.message.includes('username is already taken')) {
           setUsernameError(error.message);
           form.setError('username', { 
             type: 'manual', 
             message: error.message
           });
+        } else if (error.message && (error.message.includes('User already registered') || 
+                 error.message.includes('already exists'))) {
+          setPhoneError('This phone number is already registered. Please use a different number or try logging in.');
+          form.setError('phoneNumber', { 
+            type: 'manual', 
+            message: 'This phone number is already registered'
+          });
+        } else {
+          // Handle other errors
+          toast.error(error.message);
         }
         throw error;
       }
@@ -62,7 +74,7 @@ const RegisterForm = () => {
         console.log('Registration successful, redirecting to settings page');
         toast.success('Account created successfully! You received 10 welcome points.');
         
-        // Navigate to settings page instead of homepage
+        // Navigate to settings page with replace:true to prevent back navigation to register page
         navigate('/settings', { replace: true });
       }
     } catch (error) {
@@ -108,6 +120,9 @@ const RegisterForm = () => {
                   onCountryCodeChange={(code) => form.setValue('phoneCountryCode', code)}
                 />
               </FormControl>
+              {phoneError && (
+                <p className="text-sm font-medium text-destructive">{phoneError}</p>
+              )}
               <FormMessage />
             </FormItem>
           )}

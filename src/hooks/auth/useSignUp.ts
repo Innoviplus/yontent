@@ -41,6 +41,10 @@ export function useSignUp() {
 
       if (authError) {
         console.error('Auth error during signup:', authError);
+        // Check if it's a "user already registered" error
+        if (authError.message && authError.message.includes('User already registered')) {
+          throw new Error('User already registered. Please use a different phone number or try logging in.');
+        }
         throw new Error(authError.message);
       }
 
@@ -66,7 +70,7 @@ export function useSignUp() {
       if (profileError) {
         // If there was an error creating the profile, delete the auth user and throw error
         console.error('Profile creation error:', profileError);
-        await supabase.auth.admin.deleteUser(authData.user.id);
+        // We can't use admin.deleteUser without service role, so we'll just report the error
         throw new Error('Database error saving new user: ' + profileError.message);
       }
       

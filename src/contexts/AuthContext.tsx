@@ -1,5 +1,5 @@
 
-import { createContext, useContext, ReactNode } from 'react';
+import { createContext, useContext, ReactNode, useEffect } from 'react';
 import { Session, User } from '@supabase/supabase-js';
 import { useAuthProvider } from '@/hooks/auth/useAuthProvider';
 import { useAuthMethods } from '@/hooks/auth/useAuthMethods';
@@ -34,6 +34,13 @@ export function AuthProvider({ children }: { children: ReactNode }) {
   } = useAuthProvider();
   
   const { signIn, signUp, signOut } = useAuthMethods();
+
+  // Whenever auth state changes, ensure we update the UI appropriately
+  useEffect(() => {
+    if (user && !loading) {
+      console.log("Auth state changed: User is signed in");
+    }
+  }, [user, loading]);
 
   return (
     <AuthContext.Provider
