@@ -60,7 +60,7 @@ const RegisterForm = () => {
           setPhoneError('This phone number is already registered. Please use a different number or try logging in.');
           form.setError('phoneNumber', { 
             type: 'manual', 
-            message: 'This phone number is already registered'
+            message: '' // Remove the duplicated message here
           });
         } else {
           // Handle other errors
@@ -123,7 +123,7 @@ const RegisterForm = () => {
               {phoneError && (
                 <p className="text-sm font-medium text-destructive">{phoneError}</p>
               )}
-              <FormMessage />
+              {/* Removing FormMessage here as it would show duplicate errors */}
             </FormItem>
           )}
         />
