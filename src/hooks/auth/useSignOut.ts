@@ -15,7 +15,9 @@ export function useSignOut() {
       
       console.log('User signed out successfully');
       sonnerToast.info('You have been signed out.');
-      window.location.href = '/'; // Force redirect to home page after logout
+      
+      // Force a hard refresh to clear any cached state
+      window.location.href = '/'; 
     } catch (error) {
       console.error('Failed to sign out:', error);
       sonnerToast.error('Failed to sign out. Please try again.');
