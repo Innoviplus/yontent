@@ -41,7 +41,7 @@ export const useSettingsForm = (
       // Get current extended data
       const { data, error: fetchError } = await supabase
         .from('profiles')
-        .select('extended_data')
+        .select('extended_data, phone_number, phone_country_code')
         .eq('id', user.id)
         .single();
       
@@ -62,13 +62,31 @@ export const useSettingsForm = (
         Object.entries(updatedExtendedData).map(([key, value]) => [key, value])
       );
       
-      // Update profile with new extended data and phone country code
+      // Update profile with new extended data, phone country code and potentially email
+      const updateData: any = { 
+        extended_data: jsonData,
+        phone_country_code: values.phoneCountryCode || null,
+        phone_number: values.phoneNumber || null
+      };
+      
+      // Update email if provided and different from current email
+      if (values.email && values.email !== user.email) {
+        // Update email in auth user
+        const { error: emailUpdateError } = await supabase.auth.updateUser({
+          email: values.email
+        });
+        
+        if (emailUpdateError) {
+          throw emailUpdateError;
+        }
+        
+        sonnerToast.success('Email update verification sent. Please check your inbox.');
+      }
+      
+      // Update profile
       const { error: updateError } = await supabase
         .from('profiles')
-        .update({ 
-          extended_data: jsonData,
-          phone_country_code: values.phoneCountryCode || null
-        })
+        .update(updateData)
         .eq('id', user.id);
       
       if (updateError) {

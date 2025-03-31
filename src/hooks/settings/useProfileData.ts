@@ -23,7 +23,7 @@ export const useProfileData = (
         
         const { data, error } = await supabase
           .from('profiles')
-          .select('extended_data, phone_country_code, avatar')
+          .select('extended_data, phone_country_code, phone_number, avatar')
           .eq('id', user.id)
           .single();
           
@@ -33,6 +33,8 @@ export const useProfileData = (
         }
         
         if (data) {
+          console.log('Profile data loaded:', data);
+          
           // Make sure avatar URL is set from profile data
           if (data.avatar) {
             setAvatarUrl(data.avatar);
@@ -55,9 +57,12 @@ export const useProfileData = (
             tiktokUrl: extData.tiktokUrl || '',
           });
           
+          // Use the phone number directly from the profiles table if available
+          const phoneNumber = data.phone_number || extData.phoneNumber || '';
+          
           settingsForm.reset({
             email: user?.email || '',
-            phoneNumber: extData.phoneNumber || '',
+            phoneNumber: phoneNumber,
             phoneCountryCode: data.phone_country_code || '',
             country: extData.country || '',
           });

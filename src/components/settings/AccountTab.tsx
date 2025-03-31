@@ -69,11 +69,12 @@ export const AccountTab: React.FC<AccountTabProps> = ({
                 <FormItem>
                   <FormLabel>Email Address</FormLabel>
                   <FormControl>
-                    <Input type="email" {...field} readOnly />
+                    <Input type="email" {...field} />
                   </FormControl>
                   <FormDescription>
-                    Your email address cannot be changed directly.
+                    Enter your preferred email address for notifications.
                   </FormDescription>
+                  <FormMessage />
                 </FormItem>
               )}
             />
