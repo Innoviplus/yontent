@@ -9,9 +9,10 @@ import { Form, FormControl, FormField, FormItem, FormLabel, FormMessage } from '
 import { zodResolver } from '@hookform/resolvers/zod';
 import { useForm } from 'react-hook-form';
 import * as z from 'zod';
+import { Toaster } from 'sonner';
 
 const loginSchema = z.object({
-  identifier: z.string().min(1, 'Please enter your email or phone number'),
+  identifier: z.string().min(1, 'Please enter your email, phone number, or username'),
   password: z.string().min(6, 'Password must be at least 6 characters'),
 });
 
@@ -21,6 +22,7 @@ const Login = () => {
   const [showPassword, setShowPassword] = useState(false);
   const { signIn } = useAuth();
   const navigate = useNavigate();
+  const [isSubmitting, setIsSubmitting] = useState(false);
 
   const form = useForm<LoginFormValues>({
     resolver: zodResolver(loginSchema),
@@ -30,12 +32,17 @@ const Login = () => {
     },
   });
 
-  const isLoading = form.formState.isSubmitting;
+  const isLoading = form.formState.isSubmitting || isSubmitting;
 
   const onSubmit = async (values: LoginFormValues) => {
-    const { error } = await signIn(values.identifier, values.password);
-    if (!error) {
-      navigate('/dashboard');
+    setIsSubmitting(true);
+    try {
+      const { error } = await signIn(values.identifier, values.password);
+      if (!error) {
+        navigate('/dashboard');
+      }
+    } finally {
+      setIsSubmitting(false);
     }
   };
 
@@ -63,10 +70,10 @@ const Login = () => {
                   name="identifier"
                   render={({ field }) => (
                     <FormItem>
-                      <FormLabel>Email or Phone Number</FormLabel>
+                      <FormLabel>Email, Phone Number or Username</FormLabel>
                       <FormControl>
                         <Input 
-                          placeholder="yourname@example.com or +1234567890" 
+                          placeholder="yourname@example.com or +1234567890 or username" 
                           type="text"
                           autoComplete="username"
                           {...field} 
@@ -145,6 +152,7 @@ const Login = () => {
           </div>
         </div>
       </div>
+      <Toaster />
     </div>
   );
 };

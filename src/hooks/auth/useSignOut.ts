@@ -4,8 +4,22 @@ import { toast as sonnerToast } from 'sonner';
 
 export function useSignOut() {
   const signOut = async () => {
-    await supabase.auth.signOut();
-    sonnerToast.info('You have been signed out.');
+    try {
+      console.log('Attempting to sign out user');
+      const { error } = await supabase.auth.signOut();
+      
+      if (error) {
+        console.error('Error signing out:', error);
+        throw error;
+      }
+      
+      console.log('User signed out successfully');
+      sonnerToast.info('You have been signed out.');
+      window.location.href = '/'; // Force redirect to home page after logout
+    } catch (error) {
+      console.error('Failed to sign out:', error);
+      sonnerToast.error('Failed to sign out. Please try again.');
+    }
   };
 
   return { signOut };
