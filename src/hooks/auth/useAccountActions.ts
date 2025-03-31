@@ -2,6 +2,7 @@
 import { supabase } from '@/integrations/supabase/client';
 import { useToast } from '@/hooks/use-toast';
 import { toast as sonnerToast } from 'sonner';
+import { useUserDeletion } from '@/hooks/auth/useUserDeletion';
 
 export const useAccountActions = (
   user: any,
@@ -9,6 +10,7 @@ export const useAccountActions = (
   navigate: (path: string) => void
 ) => {
   const { toast } = useToast();
+  const { deleteUser } = useUserDeletion();
 
   const handleDeleteAccount = async () => {
     if (!user) return;
@@ -18,23 +20,14 @@ export const useAccountActions = (
     if (!confirmed) return;
     
     try {
-      // First, delete related point transactions
-      const { error: pointsError } = await supabase
-        .from('point_transactions')
-        .delete()
-        .eq('user_id', user.id);
-        
-      if (pointsError) {
-        console.error('Error deleting point transactions:', pointsError);
-        throw pointsError;
+      // Use our comprehensive deletion function
+      const { error } = await deleteUser(user.id);
+      
+      if (error) {
+        throw error;
       }
       
-      // Delete any other related data...
-      // (Example: you might need to delete other related records)
-      
-      // In a real application with proper admin privileges, use admin API
-      // For now, sign out the user
-      sonnerToast.info('Account deletion would be processed here. Signing you out for demo purposes.');
+      // If successful, sign out the user
       await signOut();
       navigate('/');
     } catch (error: any) {
