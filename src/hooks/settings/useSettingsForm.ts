@@ -38,6 +38,8 @@ export const useSettingsForm = (
     setIsUpdating(true);
     
     try {
+      console.log('Submitting settings with values:', values);
+      
       // Get current extended data
       const { data, error: fetchError } = await supabase
         .from('profiles')
@@ -46,6 +48,7 @@ export const useSettingsForm = (
         .single();
       
       if (fetchError) {
+        console.error('Error fetching profile data:', fetchError);
         throw fetchError;
       }
       
@@ -63,25 +66,42 @@ export const useSettingsForm = (
         Object.entries(updatedExtendedData).map(([key, value]) => [key, value])
       );
       
-      // Update profile with new extended data, phone country code and potentially email
-      const updateData: any = { 
-        extended_data: jsonData,
-        phone_country_code: values.phoneCountryCode || null,
-        phone_number: values.phoneNumber || null,
-        email: values.email || null // Add email directly to the profiles table
-      };
+      console.log('Updated extended data:', jsonData);
+      console.log('Updating email to:', values.email);
       
-      // We've removed the email verification process since we're using phone authentication
-      
-      // Update profile
+      // Update profile with new extended data, phone country code and email
       const { error: updateError } = await supabase
         .from('profiles')
-        .update(updateData)
+        .update({ 
+          extended_data: jsonData,
+          phone_country_code: values.phoneCountryCode || null,
+          phone_number: values.phoneNumber || null,
+          email: values.email || null // Add email directly to the profiles table
+        })
         .eq('id', user.id);
       
       if (updateError) {
         console.error('Error updating profile:', updateError);
         throw updateError;
+      }
+      
+      // Try to update the email in auth.users table as well (without verification)
+      if (values.email && values.email !== user.email) {
+        try {
+          // Just trying to update the email in the user's session metadata
+          // This won't trigger verification emails since we're not using updateUser with email param
+          const { error: sessionUpdateError } = await supabase.auth.updateUser({
+            data: { email: values.email }
+          });
+          
+          if (sessionUpdateError) {
+            console.log('Note: Could not update email in session data:', sessionUpdateError);
+            // Don't throw error here, as the main profile update succeeded
+          }
+        } catch (emailErr) {
+          console.log('Non-critical error updating session data:', emailErr);
+          // Don't throw here since we successfully updated the profiles table
+        }
       }
       
       // Update local state
