@@ -3,6 +3,7 @@ import React, { useState, useEffect } from 'react';
 import { supabase } from '@/integrations/supabase/client';
 import { useQuery } from '@tanstack/react-query';
 import Navbar from '@/components/Navbar';
+import Footer from '@/components/home/Footer';
 import { Skeleton } from '@/components/ui/skeleton';
 
 const PrivacyPolicy = () => {
@@ -36,6 +37,7 @@ const PrivacyPolicy = () => {
           <Skeleton className="h-6 w-full mb-2" />
           <Skeleton className="h-6 w-3/4 mb-6" />
         </div>
+        <Footer />
       </>
     );
   }
@@ -50,6 +52,7 @@ const PrivacyPolicy = () => {
             We're sorry, but we couldn't load the privacy policy. Please try again later.
           </p>
         </div>
+        <Footer />
       </>
     );
   }
@@ -60,6 +63,7 @@ const PrivacyPolicy = () => {
       <div className="container mx-auto px-4 py-28 max-w-4xl">
         <div className="prose max-w-none" dangerouslySetInnerHTML={{ __html: privacyPolicy?.content || '' }} />
       </div>
+      <Footer />
     </>
   );
 };

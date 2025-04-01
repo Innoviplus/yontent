@@ -3,7 +3,6 @@ import React from 'react';
 import { UseFormReturn } from 'react-hook-form';
 import { Loader2 } from 'lucide-react';
 import { toast } from 'sonner';
-import { subYears } from 'date-fns';
 import {
   Form,
   FormControl,
@@ -16,7 +15,7 @@ import {
 import { Input } from '@/components/ui/input';
 import { Button } from '@/components/ui/button';
 import { Textarea } from '@/components/ui/textarea';
-import { DateOfBirthDropdowns } from './DateOfBirthDropdowns';
+import { BirthDatePicker } from './BirthDatePicker';
 import { 
   Select,
   SelectContent,
@@ -41,48 +40,8 @@ export const ProfileInfoForm: React.FC<ProfileInfoFormProps> = ({
     return <div>Loading profile form...</div>;
   }
 
-  // Get the current profile data to determine if fields should be locked
-  const currentBirthDate = profileForm.getValues('birthDate');
-  const currentGender = profileForm.getValues('gender');
-  
-  // Check if these values already existed in the database (not just set in the current form session)
-  const extendedProfile = profileForm.getValues('__extendedProfile') || {};
-  const hasSetBirthDate = !!extendedProfile.birthDate;
-  const hasSetGender = !!extendedProfile.gender;
-
-  // Create validation function for date of birth
-  const validateAge = (date: Date | undefined) => {
-    if (!date) return true;
-    
-    const minAgeDate = subYears(new Date(), 18);
-    if (date > minAgeDate) {
-      return "You must be at least 18 years old";
-    }
-    return true;
-  };
-
   const handleSubmit = async (values: any) => {
     try {
-      // Check age validation
-      if (values.birthDate) {
-        const minAgeDate = subYears(new Date(), 18);
-        if (values.birthDate > minAgeDate) {
-          profileForm.setError('birthDate', {
-            type: 'manual', 
-            message: 'You must be at least 18 years old'
-          });
-          toast.error('You must be at least 18 years old to save your profile');
-          return;
-        }
-      }
-      
-      // Store the current form values to determine what's being saved
-      // This is used to track which fields should become read-only after saving
-      values.__extendedProfile = {
-        birthDate: values.birthDate,
-        gender: values.gender
-      };
-      
       await onProfileSubmit(values);
       toast.success('Profile updated successfully!');
     } catch (error) {
@@ -90,6 +49,14 @@ export const ProfileInfoForm: React.FC<ProfileInfoFormProps> = ({
       console.error('Error updating profile:', error);
     }
   };
+
+  // Check if gender has been set previously
+  const currentGender = profileForm.getValues('gender');
+  const hasSetGender = !!currentGender && currentGender !== 'Select gender';
+  
+  // Check if birth date has been set previously
+  const currentBirthDate = profileForm.getValues('birthDate');
+  const hasSetBirthDate = !!currentBirthDate;
 
   return (
     <Form {...profileForm}>
@@ -194,7 +161,7 @@ export const ProfileInfoForm: React.FC<ProfileInfoFormProps> = ({
             )}
           />
           
-          <DateOfBirthDropdowns control={profileForm.control} disabled={hasSetBirthDate} />
+          <BirthDatePicker control={profileForm.control} disabled={hasSetBirthDate} />
         </div>
         
         <Button type="submit" disabled={isUpdating}>

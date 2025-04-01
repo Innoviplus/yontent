@@ -107,44 +107,15 @@ export type Database = {
         }
         Relationships: []
       }
-      point_transactions: {
-        Row: {
-          amount: number
-          created_at: string
-          description: string
-          id: string
-          type: string
-          user_id: string
-        }
-        Insert: {
-          amount: number
-          created_at?: string
-          description: string
-          id?: string
-          type: string
-          user_id: string
-        }
-        Update: {
-          amount?: number
-          created_at?: string
-          description?: string
-          id?: string
-          type?: string
-          user_id?: string
-        }
-        Relationships: []
-      }
       profiles: {
         Row: {
           avatar: string | null
           created_at: string
-          email: string | null
           extended_data: Json | null
           followers_count: number
           following_count: number
           id: string
           phone_country_code: string | null
-          phone_number: string | null
           points: number
           updated_at: string
           username: string | null
@@ -152,13 +123,11 @@ export type Database = {
         Insert: {
           avatar?: string | null
           created_at?: string
-          email?: string | null
           extended_data?: Json | null
           followers_count?: number
           following_count?: number
           id: string
           phone_country_code?: string | null
-          phone_number?: string | null
           points?: number
           updated_at?: string
           username?: string | null
@@ -166,13 +135,11 @@ export type Database = {
         Update: {
           avatar?: string | null
           created_at?: string
-          email?: string | null
           extended_data?: Json | null
           followers_count?: number
           following_count?: number
           id?: string
           phone_country_code?: string | null
-          phone_number?: string | null
           points?: number
           updated_at?: string
           username?: string | null

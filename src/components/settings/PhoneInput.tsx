@@ -105,13 +105,13 @@ export const PhoneInput: React.FC<PhoneInputProps> = ({
         value={countryCode}
         onValueChange={onCountryCodeChange}
       >
-        <SelectTrigger className="w-[120px]">
+        <SelectTrigger className="w-[100px]">
           <SelectValue placeholder="Code" />
         </SelectTrigger>
-        <SelectContent position="popper" className="w-[180px] max-h-[300px] overflow-y-auto">
+        <SelectContent className="max-h-[300px] overflow-y-auto">
           {countryCodes.map((country) => (
-            <SelectItem key={country.code} value={country.code} className="flex items-center">
-              <span className="truncate">{country.code} {country.country}</span>
+            <SelectItem key={country.code} value={country.code}>
+              {country.code} {country.country}
             </SelectItem>
           ))}
         </SelectContent>

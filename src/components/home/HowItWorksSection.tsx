@@ -1,17 +1,22 @@
+
 import { Link } from 'react-router-dom';
 import { Camera, Award, Star, ArrowUpRight } from 'lucide-react';
 import { useAuth } from '@/contexts/AuthContext';
+
 const HowItWorksSection = () => {
-  const {
-    user
-  } = useAuth();
-  return <section className="py-16 md:py-24">
+  const { user } = useAuth();
+  
+  return (
+    <section className="py-16 md:py-24">
       <div className="container mx-auto px-4 sm:px-6">
         <div className="max-w-4xl mx-auto">
           <div className="text-center mb-12">
             <div className="chip chip-primary mb-3">Simple Process</div>
             <h2 className="heading-2 mb-4">How Review Rewards Works</h2>
-            <p className="text-gray-600 max-w-2xl mx-auto">Our platform makes it easy to share your feedback on product and services, and get rewarded for your valuable feedback.</p>
+            <p className="text-gray-600 max-w-2xl mx-auto">
+              Our platform makes it easy to share your product experiences
+              and get rewarded for your valuable feedback.
+            </p>
           </div>
           
           <div className="grid md:grid-cols-3 gap-8">
@@ -54,6 +59,8 @@ const HowItWorksSection = () => {
           </div>
         </div>
       </div>
-    </section>;
+    </section>
+  );
 };
+
 export default HowItWorksSection;

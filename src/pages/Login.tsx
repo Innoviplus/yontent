@@ -9,10 +9,9 @@ import { Form, FormControl, FormField, FormItem, FormLabel, FormMessage } from '
 import { zodResolver } from '@hookform/resolvers/zod';
 import { useForm } from 'react-hook-form';
 import * as z from 'zod';
-import { Toaster } from 'sonner';
 
 const loginSchema = z.object({
-  identifier: z.string().min(1, 'Please enter your email, phone number, or username'),
+  email: z.string().email('Please enter a valid email address'),
   password: z.string().min(6, 'Password must be at least 6 characters'),
 });
 
@@ -22,27 +21,21 @@ const Login = () => {
   const [showPassword, setShowPassword] = useState(false);
   const { signIn } = useAuth();
   const navigate = useNavigate();
-  const [isSubmitting, setIsSubmitting] = useState(false);
 
   const form = useForm<LoginFormValues>({
     resolver: zodResolver(loginSchema),
     defaultValues: {
-      identifier: '',
+      email: '',
       password: '',
     },
   });
 
-  const isLoading = form.formState.isSubmitting || isSubmitting;
+  const isLoading = form.formState.isSubmitting;
 
   const onSubmit = async (values: LoginFormValues) => {
-    setIsSubmitting(true);
-    try {
-      const { error } = await signIn(values.identifier, values.password);
-      if (!error) {
-        navigate('/dashboard');
-      }
-    } finally {
-      setIsSubmitting(false);
+    const { error } = await signIn(values.email, values.password);
+    if (!error) {
+      navigate('/dashboard');
     }
   };
 
@@ -67,15 +60,15 @@ const Login = () => {
               <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-5">
                 <FormField
                   control={form.control}
-                  name="identifier"
+                  name="email"
                   render={({ field }) => (
                     <FormItem>
-                      <FormLabel>Email, Phone Number or Username</FormLabel>
+                      <FormLabel>Email Address</FormLabel>
                       <FormControl>
                         <Input 
-                          placeholder="yourname@example.com or +1234567890 or username" 
-                          type="text"
-                          autoComplete="username"
+                          placeholder="yourname@example.com" 
+                          type="email"
+                          autoComplete="email"
                           {...field} 
                         />
                       </FormControl>
@@ -152,7 +145,6 @@ const Login = () => {
           </div>
         </div>
       </div>
-      <Toaster />
     </div>
   );
 };

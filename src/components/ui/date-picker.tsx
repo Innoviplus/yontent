@@ -11,56 +11,29 @@ interface DatePickerProps {
   value: Date | null;
   onChange: (date: Date | null) => void;
   placeholder?: string;
-  disabled?: boolean;
-  fromYear?: number;
-  toYear?: number;
 }
 
-export function DatePicker({ 
-  value, 
-  onChange, 
-  placeholder = "Select date", 
-  disabled = false,
-  fromYear,
-  toYear
-}: DatePickerProps) {
-  const [open, setOpen] = React.useState(false);
-  
-  const handleSelect = (date: Date | undefined) => {
-    onChange(date || null);
-    setOpen(false);
-  };
-  
+export function DatePicker({ value, onChange, placeholder = "Select date" }: DatePickerProps) {
   return (
-    <Popover open={open && !disabled} onOpenChange={disabled ? undefined : setOpen}>
+    <Popover>
       <PopoverTrigger asChild>
         <Button
           variant={"outline"}
           className={cn(
             "w-full justify-start text-left font-normal",
-            !value && "text-muted-foreground",
-            disabled && "opacity-50 cursor-not-allowed"
+            !value && "text-muted-foreground"
           )}
-          disabled={disabled}
-          onClick={() => !disabled && setOpen(!open)}
         >
           <CalendarIcon className="mr-2 h-4 w-4" />
           {value ? format(value, "PPP") : <span>{placeholder}</span>}
         </Button>
       </PopoverTrigger>
-      <PopoverContent className="w-auto p-0 z-50" align="start">
+      <PopoverContent className="w-auto p-0" align="start">
         <Calendar
           mode="single"
           selected={value || undefined}
-          onSelect={handleSelect}
+          onSelect={onChange}
           initialFocus
-          disabled={(date) => disabled || 
-            (toYear && date > new Date(`${toYear}-12-31`)) || 
-            (fromYear && date < new Date(`${fromYear}-01-01`))
-          }
-          fromYear={fromYear}
-          toYear={toYear}
-          className="pointer-events-auto"
         />
       </PopoverContent>
     </Popover>
