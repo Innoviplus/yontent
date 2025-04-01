@@ -22,14 +22,16 @@ export const useProfileData = (
         if (!user) return;
         
         try {
+          // We need to handle the case where the query might fail because
+          // the email column hasn't been added yet
           const { data, error } = await supabase
             .from('profiles')
-            .select('extended_data, phone_country_code, phone_number, avatar, email')
+            .select('extended_data, phone_country_code, phone_number, avatar')
             .eq('id', user.id)
             .single();
             
           if (error) {
-            console.error('Error fetching extended profile:', error);
+            console.error('Error fetching profile:', error);
             return;
           }
           
@@ -63,8 +65,8 @@ export const useProfileData = (
             // - Then fall back to extended_data.phoneNumber if present
             const phoneNumber = data.phone_number || extData.phoneNumber || '';
             
-            // Prioritize the dedicated email column, then fall back to extended_data.email
-            const email = data.email || extData.email || user?.email || '';
+            // Prioritize email from extended_data and then from user auth
+            const email = extData.email || user?.email || '';
             
             settingsForm.reset({
               email: email,

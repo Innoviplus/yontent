@@ -43,7 +43,7 @@ export const useSettingsForm = (
       // Get current profile data
       const { data, error: fetchError } = await supabase
         .from('profiles')
-        .select('extended_data, phone_number, phone_country_code, email')
+        .select('extended_data, phone_number, phone_country_code')
         .eq('id', user.id)
         .single();
       
@@ -88,7 +88,6 @@ export const useSettingsForm = (
         const { error: updateError } = await supabase
           .from('profiles')
           .update({ 
-            email: values.email || null,
             extended_data: {
               ...jsonData,
               email: values.email || null  // Store email in extended_data for backward compatibility
