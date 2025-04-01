@@ -3,7 +3,8 @@ import { createContext, useContext, useEffect, useState, ReactNode } from 'react
 import { Session, User } from '@supabase/supabase-js';
 import { supabase } from '@/integrations/supabase/client';
 import { useToast } from '@/hooks/use-toast';
-import { toast as sonnerToast } from 'sonner';
+import * as authService from '@/services/auth/authService';
+import { fetchUserProfile } from '@/services/profile/profileService';
 
 interface AuthContextType {
   session: Session | null;
@@ -13,7 +14,7 @@ interface AuthContextType {
   signOut: () => Promise<void>;
   loading: boolean;
   userProfile: any | null;
-  refreshUserProfile: () => Promise<void>; // Added this line
+  refreshUserProfile: () => Promise<void>;
 }
 
 const AuthContext = createContext<AuthContextType | undefined>(undefined);
@@ -25,74 +26,39 @@ export function AuthProvider({ children }: { children: ReactNode }) {
   const [userProfile, setUserProfile] = useState<any | null>(null);
   const { toast } = useToast();
 
-  // Define the fetchUserProfile function so it can be reused
-  async function fetchUserProfile(userId: string) {
-    const { data, error } = await supabase
-      .from('profiles')
-      .select('*')
-      .eq('id', userId)
-      .single();
-
-    if (error) {
-      console.error('Error fetching user profile:', error);
-      return;
-    }
-
-    console.log('User profile data:', data);
-
-    setUserProfile(data);
-    
-    const userEmail = user?.email;
-    if (userEmail && data && data.extended_data) {
-      const userData = data.extended_data;
-      const extendedData = typeof userData === 'object' && !Array.isArray(userData) ? userData : {};
-      
-      if (!extendedData.email) {
-        const updatedExtendedData = {
-          ...extendedData,
-          email: userEmail
-        };
-
-        const { error: updateError } = await supabase
-          .from('profiles')
-          .update({ 
-            extended_data: updatedExtendedData 
-          })
-          .eq('id', userId);
-          
-        if (updateError) {
-          console.error('Error updating user email:', updateError);
-        }
-      }
-    }
-  }
-
-  // Add the refreshUserProfile method
+  // Method to refresh user profile data
   const refreshUserProfile = async () => {
     if (user) {
-      await fetchUserProfile(user.id);
+      const profileData = await fetchUserProfile(user.id, user.email);
+      setUserProfile(profileData);
     }
   };
 
   useEffect(() => {
+    // Initial session check
     supabase.auth.getSession().then(({ data: { session } }) => {
       setSession(session);
       setUser(session?.user ?? null);
       
       if (session?.user) {
-        fetchUserProfile(session.user.id);
+        fetchUserProfile(session.user.id, session.user.email).then(data => {
+          setUserProfile(data);
+        });
       }
       
       setLoading(false);
     });
 
+    // Auth state change listener
     const { data: { subscription } } = supabase.auth.onAuthStateChange(
       (_event, session) => {
         setSession(session);
         setUser(session?.user ?? null);
         
         if (session?.user) {
-          fetchUserProfile(session.user.id);
+          fetchUserProfile(session.user.id, session.user.email).then(data => {
+            setUserProfile(data);
+          });
         } else {
           setUserProfile(null);
         }
@@ -106,98 +72,30 @@ export function AuthProvider({ children }: { children: ReactNode }) {
     };
   }, []);
 
+  // Enhanced sign-in with error handling
   const signIn = async (email: string, password: string) => {
-    try {
-      const { error } = await supabase.auth.signInWithPassword({
-        email,
-        password,
-      });
-      
-      if (error) {
-        toast({
-          title: "Login Failed",
-          description: error.message,
-          variant: "destructive",
-        });
-        return { error };
-      }
-      
-      sonnerToast.success('Welcome back!');
-      return { error: null };
-    } catch (error: any) {
+    const result = await authService.signIn(email, password);
+    if (result.error) {
       toast({
         title: "Login Failed",
-        description: error.message,
+        description: result.error.message,
         variant: "destructive",
       });
-      return { error };
     }
+    return result;
   };
 
+  // Enhanced sign-up with error handling
   const signUp = async (email: string, password: string, username: string) => {
-    try {
-      const { data: existingUsers, error: emailCheckError } = await supabase
-        .from('profiles')
-        .select('id')
-        .eq('email', email);
-        
-      if (emailCheckError) {
-        console.error('Error checking existing email:', emailCheckError);
-      } else if (existingUsers && existingUsers.length > 0) {
-        toast({
-          title: "Registration Failed",
-          description: "This email is already registered. Please use a different email or try to log in.",
-          variant: "destructive",
-        });
-        return { error: { message: "Email already registered" } };
-      }
-      
-      const { error } = await supabase.auth.signUp({
-        email,
-        password,
-        options: {
-          data: {
-            username,
-            email, // Store email in user metadata
-          },
-        },
-      });
-      
-      if (error) {
-        toast({
-          title: "Registration Failed",
-          description: error.message,
-          variant: "destructive",
-        });
-        return { error };
-      }
-      
-      sonnerToast.success('Account created successfully! Please check your email for confirmation.');
-      return { error: null };
-    } catch (error: any) {
-      let errorMessage = error.message;
-      
-      if (errorMessage && (
-        errorMessage.includes('duplicate key') || 
-        errorMessage.includes('profiles_username_key') ||
-        errorMessage.includes('Database error saving new user')
-      )) {
-        errorMessage = 'This username is already taken. Please choose a different one.';
-      }
-      
+    const result = await authService.signUp(email, password, username);
+    if (result.error) {
       toast({
         title: "Registration Failed",
-        description: errorMessage,
+        description: result.error.message,
         variant: "destructive",
       });
-      
-      return { error: { ...error, message: errorMessage } };
     }
-  };
-
-  const signOut = async () => {
-    await supabase.auth.signOut();
-    sonnerToast.info('You have been signed out.');
+    return result;
   };
 
   return (
@@ -207,10 +105,10 @@ export function AuthProvider({ children }: { children: ReactNode }) {
         user,
         signIn,
         signUp,
-        signOut,
+        signOut: authService.signOut,
         loading,
         userProfile,
-        refreshUserProfile, // Add refreshUserProfile to the context value
+        refreshUserProfile,
       }}
     >
       {children}
