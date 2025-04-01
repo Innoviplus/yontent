@@ -54,6 +54,42 @@ const AdditionalDetails = ({ form }: AdditionalDetailsProps) => {
           </FormItem>
         )}
       />
+
+      <FormField
+        control={form.control}
+        name="completionSteps"
+        render={({ field }) => (
+          <FormItem>
+            <FormLabel>How To Complete This Mission</FormLabel>
+            <FormControl>
+              <RichTextEditor 
+                value={field.value || ''}
+                onChange={field.onChange}
+                placeholder="Describe the steps to complete this mission"
+              />
+            </FormControl>
+            <FormMessage />
+          </FormItem>
+        )}
+      />
+
+      <FormField
+        control={form.control}
+        name="productDescription"
+        render={({ field }) => (
+          <FormItem>
+            <FormLabel>About the Product or Service</FormLabel>
+            <FormControl>
+              <RichTextEditor 
+                value={field.value || ''}
+                onChange={field.onChange}
+                placeholder="Describe the product or service for this mission"
+              />
+            </FormControl>
+            <FormMessage />
+          </FormItem>
+        )}
+      />
     </div>
   );
 };

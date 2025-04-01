@@ -50,6 +50,7 @@ export type Database = {
       missions: {
         Row: {
           banner_image: string | null
+          completion_steps: string | null
           created_at: string
           description: string
           expires_at: string | null
@@ -58,6 +59,8 @@ export type Database = {
           merchant_logo: string | null
           merchant_name: string | null
           points_reward: number
+          product_description: string | null
+          product_images: string[] | null
           requirement_description: string | null
           start_date: string
           status: string
@@ -69,6 +72,7 @@ export type Database = {
         }
         Insert: {
           banner_image?: string | null
+          completion_steps?: string | null
           created_at?: string
           description: string
           expires_at?: string | null
@@ -77,6 +81,8 @@ export type Database = {
           merchant_logo?: string | null
           merchant_name?: string | null
           points_reward: number
+          product_description?: string | null
+          product_images?: string[] | null
           requirement_description?: string | null
           start_date: string
           status: string
@@ -88,6 +94,7 @@ export type Database = {
         }
         Update: {
           banner_image?: string | null
+          completion_steps?: string | null
           created_at?: string
           description?: string
           expires_at?: string | null
@@ -96,6 +103,8 @@ export type Database = {
           merchant_logo?: string | null
           merchant_name?: string | null
           points_reward?: number
+          product_description?: string | null
+          product_images?: string[] | null
           requirement_description?: string | null
           start_date?: string
           status?: string
