@@ -27,8 +27,7 @@ export const usePoints = () => {
 export const PointsProvider = ({ children }: { children: ReactNode }) => {
   const [userPoints, setUserPoints] = useState<number>(0);
   const [isLoading, setIsLoading] = useState<boolean>(true);
-  const auth = useContext(AuthContext);
-  const user = auth?.user;
+  const { user } = useAuth(); // Using the useAuth hook instead of direct context
 
   const fetchUserPoints = async () => {
     if (!user) {
