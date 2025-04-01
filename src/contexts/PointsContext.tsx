@@ -40,12 +40,17 @@ export const PointsProvider = ({ children }: { children: ReactNode }) => {
         .eq('id', user.id)
         .single();
 
-      if (error) throw error;
+      if (error) {
+        console.error('Error fetching user points:', error);
+        // Don't show toast on initial load to prevent spam
+        // Only show toast on explicit refresh or subsequent failures
+        return;
+      }
       
       setUserPoints(data?.points || 0);
     } catch (error) {
       console.error('Error fetching user points:', error);
-      toast.error('Failed to load points');
+      // Don't show toast on initial load
     } finally {
       setIsLoading(false);
     }
@@ -56,7 +61,11 @@ export const PointsProvider = ({ children }: { children: ReactNode }) => {
   }, [user]);
 
   const refreshPoints = async () => {
-    await fetchUserPoints();
+    try {
+      await fetchUserPoints();
+    } catch (error) {
+      toast.error('Failed to load points');
+    }
   };
 
   return (

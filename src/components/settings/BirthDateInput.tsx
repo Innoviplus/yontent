@@ -113,6 +113,10 @@ export const BirthDateInput: React.FC<BirthDateInputProps> = ({ control, disable
             field.onChange(newDate);
           };
 
+          // Fixed: Only disable if the prop is explicitly set to true
+          // This means it will only be disabled after saving changes
+          const shouldBeDisabled = disabled === true;
+
           return (
             <FormItem className="space-y-2">
               <FormLabel>Date of Birth</FormLabel>
@@ -122,7 +126,7 @@ export const BirthDateInput: React.FC<BirthDateInputProps> = ({ control, disable
                   <Select
                     value={selectedMonth?.toString() ?? ""}
                     onValueChange={(value) => handleDateChange('month', value)}
-                    disabled={disabled}
+                    disabled={shouldBeDisabled}
                   >
                     <SelectTrigger>
                       <SelectValue placeholder="Month" />
@@ -142,7 +146,7 @@ export const BirthDateInput: React.FC<BirthDateInputProps> = ({ control, disable
                   <Select
                     value={selectedDay?.toString() ?? ""}
                     onValueChange={(value) => handleDateChange('day', value)}
-                    disabled={disabled || selectedMonth === null}
+                    disabled={shouldBeDisabled || selectedMonth === null}
                   >
                     <SelectTrigger>
                       <SelectValue placeholder="Day" />
@@ -162,7 +166,7 @@ export const BirthDateInput: React.FC<BirthDateInputProps> = ({ control, disable
                   <Select
                     value={selectedYear?.toString() ?? ""}
                     onValueChange={(value) => handleDateChange('year', value)}
-                    disabled={disabled}
+                    disabled={shouldBeDisabled}
                   >
                     <SelectTrigger>
                       <SelectValue placeholder="Year" />
@@ -179,7 +183,7 @@ export const BirthDateInput: React.FC<BirthDateInputProps> = ({ control, disable
               </div>
               
               <FormDescription>
-                {disabled ? 
+                {shouldBeDisabled ? 
                   'Date of birth cannot be changed once set.' : 
                   'You must be at least 18 years old to use this service.'}
               </FormDescription>
