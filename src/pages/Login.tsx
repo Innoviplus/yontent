@@ -1,6 +1,6 @@
 
-import { useState } from 'react';
-import { Link, useNavigate } from 'react-router-dom';
+import { useState, useEffect } from 'react';
+import { Link, useNavigate, useLocation } from 'react-router-dom';
 import { Eye, EyeOff, Star } from 'lucide-react';
 import { useAuth } from '@/contexts/AuthContext';
 import Navbar from '@/components/Navbar';
@@ -9,6 +9,7 @@ import { Form, FormControl, FormField, FormItem, FormLabel, FormMessage } from '
 import { zodResolver } from '@hookform/resolvers/zod';
 import { useForm } from 'react-hook-form';
 import * as z from 'zod';
+import { toast } from 'sonner';
 
 const loginSchema = z.object({
   email: z.string().email('Please enter a valid email address'),
@@ -19,8 +20,12 @@ type LoginFormValues = z.infer<typeof loginSchema>;
 
 const Login = () => {
   const [showPassword, setShowPassword] = useState(false);
-  const { signIn } = useAuth();
+  const { signIn, user } = useAuth();
   const navigate = useNavigate();
+  const location = useLocation();
+  
+  // Get redirect path from location state or default to dashboard
+  const from = (location.state as any)?.from?.pathname || "/dashboard";
 
   const form = useForm<LoginFormValues>({
     resolver: zodResolver(loginSchema),
@@ -32,10 +37,24 @@ const Login = () => {
 
   const isLoading = form.formState.isSubmitting;
 
+  // Redirect if user is already logged in
+  useEffect(() => {
+    if (user) {
+      console.log("User already logged in, redirecting to:", from);
+      navigate(from, { replace: true });
+    }
+  }, [user, navigate, from]);
+
   const onSubmit = async (values: LoginFormValues) => {
-    const { error } = await signIn(values.email, values.password);
-    if (!error) {
-      navigate('/dashboard');
+    try {
+      const { error } = await signIn(values.email, values.password);
+      if (!error) {
+        toast.success("Login successful!");
+        console.log("Login successful, redirecting to:", from);
+        navigate(from, { replace: true });
+      }
+    } catch (error) {
+      console.error("Login error:", error);
     }
   };
 

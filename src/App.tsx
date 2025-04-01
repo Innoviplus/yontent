@@ -27,6 +27,8 @@ import FollowingList from './pages/FollowingList';
 import PrivacyPolicy from './pages/PrivacyPolicy';
 import TermsOfService from './pages/TermsOfService';
 import Footer from './components/home/Footer';
+import { useEffect } from 'react';
+import { useAuth } from './contexts/AuthContext';
 
 // Layout component to add Footer to all pages except TermsOfService and PrivacyPolicy
 const Layout = ({ children, includeFooter = true }: { children: React.ReactNode, includeFooter?: boolean }) => {
@@ -38,45 +40,58 @@ const Layout = ({ children, includeFooter = true }: { children: React.ReactNode,
   );
 };
 
+// Component to handle redirects based on auth status
+const AuthRedirect = ({ children }: { children: React.ReactNode }) => {
+  const { user } = useAuth();
+  
+  useEffect(() => {
+    console.log("Auth redirect check:", { hasUser: !!user });
+  }, [user]);
+  
+  return <>{children}</>;
+};
+
 function App() {
   return (
-    <Routes>
-      {/* Public routes */}
-      <Route path="/" element={<Layout><Index /></Layout>} />
-      <Route path="/login" element={<Layout><Login /></Layout>} />
-      <Route path="/register" element={<Layout><Register /></Layout>} />
-      <Route path="/reviews" element={<Layout><Reviews /></Layout>} />
-      <Route path="/review/:id" element={<Layout><ReviewDetail /></Layout>} />
-      <Route path="/missions" element={<Layout><Missions /></Layout>} />
-      <Route path="/mission/:id" element={<Layout><MissionDetail /></Layout>} />
-      <Route path="/user-rankings" element={<Layout><UserRankings /></Layout>} />
-      <Route path="/user/:username" element={<Layout><UserProfile /></Layout>} />
-      <Route path="/rewards" element={<Layout><Rewards /></Layout>} />
-      <Route path="/privacy" element={<PrivacyPolicy />} />
-      <Route path="/terms" element={<TermsOfService />} />
-      
-      {/* Redirect /profile to /settings */}
-      <Route path="/profile" element={<Navigate to="/settings" replace />} />
-      
-      {/* Protected routes */}
-      <Route element={<ProtectedRoute />}>
-        <Route path="/profile/:id" element={<Layout><Navigate to="/user/:username" replace /></Layout>} />
-        <Route path="/followers/:id" element={<Layout><FollowersList /></Layout>} />
-        <Route path="/following/:id" element={<Layout><FollowingList /></Layout>} />
-        <Route path="/settings" element={<Layout><Settings /></Layout>} />
-        <Route path="/edit-profile" element={<Layout><EditProfile /></Layout>} />
-        <Route path="/dashboard" element={<Layout><Dashboard /></Layout>} />
-        <Route path="/rewards/:id" element={<Layout><RewardDetail /></Layout>} />
-        <Route path="/mission/:id/submit-receipt" element={<Layout><MissionReceiptSubmission /></Layout>} />
-        <Route path="/mission/:id/submit-review" element={<Layout><MissionReviewSubmission /></Layout>} />
-        <Route path="/submit-review" element={<Layout><SubmitReview /></Layout>} />
-        <Route path="/edit-review/:id" element={<Layout><EditReview /></Layout>} />
-        <Route path="/admin" element={<Layout><AdminPanel /></Layout>} />
-      </Route>
-      
-      {/* 404 route */}
-      <Route path="*" element={<Layout><NotFound /></Layout>} />
-    </Routes>
+    <AuthRedirect>
+      <Routes>
+        {/* Public routes */}
+        <Route path="/" element={<Layout><Index /></Layout>} />
+        <Route path="/login" element={<Layout><Login /></Layout>} />
+        <Route path="/register" element={<Layout><Register /></Layout>} />
+        <Route path="/reviews" element={<Layout><Reviews /></Layout>} />
+        <Route path="/review/:id" element={<Layout><ReviewDetail /></Layout>} />
+        <Route path="/missions" element={<Layout><Missions /></Layout>} />
+        <Route path="/mission/:id" element={<Layout><MissionDetail /></Layout>} />
+        <Route path="/user-rankings" element={<Layout><UserRankings /></Layout>} />
+        <Route path="/user/:username" element={<Layout><UserProfile /></Layout>} />
+        <Route path="/rewards" element={<Layout><Rewards /></Layout>} />
+        <Route path="/privacy" element={<PrivacyPolicy />} />
+        <Route path="/terms" element={<TermsOfService />} />
+        
+        {/* Redirect /profile to /settings */}
+        <Route path="/profile" element={<Navigate to="/settings" replace />} />
+        
+        {/* Protected routes */}
+        <Route element={<ProtectedRoute />}>
+          <Route path="/profile/:id" element={<Layout><Navigate to="/user/:username" replace /></Layout>} />
+          <Route path="/followers/:id" element={<Layout><FollowersList /></Layout>} />
+          <Route path="/following/:id" element={<Layout><FollowingList /></Layout>} />
+          <Route path="/settings" element={<Layout><Settings /></Layout>} />
+          <Route path="/edit-profile" element={<Layout><EditProfile /></Layout>} />
+          <Route path="/dashboard" element={<Layout><Dashboard /></Layout>} />
+          <Route path="/rewards/:id" element={<Layout><RewardDetail /></Layout>} />
+          <Route path="/mission/:id/submit-receipt" element={<Layout><MissionReceiptSubmission /></Layout>} />
+          <Route path="/mission/:id/submit-review" element={<Layout><MissionReviewSubmission /></Layout>} />
+          <Route path="/submit-review" element={<Layout><SubmitReview /></Layout>} />
+          <Route path="/edit-review/:id" element={<Layout><EditReview /></Layout>} />
+          <Route path="/admin" element={<Layout><AdminPanel /></Layout>} />
+        </Route>
+        
+        {/* 404 route */}
+        <Route path="*" element={<Layout><NotFound /></Layout>} />
+      </Routes>
+    </AuthRedirect>
   );
 }
 

@@ -4,7 +4,7 @@ import { toast as sonnerToast } from 'sonner';
 
 export const signIn = async (email: string, password: string) => {
   try {
-    const { error } = await supabase.auth.signInWithPassword({
+    const { data, error } = await supabase.auth.signInWithPassword({
       email,
       password,
     });
@@ -13,8 +13,9 @@ export const signIn = async (email: string, password: string) => {
       return { error };
     }
     
+    // Return both session and user for more robust authentication state
     sonnerToast.success('Welcome back!');
-    return { error: null };
+    return { session: data.session, user: data.user, error: null };
   } catch (error: any) {
     return { error };
   }
@@ -33,7 +34,7 @@ export const signUp = async (email: string, password: string, username: string) 
       return { error: { message: "Email already registered" } };
     }
     
-    const { error } = await supabase.auth.signUp({
+    const { data, error } = await supabase.auth.signUp({
       email,
       password,
       options: {
@@ -49,7 +50,7 @@ export const signUp = async (email: string, password: string, username: string) 
     }
     
     sonnerToast.success('Account created successfully! Please check your email for confirmation.');
-    return { error: null };
+    return { session: data.session, user: data.user, error: null };
   } catch (error: any) {
     let errorMessage = error.message;
     
@@ -68,4 +69,14 @@ export const signUp = async (email: string, password: string, username: string) 
 export const signOut = async () => {
   await supabase.auth.signOut();
   sonnerToast.info('You have been signed out.');
+};
+
+export const getCurrentSession = async () => {
+  const { data } = await supabase.auth.getSession();
+  return data.session;
+};
+
+export const getCurrentUser = async () => {
+  const { data } = await supabase.auth.getUser();
+  return data.user;
 };

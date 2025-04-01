@@ -35,30 +35,20 @@ export function AuthProvider({ children }: { children: ReactNode }) {
   };
 
   useEffect(() => {
-    // Initial session check
-    supabase.auth.getSession().then(({ data: { session } }) => {
-      setSession(session);
-      setUser(session?.user ?? null);
-      
-      if (session?.user) {
-        fetchUserProfile(session.user.id, session.user.email).then(data => {
-          setUserProfile(data);
-        });
-      }
-      
-      setLoading(false);
-    });
-
-    // Auth state change listener
+    // Set up auth state change listener FIRST to prevent missing auth events
     const { data: { subscription } } = supabase.auth.onAuthStateChange(
-      (_event, session) => {
-        setSession(session);
-        setUser(session?.user ?? null);
+      (_event, newSession) => {
+        console.log("Auth state changed:", _event);
+        setSession(newSession);
+        setUser(newSession?.user ?? null);
         
-        if (session?.user) {
-          fetchUserProfile(session.user.id, session.user.email).then(data => {
-            setUserProfile(data);
-          });
+        // Defer profile fetch with setTimeout to avoid Supabase SDK deadlocks
+        if (newSession?.user) {
+          setTimeout(() => {
+            fetchUserProfile(newSession.user.id, newSession.user.email).then(data => {
+              setUserProfile(data);
+            });
+          }, 0);
         } else {
           setUserProfile(null);
         }
@@ -66,6 +56,21 @@ export function AuthProvider({ children }: { children: ReactNode }) {
         setLoading(false);
       }
     );
+
+    // THEN check for existing session
+    supabase.auth.getSession().then(({ data: { session: currentSession } }) => {
+      console.log("Initial session check:", currentSession ? "Found session" : "No session");
+      setSession(currentSession);
+      setUser(currentSession?.user ?? null);
+      
+      if (currentSession?.user) {
+        fetchUserProfile(currentSession.user.id, currentSession.user.email).then(data => {
+          setUserProfile(data);
+        });
+      }
+      
+      setLoading(false);
+    });
 
     return () => {
       subscription.unsubscribe();
