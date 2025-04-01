@@ -1,3 +1,4 @@
+
 import { useState, useEffect } from 'react';
 import { useAuth } from '@/contexts/AuthContext';
 import { supabase } from '@/integrations/supabase/client';
@@ -5,15 +6,17 @@ import { ExtendedProfile, Json } from '@/lib/types';
 import { toast } from 'sonner';
 
 export const useProfileData = () => {
-  const { user, setUserProfile } = useAuth();
+  // Access only what's available in the AuthContext
+  const { user, userProfile } = useAuth();
   const [avatarUrl, setAvatarUrl] = useState<string | null>(null);
   const [uploading, setUploading] = useState(false);
 
   useEffect(() => {
-    if (user && user.avatar) {
-      setAvatarUrl(user.avatar);
+    // Access avatar from userProfile instead of user
+    if (userProfile && userProfile.avatar) {
+      setAvatarUrl(userProfile.avatar);
     }
-  }, [user]);
+  }, [userProfile]);
 
   const handleAvatarUpload = async (file: File) => {
     try {
@@ -49,22 +52,11 @@ export const useProfileData = () => {
           throw updateError;
         }
 
-        // Update user object in AuthContext
-        setUserProfile((prevProfile) => {
-          if (prevProfile) {
-            return { ...prevProfile, avatar: data.publicUrl };
-          }
-          return {
-            id: user.id,
-            username: user.username,
-            email: user.email,
-            avatar: data.publicUrl,
-            points: 0,
-            created_at: new Date().toISOString(),
-            extended_data: {}
-          };
-        });
+        // Since we can't update the AuthContext directly, refresh the page after a short delay
         toast.success("Avatar updated successfully!");
+        setTimeout(() => {
+          window.location.reload();
+        }, 1500);
       }
     } catch (error: any) {
       console.error("Error uploading avatar:", error.message);
@@ -101,22 +93,7 @@ export const useProfileData = () => {
         throw updateError;
       }
 
-      // Update user profile in AuthContext
-      setUserProfile((prevProfile) => {
-        if (prevProfile && prevProfile.extended_data) {
-          return {
-            ...prevProfile,
-            phone_number: profileData.phoneNumber || null,
-            phone_country_code: profileData.phoneCountryCode || null,
-            extended_data: {
-              ...prevProfile.extended_data,
-              ...profileData,
-            }
-          };
-        }
-        return prevProfile;
-      });
-
+      // Since we can't update the AuthContext directly, show a success message
       toast.success("Profile updated successfully!");
       return true;
     } catch (error: any) {

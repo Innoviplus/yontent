@@ -73,7 +73,8 @@ export function AuthProvider({ children }: { children: ReactNode }) {
     
     const userEmail = user?.email;
     if (userEmail && data && data.extended_data) {
-      const extendedData = typeof data.extended_data === 'object' && !Array.isArray(extendedData) ? data.extended_data : {};
+      const userData = data.extended_data;
+      const extendedData = typeof userData === 'object' && !Array.isArray(userData) ? userData : {};
       
       if (!extendedData.email) {
         const updatedExtendedData = {

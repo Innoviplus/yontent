@@ -55,18 +55,21 @@ const TransactionsTab = () => {
       if (error) throw error;
       
       // Transform the data to match the PointTransaction interface
-      return (data || []).map(item => ({
-        id: item.id,
-        userId: item.user_id,
-        amount: item.amount,
-        type: item.type as 'EARNED' | 'REDEEMED' | 'REFUNDED' | 'ADJUSTED',
-        // Default source to 'ADMIN_ADJUSTMENT' if not present
-        source: (item.source || 'ADMIN_ADJUSTMENT') as 'MISSION_REVIEW' | 'RECEIPT_SUBMISSION' | 'REDEMPTION' | 'ADMIN_ADJUSTMENT',
-        // sourceId may not exist in all records
-        sourceId: item.source_id,
-        description: item.description,
-        createdAt: new Date(item.created_at)
-      })) as PointTransaction[];
+      return (data || []).map(item => {
+        // Create a transaction object with default values for missing properties
+        const transaction: PointTransaction = {
+          id: item.id,
+          userId: item.user_id,
+          amount: item.amount,
+          type: (item.type || 'EARNED') as 'EARNED' | 'REDEEMED' | 'REFUNDED' | 'ADJUSTED',
+          source: 'ADMIN_ADJUSTMENT', // Default value since it doesn't exist in database
+          sourceId: undefined,  // Default to undefined as it's optional
+          description: item.description || '',
+          createdAt: new Date(item.created_at)
+        };
+        
+        return transaction;
+      });
     },
     enabled: !!user
   });

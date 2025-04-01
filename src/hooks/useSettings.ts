@@ -4,8 +4,8 @@ import { useAvatarUpload } from './settings/useAvatarUpload';
 import { useProfileForm } from './settings/useProfileForm';
 import { useAccountActions } from './settings/useAccountActions';
 import { useProfileData } from './settings/useProfileData';
+import { useSettingsForm } from './settings/useSettingsForm';
 import { useEffect } from 'react';
-import { supabase } from '@/integrations/supabase/client';
 import { toast } from 'sonner';
 
 export const useSettings = () => {
@@ -36,13 +36,11 @@ export const useSettings = () => {
     setIsUpdating
   );
   
-  // Use the settings form hook - Fix: The useSettingsForm hook doesn't return these properties
-  const { 
-    form: settingsForm, 
-    activeTab: formActiveTab, // Renamed to avoid conflict
-    setActiveTab: setFormActiveTab, // Renamed to avoid conflict
-    handleResetPassword
-  } = useProfileData(); // Use the correct hook
+  // Get the updateProfileData function from useProfileData
+  const { updateProfileData } = useProfileData();
+  
+  // Get form-related functions from useSettingsForm
+  const settingsFormData = useSettingsForm();
   
   const { handleDeleteAccount, handleLogout } = useAccountActions(
     user, 
@@ -50,18 +48,15 @@ export const useSettings = () => {
     navigate
   );
 
-  // Load profile data
-  const { updateProfileData } = useProfileData();
-
   // Debugging - log critical objects
   useEffect(() => {
     console.log('useSettings hook initialized with:', {
       user: !!user,
       userProfile: !!userProfile,
       profileForm: !!profileForm,
-      settingsForm: !!settingsForm
+      settingsForm: !!settingsFormData.form
     });
-  }, [user, userProfile, profileForm, settingsForm]);
+  }, [user, userProfile, profileForm, settingsFormData.form]);
 
   return {
     user,
@@ -73,12 +68,11 @@ export const useSettings = () => {
     setActiveTab,
     extendedProfile,
     profileForm,
-    settingsForm,
+    settingsForm: settingsFormData.form,
     handleAvatarUpload,
     onProfileSubmit,
-    // Fix: Use the correct properties from the hook
     onSettingsSubmit: updateProfileData,
-    handleResetPassword,
+    handleResetPassword: settingsFormData.handleResetPassword,
     handleDeleteAccount,
     handleLogout,
   };

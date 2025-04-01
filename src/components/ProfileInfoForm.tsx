@@ -1,3 +1,4 @@
+
 import React from 'react';
 import { UseFormReturn } from 'react-hook-form';
 import { Button } from '@/components/ui/button';
@@ -18,7 +19,7 @@ import {
   SelectTrigger,
   SelectValue,
 } from '@/components/ui/select';
-import { BirthDateInput } from './BirthDateInput';
+import { BirthDateInput } from '@/components/settings/BirthDateInput';
 
 interface ProfileInfoFormProps {
   profileForm: UseFormReturn<any>;
