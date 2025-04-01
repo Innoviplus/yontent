@@ -23,7 +23,11 @@ import { getDefaultValues } from './fields/MissionFormFields';
 interface MissionFormProps {
   mission?: Mission;
   title: string;
-  onSubmit: (data: MissionFormData, files: { merchantLogo?: File | null, bannerImage?: File | null }) => Promise<boolean>;
+  onSubmit: (data: MissionFormData, files: { 
+    merchantLogo?: File | null, 
+    bannerImage?: File | null,
+    productImages?: File[] | null 
+  }) => Promise<boolean>;
   onCancel: () => void;
   isUploading?: boolean;
 }
@@ -48,9 +52,13 @@ const MissionForm = ({
   const handleSubmit = async (data: MissionFormData) => {
     setIsSubmitting(true);
     try {
+      // Extract product image files from the form data
+      const productImageFiles = data._productImageFiles as File[] | undefined;
+      
       const success = await onSubmit(data, {
         merchantLogo: merchantLogoFile,
-        bannerImage: bannerImageFile
+        bannerImage: bannerImageFile,
+        productImages: productImageFiles || null
       });
       if (success) {
         form.reset();

@@ -10,4 +10,5 @@ export interface MissionsState {
 export interface UploadFiles {
   merchantLogo?: File | null;
   bannerImage?: File | null;
+  productImages?: File[] | null;
 }

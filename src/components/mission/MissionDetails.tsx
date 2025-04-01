@@ -1,10 +1,13 @@
+
 import { Card, CardContent } from '@/components/ui/card';
 import { Mission } from '@/lib/types';
 import { Check, Gauge, Users } from 'lucide-react';
 import HTMLContent from '@/components/HTMLContent';
+
 interface MissionDetailsProps {
   mission: Mission;
 }
+
 const MissionDetails = ({
   mission
 }: MissionDetailsProps) => {
@@ -66,4 +69,5 @@ const MissionDetails = ({
       </CardContent>
     </Card>;
 };
+
 export default MissionDetails;

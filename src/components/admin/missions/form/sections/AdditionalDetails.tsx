@@ -6,6 +6,7 @@ import RequirementsSection from './RequirementsSection';
 import TermsSection from './TermsSection';
 import CompletionStepsSection from './CompletionStepsSection';
 import ProductDescriptionSection from './ProductDescriptionSection';
+import ProductImagesSection from './ProductImagesSection';
 
 interface AdditionalDetailsProps {
   form: ReturnType<typeof useFormContext<MissionFormData>>;
@@ -31,6 +32,7 @@ const AdditionalDetails = ({ form }: AdditionalDetailsProps) => {
       <TermsSection />
       <CompletionStepsSection />
       <ProductDescriptionSection />
+      <ProductImagesSection />
     </div>
   );
 };

@@ -19,6 +19,7 @@ export const missionSchema = z.object({
   completionSteps: z.string().optional(),
   productDescription: z.string().optional(),
   productImages: z.array(z.string()).optional(),
+  _productImageFiles: z.any().optional(), // temporary field to hold File objects
 });
 
 export type MissionFormData = z.infer<typeof missionSchema>;
