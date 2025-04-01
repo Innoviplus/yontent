@@ -5,6 +5,7 @@ import { cn } from '@/lib/utils';
 import { Link } from 'react-router-dom';
 import { format, isPast } from 'date-fns';
 import { Button } from './ui/button';
+import HTMLContent from './HTMLContent';
 
 interface MissionCardProps {
   mission: Mission;

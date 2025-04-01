@@ -86,6 +86,7 @@ export const useProfileForm = (
         youtubeUrl: values.youtubeUrl || null,
         tiktokUrl: values.tiktokUrl || null,
         phoneNumber: extendedProfile?.phoneNumber || null,
+        phoneCountryCode: extendedProfile?.phoneCountryCode || null,
         country: extendedProfile?.country || null,
       };
       
