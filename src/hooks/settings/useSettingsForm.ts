@@ -1,3 +1,4 @@
+
 import { useEffect, useState } from 'react';
 import { useAuth } from '@/contexts/AuthContext';
 import { useProfileData } from './useProfileData';
@@ -5,6 +6,9 @@ import { z } from 'zod';
 import { useForm } from 'react-hook-form';
 import { zodResolver } from '@hookform/resolvers/zod';
 import { useNavigate } from 'react-router-dom';
+import { supabase } from '@/integrations/supabase/client';
+import { useToast } from '@/hooks/use-toast';
+import { toast as sonnerToast } from 'sonner';
 
 const profileFormSchema = z.object({
   firstName: z.string().optional(),
@@ -19,6 +23,8 @@ const profileFormSchema = z.object({
   tiktokUrl: z.string().url("Please enter a valid URL").or(z.literal('')).optional(),
   youtubeUrl: z.string().url("Please enter a valid URL").or(z.literal('')).optional(),
   email: z.string().email("Please enter a valid email").optional(),
+  phoneNumber: z.string().optional(),
+  phoneCountryCode: z.string().optional(),
 });
 
 export type ProfileFormValues = z.infer<typeof profileFormSchema>;
@@ -28,6 +34,7 @@ export const useSettingsForm = () => {
   const { updateProfileData, avatarUrl, uploading, handleAvatarUpload } = useProfileData();
   const [activeTab, setActiveTab] = useState('general');
   const navigate = useNavigate();
+  const { toast } = useToast();
 
   const form = useForm<ProfileFormValues>({
     resolver: zodResolver(profileFormSchema),
@@ -44,6 +51,8 @@ export const useSettingsForm = () => {
       tiktokUrl: "",
       youtubeUrl: "",
       email: user?.email || "",
+      phoneNumber: "",
+      phoneCountryCode: "",
     }
   });
 
@@ -64,28 +73,61 @@ export const useSettingsForm = () => {
         tiktokUrl: profileData.tiktokUrl || "",
         youtubeUrl: profileData.youtubeUrl || "",
         email: profileData.email || user?.email || "",
+        phoneNumber: userProfile.phone_number || "",
+        phoneCountryCode: userProfile.phone_country_code || "",
       });
     }
   }, [userProfile, user, form]);
 
   const onSubmit = async (values: ProfileFormValues) => {
-    const success = await updateProfileData({
-      firstName: values.firstName,
-      lastName: values.lastName,
-      bio: values.bio,
-      gender: values.gender,
-      birthDate: values.birthDate,
-      websiteUrl: values.websiteUrl,
-      twitterUrl: values.twitterUrl,
-      instagramUrl: values.instagramUrl,
-      facebookUrl: values.facebookUrl,
-      tiktokUrl: values.tiktokUrl,
-      youtubeUrl: values.youtubeUrl,
-      email: values.email,
-    });
+    if (!user) return;
+    
+    try {
+      const success = await updateProfileData({
+        firstName: values.firstName,
+        lastName: values.lastName,
+        bio: values.bio,
+        gender: values.gender,
+        birthDate: values.birthDate,
+        websiteUrl: values.websiteUrl,
+        twitterUrl: values.twitterUrl,
+        instagramUrl: values.instagramUrl,
+        facebookUrl: values.facebookUrl,
+        tiktokUrl: values.tiktokUrl,
+        youtubeUrl: values.youtubeUrl,
+        email: values.email,
+        phoneNumber: values.phoneNumber,
+        phoneCountryCode: values.phoneCountryCode,
+      });
 
-    if (success) {
-      navigate('/settings');
+      if (success) {
+        navigate('/settings');
+      }
+    } catch (error: any) {
+      toast({
+        title: "Update Failed",
+        description: error.message,
+        variant: "destructive",
+      });
+    }
+  };
+  
+  const handleResetPassword = async () => {
+    try {
+      const { error } = await supabase.auth.resetPasswordForEmail(
+        user?.email || '',
+        { redirectTo: `${window.location.origin}/reset-password` }
+      );
+      
+      if (error) throw error;
+      
+      sonnerToast.success('Password reset email sent. Please check your inbox.');
+    } catch (error: any) {
+      toast({
+        title: "Password Reset Failed",
+        description: error.message,
+        variant: "destructive",
+      });
     }
   };
 
@@ -96,6 +138,7 @@ export const useSettingsForm = () => {
     setActiveTab,
     avatarUrl,
     uploading,
-    handleAvatarUpload
+    handleAvatarUpload,
+    handleResetPassword
   };
 };

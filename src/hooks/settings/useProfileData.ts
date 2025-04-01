@@ -1,3 +1,4 @@
+
 import { useState, useEffect } from 'react';
 import { useAuth } from '@/contexts/AuthContext';
 import { supabase } from '@/integrations/supabase/client';
@@ -5,11 +6,28 @@ import { useToast } from '@/hooks/use-toast';
 import { toast as sonnerToast } from 'sonner';
 import { useAvatarUpload } from './useAvatarUpload';
 
+interface ProfileFormValues {
+  firstName?: string;
+  lastName?: string;
+  bio?: string;
+  gender?: string;
+  birthDate?: Date | null;
+  websiteUrl?: string;
+  twitterUrl?: string;
+  instagramUrl?: string;
+  facebookUrl?: string;
+  tiktokUrl?: string;
+  youtubeUrl?: string;
+  email?: string;
+  phoneNumber?: string;
+  phoneCountryCode?: string;
+}
+
 export const useProfileData = () => {
   const { user, userProfile } = useAuth();
   const [avatarUrl, setAvatarUrl] = useState<string | null>(userProfile?.avatar || null);
   const [uploading, setUploading] = useState(false);
-  const [formValues, setFormValues] = useState({
+  const [formValues, setFormValues] = useState<ProfileFormValues>({
     firstName: '',
     lastName: '',
     bio: '',
@@ -21,7 +39,7 @@ export const useProfileData = () => {
     facebookUrl: '',
     tiktokUrl: '',
     youtubeUrl: '',
-    email: userProfile?.extended_data?.email || user?.email || '',
+    email: user?.email || '',
     phoneNumber: '',
     phoneCountryCode: ''
   });
@@ -30,30 +48,38 @@ export const useProfileData = () => {
   const { handleAvatarUpload } = useAvatarUpload(user, setAvatarUrl, setUploading);
 
   useEffect(() => {
-    if (userProfile && userProfile.extended_data) {
-      setFormValues({
-        firstName: userProfile.extended_data.firstName || '',
-        lastName: userProfile.extended_data.lastName || '',
-        bio: userProfile.extended_data.bio || '',
-        gender: userProfile.extended_data.gender || '',
-        birthDate: userProfile.extended_data.birthDate ? new Date(userProfile.extended_data.birthDate) : null,
-        websiteUrl: userProfile.extended_data.websiteUrl || '',
-        twitterUrl: userProfile.extended_data.twitterUrl || '',
-        instagramUrl: userProfile.extended_data.instagramUrl || '',
-        facebookUrl: userProfile.extended_data.facebookUrl || '',
-        tiktokUrl: userProfile.extended_data.tiktokUrl || '',
-        youtubeUrl: userProfile.extended_data.youtubeUrl || '',
-        email: userProfile.extended_data.email || user?.email || '',
-        phoneNumber: userProfile.extended_data.phoneNumber || '',
-        phoneCountryCode: userProfile.extended_data.phoneCountryCode || ''
-      });
+    if (userProfile) {
+      // Safely handle the avatar
+      setAvatarUrl(userProfile.avatar || null);
+      
+      // Check if extended_data exists and is valid
+      if (userProfile.extended_data && typeof userProfile.extended_data === 'object') {
+        const extData = userProfile.extended_data;
+        setFormValues({
+          firstName: extData.firstName || '',
+          lastName: extData.lastName || '',
+          bio: extData.bio || '',
+          gender: extData.gender || '',
+          birthDate: extData.birthDate ? new Date(extData.birthDate) : null,
+          websiteUrl: extData.websiteUrl || '',
+          twitterUrl: extData.twitterUrl || '',
+          instagramUrl: extData.instagramUrl || '',
+          facebookUrl: extData.facebookUrl || '',
+          tiktokUrl: extData.tiktokUrl || '',
+          youtubeUrl: extData.youtubeUrl || '',
+          email: extData.email || user?.email || '',
+          phoneNumber: userProfile.phone_number || '',
+          phoneCountryCode: userProfile.phone_country_code || ''
+        });
+      }
     }
   }, [userProfile, user]);
 
-  const updateProfileData = async (updatedFormValues: typeof formValues) => {
-    if (!user) return;
+  const updateProfileData = async (updatedFormValues: ProfileFormValues) => {
+    if (!user) return false;
 
     try {
+      // Update extended data
       const extendedData = {
         firstName: updatedFormValues.firstName,
         lastName: updatedFormValues.lastName,
@@ -69,14 +95,29 @@ export const useProfileData = () => {
         email: updatedFormValues.email || user.email,
       };
 
-      const { error } = await supabase
-        .from('profiles')
-        .update({
-          extended_data: extendedData,
-        })
-        .eq('id', user.id);
+      // Update phone number if provided
+      if (updatedFormValues.phoneNumber || updatedFormValues.phoneCountryCode) {
+        const { error: phoneError } = await supabase
+          .from('profiles')
+          .update({
+            phone_number: updatedFormValues.phoneNumber,
+            phone_country_code: updatedFormValues.phoneCountryCode,
+            extended_data: extendedData
+          })
+          .eq('id', user.id);
 
-      if (error) throw error;
+        if (phoneError) throw phoneError;
+      } else {
+        // Just update the extended data
+        const { error } = await supabase
+          .from('profiles')
+          .update({
+            extended_data: extendedData,
+          })
+          .eq('id', user.id);
+
+        if (error) throw error;
+      }
 
       sonnerToast.success('Profile updated successfully!');
       return true;
@@ -91,7 +132,7 @@ export const useProfileData = () => {
   };
 
   const updatePhoneData = async (phoneNumber: string, countryCode: string) => {
-    if (!user) return;
+    if (!user) return false;
 
     try {
       const { error } = await supabase

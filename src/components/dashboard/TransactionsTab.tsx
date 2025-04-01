@@ -53,7 +53,18 @@ const TransactionsTab = () => {
       setIsLoading(false);
       
       if (error) throw error;
-      return data as PointTransaction[];
+      
+      // Transform the data to match the PointTransaction interface
+      return (data || []).map(item => ({
+        id: item.id,
+        userId: item.user_id,
+        amount: item.amount,
+        type: item.type as 'EARNED' | 'REDEEMED' | 'REFUNDED' | 'ADJUSTED',
+        source: (item.source as 'MISSION_REVIEW' | 'RECEIPT_SUBMISSION' | 'REDEMPTION' | 'ADMIN_ADJUSTMENT') || 'ADMIN_ADJUSTMENT',
+        sourceId: item.source_id,
+        description: item.description,
+        createdAt: new Date(item.created_at)
+      })) as PointTransaction[];
     },
     enabled: !!user
   });
@@ -88,7 +99,7 @@ const TransactionsTab = () => {
           <div className="flex flex-col">
             <span className="font-medium text-gray-800">{transaction.description}</span>
             <span className="text-sm text-gray-500">
-              {format(new Date(transaction.createdAt), 'MMM dd, yyyy')}
+              {format(transaction.createdAt, 'MMM dd, yyyy')}
             </span>
           </div>
           

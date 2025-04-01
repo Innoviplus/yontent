@@ -6,6 +6,8 @@ import { useSettingsForm } from './settings/useSettingsForm';
 import { useAccountActions } from './settings/useAccountActions';
 import { useProfileData } from './settings/useProfileData';
 import { useEffect } from 'react';
+import { supabase } from '@/integrations/supabase/client';
+import { toast } from 'sonner';
 
 export const useSettings = () => {
   const {
@@ -35,11 +37,12 @@ export const useSettings = () => {
     setIsUpdating
   );
   
-  const { settingsForm, onSettingsSubmit, handleResetPassword } = useSettingsForm(
-    user, 
-    setExtendedProfile, 
-    setIsUpdating
-  );
+  // Use the settings form hook
+  const { 
+    form: settingsForm, 
+    onSubmit: onSettingsSubmit,
+    handleResetPassword
+  } = useSettingsForm();
   
   const { handleDeleteAccount, handleLogout } = useAccountActions(
     user, 
@@ -48,14 +51,7 @@ export const useSettings = () => {
   );
 
   // Load profile data
-  useProfileData(
-    user,
-    userProfile,
-    setAvatarUrl,
-    setExtendedProfile,
-    profileForm,
-    settingsForm
-  );
+  const { updateProfileData } = useProfileData();
 
   // Debugging - log critical objects
   useEffect(() => {

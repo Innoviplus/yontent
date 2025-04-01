@@ -1,3 +1,4 @@
+
 import { createContext, useContext, useEffect, useState, ReactNode } from 'react';
 import { Session, User } from '@supabase/supabase-js';
 import { supabase } from '@/integrations/supabase/client';
@@ -72,21 +73,25 @@ export function AuthProvider({ children }: { children: ReactNode }) {
     setUserProfile(data);
     
     const userEmail = user?.email;
-    if (userEmail && data && !data.extended_data?.email) {
-      const updatedExtendedData = {
-        ...(data.extended_data || {}),
-        email: userEmail
-      };
+    if (userEmail && data && data.extended_data) {
+      const extendedData = typeof data.extended_data === 'object' ? data.extended_data : {};
+      
+      if (!extendedData.email) {
+        const updatedExtendedData = {
+          ...extendedData,
+          email: userEmail
+        };
 
-      const { error: updateError } = await supabase
-        .from('profiles')
-        .update({ 
-          extended_data: updatedExtendedData 
-        })
-        .eq('id', userId);
-        
-      if (updateError) {
-        console.error('Error updating user email:', updateError);
+        const { error: updateError } = await supabase
+          .from('profiles')
+          .update({ 
+            extended_data: updatedExtendedData 
+          })
+          .eq('id', userId);
+          
+        if (updateError) {
+          console.error('Error updating user email:', updateError);
+        }
       }
     }
   }
