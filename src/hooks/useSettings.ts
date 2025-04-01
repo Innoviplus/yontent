@@ -6,12 +6,17 @@ import { useAccountActions } from './settings/useAccountActions';
 import { useProfileData } from './settings/useProfileData';
 import { useSettingsForm } from './settings/useSettingsForm';
 import { useEffect } from 'react';
+import { toast } from 'sonner';
 
 export const useSettings = () => {
   const {
     user,
     userProfile,
     signOut,
+    avatarUrl,
+    setAvatarUrl,
+    uploading,
+    setUploading,
     isUpdating,
     setIsUpdating,
     activeTab,
@@ -21,8 +26,7 @@ export const useSettings = () => {
     navigate
   } = useSettingsState();
 
-  // Use refactored hooks
-  const { avatarUrl, uploading, handleAvatarUpload } = useAvatarUpload();
+  const { handleAvatarUpload } = useAvatarUpload(user, setAvatarUrl, setUploading);
   
   const { profileForm, onProfileSubmit } = useProfileForm(
     user, 
@@ -36,7 +40,7 @@ export const useSettings = () => {
   const { updateProfileData } = useProfileData();
   
   // Get form-related functions from useSettingsForm
-  const { form: settingsForm, handleResetPassword } = useSettingsForm();
+  const settingsFormData = useSettingsForm();
   
   const { handleDeleteAccount, handleLogout } = useAccountActions(
     user, 
@@ -50,9 +54,9 @@ export const useSettings = () => {
       user: !!user,
       userProfile: !!userProfile,
       profileForm: !!profileForm,
-      settingsForm: !!settingsForm
+      settingsForm: !!settingsFormData.form
     });
-  }, [user, userProfile, profileForm, settingsForm]);
+  }, [user, userProfile, profileForm, settingsFormData.form]);
 
   return {
     user,
@@ -64,11 +68,11 @@ export const useSettings = () => {
     setActiveTab,
     extendedProfile,
     profileForm,
-    settingsForm,
+    settingsForm: settingsFormData.form,
     handleAvatarUpload,
     onProfileSubmit,
     onSettingsSubmit: updateProfileData,
-    handleResetPassword,
+    handleResetPassword: settingsFormData.handleResetPassword,
     handleDeleteAccount,
     handleLogout,
   };

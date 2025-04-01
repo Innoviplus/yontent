@@ -62,8 +62,8 @@ const PrivacyPolicy = () => {
       <Navbar />
       <div className="container mx-auto px-4 py-28 max-w-4xl">
         <div 
-          className="prose prose-sm sm:prose lg:prose-lg xl:prose-xl max-w-none"
-          dangerouslySetInnerHTML={{ __html: privacyPolicy?.content || '' }}
+          className="prose max-w-none" 
+          dangerouslySetInnerHTML={{ __html: privacyPolicy?.content || '' }} 
         />
       </div>
       <Footer />

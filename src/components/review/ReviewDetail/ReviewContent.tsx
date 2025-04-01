@@ -1,14 +1,22 @@
 
-import HTMLContent from '@/components/HTMLContent';
+import { useEffect, useRef } from 'react';
 
 interface ReviewContentProps {
   content: string;
 }
 
 const ReviewContent = ({ content }: ReviewContentProps) => {
+  const contentRef = useRef<HTMLDivElement>(null);
+
+  useEffect(() => {
+    if (contentRef.current) {
+      contentRef.current.innerHTML = content;
+    }
+  }, [content]);
+
   return (
     <div className="prose max-w-none">
-      <HTMLContent content={content} className="text-gray-800" />
+      <div ref={contentRef} className="text-gray-800"></div>
     </div>
   );
 };

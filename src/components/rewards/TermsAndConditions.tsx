@@ -25,7 +25,7 @@ const TermsAndConditions: React.FC<TermsAndConditionsProps> = ({ termsConditions
     <div className="bg-white rounded-lg p-6 shadow-sm">
       <h2 className="text-xl font-bold mb-4">Terms & Conditions</h2>
       <div 
-        className="prose prose-sm text-gray-700 max-w-none"
+        className="prose text-sm text-gray-700"
         dangerouslySetInnerHTML={{ 
           __html: termsConditions || defaultTerms 
         }}

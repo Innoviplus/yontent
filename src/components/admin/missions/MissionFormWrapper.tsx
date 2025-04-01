@@ -1,9 +1,9 @@
 
 import { Mission } from '@/lib/types';
+import MissionForm from './MissionForm';
 import { useState } from 'react';
 import { supabase } from '@/integrations/supabase/client';
 import { toast } from 'sonner';
-import MissionForm from './form/MissionForm';
 
 interface MissionFormWrapperProps {
   mission?: Mission;
@@ -77,15 +77,6 @@ const MissionFormWrapper = ({
       if (bannerUrl) {
         updatedData.bannerImage = bannerUrl;
       }
-    }
-    
-    // Clean HTML content if needed
-    if (updatedData.requirementDescription) {
-      console.log('Requirements HTML before submission:', updatedData.requirementDescription);
-    }
-    
-    if (updatedData.termsConditions) {
-      console.log('Terms HTML before submission:', updatedData.termsConditions);
     }
     
     // Then submit the form data with the uploaded image URLs
