@@ -28,7 +28,7 @@ const RichTextFormField = ({ name, label, placeholder }: RichTextFormFieldProps)
           <FormLabel>{label}</FormLabel>
           <FormControl>
             <RichTextEditor 
-              value={field.value || ''}
+              value={field.value ? String(field.value) : ''}
               onChange={field.onChange}
               placeholder={placeholder}
             />
