@@ -1,5 +1,5 @@
 
-import { Bold, Italic, List, ListOrdered, Undo, Redo } from 'lucide-react';
+import { Bold, Italic, Underline, List, ListOrdered, Undo, Redo } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import LinkPopover from './LinkPopover';
 
@@ -43,6 +43,15 @@ const EditorToolbar = ({
         type="button"
       >
         <Italic className="h-4 w-4" />
+      </Button>
+      <Button
+        variant="ghost"
+        size="sm"
+        onClick={() => editor.chain().focus().toggleUnderline().run()}
+        className={editor.isActive('underline') ? 'bg-accent' : ''}
+        type="button"
+      >
+        <Underline className="h-4 w-4" />
       </Button>
       <Button
         variant="ghost"
