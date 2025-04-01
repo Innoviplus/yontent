@@ -2,7 +2,6 @@
 import { SettingsLayout } from '@/components/settings/SettingsLayout';
 import { useSettings } from '@/hooks/useSettings';
 import Navbar from '@/components/Navbar';
-import { Toaster } from '@/components/ui/sonner';
 
 const Settings = () => {
   const {
@@ -45,7 +44,6 @@ const Settings = () => {
           setActiveTab={setActiveTab}
         />
       </div>
-      <Toaster />
     </>
   );
 };

@@ -1,9 +1,9 @@
+
 import { useForm } from 'react-hook-form';
 import { zodResolver } from '@hookform/resolvers/zod';
 import * as z from 'zod';
 import { supabase } from '@/integrations/supabase/client';
-import { useToast } from '@/hooks/use-toast';
-import { toast as sonnerToast } from 'sonner';
+import { toast } from 'sonner';
 import { ExtendedProfile } from '@/lib/types';
 import React from 'react';
 
@@ -29,8 +29,6 @@ export const useProfileForm = (
   setExtendedProfile: (profile: ExtendedProfile | null) => void,
   setIsUpdating: (updating: boolean) => void
 ) => {
-  const { toast } = useToast();
-
   const profileForm = useForm<z.infer<typeof profileFormSchema>>({
     resolver: zodResolver(profileFormSchema),
     defaultValues: {
@@ -110,17 +108,13 @@ export const useProfileForm = (
       setExtendedProfile(extendedData);
       
       // Show success notification
-      sonnerToast.success('Profile updated successfully!');
+      toast.success('Profile updated successfully!');
       
       // Mark form as pristine to indicate data has been saved
       profileForm.reset(values, { keepValues: true });
       
     } catch (error: any) {
-      toast({
-        title: "Update Failed",
-        description: error.message,
-        variant: "destructive",
-      });
+      toast.error("Update Failed: " + error.message);
     } finally {
       setIsUpdating(false);
     }
