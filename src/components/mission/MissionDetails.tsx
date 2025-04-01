@@ -6,11 +6,9 @@ import HTMLContent from '@/components/HTMLContent';
 
 interface MissionDetailsProps {
   mission: Mission;
-  currentSubmissions?: number;
-  totalSubmissions?: number;
 }
 
-const MissionDetails = ({ mission, currentSubmissions = 0, totalSubmissions }: MissionDetailsProps) => {
+const MissionDetails = ({ mission }: MissionDetailsProps) => {
   return (
     <Card>
       <CardContent className="p-6">
@@ -27,27 +25,40 @@ const MissionDetails = ({ mission, currentSubmissions = 0, totalSubmissions }: M
             </div>
           </div>
         )}
-        
-        {mission.maxSubmissionsPerUser && (
+
+        {mission.productDescription && (
           <div className="mb-6">
-            <h3 className="text-lg font-semibold mb-2">Submissions</h3>
+            <h3 className="text-lg font-semibold mb-2">About the Product or Service</h3>
             <div className="p-4 bg-gray-50 rounded-lg">
-              <div className="flex items-center mb-2">
-                <Users className="h-5 w-5 mr-2 text-gray-500 flex-shrink-0" />
-                <span>Max submission(s) per user: {mission.maxSubmissionsPerUser}</span>
-              </div>
+              <HTMLContent content={mission.productDescription} />
               
-              {totalSubmissions !== undefined && (
-                <div className="flex items-center">
-                  <Gauge className="h-5 w-5 mr-2 text-gray-500 flex-shrink-0" />
-                  <span>Quota: {totalSubmissions} ({currentSubmissions === 1 ? '1 user' : `${currentSubmissions} users`} submitted)</span>
+              {mission.productImages && mission.productImages.length > 0 && (
+                <div className="mt-4 grid grid-cols-2 md:grid-cols-3 gap-4">
+                  {mission.productImages.map((image, index) => (
+                    <div key={index} className="relative aspect-square rounded-md overflow-hidden">
+                      <img 
+                        src={image} 
+                        alt={`Product image ${index + 1}`}
+                        className="object-cover w-full h-full"
+                      />
+                    </div>
+                  ))}
                 </div>
               )}
             </div>
           </div>
         )}
         
-        {mission.type === 'REVIEW' && (
+        {mission.completionSteps && (
+          <div className="mb-6">
+            <h3 className="text-lg font-semibold mb-2">How To Complete This Mission</h3>
+            <div className="p-4 bg-gray-50 rounded-lg">
+              <HTMLContent content={mission.completionSteps} />
+            </div>
+          </div>
+        )}
+        
+        {!mission.completionSteps && mission.type === 'REVIEW' && (
           <div className="mb-6">
             <h3 className="text-lg font-semibold mb-2">How To Complete This Mission</h3>
             <ol className="list-decimal list-inside space-y-3 pl-2">
@@ -60,7 +71,7 @@ const MissionDetails = ({ mission, currentSubmissions = 0, totalSubmissions }: M
           </div>
         )}
         
-        {mission.type === 'RECEIPT' && (
+        {!mission.completionSteps && mission.type === 'RECEIPT' && (
           <div className="mb-6">
             <h3 className="text-lg font-semibold mb-2">How To Complete This Mission</h3>
             <ol className="list-decimal list-inside space-y-3 pl-2">
@@ -70,15 +81,6 @@ const MissionDetails = ({ mission, currentSubmissions = 0, totalSubmissions }: M
               <li>Upload the receipt through our platform</li>
               <li>Our team will verify your submission</li>
             </ol>
-          </div>
-        )}
-        
-        {mission.termsConditions && (
-          <div>
-            <h3 className="text-lg font-semibold mb-2">Terms & Conditions</h3>
-            <div className="bg-gray-50 p-4 rounded-lg text-sm text-gray-700">
-              <HTMLContent content={mission.termsConditions} />
-            </div>
           </div>
         )}
       </CardContent>

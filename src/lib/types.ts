@@ -1,3 +1,4 @@
+
 export interface User {
   id: string;
   username: string;
@@ -67,6 +68,9 @@ export interface Mission {
   startDate: Date;
   createdAt: Date;
   updatedAt: Date;
+  completionSteps?: string; // New field for "How To Complete This Mission"
+  productDescription?: string; // New field for "About the product or service"
+  productImages?: string[]; // New field for product images
 }
 
 // RedemptionRequest type updated with more fields for the UI

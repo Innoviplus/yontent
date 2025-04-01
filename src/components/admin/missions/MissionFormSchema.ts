@@ -16,6 +16,9 @@ export const missionSchema = z.object({
   maxSubmissionsPerUser: z.coerce.number().int().positive({ message: 'Max submissions must be a positive number' }).default(1),
   totalMaxSubmissions: z.coerce.number().int().positive({ message: 'Total max submissions must be a positive number' }).optional(),
   termsConditions: z.string().optional(),
+  completionSteps: z.string().optional(),
+  productDescription: z.string().optional(),
+  productImages: z.array(z.string()).optional(),
 });
 
 export type MissionFormData = z.infer<typeof missionSchema>;

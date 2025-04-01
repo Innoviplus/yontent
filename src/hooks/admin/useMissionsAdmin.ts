@@ -38,7 +38,10 @@ export const useMissionsAdmin = () => {
         startDate: new Date(mission.start_date),
         expiresAt: mission.expires_at ? new Date(mission.expires_at) : undefined,
         createdAt: new Date(mission.created_at),
-        updatedAt: new Date(mission.updated_at)
+        updatedAt: new Date(mission.updated_at),
+        completionSteps: mission.completion_steps || undefined,
+        productDescription: mission.product_description || undefined,
+        productImages: mission.product_images || []
       }));
 
       setMissions(formattedMissions);
@@ -101,7 +104,10 @@ export const useMissionsAdmin = () => {
         terms_conditions: missionData.termsConditions,
         requirement_description: missionData.requirementDescription,
         start_date: missionData.startDate.toISOString(),
-        expires_at: missionData.expiresAt ? missionData.expiresAt.toISOString() : null
+        expires_at: missionData.expiresAt ? missionData.expiresAt.toISOString() : null,
+        completion_steps: missionData.completionSteps,
+        product_description: missionData.productDescription,
+        product_images: missionData.productImages || []
       });
 
       if (error) {
@@ -137,6 +143,9 @@ export const useMissionsAdmin = () => {
       if (updates.requirementDescription !== undefined) dbUpdates.requirement_description = updates.requirementDescription;
       if (updates.startDate !== undefined) dbUpdates.start_date = updates.startDate.toISOString();
       if (updates.expiresAt !== undefined) dbUpdates.expires_at = updates.expiresAt ? updates.expiresAt.toISOString() : null;
+      if (updates.completionSteps !== undefined) dbUpdates.completion_steps = updates.completionSteps;
+      if (updates.productDescription !== undefined) dbUpdates.product_description = updates.productDescription;
+      if (updates.productImages !== undefined) dbUpdates.product_images = updates.productImages;
 
       const { error } = await supabase
         .from('missions')

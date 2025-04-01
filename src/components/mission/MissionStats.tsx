@@ -4,7 +4,7 @@ import { useNavigate } from 'react-router-dom';
 import { Mission } from '@/lib/types';
 import { Card, CardContent } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
-import { Clock, Users, MapPin, Target } from 'lucide-react';
+import { Clock, Users, Target, Gauge } from 'lucide-react';
 import { format, isPast } from 'date-fns';
 import { toast } from 'sonner';
 import { supabase } from '@/integrations/supabase/client';
@@ -16,6 +16,7 @@ interface MissionStatsProps {
   participationStatus: string | null;
   userId: string;
   onParticipationUpdate: (isParticipating: boolean, status: string) => void;
+  currentSubmissions: number;
 }
 
 const MissionStats = ({ 
@@ -23,7 +24,8 @@ const MissionStats = ({
   participating, 
   participationStatus, 
   userId,
-  onParticipationUpdate 
+  onParticipationUpdate,
+  currentSubmissions 
 }: MissionStatsProps) => {
   const [loading, setLoading] = useState(false);
   const navigate = useNavigate();
@@ -143,22 +145,25 @@ const MissionStats = ({
             </div>
           </div>
           
+          {/* Submission information moved here */}
           {mission.maxSubmissionsPerUser && (
             <div className="flex items-center">
               <Users className="h-5 w-5 text-gray-500 mr-3" />
               <div>
-                <p className="text-sm text-gray-500">Submissions Allowed</p>
-                <p className="font-medium">{mission.maxSubmissionsPerUser} per user</p>
+                <p className="text-sm text-gray-500">Max submission(s) per user</p>
+                <p className="font-medium">{mission.maxSubmissionsPerUser}</p>
               </div>
             </div>
           )}
           
-          {mission.merchantName && (
+          {mission.totalMaxSubmissions !== undefined && (
             <div className="flex items-center">
-              <MapPin className="h-5 w-5 text-gray-500 mr-3" />
+              <Gauge className="h-5 w-5 text-gray-500 mr-3" />
               <div>
-                <p className="text-sm text-gray-500">Merchant</p>
-                <p className="font-medium">{mission.merchantName}</p>
+                <p className="text-sm text-gray-500">Quota</p>
+                <p className="font-medium">
+                  {mission.totalMaxSubmissions} ({currentSubmissions === 1 ? '1 user' : `${currentSubmissions} users`} submitted)
+                </p>
               </div>
             </div>
           )}
