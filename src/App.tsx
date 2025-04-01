@@ -1,5 +1,5 @@
 
-import React from 'react';
+import React, { useEffect } from 'react';
 import { Route, Routes, Navigate } from 'react-router-dom';
 import Index from './pages/Index';
 import Login from './pages/Login';
@@ -27,7 +27,6 @@ import FollowingList from './pages/FollowingList';
 import PrivacyPolicy from './pages/PrivacyPolicy';
 import TermsOfService from './pages/TermsOfService';
 import Footer from './components/home/Footer';
-import { useEffect } from 'react';
 import { useAuth } from './contexts/AuthContext';
 
 // Layout component to add Footer to all pages except TermsOfService and PrivacyPolicy
@@ -42,11 +41,16 @@ const Layout = ({ children, includeFooter = true }: { children: React.ReactNode,
 
 // Component to handle redirects based on auth status
 const AuthRedirect = ({ children }: { children: React.ReactNode }) => {
-  const { user } = useAuth();
+  const { user, loading } = useAuth();
   
   useEffect(() => {
-    console.log("Auth redirect check:", { hasUser: !!user });
-  }, [user]);
+    console.log("Auth redirect check:", { hasUser: !!user, isLoading: loading });
+  }, [user, loading]);
+  
+  // If still loading, show nothing yet
+  if (loading) {
+    return <div className="flex items-center justify-center h-screen">Loading...</div>;
+  }
   
   return <>{children}</>;
 };

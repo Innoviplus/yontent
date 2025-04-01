@@ -10,7 +10,11 @@ interface PointsContextType {
   refreshPoints: () => Promise<void>;
 }
 
-const PointsContext = createContext<PointsContextType | undefined>(undefined);
+const PointsContext = createContext<PointsContextType>({
+  userPoints: 0,
+  isLoading: true,
+  refreshPoints: async () => { console.log('Default refreshPoints called') }
+});
 
 export const usePoints = () => {
   const context = useContext(PointsContext);
@@ -23,7 +27,8 @@ export const usePoints = () => {
 export const PointsProvider = ({ children }: { children: ReactNode }) => {
   const [userPoints, setUserPoints] = useState<number>(0);
   const [isLoading, setIsLoading] = useState<boolean>(true);
-  const { user } = useAuth();
+  const auth = useContext(AuthContext);
+  const user = auth?.user;
 
   const fetchUserPoints = async () => {
     if (!user) {
@@ -57,7 +62,14 @@ export const PointsProvider = ({ children }: { children: ReactNode }) => {
   };
 
   useEffect(() => {
-    fetchUserPoints();
+    if (user) {
+      console.log("PointsProvider: User available, fetching points");
+      fetchUserPoints();
+    } else {
+      console.log("PointsProvider: No user available");
+      setUserPoints(0);
+      setIsLoading(false);
+    }
   }, [user]);
 
   const refreshPoints = async () => {

@@ -12,17 +12,24 @@ import './index.css';
 // Create a client
 const queryClient = new QueryClient();
 
-createRoot(document.getElementById("root")!).render(
-  <React.StrictMode>
+// Create a wrapper component to ensure proper provider nesting
+const AppWithProviders = () => {
+  return (
     <QueryClientProvider client={queryClient}>
       <BrowserRouter>
         <AuthProvider>
           <PointsProvider>
-            <Toaster position="bottom-right" />
             <App />
           </PointsProvider>
         </AuthProvider>
       </BrowserRouter>
     </QueryClientProvider>
+  );
+};
+
+createRoot(document.getElementById("root")!).render(
+  <React.StrictMode>
+    <AppWithProviders />
+    <Toaster position="bottom-right" />
   </React.StrictMode>
 );

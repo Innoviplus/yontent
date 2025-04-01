@@ -17,7 +17,17 @@ interface AuthContextType {
   refreshUserProfile: () => Promise<void>;
 }
 
-const AuthContext = createContext<AuthContextType | undefined>(undefined);
+// Create the context with a meaningful default value
+const AuthContext = createContext<AuthContextType>({
+  session: null,
+  user: null,
+  signIn: async () => ({ error: new Error('AuthProvider not initialized') }),
+  signUp: async () => ({ error: new Error('AuthProvider not initialized') }),
+  signOut: async () => { throw new Error('AuthProvider not initialized') },
+  loading: true,
+  userProfile: null,
+  refreshUserProfile: async () => { throw new Error('AuthProvider not initialized') }
+});
 
 export function AuthProvider({ children }: { children: ReactNode }) {
   const [session, setSession] = useState<Session | null>(null);
@@ -29,25 +39,34 @@ export function AuthProvider({ children }: { children: ReactNode }) {
   // Method to refresh user profile data
   const refreshUserProfile = async () => {
     if (user) {
-      const profileData = await fetchUserProfile(user.id, user.email);
-      setUserProfile(profileData);
+      try {
+        const profileData = await fetchUserProfile(user.id, user.email);
+        setUserProfile(profileData);
+      } catch (error) {
+        console.error("Failed to refresh user profile:", error);
+      }
     }
   };
 
   useEffect(() => {
+    console.log("AuthProvider: Setting up auth state listener");
+    
     // Set up auth state change listener FIRST to prevent missing auth events
     const { data: { subscription } } = supabase.auth.onAuthStateChange(
-      (_event, newSession) => {
-        console.log("Auth state changed:", _event);
+      async (_event, newSession) => {
+        console.log("Auth state changed:", _event, newSession?.user?.id);
         setSession(newSession);
         setUser(newSession?.user ?? null);
         
         // Defer profile fetch with setTimeout to avoid Supabase SDK deadlocks
         if (newSession?.user) {
-          setTimeout(() => {
-            fetchUserProfile(newSession.user.id, newSession.user.email).then(data => {
+          setTimeout(async () => {
+            try {
+              const data = await fetchUserProfile(newSession.user.id, newSession.user.email);
               setUserProfile(data);
-            });
+            } catch (err) {
+              console.error("Error fetching profile on auth change:", err);
+            }
           }, 0);
         } else {
           setUserProfile(null);
@@ -59,17 +78,24 @@ export function AuthProvider({ children }: { children: ReactNode }) {
 
     // THEN check for existing session
     supabase.auth.getSession().then(({ data: { session: currentSession } }) => {
-      console.log("Initial session check:", currentSession ? "Found session" : "No session");
+      console.log("Initial session check:", currentSession ? `Found session for ${currentSession.user.email}` : "No session");
       setSession(currentSession);
       setUser(currentSession?.user ?? null);
       
       if (currentSession?.user) {
-        fetchUserProfile(currentSession.user.id, currentSession.user.email).then(data => {
-          setUserProfile(data);
-        });
+        fetchUserProfile(currentSession.user.id, currentSession.user.email)
+          .then(data => {
+            setUserProfile(data);
+          })
+          .catch(err => {
+            console.error("Error fetching initial profile:", err);
+          })
+          .finally(() => {
+            setLoading(false);
+          });
+      } else {
+        setLoading(false);
       }
-      
-      setLoading(false);
     });
 
     return () => {
@@ -103,19 +129,20 @@ export function AuthProvider({ children }: { children: ReactNode }) {
     return result;
   };
 
+  // Create context value object
+  const contextValue = {
+    session,
+    user,
+    signIn,
+    signUp,
+    signOut: authService.signOut,
+    loading,
+    userProfile,
+    refreshUserProfile,
+  };
+
   return (
-    <AuthContext.Provider
-      value={{
-        session,
-        user,
-        signIn,
-        signUp,
-        signOut: authService.signOut,
-        loading,
-        userProfile,
-        refreshUserProfile,
-      }}
-    >
+    <AuthContext.Provider value={contextValue}>
       {children}
     </AuthContext.Provider>
   );
@@ -123,7 +150,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
 
 export function useAuth() {
   const context = useContext(AuthContext);
-  if (context === undefined) {
+  if (!context) {
     throw new Error('useAuth must be used within an AuthProvider');
   }
   return context;
