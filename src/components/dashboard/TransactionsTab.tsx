@@ -60,7 +60,9 @@ const TransactionsTab = () => {
         userId: item.user_id,
         amount: item.amount,
         type: item.type as 'EARNED' | 'REDEEMED' | 'REFUNDED' | 'ADJUSTED',
-        source: (item.source as 'MISSION_REVIEW' | 'RECEIPT_SUBMISSION' | 'REDEMPTION' | 'ADMIN_ADJUSTMENT') || 'ADMIN_ADJUSTMENT',
+        // Default source to 'ADMIN_ADJUSTMENT' if not present
+        source: (item.source || 'ADMIN_ADJUSTMENT') as 'MISSION_REVIEW' | 'RECEIPT_SUBMISSION' | 'REDEMPTION' | 'ADMIN_ADJUSTMENT',
+        // sourceId may not exist in all records
         sourceId: item.source_id,
         description: item.description,
         createdAt: new Date(item.created_at)

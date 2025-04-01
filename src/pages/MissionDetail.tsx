@@ -1,4 +1,3 @@
-
 import { useState, useEffect } from 'react';
 import { useParams, Navigate } from 'react-router-dom';
 import { Mission } from '@/lib/types';
@@ -16,7 +15,7 @@ import MissionTestimonials from '@/components/mission/MissionTestimonials';
 import MissionFAQ from '@/components/mission/MissionFAQ';
 import SupportSection from '@/components/mission/SupportSection';
 import MissionLoadingState from '@/components/mission/MissionLoadingState';
-import { initializeMissionService } from '@/services/missionService';
+import { initializeMissionService } from '@/services/mission';
 
 const MissionDetail = () => {
   const { id } = useParams<{ id: string }>();

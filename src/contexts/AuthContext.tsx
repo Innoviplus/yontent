@@ -1,4 +1,3 @@
-
 import { createContext, useContext, useEffect, useState, ReactNode } from 'react';
 import { Session, User } from '@supabase/supabase-js';
 import { supabase } from '@/integrations/supabase/client';
@@ -74,7 +73,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
     
     const userEmail = user?.email;
     if (userEmail && data && data.extended_data) {
-      const extendedData = typeof data.extended_data === 'object' ? data.extended_data : {};
+      const extendedData = typeof data.extended_data === 'object' && !Array.isArray(extendedData) ? data.extended_data : {};
       
       if (!extendedData.email) {
         const updatedExtendedData = {

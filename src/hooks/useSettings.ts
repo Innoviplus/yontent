@@ -2,7 +2,6 @@
 import { useSettingsState } from './settings/useSettingsState';
 import { useAvatarUpload } from './settings/useAvatarUpload';
 import { useProfileForm } from './settings/useProfileForm';
-import { useSettingsForm } from './settings/useSettingsForm';
 import { useAccountActions } from './settings/useAccountActions';
 import { useProfileData } from './settings/useProfileData';
 import { useEffect } from 'react';
@@ -37,12 +36,13 @@ export const useSettings = () => {
     setIsUpdating
   );
   
-  // Use the settings form hook
+  // Use the settings form hook - Fix: The useSettingsForm hook doesn't return these properties
   const { 
     form: settingsForm, 
-    onSubmit: onSettingsSubmit,
+    activeTab: formActiveTab, // Renamed to avoid conflict
+    setActiveTab: setFormActiveTab, // Renamed to avoid conflict
     handleResetPassword
-  } = useSettingsForm();
+  } = useProfileData(); // Use the correct hook
   
   const { handleDeleteAccount, handleLogout } = useAccountActions(
     user, 
@@ -76,7 +76,8 @@ export const useSettings = () => {
     settingsForm,
     handleAvatarUpload,
     onProfileSubmit,
-    onSettingsSubmit,
+    // Fix: Use the correct properties from the hook
+    onSettingsSubmit: updateProfileData,
     handleResetPassword,
     handleDeleteAccount,
     handleLogout,
