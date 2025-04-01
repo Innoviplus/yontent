@@ -32,7 +32,8 @@ const ContentFields = ({ form }: ContentFieldsProps) => {
               />
             </FormControl>
             <FormDescription>
-              This content will be displayed in the Redemption Details section. You can add links by highlighting text and using the link button.
+              This content will be displayed in the Redemption Details section. 
+              To add hyperlinks: select text, click the link button, enter URL, and click Set Link.
             </FormDescription>
             <FormMessage />
           </FormItem>
@@ -53,7 +54,8 @@ const ContentFields = ({ form }: ContentFieldsProps) => {
               />
             </FormControl>
             <FormDescription>
-              Terms and conditions for this reward. You can add links by highlighting text and using the link button.
+              Terms and conditions for this reward.
+              To add hyperlinks: select text, click the link button, enter URL, and click Set Link.
             </FormDescription>
             <FormMessage />
           </FormItem>

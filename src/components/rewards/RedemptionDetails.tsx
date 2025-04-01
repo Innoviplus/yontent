@@ -16,7 +16,7 @@ const RedemptionDetails: React.FC<RedemptionDetailsProps> = ({ redemptionDetails
   return (
     <div className="bg-gray-50 p-4 rounded-lg mb-6">
       <h3 className="font-medium mb-2">Redemption Details</h3>
-      <ul 
+      <div 
         className="space-y-2 text-sm prose prose-sm max-w-none" 
         dangerouslySetInnerHTML={{ 
           __html: redemptionDetails || defaultDetails 

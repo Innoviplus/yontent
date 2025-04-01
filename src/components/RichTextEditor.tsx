@@ -1,4 +1,3 @@
-
 import { useState, useEffect } from 'react';
 import { useEditor, EditorContent } from '@tiptap/react';
 import StarterKit from '@tiptap/starter-kit';
@@ -26,6 +25,7 @@ const RichTextEditor = ({
   const [isFocused, setIsFocused] = useState(false);
   const [linkUrl, setLinkUrl] = useState('');
   const [isLinkActive, setIsLinkActive] = useState(false);
+  const [isLinkPopoverOpen, setIsLinkPopoverOpen] = useState(false);
 
   const editor = useEditor({
     extensions: [
@@ -47,6 +47,11 @@ const RichTextEditor = ({
     },
     onSelectionUpdate: ({ editor }) => {
       setIsLinkActive(editor.isActive('link'));
+      
+      if (editor.isActive('link')) {
+        const linkMark = editor.getAttributes('link');
+        setLinkUrl(linkMark.href || '');
+      }
     },
     editorProps: {
       attributes: {
@@ -63,7 +68,7 @@ const RichTextEditor = ({
   }, [value, editor]);
 
   const setLink = () => {
-    if (!linkUrl) return;
+    if (!editor || !linkUrl) return;
     
     // Validate URL format (simple check)
     const isValid = /^(https?:\/\/)?.+\..+/.test(linkUrl);
@@ -72,8 +77,14 @@ const RichTextEditor = ({
       // Add protocol if missing
       const url = linkUrl.startsWith('http') ? linkUrl : `https://${linkUrl}`;
       
-      editor?.chain().focus().extendMarkRange('link').setLink({ href: url }).run();
-      setLinkUrl('');
+      // Save the current selection before applying the link
+      editor.chain().focus().extendMarkRange('link').setLink({ href: url }).run();
+      
+      // Keep the popover open until user explicitly closes it
+      // This allows them to see their link was successfully applied
+    } else {
+      // Handle invalid URL - could show an error message
+      console.error('Invalid URL format');
     }
   };
 
@@ -99,8 +110,6 @@ const RichTextEditor = ({
       if (isActive) {
         const currentUrl = getCurrentLinkUrl();
         setLinkUrl(currentUrl);
-      } else {
-        setLinkUrl('');
       }
     };
     
@@ -108,6 +117,22 @@ const RichTextEditor = ({
     
     return () => {
       editor.off('selectionUpdate', handleSelectionUpdate);
+    };
+  }, [editor]);
+
+  // Handle clicks in the document to check for link selections
+  useEffect(() => {
+    const checkForLink = () => {
+      if (editor && editor.isActive('link')) {
+        setIsLinkActive(true);
+        setLinkUrl(getCurrentLinkUrl());
+      }
+    };
+
+    document.addEventListener('click', checkForLink);
+    
+    return () => {
+      document.removeEventListener('click', checkForLink);
     };
   }, [editor]);
 
@@ -155,13 +180,23 @@ const RichTextEditor = ({
           <ListOrdered className="h-4 w-4" />
         </Button>
         {includeLink && (
-          <Popover>
+          <Popover 
+            open={isLinkPopoverOpen} 
+            onOpenChange={setIsLinkPopoverOpen}
+          >
             <PopoverTrigger asChild>
               <Button
                 variant="ghost"
                 size="sm"
                 className={isLinkActive ? 'bg-accent' : ''}
                 type="button"
+                onClick={() => {
+                  // When clicking the link button, update the URL if there's an active link
+                  if (editor?.isActive('link')) {
+                    setLinkUrl(getCurrentLinkUrl());
+                  }
+                  setIsLinkPopoverOpen(true);
+                }}
               >
                 <LinkIcon className="h-4 w-4" />
               </Button>
@@ -181,14 +216,23 @@ const RichTextEditor = ({
                       }
                     }}
                   />
-                  <Button onClick={setLink} type="button" className="shrink-0">
+                  <Button 
+                    onClick={() => {
+                      setLink();
+                    }} 
+                    type="button" 
+                    className="shrink-0"
+                  >
                     <ExternalLink className="h-4 w-4 mr-2" />
                     Set Link
                   </Button>
                 </div>
                 {isLinkActive && (
                   <Button 
-                    onClick={unsetLink} 
+                    onClick={() => {
+                      unsetLink();
+                      setIsLinkPopoverOpen(false);
+                    }} 
                     variant="outline" 
                     size="sm" 
                     type="button"
