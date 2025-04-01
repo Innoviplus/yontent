@@ -2,6 +2,7 @@
 import { Card, CardContent } from '@/components/ui/card';
 import { Mission } from '@/lib/types';
 import { Check, Gauge, Users } from 'lucide-react';
+import HTMLContent from '@/components/HTMLContent';
 
 interface MissionDetailsProps {
   mission: Mission;
@@ -20,14 +21,7 @@ const MissionDetails = ({ mission, currentSubmissions = 0, totalSubmissions }: M
           <div className="mb-6">
             <h3 className="text-lg font-semibold mb-2">Requirements</h3>
             <div className="p-4 bg-gray-50 rounded-lg">
-              <ul className="space-y-2">
-                {mission.requirementDescription.split('\n').map((req, index) => (
-                  <li key={index} className="flex items-start">
-                    <Check className="h-5 w-5 mr-2 text-brand-teal flex-shrink-0 mt-0.5" />
-                    <span>{req || 'Complete the mission requirements'}</span>
-                  </li>
-                ))}
-              </ul>
+              <HTMLContent content={mission.requirementDescription} />
             </div>
           </div>
         )}
@@ -81,7 +75,7 @@ const MissionDetails = ({ mission, currentSubmissions = 0, totalSubmissions }: M
           <div>
             <h3 className="text-lg font-semibold mb-2">Terms & Conditions</h3>
             <div className="bg-gray-50 p-4 rounded-lg text-sm text-gray-700">
-              <p>{mission.termsConditions}</p>
+              <HTMLContent content={mission.termsConditions} />
             </div>
           </div>
         )}
