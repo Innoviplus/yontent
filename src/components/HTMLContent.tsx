@@ -7,7 +7,7 @@ interface HTMLContentProps {
 }
 
 const HTMLContent = ({ content, className = '' }: HTMLContentProps) => {
-  // Use dangerouslySetInnerHTML with sanitized content for proper HTML rendering
+  // Ensure content is sanitized before rendering
   const sanitizedContent = content ? DOMPurify.sanitize(content) : '';
   
   return (
