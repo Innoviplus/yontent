@@ -1,5 +1,6 @@
 
 import { useEffect, useRef } from 'react';
+import DOMPurify from 'dompurify';
 
 interface HTMLContentProps {
   content: string;
@@ -10,8 +11,10 @@ const HTMLContent = ({ content, className = '' }: HTMLContentProps) => {
   const contentRef = useRef<HTMLDivElement>(null);
 
   useEffect(() => {
-    if (contentRef.current) {
-      contentRef.current.innerHTML = content || '';
+    if (contentRef.current && content) {
+      // Sanitize the HTML content to prevent XSS attacks
+      const sanitizedContent = DOMPurify.sanitize(content);
+      contentRef.current.innerHTML = sanitizedContent;
     }
   }, [content]);
 
