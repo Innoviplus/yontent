@@ -1,8 +1,9 @@
+
 import { useState } from 'react';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import Navbar from '@/components/Navbar';
 import { useRewardsAdmin } from '@/hooks/admin/useRewardsAdmin';
-import { useMissionsAdmin } from '@/hooks/admin/useMissionsAdmin';
+import { useMissionsAdmin } from '@/hooks/admin/missions';
 import { useMissionParticipations } from '@/hooks/admin/useMissionParticipations';
 import { useRequestsAdmin } from '@/hooks/admin/useRequestsAdmin';
 import RewardsManagement from '@/components/admin/rewards/RewardsManagement';
