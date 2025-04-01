@@ -18,6 +18,7 @@ import BasicInformation from './sections/BasicInformation';
 import TimelineSection from './sections/TimelineSection';
 import BrandInformation from './sections/BrandInformation';
 import AdditionalDetails from './sections/AdditionalDetails';
+import { getDefaultValues } from './fields/MissionFormFields';
 
 interface MissionFormProps {
   mission?: Mission;
@@ -38,27 +39,10 @@ const MissionForm = ({
   const [merchantLogoFile, setMerchantLogoFile] = useState<File | null>(null);
   const [bannerImageFile, setBannerImageFile] = useState<File | null>(null);
   
-  // Initialize form with all mission data, ensuring rich text fields are properly passed
+  // Initialize form with default values
   const form = useForm<MissionFormData>({
     resolver: zodResolver(missionSchema),
-    defaultValues: {
-      title: mission?.title || '',
-      description: mission?.description || '',
-      pointsReward: mission?.pointsReward || 100,
-      type: mission?.type || 'RECEIPT',
-      status: mission?.status || 'DRAFT',
-      startDate: mission?.startDate ? new Date(mission.startDate) : new Date(),
-      expiresAt: mission?.expiresAt ? new Date(mission.expiresAt) : undefined,
-      requirementDescription: mission?.requirementDescription || '',
-      merchantName: mission?.merchantName || '',
-      merchantLogo: mission?.merchantLogo || '',
-      bannerImage: mission?.bannerImage || '',
-      maxSubmissionsPerUser: mission?.maxSubmissionsPerUser || 1,
-      totalMaxSubmissions: mission?.totalMaxSubmissions || undefined,
-      termsConditions: mission?.termsConditions || '',
-      completionSteps: mission?.completionSteps || '',
-      productDescription: mission?.productDescription || '',
-    }
+    defaultValues: getDefaultValues(mission)
   });
 
   const handleSubmit = async (data: MissionFormData) => {
