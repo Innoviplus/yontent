@@ -1,5 +1,5 @@
 
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useRef } from 'react';
 import { useEditor, EditorContent } from '@tiptap/react';
 import StarterKit from '@tiptap/starter-kit';
 import Link from '@tiptap/extension-link';
@@ -21,6 +21,10 @@ const RichTextEditor = ({
   includeLink = true
 }: RichTextEditorProps) => {
   const [isFocused, setIsFocused] = useState(false);
+  // Reference to track if content was manually set to prevent update loops
+  const contentUpdateSourceRef = useRef<'external' | 'internal' | null>(null);
+  // Reference to last value received from props to avoid unnecessary updates
+  const lastValueRef = useRef<string>(value);
 
   const editor = useEditor({
     extensions: [
@@ -39,7 +43,10 @@ const RichTextEditor = ({
     ],
     content: value,
     onUpdate: ({ editor }) => {
-      onChange(editor.getHTML());
+      contentUpdateSourceRef.current = 'internal';
+      const newContent = editor.getHTML();
+      onChange(newContent);
+      lastValueRef.current = newContent;
     },
     editorProps: {
       attributes: {
@@ -49,10 +56,18 @@ const RichTextEditor = ({
     },
   });
 
-  // Sync content from props to editor
+  // Sync content from props to editor, but only if it's different from last known value
+  // and wasn't just updated internally
   useEffect(() => {
-    if (editor && value !== editor.getHTML()) {
-      editor.commands.setContent(value);
+    if (editor && value !== lastValueRef.current && contentUpdateSourceRef.current !== 'internal') {
+      contentUpdateSourceRef.current = 'external';
+      editor.commands.setContent(value, false);
+      lastValueRef.current = value;
+    }
+    
+    // Reset source flag after each update cycle
+    if (contentUpdateSourceRef.current === 'internal') {
+      contentUpdateSourceRef.current = null;
     }
   }, [value, editor]);
 

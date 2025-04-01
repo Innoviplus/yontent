@@ -44,6 +44,16 @@ export const useMissionsAdmin = () => {
         productImages: mission.product_images || []
       }));
 
+      // Log loaded missions' rich text data for debugging
+      console.log('Missions loaded with rich text fields:', formattedMissions.map(m => ({
+        id: m.id, 
+        title: m.title,
+        hasRequirements: !!m.requirementDescription,
+        hasTerms: !!m.termsConditions,
+        hasSteps: !!m.completionSteps,
+        hasProductDesc: !!m.productDescription
+      })));
+
       setMissions(formattedMissions);
     } catch (error: any) {
       console.error('Error fetching missions:', error.message);
@@ -90,6 +100,14 @@ export const useMissionsAdmin = () => {
 
   const addMission = async (missionData: Omit<Mission, 'id' | 'createdAt' | 'updatedAt'>) => {
     try {
+      // Log before saving to check data integrity
+      console.log('Adding mission with rich text:', {
+        requirementDescription: missionData.requirementDescription?.substring(0, 50) + '...',
+        termsConditions: missionData.termsConditions?.substring(0, 50) + '...',
+        completionSteps: missionData.completionSteps?.substring(0, 50) + '...',
+        productDescription: missionData.productDescription?.substring(0, 50) + '...'
+      });
+
       const { error } = await supabase.from('missions').insert({
         title: missionData.title,
         description: missionData.description,
@@ -126,6 +144,15 @@ export const useMissionsAdmin = () => {
 
   const updateMission = async (id: string, updates: Partial<Mission>) => {
     try {
+      // Log before updating to check data integrity
+      console.log('Updating mission with rich text:', {
+        id,
+        requirementDescription: updates.requirementDescription?.substring(0, 50) + '...',
+        termsConditions: updates.termsConditions?.substring(0, 50) + '...',
+        completionSteps: updates.completionSteps?.substring(0, 50) + '...',
+        productDescription: updates.productDescription?.substring(0, 50) + '...'
+      });
+      
       // Convert from client schema to database schema
       const dbUpdates: any = {};
       

@@ -9,12 +9,29 @@ import {
 } from '@/components/ui/form';
 import RichTextEditor from '@/components/RichTextEditor';
 import { MissionFormData } from '../../MissionFormSchema';
+import { useEffect } from 'react';
 
 interface AdditionalDetailsProps {
   form: ReturnType<typeof useFormContext<MissionFormData>>;
 }
 
 const AdditionalDetails = ({ form }: AdditionalDetailsProps) => {
+  // Use effect to log values for debugging
+  useEffect(() => {
+    // Log the form values whenever they change to help with debugging
+    console.log('Form rich text values:', {
+      requirementDescription: form.getValues('requirementDescription'),
+      termsConditions: form.getValues('termsConditions'),
+      completionSteps: form.getValues('completionSteps'),
+      productDescription: form.getValues('productDescription')
+    });
+  }, [
+    form.getValues('requirementDescription'),
+    form.getValues('termsConditions'),
+    form.getValues('completionSteps'),
+    form.getValues('productDescription')
+  ]);
+
   return (
     <div className="space-y-4">
       <h3 className="text-sm font-medium">Additional Details</h3>

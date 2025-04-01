@@ -1,6 +1,6 @@
 
 import { Mission } from '@/lib/types';
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import { supabase } from '@/integrations/supabase/client';
 import { toast } from 'sonner';
 import MissionForm from './form/MissionForm';
@@ -19,6 +19,20 @@ const MissionFormWrapper = ({
   onCancel 
 }: MissionFormWrapperProps) => {
   const [isUploading, setIsUploading] = useState(false);
+  
+  // For debugging purposes, log mission data when component mounts
+  useEffect(() => {
+    if (mission) {
+      console.log('Mission loaded in form wrapper:', {
+        id: mission.id,
+        title: mission.title,
+        requirementDescription: mission.requirementDescription?.substring(0, 50) + '...',
+        termsConditions: mission.termsConditions?.substring(0, 50) + '...',
+        completionSteps: mission.completionSteps?.substring(0, 50) + '...',
+        productDescription: mission.productDescription?.substring(0, 50) + '...'
+      });
+    }
+  }, [mission]);
   
   if (!isAdding && !mission) return null;
   
@@ -135,25 +149,18 @@ const MissionFormWrapper = ({
       }
     }
     
-    // Clean HTML content if needed
-    if (updatedData.requirementDescription) {
-      console.log('Requirements HTML before submission:', updatedData.requirementDescription);
-    }
-    
-    if (updatedData.termsConditions) {
-      console.log('Terms HTML before submission:', updatedData.termsConditions);
-    }
-
-    if (updatedData.completionSteps) {
-      console.log('Completion steps HTML before submission:', updatedData.completionSteps);
-    }
-    
-    if (updatedData.productDescription) {
-      console.log('Product description HTML before submission:', updatedData.productDescription);
-    }
+    // Log form data before submission for debugging
+    console.log('Mission form data before submission:', {
+      requirementDescription: updatedData.requirementDescription?.substring(0, 100),
+      termsConditions: updatedData.termsConditions?.substring(0, 100),
+      completionSteps: updatedData.completionSteps?.substring(0, 100),
+      productDescription: updatedData.productDescription?.substring(0, 100)
+    });
     
     // Then submit the form data with the uploaded image URLs
-    return onSubmit(updatedData);
+    const success = await onSubmit(updatedData);
+    
+    return success;
   };
   
   return (
