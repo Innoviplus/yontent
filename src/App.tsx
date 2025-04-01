@@ -53,8 +53,8 @@ function App() {
         <Route path="/user-rankings" element={<Layout><UserRankings /></Layout>} />
         <Route path="/user/:username" element={<Layout><UserProfile /></Layout>} />
         <Route path="/rewards" element={<Layout><Rewards /></Layout>} />
-        <Route path="/privacy" element={<Layout includeFooter={false}><PrivacyPolicy /><Footer /></Layout>} />
-        <Route path="/terms" element={<Layout includeFooter={false}><TermsOfService /><Footer /></Layout>} />
+        <Route path="/privacy" element={<PrivacyPolicy />} />
+        <Route path="/terms" element={<TermsOfService />} />
         
         {/* Redirect /profile to /settings */}
         <Route path="/profile" element={<Navigate to="/settings" replace />} />

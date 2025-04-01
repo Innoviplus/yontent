@@ -1,82 +1,128 @@
-
-import { useEffect } from 'react';
+import { useState, useEffect } from 'react';
+import { useAuth } from '@/contexts/AuthContext';
 import { supabase } from '@/integrations/supabase/client';
-import { ExtendedProfile } from '@/lib/types';
-import { UseFormReturn } from 'react-hook-form';
+import { useToast } from '@/hooks/use-toast';
+import { toast as sonnerToast } from 'sonner';
+import { useAvatarUpload } from './useAvatarUpload';
 
-export const useProfileData = (
-  user: any, 
-  userProfile: any,
-  setAvatarUrl: (url: string | null) => void,
-  setExtendedProfile: (profile: ExtendedProfile | null) => void,
-  profileForm: UseFormReturn<any>,
-  settingsForm: UseFormReturn<any>
-) => {
+export const useProfileData = () => {
+  const { user, userProfile } = useAuth();
+  const [avatarUrl, setAvatarUrl] = useState<string | null>(userProfile?.avatar || null);
+  const [uploading, setUploading] = useState(false);
+  const [formValues, setFormValues] = useState({
+    firstName: '',
+    lastName: '',
+    bio: '',
+    gender: '',
+    birthDate: null,
+    websiteUrl: '',
+    twitterUrl: '',
+    instagramUrl: '',
+    facebookUrl: '',
+    tiktokUrl: '',
+    youtubeUrl: '',
+    email: userProfile?.extended_data?.email || user?.email || '',
+    phoneNumber: '',
+    phoneCountryCode: ''
+  });
+  const { toast } = useToast();
+
+  const { handleAvatarUpload } = useAvatarUpload(user, setAvatarUrl, setUploading);
+
   useEffect(() => {
-    if (userProfile) {
-      // Ensure avatar URL is set
-      setAvatarUrl(userProfile.avatar || null);
-      
-      // Load extended profile data if available
-      const loadExtendedProfile = async () => {
-        if (!user) return;
-        
-        const { data, error } = await supabase
-          .from('profiles')
-          .select('extended_data, phone_country_code, phone_number, avatar, email')
-          .eq('id', user.id)
-          .single();
-          
-        if (error) {
-          console.error('Error fetching extended profile:', error);
-          return;
-        }
-        
-        if (data) {
-          // Make sure avatar URL is set from profile data
-          if (data.avatar) {
-            setAvatarUrl(data.avatar);
-          }
-          
-          const extData = data.extended_data as ExtendedProfile || {};
-          setExtendedProfile(extData);
-          
-          profileForm.reset({
-            username: userProfile.username || '',
-            firstName: extData.firstName || '',
-            lastName: extData.lastName || '',
-            bio: extData.bio || '',
-            gender: extData.gender || '',
-            birthDate: extData.birthDate ? new Date(extData.birthDate) : undefined,
-            websiteUrl: extData.websiteUrl || '',
-            facebookUrl: extData.facebookUrl || '',
-            instagramUrl: extData.instagramUrl || '',
-            youtubeUrl: extData.youtubeUrl || '',
-            tiktokUrl: extData.tiktokUrl || '',
-          });
-          
-          // If user email isn't in the profile yet, update it
-          if ((!data.email || data.email === '') && user?.email) {
-            const { error: updateError } = await supabase
-              .from('profiles')
-              .update({ email: user.email })
-              .eq('id', user.id);
-              
-            if (updateError) {
-              console.error('Error updating user email:', updateError);
-            }
-          }
-          
-          settingsForm.reset({
-            email: data.email || user?.email || '',
-            phoneNumber: data.phone_number || extData.phoneNumber || '',
-            phoneCountryCode: data.phone_country_code || '',
-            country: extData.country || '',
-          });
-        }
-      };
-      
-      loadExtendedProfile();
+    if (userProfile && userProfile.extended_data) {
+      setFormValues({
+        firstName: userProfile.extended_data.firstName || '',
+        lastName: userProfile.extended_data.lastName || '',
+        bio: userProfile.extended_data.bio || '',
+        gender: userProfile.extended_data.gender || '',
+        birthDate: userProfile.extended_data.birthDate ? new Date(userProfile.extended_data.birthDate) : null,
+        websiteUrl: userProfile.extended_data.websiteUrl || '',
+        twitterUrl: userProfile.extended_data.twitterUrl || '',
+        instagramUrl: userProfile.extended_data.instagramUrl || '',
+        facebookUrl: userProfile.extended_data.facebookUrl || '',
+        tiktokUrl: userProfile.extended_data.tiktokUrl || '',
+        youtubeUrl: userProfile.extended_data.youtubeUrl || '',
+        email: userProfile.extended_data.email || user?.email || '',
+        phoneNumber: userProfile.extended_data.phoneNumber || '',
+        phoneCountryCode: userProfile.extended_data.phoneCountryCode || ''
+      });
     }
-  }, [userProfile, user, profileForm, settingsForm, setAvatarUrl, setExtendedProfile]);
+  }, [userProfile, user]);
+
+  const updateProfileData = async (updatedFormValues: typeof formValues) => {
+    if (!user) return;
+
+    try {
+      const extendedData = {
+        firstName: updatedFormValues.firstName,
+        lastName: updatedFormValues.lastName,
+        bio: updatedFormValues.bio,
+        gender: updatedFormValues.gender,
+        birthDate: updatedFormValues.birthDate,
+        websiteUrl: updatedFormValues.websiteUrl,
+        twitterUrl: updatedFormValues.twitterUrl,
+        instagramUrl: updatedFormValues.instagramUrl,
+        facebookUrl: updatedFormValues.facebookUrl,
+        tiktokUrl: updatedFormValues.tiktokUrl, 
+        youtubeUrl: updatedFormValues.youtubeUrl,
+        email: updatedFormValues.email || user.email,
+      };
+
+      const { error } = await supabase
+        .from('profiles')
+        .update({
+          extended_data: extendedData,
+        })
+        .eq('id', user.id);
+
+      if (error) throw error;
+
+      sonnerToast.success('Profile updated successfully!');
+      return true;
+    } catch (error: any) {
+      toast({
+        title: "Error Updating Profile",
+        description: error.message,
+        variant: "destructive",
+      });
+      return false;
+    }
+  };
+
+  const updatePhoneData = async (phoneNumber: string, countryCode: string) => {
+    if (!user) return;
+
+    try {
+      const { error } = await supabase
+        .from('profiles')
+        .update({
+          phone_number: phoneNumber,
+          phone_country_code: countryCode,
+        })
+        .eq('id', user.id);
+
+      if (error) throw error;
+
+      sonnerToast.success('Phone number updated successfully!');
+      return true;
+    } catch (error: any) {
+      toast({
+        title: "Error Updating Phone Number",
+        description: error.message,
+        variant: "destructive",
+      });
+      return false;
+    }
+  };
+
+  return {
+    avatarUrl,
+    uploading,
+    formValues,
+    setFormValues,
+    updateProfileData,
+    updatePhoneData,
+    handleAvatarUpload
+  };
 };

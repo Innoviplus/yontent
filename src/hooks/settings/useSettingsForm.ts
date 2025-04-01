@@ -1,130 +1,101 @@
-
+import { useEffect, useState } from 'react';
+import { useAuth } from '@/contexts/AuthContext';
+import { useProfileData } from './useProfileData';
+import { z } from 'zod';
 import { useForm } from 'react-hook-form';
 import { zodResolver } from '@hookform/resolvers/zod';
-import * as z from 'zod';
-import { supabase } from '@/integrations/supabase/client';
-import { useToast } from '@/hooks/use-toast';
-import { toast as sonnerToast } from 'sonner';
-import { ExtendedProfile } from '@/lib/types';
+import { useNavigate } from 'react-router-dom';
 
-// Global flag to prevent duplicate toasts
-let isSettingsToastShown = false;
-
-// Form schema
-export const settingsFormSchema = z.object({
+const profileFormSchema = z.object({
+  firstName: z.string().optional(),
+  lastName: z.string().optional(),
+  bio: z.string().max(300, "Bio must be less than 300 characters").optional(),
+  gender: z.string().optional(),
+  birthDate: z.date().nullable().optional(),
+  websiteUrl: z.string().url("Please enter a valid URL").or(z.literal('')).optional(),
+  twitterUrl: z.string().url("Please enter a valid URL").or(z.literal('')).optional(),
+  instagramUrl: z.string().url("Please enter a valid URL").or(z.literal('')).optional(),
+  facebookUrl: z.string().url("Please enter a valid URL").or(z.literal('')).optional(),
+  tiktokUrl: z.string().url("Please enter a valid URL").or(z.literal('')).optional(),
+  youtubeUrl: z.string().url("Please enter a valid URL").or(z.literal('')).optional(),
   email: z.string().email("Please enter a valid email").optional(),
-  phoneNumber: z.string().optional(),
-  phoneCountryCode: z.string().optional(),
-  country: z.string().optional(),
 });
 
-export const useSettingsForm = (
-  user: any,
-  setExtendedProfile: (profile: ExtendedProfile | null) => void,
-  setIsUpdating: (updating: boolean) => void
-) => {
-  const { toast } = useToast();
+export type ProfileFormValues = z.infer<typeof profileFormSchema>;
 
-  const settingsForm = useForm<z.infer<typeof settingsFormSchema>>({
-    resolver: zodResolver(settingsFormSchema),
+export const useSettingsForm = () => {
+  const { user, userProfile } = useAuth();
+  const { updateProfileData, avatarUrl, uploading, handleAvatarUpload } = useProfileData();
+  const [activeTab, setActiveTab] = useState('general');
+  const navigate = useNavigate();
+
+  const form = useForm<ProfileFormValues>({
+    resolver: zodResolver(profileFormSchema),
     defaultValues: {
-      email: user?.email || '',
-      phoneNumber: '',
-      phoneCountryCode: '',
-      country: '',
-    },
+      firstName: "",
+      lastName: "",
+      bio: "",
+      gender: "",
+      birthDate: null,
+      websiteUrl: "",
+      twitterUrl: "",
+      instagramUrl: "",
+      facebookUrl: "",
+      tiktokUrl: "",
+      youtubeUrl: "",
+      email: user?.email || "",
+    }
   });
 
-  const onSettingsSubmit = async (values: z.infer<typeof settingsFormSchema>) => {
-    if (!user) return;
-    
-    setIsUpdating(true);
-    isSettingsToastShown = false; // Reset toast flag for new submission
-    
-    try {
-      // Get current extended data
-      const { data, error: fetchError } = await supabase
-        .from('profiles')
-        .select('extended_data')
-        .eq('id', user.id)
-        .single();
+  useEffect(() => {
+    if (userProfile && userProfile.extended_data) {
+      const profileData = userProfile.extended_data;
       
-      if (fetchError) {
-        throw fetchError;
-      }
-      
-      // Update extended data with new settings
-      const currentExtendedData = data.extended_data as ExtendedProfile || {};
-      const updatedExtendedData: ExtendedProfile = {
-        ...currentExtendedData,
-        phoneNumber: values.phoneNumber || null,
-        country: values.country || null,
-      };
-      
-      // Convert ExtendedProfile to a plain object for storage
-      const jsonData = Object.fromEntries(
-        Object.entries(updatedExtendedData).map(([key, value]) => [key, value])
-      );
-      
-      // Update profile with new extended data, phone country code, and email
-      const { error: updateError } = await supabase
-        .from('profiles')
-        .update({ 
-          extended_data: jsonData,
-          phone_country_code: values.phoneCountryCode || null,
-          phone_number: values.phoneNumber || null,
-          email: values.email || null
-        })
-        .eq('id', user.id);
-      
-      if (updateError) {
-        throw updateError;
-      }
-      
-      // Update local state
-      setExtendedProfile(updatedExtendedData);
-      
-      if (!isSettingsToastShown) {
-        sonnerToast.success('Settings updated successfully!');
-        isSettingsToastShown = true;
-      }
-    } catch (error: any) {
-      toast({
-        title: "Update Failed",
-        description: error.message,
-        variant: "destructive",
+      form.reset({
+        firstName: profileData.firstName || "",
+        lastName: profileData.lastName || "",
+        bio: profileData.bio || "",
+        gender: profileData.gender || "",
+        birthDate: profileData.birthDate ? new Date(profileData.birthDate) : null,
+        websiteUrl: profileData.websiteUrl || "",
+        twitterUrl: profileData.twitterUrl || "",
+        instagramUrl: profileData.instagramUrl || "",
+        facebookUrl: profileData.facebookUrl || "",
+        tiktokUrl: profileData.tiktokUrl || "",
+        youtubeUrl: profileData.youtubeUrl || "",
+        email: profileData.email || user?.email || "",
       });
-    } finally {
-      setIsUpdating(false);
     }
-  };
+  }, [userProfile, user, form]);
 
-  const handleResetPassword = async () => {
-    if (!user?.email) return;
-    
-    try {
-      const { error } = await supabase.auth.resetPasswordForEmail(user.email);
-      
-      if (error) {
-        throw error;
-      }
-      
-      if (!isSettingsToastShown) {
-        sonnerToast.success('Password reset email sent. Please check your inbox.');
-        isSettingsToastShown = true;
-      }
-    } catch (error: any) {
-      toast({
-        title: "Reset Password Failed",
-        description: error.message,
-        variant: "destructive",
-      });
+  const onSubmit = async (values: ProfileFormValues) => {
+    const success = await updateProfileData({
+      firstName: values.firstName,
+      lastName: values.lastName,
+      bio: values.bio,
+      gender: values.gender,
+      birthDate: values.birthDate,
+      websiteUrl: values.websiteUrl,
+      twitterUrl: values.twitterUrl,
+      instagramUrl: values.instagramUrl,
+      facebookUrl: values.facebookUrl,
+      tiktokUrl: values.tiktokUrl,
+      youtubeUrl: values.youtubeUrl,
+      email: values.email,
+    });
+
+    if (success) {
+      navigate('/settings');
     }
   };
 
   return {
-    settingsForm,
-    onSettingsSubmit,
-    handleResetPassword
+    form,
+    onSubmit,
+    activeTab,
+    setActiveTab,
+    avatarUrl,
+    uploading,
+    handleAvatarUpload
   };
 };

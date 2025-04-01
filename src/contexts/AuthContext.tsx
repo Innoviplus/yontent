@@ -1,4 +1,3 @@
-
 import { createContext, useContext, useEffect, useState, ReactNode } from 'react';
 import { Session, User } from '@supabase/supabase-js';
 import { supabase } from '@/integrations/supabase/client';
@@ -25,7 +24,6 @@ export function AuthProvider({ children }: { children: ReactNode }) {
   const { toast } = useToast();
 
   useEffect(() => {
-    // Get initial session
     supabase.auth.getSession().then(({ data: { session } }) => {
       setSession(session);
       setUser(session?.user ?? null);
@@ -37,7 +35,6 @@ export function AuthProvider({ children }: { children: ReactNode }) {
       setLoading(false);
     });
 
-    // Listen for auth changes
     const { data: { subscription } } = supabase.auth.onAuthStateChange(
       (_event, session) => {
         setSession(session);
@@ -70,16 +67,22 @@ export function AuthProvider({ children }: { children: ReactNode }) {
       return;
     }
 
-    // For debugging
     console.log('User profile data:', data);
 
     setUserProfile(data);
     
-    // Update user email in profiles table if it's empty
-    if (user?.email && (!data.email || data.email === '')) {
+    const userEmail = user?.email;
+    if (userEmail && data && !data.extended_data?.email) {
+      const updatedExtendedData = {
+        ...(data.extended_data || {}),
+        email: userEmail
+      };
+
       const { error: updateError } = await supabase
         .from('profiles')
-        .update({ email: user.email })
+        .update({ 
+          extended_data: updatedExtendedData 
+        })
         .eq('id', userId);
         
       if (updateError) {
@@ -118,7 +121,6 @@ export function AuthProvider({ children }: { children: ReactNode }) {
 
   const signUp = async (email: string, password: string, username: string) => {
     try {
-      // First check if email already exists
       const { data: existingUsers, error: emailCheckError } = await supabase
         .from('profiles')
         .select('id')
@@ -158,7 +160,6 @@ export function AuthProvider({ children }: { children: ReactNode }) {
       sonnerToast.success('Account created successfully! Please check your email for confirmation.');
       return { error: null };
     } catch (error: any) {
-      // Format error message to be more user-friendly
       let errorMessage = error.message;
       
       if (errorMessage && (
