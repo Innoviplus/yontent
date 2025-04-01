@@ -6,17 +6,12 @@ import { useAccountActions } from './settings/useAccountActions';
 import { useProfileData } from './settings/useProfileData';
 import { useSettingsForm } from './settings/useSettingsForm';
 import { useEffect } from 'react';
-import { toast } from 'sonner';
 
 export const useSettings = () => {
   const {
     user,
     userProfile,
     signOut,
-    avatarUrl,
-    setAvatarUrl,
-    uploading,
-    setUploading,
     isUpdating,
     setIsUpdating,
     activeTab,
@@ -26,7 +21,8 @@ export const useSettings = () => {
     navigate
   } = useSettingsState();
 
-  const { handleAvatarUpload } = useAvatarUpload(user, setAvatarUrl, setUploading);
+  // Use refactored hooks
+  const { avatarUrl, uploading, handleAvatarUpload } = useAvatarUpload();
   
   const { profileForm, onProfileSubmit } = useProfileForm(
     user, 

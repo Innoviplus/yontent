@@ -1,17 +1,12 @@
 
-import { supabase } from '@/integrations/supabase/client';
-import { useToast } from '@/hooks/use-toast';
-import { toast as sonnerToast } from 'sonner';
+import { useState } from 'react';
+import { useAuth } from '@/contexts/AuthContext';
+import { uploadAvatar, updateAvatarUrl } from '@/services/profile/avatarService';
 
-export const useAvatarUpload = (
-  user: any,
-  setAvatarUrl: (url: string | null) => void,
-  setUploading: (uploading: boolean) => void
-) => {
-  const { toast } = useToast();
-  
-  // Track whether a toast was already shown
-  let toastShown = false;
+export const useAvatarUpload = () => {
+  const { user, refreshUserProfile } = useAuth();
+  const [avatarUrl, setAvatarUrl] = useState<string | null>(null);
+  const [uploading, setUploading] = useState(false);
 
   const handleAvatarUpload = async (event: React.ChangeEvent<HTMLInputElement>) => {
     try {
@@ -20,53 +15,35 @@ export const useAvatarUpload = (
       }
       
       const file = event.target.files[0];
-      const fileExt = file.name.split('.').pop();
-      const fileName = `${Math.random().toString(36).substring(2)}.${fileExt}`;
-      const filePath = `${user?.id}/${fileName}`;
-      
       setUploading(true);
-      toastShown = false; // Reset toast state for new upload
       
-      // Upload file to storage
-      const { error: uploadError } = await supabase.storage
-        .from('avatars')
-        .upload(filePath, file);
-        
-      if (uploadError) {
-        throw uploadError;
+      if (!user) {
+        throw new Error("User not authenticated.");
       }
+
+      // Upload the avatar and get the URL
+      const newAvatarUrl = await uploadAvatar(user.id, file);
       
-      // Get public URL
-      const { data: urlData } = supabase.storage
-        .from('avatars')
-        .getPublicUrl(filePath);
+      if (newAvatarUrl) {
+        // Update the avatar URL in the database
+        await updateAvatarUrl(user.id, newAvatarUrl);
+        setAvatarUrl(newAvatarUrl);
         
-      // Update profile
-      const { error: updateError } = await supabase
-        .from('profiles')
-        .update({ avatar: urlData.publicUrl })
-        .eq('id', user?.id);
-        
-      if (updateError) {
-        throw updateError;
-      }
-      
-      setAvatarUrl(urlData.publicUrl);
-      
-      if (!toastShown) {
-        sonnerToast.success('Avatar updated successfully!');
-        toastShown = true;
+        // Refresh the user profile data to get the updated avatar
+        if (refreshUserProfile) {
+          await refreshUserProfile();
+        }
       }
     } catch (error: any) {
-      toast({
-        title: "Upload Failed",
-        description: error.message,
-        variant: "destructive",
-      });
+      console.error("Error uploading avatar:", error.message);
     } finally {
       setUploading(false);
     }
   };
 
-  return { handleAvatarUpload };
+  return {
+    avatarUrl,
+    uploading,
+    handleAvatarUpload
+  };
 };
