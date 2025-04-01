@@ -15,7 +15,9 @@ const MissionDetails = ({ mission, currentSubmissions = 0, totalSubmissions }: M
     <Card>
       <CardContent className="p-6">
         <h2 className="text-xl font-semibold mb-3">Mission Details</h2>
-        <p className="text-gray-700 mb-6">{mission.description}</p>
+        <div className="text-gray-700 mb-6">
+          <HTMLContent content={mission.description} />
+        </div>
         
         {mission.requirementDescription && (
           <div className="mb-6">
