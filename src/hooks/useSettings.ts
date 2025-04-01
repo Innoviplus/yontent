@@ -36,7 +36,7 @@ export const useSettings = () => {
   const { updateProfileData } = useProfileData();
   
   // Get form-related functions from useSettingsForm
-  const settingsFormData = useSettingsForm();
+  const { form: settingsForm, handleResetPassword } = useSettingsForm();
   
   const { handleDeleteAccount, handleLogout } = useAccountActions(
     user, 
@@ -50,9 +50,9 @@ export const useSettings = () => {
       user: !!user,
       userProfile: !!userProfile,
       profileForm: !!profileForm,
-      settingsForm: !!settingsFormData.form
+      settingsForm: !!settingsForm
     });
-  }, [user, userProfile, profileForm, settingsFormData.form]);
+  }, [user, userProfile, profileForm, settingsForm]);
 
   return {
     user,
@@ -64,11 +64,11 @@ export const useSettings = () => {
     setActiveTab,
     extendedProfile,
     profileForm,
-    settingsForm: settingsFormData.form,
+    settingsForm,
     handleAvatarUpload,
     onProfileSubmit,
     onSettingsSubmit: updateProfileData,
-    handleResetPassword: settingsFormData.handleResetPassword,
+    handleResetPassword,
     handleDeleteAccount,
     handleLogout,
   };
