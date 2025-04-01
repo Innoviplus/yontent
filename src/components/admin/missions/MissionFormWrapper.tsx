@@ -1,9 +1,9 @@
 
 import { Mission } from '@/lib/types';
-import MissionForm from './MissionForm';
 import { useState } from 'react';
 import { supabase } from '@/integrations/supabase/client';
 import { toast } from 'sonner';
+import MissionForm from './form/MissionForm';
 
 interface MissionFormWrapperProps {
   mission?: Mission;
