@@ -15,9 +15,35 @@ import { format } from 'date-fns';
 import { Badge } from '@/components/ui/badge';
 import { useUserRedemptionRequests } from '@/hooks/useUserRedemptionRequests';
 import { TrendingDown, Gift, Award } from 'lucide-react';
+import { useAuth } from '@/contexts/AuthContext';
+import { useEffect, useState } from 'react';
+import { supabase } from '@/integrations/supabase/client';
 
 const TransactionsTab = () => {
   const { requests, isLoading } = useUserRedemptionRequests();
+  const { user } = useAuth();
+  const [welcomePoints, setWelcomePoints] = useState<any | null>(null);
+
+  useEffect(() => {
+    const fetchWelcomeTransaction = async () => {
+      if (!user) return;
+      
+      const { data, error } = await supabase
+        .from('point_transactions')
+        .select('*')
+        .eq('user_id', user.id)
+        .eq('type', 'WELCOME')
+        .order('created_at', { ascending: false })
+        .limit(1)
+        .single();
+        
+      if (!error && data) {
+        setWelcomePoints(data);
+      }
+    };
+    
+    fetchWelcomeTransaction();
+  }, [user]);
 
   const getStatusColor = (status: string) => {
     switch (status) {
@@ -40,7 +66,9 @@ const TransactionsTab = () => {
     );
   }
 
-  if (requests.length === 0) {
+  const hasNoTransactions = requests.length === 0 && !welcomePoints;
+
+  if (hasNoTransactions) {
     return (
       <Card>
         <CardContent className="p-8 text-center">
@@ -59,13 +87,48 @@ const TransactionsTab = () => {
         <Table>
           <TableHeader>
             <TableRow>
-              <TableHead>Reward</TableHead>
+              <TableHead>Transaction</TableHead>
               <TableHead>Date</TableHead>
               <TableHead>Status</TableHead>
               <TableHead className="text-right">Points</TableHead>
             </TableRow>
           </TableHeader>
           <TableBody>
+            {/* Welcome points transaction */}
+            {welcomePoints && (
+              <TableRow>
+                <TableCell>
+                  <div className="flex items-center">
+                    <div className="mr-2">
+                      <Award className="h-4 w-4 text-green-500" />
+                    </div>
+                    <div>
+                      <div className="font-medium">
+                        Welcome Reward
+                      </div>
+                      <div className="text-sm text-gray-500">
+                        {welcomePoints.description}
+                      </div>
+                    </div>
+                  </div>
+                </TableCell>
+                <TableCell className="text-gray-500 text-sm">
+                  {format(new Date(welcomePoints.created_at), 'MMM d, yyyy')}
+                </TableCell>
+                <TableCell>
+                  <Badge className="bg-green-100 text-green-800 border-green-200">
+                    CREDITED
+                  </Badge>
+                </TableCell>
+                <TableCell className="text-right">
+                  <Badge className="bg-green-100 text-green-800 border-green-200">
+                    +{welcomePoints.amount}
+                  </Badge>
+                </TableCell>
+              </TableRow>
+            )}
+            
+            {/* Redemption transactions */}
             {requests.map((request) => (
               <TableRow key={request.id}>
                 <TableCell>

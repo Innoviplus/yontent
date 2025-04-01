@@ -20,6 +20,9 @@ const Footer = () => {
             <Link to="/rewards" className="text-gray-600 hover:text-brand-slate transition-colors">
               Rewards
             </Link>
+            <Link to="/user-rankings" className="text-gray-600 hover:text-brand-slate transition-colors">
+              Rankings
+            </Link>
             <Link to="/about" className="text-gray-600 hover:text-brand-slate transition-colors">
               About Us
             </Link>

@@ -1,3 +1,4 @@
+
 import { supabase } from "@/integrations/supabase/client";
 import { Mission } from "@/lib/types";
 import { toast } from "sonner";
@@ -143,9 +144,9 @@ export const updateMissionExpiryDate = async (
   }
 };
 
-// Execute the update for "Review ITOEN" mission
-// This will run when the file is loaded/imported
-(async () => {
+// This functionality is now exposed as a utility function that can be explicitly called
+// instead of being auto-executed
+export const updateItoenMissionExpiry = async () => {
   try {
     // Get all missions to debug
     const { data: allMissions, error: listError } = await supabase
@@ -154,8 +155,7 @@ export const updateMissionExpiryDate = async (
     
     if (listError) {
       console.error("Error listing all missions:", listError.message);
-    } else {
-      console.log("All missions in database:", allMissions);
+      return;
     }
     
     // Get the mission ID for "Review ITOEN"
@@ -206,4 +206,6 @@ export const updateMissionExpiryDate = async (
   } catch (err) {
     console.error("Unexpected error updating mission expiry date:", err);
   }
-})();
+};
+
+// Note: The auto-execution has been removed from this file

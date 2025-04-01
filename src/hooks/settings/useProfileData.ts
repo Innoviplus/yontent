@@ -23,7 +23,7 @@ export const useProfileData = (
         
         const { data, error } = await supabase
           .from('profiles')
-          .select('extended_data, phone_country_code, avatar')
+          .select('extended_data, phone_country_code, phone_number, avatar, email')
           .eq('id', user.id)
           .single();
           
@@ -55,9 +55,21 @@ export const useProfileData = (
             tiktokUrl: extData.tiktokUrl || '',
           });
           
+          // If user email isn't in the profile yet, update it
+          if ((!data.email || data.email === '') && user?.email) {
+            const { error: updateError } = await supabase
+              .from('profiles')
+              .update({ email: user.email })
+              .eq('id', user.id);
+              
+            if (updateError) {
+              console.error('Error updating user email:', updateError);
+            }
+          }
+          
           settingsForm.reset({
-            email: user?.email || '',
-            phoneNumber: extData.phoneNumber || '',
+            email: data.email || user?.email || '',
+            phoneNumber: data.phone_number || extData.phoneNumber || '',
             phoneCountryCode: data.phone_country_code || '',
             country: extData.country || '',
           });

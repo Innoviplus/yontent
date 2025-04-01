@@ -28,12 +28,12 @@ import PrivacyPolicy from './pages/PrivacyPolicy';
 import TermsOfService from './pages/TermsOfService';
 import Footer from './components/home/Footer';
 
-// Layout component to add Footer to all pages
-const Layout = ({ children }: { children: React.ReactNode }) => {
+// Layout component to add Footer to all pages except TermsOfService and PrivacyPolicy
+const Layout = ({ children, includeFooter = true }: { children: React.ReactNode, includeFooter?: boolean }) => {
   return (
     <>
       {children}
-      <Footer />
+      {includeFooter && <Footer />}
     </>
   );
 };
@@ -53,8 +53,8 @@ function App() {
         <Route path="/user-rankings" element={<Layout><UserRankings /></Layout>} />
         <Route path="/user/:username" element={<Layout><UserProfile /></Layout>} />
         <Route path="/rewards" element={<Layout><Rewards /></Layout>} />
-        <Route path="/privacy" element={<Layout><PrivacyPolicy /></Layout>} />
-        <Route path="/terms" element={<Layout><TermsOfService /></Layout>} />
+        <Route path="/privacy" element={<Layout includeFooter={false}><PrivacyPolicy /><Footer /></Layout>} />
+        <Route path="/terms" element={<Layout includeFooter={false}><TermsOfService /><Footer /></Layout>} />
         
         {/* Redirect /profile to /settings */}
         <Route path="/profile" element={<Navigate to="/settings" replace />} />

@@ -1,28 +1,25 @@
 
 import React from 'react';
 import { UseFormReturn } from 'react-hook-form';
-import { Loader2 } from 'lucide-react';
-import { toast } from 'sonner';
+import { Button } from '@/components/ui/button';
+import { Input } from '@/components/ui/input';
+import { Textarea } from '@/components/ui/textarea';
 import {
   Form,
   FormControl,
-  FormDescription,
   FormField,
   FormItem,
   FormLabel,
   FormMessage,
 } from '@/components/ui/form';
-import { Input } from '@/components/ui/input';
-import { Button } from '@/components/ui/button';
-import { Textarea } from '@/components/ui/textarea';
-import { BirthDatePicker } from './BirthDatePicker';
-import { 
+import {
   Select,
   SelectContent,
   SelectItem,
   SelectTrigger,
   SelectValue,
 } from '@/components/ui/select';
+import { BirthDateInput } from './BirthDateInput';
 
 interface ProfileInfoFormProps {
   profileForm: UseFormReturn<any>;
@@ -33,34 +30,11 @@ interface ProfileInfoFormProps {
 export const ProfileInfoForm: React.FC<ProfileInfoFormProps> = ({
   profileForm,
   onProfileSubmit,
-  isUpdating
+  isUpdating,
 }) => {
-  // Early return if profileForm is undefined or null
-  if (!profileForm) {
-    return <div>Loading profile form...</div>;
-  }
-
-  const handleSubmit = async (values: any) => {
-    try {
-      await onProfileSubmit(values);
-      toast.success('Profile updated successfully!');
-    } catch (error) {
-      toast.error('Failed to update profile');
-      console.error('Error updating profile:', error);
-    }
-  };
-
-  // Check if gender has been set previously
-  const currentGender = profileForm.getValues('gender');
-  const hasSetGender = !!currentGender && currentGender !== 'Select gender';
-  
-  // Check if birth date has been set previously
-  const currentBirthDate = profileForm.getValues('birthDate');
-  const hasSetBirthDate = !!currentBirthDate;
-
   return (
     <Form {...profileForm}>
-      <form onSubmit={profileForm.handleSubmit(handleSubmit)} className="space-y-6">
+      <form onSubmit={profileForm.handleSubmit(onProfileSubmit)} className="space-y-8">
         <FormField
           control={profileForm.control}
           name="username"
@@ -68,16 +42,14 @@ export const ProfileInfoForm: React.FC<ProfileInfoFormProps> = ({
             <FormItem>
               <FormLabel>Username</FormLabel>
               <FormControl>
-                <Input {...field} readOnly className="bg-gray-100" />
+                <Input placeholder="username" {...field} disabled />
               </FormControl>
-              <FormDescription>
-                Your username cannot be changed.
-              </FormDescription>
+              <FormMessage />
             </FormItem>
           )}
         />
-        
-        <div className="grid gap-6 grid-cols-1 md:grid-cols-2">
+
+        <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
           <FormField
             control={profileForm.control}
             name="firstName"
@@ -85,7 +57,7 @@ export const ProfileInfoForm: React.FC<ProfileInfoFormProps> = ({
               <FormItem>
                 <FormLabel>First Name</FormLabel>
                 <FormControl>
-                  <Input placeholder="John" {...field} />
+                  <Input placeholder="Your first name" {...field} />
                 </FormControl>
                 <FormMessage />
               </FormItem>
@@ -99,7 +71,7 @@ export const ProfileInfoForm: React.FC<ProfileInfoFormProps> = ({
               <FormItem>
                 <FormLabel>Last Name</FormLabel>
                 <FormControl>
-                  <Input placeholder="Doe" {...field} />
+                  <Input placeholder="Your last name" {...field} />
                 </FormControl>
                 <FormMessage />
               </FormItem>
@@ -114,22 +86,19 @@ export const ProfileInfoForm: React.FC<ProfileInfoFormProps> = ({
             <FormItem>
               <FormLabel>Bio</FormLabel>
               <FormControl>
-                <Textarea
-                  placeholder="Tell us a little about yourself"
-                  className="resize-none"
-                  {...field}
+                <Textarea 
+                  placeholder="Tell us a little bit about yourself" 
+                  className="min-h-[120px]" 
+                  {...field} 
                   value={field.value || ''}
                 />
               </FormControl>
-              <FormDescription>
-                Brief description for your profile. Maximum 500 characters.
-              </FormDescription>
               <FormMessage />
             </FormItem>
           )}
         />
-        
-        <div className="grid gap-6 grid-cols-1 md:grid-cols-2">
+
+        <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
           <FormField
             control={profileForm.control}
             name="gender"
@@ -139,34 +108,41 @@ export const ProfileInfoForm: React.FC<ProfileInfoFormProps> = ({
                 <Select 
                   onValueChange={field.onChange} 
                   value={field.value || ''}
-                  disabled={hasSetGender}
                 >
                   <FormControl>
-                    <SelectTrigger className={hasSetGender ? "bg-gray-100" : ""}>
+                    <SelectTrigger>
                       <SelectValue placeholder="Select gender" />
                     </SelectTrigger>
                   </FormControl>
-                  <SelectContent className="pointer-events-auto">
+                  <SelectContent>
                     <SelectItem value="male">Male</SelectItem>
                     <SelectItem value="female">Female</SelectItem>
                     <SelectItem value="non-binary">Non-binary</SelectItem>
                     <SelectItem value="prefer-not-to-say">Prefer not to say</SelectItem>
                   </SelectContent>
                 </Select>
-                <FormDescription>
-                  {hasSetGender ? 'Gender cannot be changed once set.' : 'Select your gender.'}
-                </FormDescription>
                 <FormMessage />
               </FormItem>
             )}
           />
-          
-          <BirthDatePicker control={profileForm.control} disabled={hasSetBirthDate} />
+
+          <BirthDateInput 
+            control={profileForm.control} 
+            disabled={profileForm.getValues('birthDate') !== undefined}
+          />
         </div>
-        
-        <Button type="submit" disabled={isUpdating}>
-          {isUpdating && <Loader2 className="mr-2 h-4 w-4 animate-spin" />}
-          Save Profile
+
+        <Button 
+          type="submit" 
+          className="w-full md:w-auto" 
+          disabled={isUpdating}
+        >
+          {isUpdating ? (
+            <>
+              <span className="animate-spin mr-2">⌛</span>
+              Updating...
+            </>
+          ) : 'Save Changes'}
         </Button>
       </form>
     </Form>

@@ -7,6 +7,9 @@ import { useToast } from '@/hooks/use-toast';
 import { toast as sonnerToast } from 'sonner';
 import { ExtendedProfile } from '@/lib/types';
 
+// Global flag to prevent duplicate toasts
+let isProfileToastShown = false;
+
 // Form schema
 export const profileFormSchema = z.object({
   username: z.string().optional(),
@@ -52,6 +55,7 @@ export const useProfileForm = (
     if (!user) return;
     
     setIsUpdating(true);
+    isProfileToastShown = false; // Reset toast flag for new submission
     
     try {
       // Prepare extended data object
@@ -88,7 +92,10 @@ export const useProfileForm = (
       // Update local state
       setExtendedProfile(extendedData);
       
-      sonnerToast.success('Profile updated successfully!');
+      if (!isProfileToastShown) {
+        sonnerToast.success('Profile updated successfully!');
+        isProfileToastShown = true;
+      }
     } catch (error: any) {
       toast({
         title: "Update Failed",

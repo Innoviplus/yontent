@@ -26,7 +26,7 @@ type RegisterFormValues = z.infer<typeof registerSchema>;
 
 const Register = () => {
   const [showPassword, setShowPassword] = useState(false);
-  const [usernameError, setUsernameError] = useState<string | null>(null);
+  const [formError, setFormError] = useState<string | null>(null);
   const { signUp } = useAuth();
   const navigate = useNavigate();
 
@@ -59,28 +59,37 @@ const Register = () => {
   const passwordValidation = validatePassword(passwordValue || '');
 
   const onSubmit = async (values: RegisterFormValues) => {
-    // Clear any previous username error
-    setUsernameError(null);
+    // Clear any previous errors
+    setFormError(null);
+    form.clearErrors();
     
     const { error } = await signUp(values.email, values.password, values.username);
     
     if (error) {
-      // Check if error message contains information about duplicate username
       if (error.message && (
           error.message.includes('duplicate key') || 
           error.message.includes('profiles_username_key') ||
           error.message.includes('Database error saving new user')
         )) {
-        setUsernameError('This username is already taken. Please choose a different one.');
+        setFormError('This username is already taken. Please choose a different one.');
         form.setError('username', { 
           type: 'manual', 
-          message: 'This username is already taken. Please choose a different one.' 
+          message: '' // Let's not duplicate the error message
         });
+      } else if (error.message && error.message.includes('Email already registered')) {
+        setFormError('This email is already registered. Please use a different email or login.');
+        form.setError('email', {
+          type: 'manual',
+          message: ''
+        });
+      } else {
+        setFormError(error.message);
       }
       return;
     }
     
-    navigate('/dashboard');
+    // If successful, navigate to settings page instead of dashboard
+    navigate('/settings');
   };
 
   return (
@@ -100,6 +109,12 @@ const Register = () => {
               </p>
             </div>
             
+            {formError && (
+              <div className="mb-4 p-3 bg-red-50 text-red-700 rounded-md border border-red-200 text-sm">
+                {formError}
+              </div>
+            )}
+            
             <Form {...form}>
               <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-5">
                 <FormField
@@ -115,9 +130,6 @@ const Register = () => {
                           {...field} 
                         />
                       </FormControl>
-                      {usernameError && (
-                        <p className="text-sm font-medium text-destructive">{usernameError}</p>
-                      )}
                       <FormMessage />
                     </FormItem>
                   )}

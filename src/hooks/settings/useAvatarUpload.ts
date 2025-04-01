@@ -9,6 +9,9 @@ export const useAvatarUpload = (
   setUploading: (uploading: boolean) => void
 ) => {
   const { toast } = useToast();
+  
+  // Track whether a toast was already shown
+  let toastShown = false;
 
   const handleAvatarUpload = async (event: React.ChangeEvent<HTMLInputElement>) => {
     try {
@@ -22,6 +25,7 @@ export const useAvatarUpload = (
       const filePath = `${user?.id}/${fileName}`;
       
       setUploading(true);
+      toastShown = false; // Reset toast state for new upload
       
       // Upload file to storage
       const { error: uploadError } = await supabase.storage
@@ -48,7 +52,11 @@ export const useAvatarUpload = (
       }
       
       setAvatarUrl(urlData.publicUrl);
-      sonnerToast.success('Avatar updated successfully!');
+      
+      if (!toastShown) {
+        sonnerToast.success('Avatar updated successfully!');
+        toastShown = true;
+      }
     } catch (error: any) {
       toast({
         title: "Upload Failed",

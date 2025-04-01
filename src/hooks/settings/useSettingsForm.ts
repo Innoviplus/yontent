@@ -7,6 +7,9 @@ import { useToast } from '@/hooks/use-toast';
 import { toast as sonnerToast } from 'sonner';
 import { ExtendedProfile } from '@/lib/types';
 
+// Global flag to prevent duplicate toasts
+let isSettingsToastShown = false;
+
 // Form schema
 export const settingsFormSchema = z.object({
   email: z.string().email("Please enter a valid email").optional(),
@@ -36,6 +39,7 @@ export const useSettingsForm = (
     if (!user) return;
     
     setIsUpdating(true);
+    isSettingsToastShown = false; // Reset toast flag for new submission
     
     try {
       // Get current extended data
@@ -62,12 +66,14 @@ export const useSettingsForm = (
         Object.entries(updatedExtendedData).map(([key, value]) => [key, value])
       );
       
-      // Update profile with new extended data and phone country code
+      // Update profile with new extended data, phone country code, and email
       const { error: updateError } = await supabase
         .from('profiles')
         .update({ 
           extended_data: jsonData,
-          phone_country_code: values.phoneCountryCode || null
+          phone_country_code: values.phoneCountryCode || null,
+          phone_number: values.phoneNumber || null,
+          email: values.email || null
         })
         .eq('id', user.id);
       
@@ -78,7 +84,10 @@ export const useSettingsForm = (
       // Update local state
       setExtendedProfile(updatedExtendedData);
       
-      sonnerToast.success('Settings updated successfully!');
+      if (!isSettingsToastShown) {
+        sonnerToast.success('Settings updated successfully!');
+        isSettingsToastShown = true;
+      }
     } catch (error: any) {
       toast({
         title: "Update Failed",
@@ -100,7 +109,10 @@ export const useSettingsForm = (
         throw error;
       }
       
-      sonnerToast.success('Password reset email sent. Please check your inbox.');
+      if (!isSettingsToastShown) {
+        sonnerToast.success('Password reset email sent. Please check your inbox.');
+        isSettingsToastShown = true;
+      }
     } catch (error: any) {
       toast({
         title: "Reset Password Failed",

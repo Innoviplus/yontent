@@ -74,6 +74,18 @@ export function AuthProvider({ children }: { children: ReactNode }) {
     console.log('User profile data:', data);
 
     setUserProfile(data);
+    
+    // Update user email in profiles table if it's empty
+    if (user?.email && (!data.email || data.email === '')) {
+      const { error: updateError } = await supabase
+        .from('profiles')
+        .update({ email: user.email })
+        .eq('id', userId);
+        
+      if (updateError) {
+        console.error('Error updating user email:', updateError);
+      }
+    }
   }
 
   const signIn = async (email: string, password: string) => {
@@ -106,12 +118,30 @@ export function AuthProvider({ children }: { children: ReactNode }) {
 
   const signUp = async (email: string, password: string, username: string) => {
     try {
+      // First check if email already exists
+      const { data: existingUsers, error: emailCheckError } = await supabase
+        .from('profiles')
+        .select('id')
+        .eq('email', email);
+        
+      if (emailCheckError) {
+        console.error('Error checking existing email:', emailCheckError);
+      } else if (existingUsers && existingUsers.length > 0) {
+        toast({
+          title: "Registration Failed",
+          description: "This email is already registered. Please use a different email or try to log in.",
+          variant: "destructive",
+        });
+        return { error: { message: "Email already registered" } };
+      }
+      
       const { error } = await supabase.auth.signUp({
         email,
         password,
         options: {
           data: {
             username,
+            email, // Store email in user metadata
           },
         },
       });
