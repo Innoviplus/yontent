@@ -71,7 +71,9 @@ const MissionCard = ({ mission, className }: MissionCardProps) => {
         
         <h3 className="text-lg font-semibold text-brand-slate mb-2">{mission.title}</h3>
         
-        <p className="text-gray-600 mb-4 text-sm flex-1">{mission.description}</p>
+        <div className="text-gray-600 mb-4 text-sm flex-1">
+          <HTMLContent content={mission.description} />
+        </div>
         
         <div className="space-y-3 mb-4">
           <div className="flex items-center text-xs text-gray-500">
