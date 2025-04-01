@@ -1,4 +1,3 @@
-
 import { useForm } from 'react-hook-form';
 import { zodResolver } from '@hookform/resolvers/zod';
 import * as z from 'zod';
@@ -6,6 +5,7 @@ import { supabase } from '@/integrations/supabase/client';
 import { useToast } from '@/hooks/use-toast';
 import { toast as sonnerToast } from 'sonner';
 import { ExtendedProfile } from '@/lib/types';
+import React from 'react';
 
 // Form schema
 export const profileFormSchema = z.object({
@@ -48,6 +48,27 @@ export const useProfileForm = (
     },
   });
 
+  // Update the form with profile data when it becomes available
+  React.useEffect(() => {
+    if (userProfile?.extended_data) {
+      const extData = userProfile.extended_data;
+      
+      profileForm.reset({
+        username: userProfile.username || '',
+        firstName: extData.firstName || '',
+        lastName: extData.lastName || '',
+        bio: extData.bio || '',
+        gender: extData.gender || '',
+        birthDate: extData.birthDate ? new Date(extData.birthDate) : undefined,
+        websiteUrl: extData.websiteUrl || '',
+        facebookUrl: extData.facebookUrl || '',
+        instagramUrl: extData.instagramUrl || '',
+        youtubeUrl: extData.youtubeUrl || '',
+        tiktokUrl: extData.tiktokUrl || '',
+      }, { keepDirty: false }); // Mark form as pristine after reset
+    }
+  }, [userProfile, profileForm]);
+
   const onProfileSubmit = async (values: z.infer<typeof profileFormSchema>) => {
     if (!user) return;
     
@@ -88,8 +109,12 @@ export const useProfileForm = (
       // Update local state
       setExtendedProfile(extendedData);
       
-      // Show success notification only once
+      // Show success notification
       sonnerToast.success('Profile updated successfully!');
+      
+      // Mark form as pristine to indicate data has been saved
+      profileForm.reset(values, { keepValues: true });
+      
     } catch (error: any) {
       toast({
         title: "Update Failed",

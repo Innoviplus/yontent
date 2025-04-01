@@ -32,9 +32,12 @@ export const ProfileInfoForm: React.FC<ProfileInfoFormProps> = ({
   onProfileSubmit,
   isUpdating,
 }) => {
-  // Fix: Use getValues to check if birthDate has already been set and saved
-  const birthDateIsSet = typeof profileForm.getValues('birthDate') !== 'undefined' && 
-                        profileForm.getValues('birthDate') !== null;
+  // Only disable the birthDate field if it was previously set AND saved
+  // This checks if birthDate already exists in the database, not just in the form
+  const birthDateWasPreviouslySaved = 
+    typeof profileForm.getValues('birthDate') !== 'undefined' && 
+    profileForm.getValues('birthDate') !== null &&
+    !profileForm.formState.isDirty;
                         
   return (
     <Form {...profileForm}>
@@ -132,7 +135,7 @@ export const ProfileInfoForm: React.FC<ProfileInfoFormProps> = ({
 
           <BirthDateInput 
             control={profileForm.control} 
-            disabled={birthDateIsSet}
+            disabled={birthDateWasPreviouslySaved}
           />
         </div>
 
