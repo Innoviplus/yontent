@@ -19,9 +19,7 @@ const HTMLContent = ({ content, className = '' }: HTMLContentProps) => {
   }, [content]);
 
   return (
-    <div className={`prose max-w-none ${className}`}>
-      <div ref={contentRef}></div>
-    </div>
+    <div className={`prose max-w-none ${className}`} dangerouslySetInnerHTML={{ __html: DOMPurify.sanitize(content || '') }} />
   );
 };
 
