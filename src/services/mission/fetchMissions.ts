@@ -36,12 +36,16 @@ export const fetchActiveMissions = async (): Promise<Mission[]> => {
       merchantLogo: mission.merchant_logo || undefined,
       bannerImage: mission.banner_image || undefined,
       maxSubmissionsPerUser: mission.max_submissions_per_user,
+      totalMaxSubmissions: mission.total_max_submissions || undefined,
       termsConditions: mission.terms_conditions || undefined,
       requirementDescription: mission.requirement_description || undefined,
       startDate: new Date(mission.start_date),
       expiresAt: mission.expires_at ? new Date(mission.expires_at) : undefined,
       createdAt: new Date(mission.created_at),
-      updatedAt: new Date(mission.updated_at)
+      updatedAt: new Date(mission.updated_at),
+      completionSteps: mission.completion_steps || undefined,
+      productDescription: mission.product_description || undefined,
+      productImages: mission.product_images || []
     }));
 
     console.log('Transformed missions:', missions);

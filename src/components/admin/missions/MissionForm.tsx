@@ -40,7 +40,11 @@ import {
 interface MissionFormProps {
   mission?: Mission;
   title: string;
-  onSubmit: (data: MissionFormData, files: { merchantLogo?: File | null, bannerImage?: File | null }) => Promise<boolean>;
+  onSubmit: (data: MissionFormData, files: { 
+    merchantLogo?: File | null, 
+    bannerImage?: File | null,
+    productImages?: File[] | null 
+  }) => Promise<boolean>;
   onCancel: () => void;
   isUploading?: boolean;
 }
