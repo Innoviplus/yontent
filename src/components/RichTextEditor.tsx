@@ -60,6 +60,7 @@ const RichTextEditor = ({
   // and wasn't just updated internally
   useEffect(() => {
     if (editor && value !== lastValueRef.current && contentUpdateSourceRef.current !== 'internal') {
+      console.log('Updating editor content from props:', { value });
       contentUpdateSourceRef.current = 'external';
       editor.commands.setContent(value, false);
       lastValueRef.current = value;

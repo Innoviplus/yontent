@@ -25,12 +25,7 @@ const AdditionalDetails = ({ form }: AdditionalDetailsProps) => {
       completionSteps: form.getValues('completionSteps'),
       productDescription: form.getValues('productDescription')
     });
-  }, [
-    form.getValues('requirementDescription'),
-    form.getValues('termsConditions'),
-    form.getValues('completionSteps'),
-    form.getValues('productDescription')
-  ]);
+  }, [form]);
 
   return (
     <div className="space-y-4">

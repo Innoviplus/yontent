@@ -38,6 +38,7 @@ const MissionForm = ({
   const [merchantLogoFile, setMerchantLogoFile] = useState<File | null>(null);
   const [bannerImageFile, setBannerImageFile] = useState<File | null>(null);
   
+  // Initialize form with all mission data, ensuring rich text fields are properly passed
   const form = useForm<MissionFormData>({
     resolver: zodResolver(missionSchema),
     defaultValues: {
@@ -55,6 +56,8 @@ const MissionForm = ({
       maxSubmissionsPerUser: mission?.maxSubmissionsPerUser || 1,
       totalMaxSubmissions: mission?.totalMaxSubmissions || undefined,
       termsConditions: mission?.termsConditions || '',
+      completionSteps: mission?.completionSteps || '',
+      productDescription: mission?.productDescription || '',
     }
   });
 
