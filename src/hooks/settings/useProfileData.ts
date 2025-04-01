@@ -7,7 +7,7 @@ import { toast } from 'sonner';
 
 export const useProfileData = () => {
   // Access only what's available in the AuthContext
-  const { user, userProfile } = useAuth();
+  const { user, userProfile, refreshUserProfile } = useAuth();
   const [avatarUrl, setAvatarUrl] = useState<string | null>(null);
   const [uploading, setUploading] = useState(false);
 
@@ -73,13 +73,13 @@ export const useProfileData = () => {
       return false;
     }
 
-    // Convert the Date object to ISO string for JSON compatibility
-    const jsonSafeProfile = {
-      ...profileData,
-      birthDate: profileData.birthDate ? profileData.birthDate.toISOString() : undefined
-    };
-
     try {
+      // Convert the Date object to ISO string for JSON compatibility
+      const jsonSafeProfile = {
+        ...profileData,
+        birthDate: profileData.birthDate ? profileData.birthDate.toISOString() : null
+      };
+
       const { error: updateError } = await supabase
         .from('profiles')
         .update({
@@ -93,7 +93,11 @@ export const useProfileData = () => {
         throw updateError;
       }
 
-      // Since we can't update the AuthContext directly, show a success message
+      // Refresh user profile data after updating
+      if (refreshUserProfile) {
+        await refreshUserProfile();
+      }
+      
       toast.success("Profile updated successfully!");
       return true;
     } catch (error: any) {
