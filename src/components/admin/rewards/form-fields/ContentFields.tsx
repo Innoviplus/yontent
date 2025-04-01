@@ -32,7 +32,7 @@ const ContentFields = ({ form }: ContentFieldsProps) => {
               />
             </FormControl>
             <FormDescription>
-              This content will be displayed in the Redemption Details section
+              This content will be displayed in the Redemption Details section. You can add links by highlighting text and using the link button.
             </FormDescription>
             <FormMessage />
           </FormItem>
@@ -53,7 +53,7 @@ const ContentFields = ({ form }: ContentFieldsProps) => {
               />
             </FormControl>
             <FormDescription>
-              Terms and conditions for this reward
+              Terms and conditions for this reward. You can add links by highlighting text and using the link button.
             </FormDescription>
             <FormMessage />
           </FormItem>

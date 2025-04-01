@@ -7,7 +7,7 @@ import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Popover, PopoverContent, PopoverTrigger } from '@/components/ui/popover';
 import { 
-  Bold, Italic, List, ListOrdered, Undo, Redo, Link as LinkIcon
+  Bold, Italic, List, ListOrdered, Undo, Redo, Link as LinkIcon, ExternalLink
 } from 'lucide-react';
 
 interface RichTextEditorProps {
@@ -25,6 +25,7 @@ const RichTextEditor = ({
 }: RichTextEditorProps) => {
   const [isFocused, setIsFocused] = useState(false);
   const [linkUrl, setLinkUrl] = useState('');
+  const [isLinkActive, setIsLinkActive] = useState(false);
 
   const editor = useEditor({
     extensions: [
@@ -32,15 +33,20 @@ const RichTextEditor = ({
       Link.configure({
         openOnClick: false,
         HTMLAttributes: {
-          class: 'text-primary underline',
+          class: 'text-blue-500 underline hover:text-blue-700',
           rel: 'noopener noreferrer',
           target: '_blank',
         },
+        linkOnPaste: true,
+        validate: href => /^https?:\/\//.test(href),
       }),
     ],
     content: value,
     onUpdate: ({ editor }) => {
       onChange(editor.getHTML());
+    },
+    onSelectionUpdate: ({ editor }) => {
+      setIsLinkActive(editor.isActive('link'));
     },
     editorProps: {
       attributes: {
@@ -57,8 +63,16 @@ const RichTextEditor = ({
   }, [value, editor]);
 
   const setLink = () => {
-    if (linkUrl) {
-      editor?.chain().focus().extendMarkRange('link').setLink({ href: linkUrl }).run();
+    if (!linkUrl) return;
+    
+    // Validate URL format (simple check)
+    const isValid = /^(https?:\/\/)?.+\..+/.test(linkUrl);
+    
+    if (isValid) {
+      // Add protocol if missing
+      const url = linkUrl.startsWith('http') ? linkUrl : `https://${linkUrl}`;
+      
+      editor?.chain().focus().extendMarkRange('link').setLink({ href: url }).run();
       setLinkUrl('');
     }
   };
@@ -66,6 +80,36 @@ const RichTextEditor = ({
   const unsetLink = () => {
     editor?.chain().focus().extendMarkRange('link').unsetLink().run();
   };
+
+  const getCurrentLinkUrl = () => {
+    if (!editor) return '';
+    
+    const linkMark = editor.getAttributes('link');
+    return linkMark.href || '';
+  };
+
+  // Detect active link when selection changes
+  useEffect(() => {
+    if (!editor) return;
+    
+    const handleSelectionUpdate = () => {
+      const isActive = editor.isActive('link');
+      setIsLinkActive(isActive);
+      
+      if (isActive) {
+        const currentUrl = getCurrentLinkUrl();
+        setLinkUrl(currentUrl);
+      } else {
+        setLinkUrl('');
+      }
+    };
+    
+    editor.on('selectionUpdate', handleSelectionUpdate);
+    
+    return () => {
+      editor.off('selectionUpdate', handleSelectionUpdate);
+    };
+  }, [editor]);
 
   return (
     <div 
@@ -116,7 +160,7 @@ const RichTextEditor = ({
               <Button
                 variant="ghost"
                 size="sm"
-                className={editor?.isActive('link') ? 'bg-accent' : ''}
+                className={isLinkActive ? 'bg-accent' : ''}
                 type="button"
               >
                 <LinkIcon className="h-4 w-4" />
@@ -138,10 +182,11 @@ const RichTextEditor = ({
                     }}
                   />
                   <Button onClick={setLink} type="button" className="shrink-0">
+                    <ExternalLink className="h-4 w-4 mr-2" />
                     Set Link
                   </Button>
                 </div>
-                {editor?.isActive('link') && (
+                {isLinkActive && (
                   <Button 
                     onClick={unsetLink} 
                     variant="outline" 
