@@ -24,7 +24,7 @@ export const useProfileData = (
         try {
           const { data, error } = await supabase
             .from('profiles')
-            .select('extended_data, phone_country_code, phone_number, avatar')
+            .select('extended_data, phone_country_code, phone_number, avatar, email')
             .eq('id', user.id)
             .single();
             
@@ -63,13 +63,17 @@ export const useProfileData = (
             // - Then fall back to extended_data.phoneNumber if present
             const phoneNumber = data.phone_number || extData.phoneNumber || '';
             
+            // Prioritize the dedicated email column, then fall back to extended_data.email
+            const email = data.email || extData.email || user?.email || '';
+            
             settingsForm.reset({
-              email: user?.email || '',
+              email: email,
               phoneNumber: phoneNumber,
               phoneCountryCode: data.phone_country_code || '+1',
               country: extData.country || '',
             });
             
+            console.log('Set email in form to:', email);
             console.log('Set phone in form to:', phoneNumber);
           }
         } catch (fetchErr) {

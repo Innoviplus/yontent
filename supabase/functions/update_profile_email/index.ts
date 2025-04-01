@@ -30,16 +30,18 @@ serve(async (req) => {
     
     console.log(`Updating email for user ${user_id} to ${new_email}`);
     
-    // Update the extended_data directly in the profiles table
+    // Update both the dedicated email column and store in extended_data for backward compatibility
     const { data, error } = await supabaseClient
       .from('profiles')
       .update({ 
+        email: new_email,
         extended_data: {
+          ...supabaseClient.from('profiles').select('extended_data').eq('id', user_id).single().data?.extended_data,
           email: new_email
         }
       })
       .eq('id', user_id)
-      .select('extended_data');
+      .select('email, extended_data');
     
     if (error) {
       console.error('Error updating profile:', error);

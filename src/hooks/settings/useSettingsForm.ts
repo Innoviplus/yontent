@@ -40,10 +40,10 @@ export const useSettingsForm = (
     try {
       console.log('Submitting settings with values:', values);
       
-      // Get current extended data
+      // Get current profile data
       const { data, error: fetchError } = await supabase
         .from('profiles')
-        .select('extended_data, phone_number, phone_country_code')
+        .select('extended_data, phone_number, phone_country_code, email')
         .eq('id', user.id)
         .single();
       
@@ -70,7 +70,7 @@ export const useSettingsForm = (
       console.log('Updated extended data:', jsonData);
       console.log('Updating email to:', values.email);
       
-      // Call the edge function to update the email in the profile's extended_data
+      // Call the edge function to update the email in both the email column and profile's extended_data
       const { data: edgeFunctionData, error: edgeFunctionError } = await supabase.functions.invoke(
         'update_profile_email',
         {
@@ -88,9 +88,10 @@ export const useSettingsForm = (
         const { error: updateError } = await supabase
           .from('profiles')
           .update({ 
+            email: values.email || null,
             extended_data: {
               ...jsonData,
-              email: values.email || null  // Store email in extended_data
+              email: values.email || null  // Store email in extended_data for backward compatibility
             },
             phone_country_code: values.phoneCountryCode || null,
             phone_number: values.phoneNumber || null
