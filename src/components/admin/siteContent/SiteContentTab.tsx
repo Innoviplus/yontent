@@ -122,6 +122,7 @@ const SiteContentTab = () => {
               value={editedContent}
               onChange={setEditedContent}
               placeholder="Enter privacy policy content..."
+              includeLink={true}
             />
           </TabsContent>
           
@@ -131,6 +132,7 @@ const SiteContentTab = () => {
               value={editedContent}
               onChange={setEditedContent}
               placeholder="Enter terms of service content..."
+              includeLink={true}
             />
           </TabsContent>
           

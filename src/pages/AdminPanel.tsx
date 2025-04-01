@@ -1,7 +1,5 @@
-
 import { useState } from 'react';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
-import { Toaster } from '@/components/ui/sonner';
 import Navbar from '@/components/Navbar';
 import { useRewardsAdmin } from '@/hooks/admin/useRewardsAdmin';
 import { useMissionsAdmin } from '@/hooks/admin/useMissionsAdmin';
@@ -120,7 +118,6 @@ const AdminPanel = () => {
           </Tabs>
         </div>
       </div>
-      <Toaster />
     </div>
   );
 };

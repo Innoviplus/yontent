@@ -7,7 +7,7 @@ import { Skeleton } from '@/components/ui/skeleton';
 import Footer from '@/components/home/Footer';
 
 const TermsOfService = () => {
-  const { data: terms, isLoading, error } = useQuery({
+  const { data: termsOfService, isLoading, error } = useQuery({
     queryKey: ['terms-of-service'],
     queryFn: async () => {
       const { data, error } = await supabase
@@ -61,7 +61,10 @@ const TermsOfService = () => {
     <>
       <Navbar />
       <div className="container mx-auto px-4 py-28 max-w-4xl">
-        <div className="prose max-w-none" dangerouslySetInnerHTML={{ __html: terms?.content || '' }} />
+        <div 
+          className="prose max-w-none" 
+          dangerouslySetInnerHTML={{ __html: termsOfService?.content || '' }} 
+        />
       </div>
       <Footer />
     </>

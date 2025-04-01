@@ -2,9 +2,12 @@
 import { useState, useEffect } from 'react';
 import { useEditor, EditorContent } from '@tiptap/react';
 import StarterKit from '@tiptap/starter-kit';
+import Link from '@tiptap/extension-link';
 import { Button } from '@/components/ui/button';
+import { Input } from '@/components/ui/input';
+import { Popover, PopoverContent, PopoverTrigger } from '@/components/ui/popover';
 import { 
-  Bold, Italic, List, ListOrdered, Undo, Redo 
+  Bold, Italic, List, ListOrdered, Undo, Redo, Link as LinkIcon
 } from 'lucide-react';
 
 interface RichTextEditorProps {
@@ -18,13 +21,22 @@ const RichTextEditor = ({
   value, 
   onChange, 
   placeholder,
-  includeLink = false
+  includeLink = true
 }: RichTextEditorProps) => {
   const [isFocused, setIsFocused] = useState(false);
+  const [linkUrl, setLinkUrl] = useState('');
 
   const editor = useEditor({
     extensions: [
       StarterKit,
+      Link.configure({
+        openOnClick: false,
+        HTMLAttributes: {
+          class: 'text-primary underline',
+          rel: 'noopener noreferrer',
+          target: '_blank',
+        },
+      }),
     ],
     content: value,
     onUpdate: ({ editor }) => {
@@ -43,6 +55,17 @@ const RichTextEditor = ({
       editor.commands.setContent(value);
     }
   }, [value, editor]);
+
+  const setLink = () => {
+    if (linkUrl) {
+      editor?.chain().focus().extendMarkRange('link').setLink({ href: linkUrl }).run();
+      setLinkUrl('');
+    }
+  };
+
+  const unsetLink = () => {
+    editor?.chain().focus().extendMarkRange('link').unsetLink().run();
+  };
 
   return (
     <div 
@@ -87,6 +110,51 @@ const RichTextEditor = ({
         >
           <ListOrdered className="h-4 w-4" />
         </Button>
+        {includeLink && (
+          <Popover>
+            <PopoverTrigger asChild>
+              <Button
+                variant="ghost"
+                size="sm"
+                className={editor?.isActive('link') ? 'bg-accent' : ''}
+                type="button"
+              >
+                <LinkIcon className="h-4 w-4" />
+              </Button>
+            </PopoverTrigger>
+            <PopoverContent className="w-80 p-4">
+              <div className="flex flex-col gap-4">
+                <div className="flex items-center gap-2">
+                  <Input 
+                    type="url" 
+                    placeholder="https://example.com" 
+                    value={linkUrl} 
+                    onChange={(e) => setLinkUrl(e.target.value)}
+                    onKeyDown={(e) => {
+                      if (e.key === 'Enter') {
+                        e.preventDefault();
+                        setLink();
+                      }
+                    }}
+                  />
+                  <Button onClick={setLink} type="button" className="shrink-0">
+                    Set Link
+                  </Button>
+                </div>
+                {editor?.isActive('link') && (
+                  <Button 
+                    onClick={unsetLink} 
+                    variant="outline" 
+                    size="sm" 
+                    type="button"
+                  >
+                    Remove Link
+                  </Button>
+                )}
+              </div>
+            </PopoverContent>
+          </Popover>
+        )}
         <Button
           variant="ghost"
           size="sm"
