@@ -1,5 +1,4 @@
 
-import { useEffect, useRef } from 'react';
 import DOMPurify from 'dompurify';
 
 interface HTMLContentProps {
@@ -8,18 +7,14 @@ interface HTMLContentProps {
 }
 
 const HTMLContent = ({ content, className = '' }: HTMLContentProps) => {
-  const contentRef = useRef<HTMLDivElement>(null);
-
-  useEffect(() => {
-    if (contentRef.current && content) {
-      // Sanitize the HTML content to prevent XSS attacks
-      const sanitizedContent = DOMPurify.sanitize(content);
-      contentRef.current.innerHTML = sanitizedContent;
-    }
-  }, [content]);
-
+  // Use dangerouslySetInnerHTML with sanitized content for proper HTML rendering
+  const sanitizedContent = content ? DOMPurify.sanitize(content) : '';
+  
   return (
-    <div className={`prose max-w-none ${className}`} dangerouslySetInnerHTML={{ __html: DOMPurify.sanitize(content || '') }} />
+    <div 
+      className={`prose max-w-none ${className}`} 
+      dangerouslySetInnerHTML={{ __html: sanitizedContent }} 
+    />
   );
 };
 
