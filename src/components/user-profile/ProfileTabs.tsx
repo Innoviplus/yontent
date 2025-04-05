@@ -2,6 +2,8 @@
 import { Tabs, TabsList, TabsTrigger, TabsContent } from '@/components/ui/tabs';
 import { Review } from '@/lib/types';
 import ReviewCard from '@/components/ReviewCard';
+import { Button } from '@/components/ui/button';
+import { Link } from 'react-router-dom';
 
 interface ProfileTabsProps {
   reviews: Review[];
@@ -27,11 +29,18 @@ const ProfileTabs = ({ reviews, user, profile, isCurrentUser }: ProfileTabsProps
         ) : (
           <div className="bg-white rounded-xl p-8 text-center shadow-card">
             <h3 className="text-lg font-medium text-gray-900 mb-2">No reviews yet</h3>
-            <p className="text-gray-600">
+            <p className="text-gray-600 mb-6">
               {isCurrentUser
                 ? "You haven't posted any reviews yet. Start sharing your experiences!"
                 : `${profile.username} hasn't posted any reviews yet.`}
             </p>
+            {isCurrentUser && (
+              <Button asChild className="bg-brand-teal hover:bg-brand-teal/90 text-white">
+                <Link to="/submit-review">
+                  Submit Your First Review
+                </Link>
+              </Button>
+            )}
           </div>
         )}
       </TabsContent>

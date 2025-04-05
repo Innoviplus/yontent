@@ -9,11 +9,11 @@ const ProfileNotFound = () => {
       <p className="text-gray-600 mb-6">
         The user you're looking for doesn't exist or has been removed.
       </p>
-      <Link to="/reviews">
-        <Button className="bg-brand-teal hover:bg-brand-teal/90">
+      <Button asChild className="bg-brand-teal hover:bg-brand-teal/90 text-white">
+        <Link to="/reviews">
           Back to Reviews
-        </Button>
-      </Link>
+        </Link>
+      </Button>
     </div>
   );
 };

@@ -21,12 +21,12 @@ const FeedHeader = ({ sortBy, onSortChange, isAuthenticated }: FeedHeaderProps) 
         <SortDropdown sortBy={sortBy} onSortChange={onSortChange} />
 
         {isAuthenticated && (
-          <Link to="/submit-review">
-            <Button className="bg-brand-teal hover:bg-brand-teal/90">
+          <Button asChild className="bg-brand-teal hover:bg-brand-teal/90 text-white">
+            <Link to="/submit-review">
               <Plus className="h-4 w-4 mr-2" />
               Add Review
-            </Button>
-          </Link>
+            </Link>
+          </Button>
         )}
       </div>
     </div>

@@ -2,6 +2,7 @@
 import { Link } from 'react-router-dom';
 import { Camera, Award, Star, ArrowUpRight } from 'lucide-react';
 import { useAuth } from '@/contexts/AuthContext';
+import { Button } from '@/components/ui/button';
 
 const HowItWorksSection = () => {
   const { user } = useAuth();
@@ -52,10 +53,12 @@ const HowItWorksSection = () => {
           </div>
           
           <div className="text-center mt-12">
-            <Link to={user ? "/missions" : "/register"} className="btn-primary inline-flex items-center gap-2">
-              <span>{user ? "Explore Missions" : "Get Started"}</span>
-              <ArrowUpRight className="h-4 w-4" />
-            </Link>
+            <Button asChild className="bg-brand-teal hover:bg-brand-teal/90 text-white font-medium inline-flex items-center gap-2">
+              <Link to={user ? "/missions" : "/register"}>
+                <span>{user ? "Explore Missions" : "Get Started"}</span>
+                <ArrowUpRight className="h-4 w-4" />
+              </Link>
+            </Button>
           </div>
         </div>
       </div>

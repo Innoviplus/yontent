@@ -1,5 +1,6 @@
 
 import { useAuth } from '@/contexts/AuthContext';
+import { Button } from '@/components/ui/button';
 
 const DashboardError = () => {
   const { signOut } = useAuth();
@@ -11,9 +12,9 @@ const DashboardError = () => {
         <p className="text-gray-600 mb-6">
           There was an error loading your profile. Please try again later.
         </p>
-        <button onClick={() => signOut()} className="btn-primary">
+        <Button onClick={() => signOut()} className="bg-brand-teal hover:bg-brand-teal/90 text-white">
           Logout
-        </button>
+        </Button>
       </div>
     </div>
   );

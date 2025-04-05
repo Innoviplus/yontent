@@ -14,17 +14,17 @@ const EmptyReviews = ({ isLoggedIn }: EmptyReviewsProps) => {
         Be the first to share your product experience with the community!
       </p>
       {isLoggedIn ? (
-        <Link to="/submit-review">
-          <Button className="bg-brand-teal hover:bg-brand-teal/90">
+        <Button asChild className="bg-brand-teal hover:bg-brand-teal/90 text-white">
+          <Link to="/submit-review">
             Submit Your First Review
-          </Button>
-        </Link>
+          </Link>
+        </Button>
       ) : (
-        <Link to="/login">
-          <Button className="bg-brand-teal hover:bg-brand-teal/90">
+        <Button asChild className="bg-brand-teal hover:bg-brand-teal/90 text-white">
+          <Link to="/login">
             Login to Submit Review
-          </Button>
-        </Link>
+          </Link>
+        </Button>
       )}
     </div>
   );
