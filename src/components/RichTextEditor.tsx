@@ -58,7 +58,7 @@ const RichTextEditor = ({
     },
     editorProps: {
       attributes: {
-        class: 'prose prose-sm sm:prose max-w-none focus:outline-none min-h-[150px] p-4',
+        class: 'prose prose-sm sm:prose max-w-none focus:outline-none min-h-[150px] p-4 whitespace-pre-wrap',
         placeholder: placeholder,
       },
     },
