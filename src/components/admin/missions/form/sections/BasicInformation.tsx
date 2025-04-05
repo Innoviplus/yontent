@@ -8,7 +8,7 @@ import {
   FormMessage 
 } from '@/components/ui/form';
 import { Input } from '@/components/ui/input';
-import RichTextEditor from '@/components/RichTextEditor';
+import { Textarea } from '@/components/ui/textarea';
 import { 
   Select,
   SelectContent,
@@ -48,10 +48,10 @@ const BasicInformation = ({ form }: BasicInformationProps) => {
           <FormItem>
             <FormLabel>Description</FormLabel>
             <FormControl>
-              <RichTextEditor 
-                value={field.value}
-                onChange={field.onChange}
+              <Textarea 
+                {...field}
                 placeholder="Enter mission description"
+                className="min-h-[120px]"
               />
             </FormControl>
             <FormMessage />

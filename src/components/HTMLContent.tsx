@@ -7,20 +7,23 @@ interface HTMLContentProps {
 }
 
 const HTMLContent = ({ content, className = '' }: HTMLContentProps) => {
-  // Configure DOMPurify to allow style attributes for font sizes
+  // Basic sanitization configuration
   const sanitizeConfig = {
-    ALLOWED_TAGS: ['p', 'b', 'i', 'em', 'strong', 'a', 'h1', 'h2', 'h3', 'h4', 'h5', 'h6', 'ul', 'ol', 'li', 'span', 'div', 'br'],
-    ALLOWED_ATTR: ['href', 'target', 'rel', 'class', 'style'],
-    ADD_ATTR: ['style'],  // Explicitly add style attribute support
+    ALLOWED_TAGS: ['p', 'br', 'div'],
+    ALLOWED_ATTR: ['class'],
   };
   
   // Ensure content is sanitized before rendering
   const sanitizedContent = content ? DOMPurify.sanitize(content, sanitizeConfig) : '';
   
+  // Format text - replace line breaks with <br> tags for simple formatting
+  const formattedContent = sanitizedContent
+    .replace(/\n/g, '<br>');
+  
   return (
     <div 
-      className={`prose max-w-none whitespace-pre-wrap ${className}`} 
-      dangerouslySetInnerHTML={{ __html: sanitizedContent }} 
+      className={`whitespace-pre-wrap ${className}`} 
+      dangerouslySetInnerHTML={{ __html: formattedContent }} 
       style={{ wordBreak: 'break-word' }}
     />
   );

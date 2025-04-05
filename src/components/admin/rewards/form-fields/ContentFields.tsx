@@ -9,7 +9,7 @@ import {
 } from '@/components/ui/form';
 import { UseFormReturn } from 'react-hook-form';
 import { RewardFormData } from '../RewardFormSchema';
-import RichTextEditor from '@/components/RichTextEditor';
+import { Textarea } from '@/components/ui/textarea';
 
 interface ContentFieldsProps {
   form: UseFormReturn<RewardFormData>;
@@ -25,15 +25,15 @@ const ContentFields = ({ form }: ContentFieldsProps) => {
           <FormItem>
             <FormLabel>Redemption Details</FormLabel>
             <FormControl>
-              <RichTextEditor
+              <Textarea
+                {...field}
                 value={field.value || ''}
-                onChange={field.onChange}
                 placeholder="Enter redemption details here..."
+                className="min-h-[150px]"
               />
             </FormControl>
             <FormDescription>
-              This content will be displayed in the Redemption Details section. 
-              To add hyperlinks: select text, click the link button, enter URL, and click Set Link.
+              This content will be displayed in the Redemption Details section.
             </FormDescription>
             <FormMessage />
           </FormItem>
@@ -47,15 +47,15 @@ const ContentFields = ({ form }: ContentFieldsProps) => {
           <FormItem>
             <FormLabel>Terms & Conditions</FormLabel>
             <FormControl>
-              <RichTextEditor
+              <Textarea
+                {...field}
                 value={field.value || ''}
-                onChange={field.onChange}
                 placeholder="Enter terms and conditions here..."
+                className="min-h-[150px]"
               />
             </FormControl>
             <FormDescription>
               Terms and conditions for this reward.
-              To add hyperlinks: select text, click the link button, enter URL, and click Set Link.
             </FormDescription>
             <FormMessage />
           </FormItem>

@@ -8,7 +8,7 @@ import {
   FormLabel, 
   FormMessage 
 } from '@/components/ui/form';
-import RichTextEditor from '@/components/RichTextEditor';
+import { Textarea } from '@/components/ui/textarea';
 import { MissionFormData } from '../../MissionFormSchema';
 
 interface RichTextFormFieldProps {
@@ -36,17 +36,18 @@ const RichTextFormField = ({ name, label, placeholder }: RichTextFormFieldProps)
       control={form.control}
       name={name}
       render={({ field }) => {
-        // Ensure field.value is a string to avoid "undefined" being passed to the editor
-        const editorValue = typeof field.value === 'string' ? field.value : '';
+        // Ensure field.value is a string to avoid "undefined" being passed to the textarea
+        const textValue = typeof field.value === 'string' ? field.value : '';
         
         return (
           <FormItem>
             <FormLabel>{label}</FormLabel>
             <FormControl>
-              <RichTextEditor 
-                value={editorValue}
-                onChange={field.onChange}
+              <Textarea 
+                {...field}
+                value={textValue}
                 placeholder={placeholder}
+                className="min-h-[150px]"
               />
             </FormControl>
             <FormMessage />

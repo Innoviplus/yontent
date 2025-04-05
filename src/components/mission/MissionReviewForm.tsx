@@ -1,3 +1,4 @@
+
 import { useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { toast } from 'sonner';
@@ -9,7 +10,7 @@ import { useForm } from 'react-hook-form';
 import { z } from 'zod';
 import { zodResolver } from '@hookform/resolvers/zod';
 import ImageUpload from '@/components/review/ImageUpload';
-import RichTextEditor from '@/components/RichTextEditor';
+import { Textarea } from '@/components/ui/textarea';
 import { Loader2, Upload } from 'lucide-react';
 
 // Form schema
@@ -155,11 +156,10 @@ const MissionReviewForm = ({ mission, userId }: MissionReviewFormProps) => {
             <FormItem>
               <FormLabel>Review</FormLabel>
               <FormControl>
-                <RichTextEditor 
-                  value={field.value}
-                  onChange={field.onChange}
+                <Textarea 
+                  {...field}
                   placeholder="Share your experience with the product..."
-                  includeLink={false}
+                  className="min-h-[200px]"
                 />
               </FormControl>
               <FormMessage />
