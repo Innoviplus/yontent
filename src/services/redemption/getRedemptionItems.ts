@@ -34,7 +34,7 @@ export const getRedemptionItems = async (): Promise<RedemptionItem[]> => {
       is_active: item.is_active,
       terms_conditions: item.terms_conditions,
       redemption_details: item.redemption_details,
-      display_order: item.display_order || 0, // Add default value if it's null
+      display_order: item.display_order || 0, // Handle the display_order property
       // Cast string to union type
       redemption_type: (item.redemption_type === 'CASH' ? 'CASH' : 'GIFT_VOUCHER') as 'GIFT_VOUCHER' | 'CASH'
     }));
