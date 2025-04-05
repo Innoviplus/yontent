@@ -10,7 +10,7 @@ const HeroSection = () => {
   return (
     <section className="pt-28 pb-16 md:pt-40 md:pb-24 relative overflow-hidden">
       {/* Background */}
-      <div className="absolute inset-0 bg-gradient-to-br from-brand-teal/30 to-brand-slate/20">
+      <div className="absolute inset-0 bg-gradient-to-br from-brand-teal/20 to-brand-slate/10">
         <div className="absolute inset-0 opacity-15 bg-pattern-dots"></div>
       </div>
       
@@ -21,9 +21,9 @@ const HeroSection = () => {
             <span className="text-sm font-medium text-gray-700">Share reviews. Complete missions. Earn rewards.</span>
           </div>
           
-          <h1 className="heading-1 mb-6 animate-fade-up" style={{ animationDelay: '100ms' }}>
+          <h1 className="text-4xl md:text-5xl font-bold text-gray-900 mb-6 animate-fade-up" style={{ animationDelay: '100ms' }}>
             Get Rewarded for Your
-            <span className="text-brand-teal block">Honest Reviews</span>
+            <span className="text-brand-teal block mt-2">Honest Reviews</span>
           </h1>
           
           <p className="text-xl text-gray-600 mb-8 animate-fade-up" style={{ animationDelay: '200ms' }}>

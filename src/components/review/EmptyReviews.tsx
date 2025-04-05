@@ -9,7 +9,7 @@ interface EmptyReviewsProps {
 const EmptyReviews = ({ isLoggedIn }: EmptyReviewsProps) => {
   return (
     <div className="bg-white rounded-xl p-8 text-center shadow-subtle">
-      <h3 className="text-lg font-medium text-gray-900 mb-2">No reviews yet</h3>
+      <h3 className="text-xl font-semibold text-gray-900 mb-3">No reviews yet</h3>
       <p className="text-gray-600 mb-6">
         Be the first to share your product experience with the community!
       </p>

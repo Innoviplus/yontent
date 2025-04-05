@@ -1,6 +1,6 @@
 
 import { Link } from 'react-router-dom';
-import { Camera, Award, Star, ArrowUpRight } from 'lucide-react';
+import { Star, Users, Gift, ArrowUpRight } from 'lucide-react';
 import { useAuth } from '@/contexts/AuthContext';
 import { Button } from '@/components/ui/button';
 
@@ -12,42 +12,47 @@ const HowItWorksSection = () => {
       <div className="container mx-auto px-4 sm:px-6">
         <div className="max-w-4xl mx-auto">
           <div className="text-center mb-12">
-            <div className="chip chip-primary mb-3">Simple Process</div>
-            <h2 className="heading-2 mb-4">How Review Rewards Works</h2>
-            <p className="text-gray-600 max-w-2xl mx-auto">
+            <div className="inline-flex items-center gap-2 px-4 py-1.5 bg-brand-teal/10 rounded-full mb-3">
+              <span className="text-sm font-medium text-brand-teal">How It Works</span>
+            </div>
+            <h2 className="text-3xl font-bold mb-4">Turn Your Experiences Into Rewards</h2>
+            <p className="text-gray-600 max-w-2xl mx-auto text-lg">
               Our platform makes it easy to share your product experiences
               and get rewarded for your valuable feedback.
             </p>
           </div>
           
           <div className="grid md:grid-cols-3 gap-8">
-            <div className="bg-white rounded-xl p-6 shadow-card text-center hover:-translate-y-1 transition-transform duration-300">
-              <div className="bg-brand-teal/10 w-14 h-14 rounded-xl flex items-center justify-center mx-auto mb-4">
-                <Camera className="h-6 w-6 text-brand-teal" />
+            {/* Complete Missions */}
+            <div className="bg-white rounded-xl p-8 shadow-card text-center hover:-translate-y-1 transition-transform duration-300">
+              <div className="bg-indigo-100 w-16 h-16 rounded-xl flex items-center justify-center mx-auto mb-5">
+                <Star className="h-7 w-7 text-indigo-600" />
               </div>
-              <h3 className="text-lg font-semibold mb-2">Share Reviews</h3>
-              <p className="text-gray-600 text-sm">
-                Post honest reviews about products you've purchased, including photos and detailed feedback.
+              <h3 className="text-xl font-semibold mb-3">Complete Missions</h3>
+              <p className="text-gray-600">
+                Write reviews, create content, and complete tasks to earn points and rewards.
               </p>
             </div>
             
-            <div className="bg-white rounded-xl p-6 shadow-card text-center hover:-translate-y-1 transition-transform duration-300">
-              <div className="bg-brand-slate/10 w-14 h-14 rounded-xl flex items-center justify-center mx-auto mb-4">
-                <Award className="h-6 w-6 text-brand-slate" />
+            {/* Join Communities */}
+            <div className="bg-white rounded-xl p-8 shadow-card text-center hover:-translate-y-1 transition-transform duration-300">
+              <div className="bg-indigo-100 w-16 h-16 rounded-xl flex items-center justify-center mx-auto mb-5">
+                <Users className="h-7 w-7 text-indigo-600" />
               </div>
-              <h3 className="text-lg font-semibold mb-2">Complete Missions</h3>
-              <p className="text-gray-600 text-sm">
-                Take on missions like submitting receipts or reviewing specific product categories.
+              <h3 className="text-xl font-semibold mb-3">Join Communities</h3>
+              <p className="text-gray-600">
+                Get handpicked for exclusive brand communities and special opportunities.
               </p>
             </div>
             
-            <div className="bg-white rounded-xl p-6 shadow-card text-center hover:-translate-y-1 transition-transform duration-300">
-              <div className="bg-brand-teal/10 w-14 h-14 rounded-xl flex items-center justify-center mx-auto mb-4">
-                <Star className="h-6 w-6 text-brand-teal" />
+            {/* Redeem Rewards */}
+            <div className="bg-white rounded-xl p-8 shadow-card text-center hover:-translate-y-1 transition-transform duration-300">
+              <div className="bg-indigo-100 w-16 h-16 rounded-xl flex items-center justify-center mx-auto mb-5">
+                <Gift className="h-7 w-7 text-indigo-600" />
               </div>
-              <h3 className="text-lg font-semibold mb-2">Earn Rewards</h3>
-              <p className="text-gray-600 text-sm">
-                Accumulate points for each activity, which can be redeemed for exclusive perks and rewards.
+              <h3 className="text-xl font-semibold mb-3">Redeem Rewards</h3>
+              <p className="text-gray-600">
+                Convert points into gift cards, cash, or exclusive products.
               </p>
             </div>
           </div>

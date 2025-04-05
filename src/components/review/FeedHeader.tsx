@@ -15,7 +15,7 @@ interface FeedHeaderProps {
 const FeedHeader = ({ sortBy, onSortChange, isAuthenticated }: FeedHeaderProps) => {
   return (
     <div className="flex justify-between items-center mb-8">
-      <h1 className="text-2xl font-bold">Review Feed</h1>
+      <h1 className="text-3xl font-bold text-gray-900">Review Feed</h1>
       
       <div className="flex items-center gap-4">
         <SortDropdown sortBy={sortBy} onSortChange={onSortChange} />
