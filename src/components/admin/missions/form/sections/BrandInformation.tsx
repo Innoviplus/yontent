@@ -11,7 +11,7 @@ import { Input } from '@/components/ui/input';
 import { Button } from '@/components/ui/button';
 import { ImageIcon, Upload } from 'lucide-react';
 import { MissionFormData } from '../../MissionFormSchema';
-import { useMissionFormFields } from '../fields/MissionFormFields';
+import { useRef } from 'react';
 
 interface BrandInformationProps {
   form: ReturnType<typeof useFormContext<MissionFormData>>;
@@ -28,12 +28,18 @@ const BrandInformation = ({
   bannerImageFile, 
   setBannerImageFile 
 }: BrandInformationProps) => {
-  const { merchantLogoRef, bannerImageRef, handleFileChange } = useMissionFormFields({
-    merchantLogoFile,
-    setMerchantLogoFile,
-    bannerImageFile,
-    setBannerImageFile
-  });
+  // Create the refs and handler functions directly in this component
+  const merchantLogoRef = useRef<HTMLInputElement>(null);
+  const bannerImageRef = useRef<HTMLInputElement>(null);
+
+  const handleFileChange = (
+    e: React.ChangeEvent<HTMLInputElement>, 
+    setFile: React.Dispatch<React.SetStateAction<File | null>>
+  ) => {
+    if (e.target.files && e.target.files[0]) {
+      setFile(e.target.files[0]);
+    }
+  };
 
   return (
     <div className="space-y-4">
