@@ -18,11 +18,11 @@ const AdditionalDetails = ({ form }: AdditionalDetailsProps) => {
   useEffect(() => {
     // Log the form values whenever they change to help with debugging
     console.log('Form rich text values:', {
-      requirementDescription: form.getValues('requirementDescription'),
-      termsConditions: form.getValues('termsConditions'),
-      completionSteps: form.getValues('completionSteps'),
-      productDescription: form.getValues('productDescription'),
-      faqContent: form.getValues('faqContent')
+      requirementDescription: form.getValues('requirementDescription')?.substring(0, 50),
+      termsConditions: form.getValues('termsConditions')?.substring(0, 50),
+      completionSteps: form.getValues('completionSteps')?.substring(0, 50),
+      productDescription: form.getValues('productDescription')?.substring(0, 50),
+      faqContent: form.getValues('faqContent')?.substring(0, 50)
     });
   }, [form]);
 

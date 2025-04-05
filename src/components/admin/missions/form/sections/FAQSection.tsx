@@ -1,10 +1,19 @@
 
 import { useFormContext } from 'react-hook-form';
+import { useEffect } from 'react';
 import { MissionFormData } from '../../MissionFormSchema';
 import RichTextFormField from '../fields/RichTextFormField';
 
 const FAQSection = () => {
   const form = useFormContext<MissionFormData>();
+  
+  // Add debugging to see if faqContent is available
+  useEffect(() => {
+    console.log('FAQ Section initialized with content:', {
+      faqContentPreview: form.getValues('faqContent')?.substring(0, 100),
+      hasFAQContent: !!form.getValues('faqContent')
+    });
+  }, [form]);
   
   return (
     <div className="space-y-4 p-4 border rounded-lg bg-gray-50">

@@ -24,7 +24,7 @@ const RichTextEditor = ({
   // Reference to track if content was manually set to prevent update loops
   const contentUpdateSourceRef = useRef<'external' | 'internal' | null>(null);
   // Reference to last value received from props to avoid unnecessary updates
-  const lastValueRef = useRef<string>(value);
+  const lastValueRef = useRef<string>(value || '');
 
   const editor = useEditor({
     extensions: [
@@ -41,7 +41,7 @@ const RichTextEditor = ({
         validate: href => /^https?:\/\//.test(href),
       }),
     ],
-    content: value,
+    content: value || '',
     onUpdate: ({ editor }) => {
       contentUpdateSourceRef.current = 'internal';
       const newContent = editor.getHTML();
@@ -56,14 +56,28 @@ const RichTextEditor = ({
     },
   });
 
+  // Log initial value for debugging
+  useEffect(() => {
+    console.log('RichTextEditor initialized with value:', { 
+      valueLength: value?.length || 0,
+      valuePreview: value?.substring(0, 100),
+      isEmpty: !value
+    });
+  }, []);
+
   // Sync content from props to editor, but only if it's different from last known value
   // and wasn't just updated internally
   useEffect(() => {
     if (editor && value !== lastValueRef.current && contentUpdateSourceRef.current !== 'internal') {
-      console.log('Updating editor content from props:', { value });
+      console.log('Updating editor content from props:', { 
+        valueLength: value?.length || 0,
+        valuePreview: value?.substring(0, 100),
+        lastValueLength: lastValueRef.current?.length || 0
+      });
+      
       contentUpdateSourceRef.current = 'external';
-      editor.commands.setContent(value, false);
-      lastValueRef.current = value;
+      editor.commands.setContent(value || '', false);
+      lastValueRef.current = value || '';
     }
     
     // Reset source flag after each update cycle

@@ -1,5 +1,6 @@
 
 import { useFormContext } from 'react-hook-form';
+import { useEffect } from 'react';
 import { 
   FormControl, 
   FormField, 
@@ -19,6 +20,15 @@ interface RichTextFormFieldProps {
 const RichTextFormField = ({ name, label, placeholder }: RichTextFormFieldProps) => {
   const form = useFormContext<MissionFormData>();
   
+  // Add debugging to see the field value
+  useEffect(() => {
+    console.log(`RichTextFormField "${name}" initialized:`, {
+      value: form.getValues(name),
+      valuePreview: form.getValues(name)?.substring(0, 100),
+      hasValue: !!form.getValues(name)
+    });
+  }, [form, name]);
+  
   return (
     <FormField
       control={form.control}
@@ -28,7 +38,7 @@ const RichTextFormField = ({ name, label, placeholder }: RichTextFormFieldProps)
           <FormLabel>{label}</FormLabel>
           <FormControl>
             <RichTextEditor 
-              value={field.value ? String(field.value) : ''}
+              value={field.value || ''}
               onChange={field.onChange}
               placeholder={placeholder}
             />
