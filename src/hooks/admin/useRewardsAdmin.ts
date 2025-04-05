@@ -23,6 +23,7 @@ export const useRewardsAdmin = () => {
       
       const typedRewards: RedemptionItem[] = (data || []).map(item => ({
         ...item,
+        display_order: item.display_order || 0, // Provide default value
         redemption_type: (item.redemption_type === 'CASH' ? 'CASH' : 'GIFT_VOUCHER') as 'GIFT_VOUCHER' | 'CASH'
       }));
       
