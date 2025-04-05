@@ -22,10 +22,12 @@ const RichTextFormField = ({ name, label, placeholder }: RichTextFormFieldProps)
   
   // Add debugging to see the field value
   useEffect(() => {
+    const fieldValue = form.getValues(name);
     console.log(`RichTextFormField "${name}" initialized:`, {
-      value: form.getValues(name),
-      valuePreview: form.getValues(name)?.substring(0, 100),
-      hasValue: !!form.getValues(name)
+      value: fieldValue,
+      valuePreview: typeof fieldValue === 'string' ? fieldValue.substring(0, 100) : 'not a string',
+      hasValue: !!fieldValue,
+      valueType: typeof fieldValue
     });
   }, [form, name]);
   
@@ -33,19 +35,24 @@ const RichTextFormField = ({ name, label, placeholder }: RichTextFormFieldProps)
     <FormField
       control={form.control}
       name={name}
-      render={({ field }) => (
-        <FormItem>
-          <FormLabel>{label}</FormLabel>
-          <FormControl>
-            <RichTextEditor 
-              value={field.value || ''}
-              onChange={field.onChange}
-              placeholder={placeholder}
-            />
-          </FormControl>
-          <FormMessage />
-        </FormItem>
-      )}
+      render={({ field }) => {
+        // Ensure field.value is a string to avoid "undefined" being passed to the editor
+        const editorValue = typeof field.value === 'string' ? field.value : '';
+        
+        return (
+          <FormItem>
+            <FormLabel>{label}</FormLabel>
+            <FormControl>
+              <RichTextEditor 
+                value={editorValue}
+                onChange={field.onChange}
+                placeholder={placeholder}
+              />
+            </FormControl>
+            <FormMessage />
+          </FormItem>
+        );
+      }}
     />
   );
 };
