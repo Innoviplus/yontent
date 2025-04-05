@@ -28,7 +28,7 @@ const RichTextEditor = ({
 
   // Configure toolbar based on the simpleToolbar prop
   const fullToolbar = [
-    [{ 'font': [] }, { 'size': ['small', false, 'large', 'huge'] }],
+    [{ 'font': [] }, { 'size': ['8px', '9px', '10px', '11px', '12px', '14px', '16px', '18px', '20px', '24px', '30px', '36px'] }],
     [{ 'header': [1, 2, 3, 4, 5, 6, false] }],
     ['bold', 'italic', 'underline', 'strike'],
     [{ 'color': [] }, { 'background': [] }],
@@ -64,6 +64,127 @@ const RichTextEditor = ({
   ];
 
   const formats = simpleToolbar ? basicFormats : fullFormats;
+
+  // Add custom CSS to style the editor when component mounts
+  useEffect(() => {
+    if (mounted) {
+      // Add size classes for the specified pixel sizes
+      const style = document.createElement('style');
+      style.innerHTML = `
+        .ql-snow .ql-picker.ql-size .ql-picker-label[data-value="8px"]::before,
+        .ql-snow .ql-picker.ql-size .ql-picker-item[data-value="8px"]::before {
+          content: '8px';
+          font-size: 8px;
+        }
+        .ql-snow .ql-picker.ql-size .ql-picker-label[data-value="9px"]::before,
+        .ql-snow .ql-picker.ql-size .ql-picker-item[data-value="9px"]::before {
+          content: '9px';
+          font-size: 9px;
+        }
+        .ql-snow .ql-picker.ql-size .ql-picker-label[data-value="10px"]::before,
+        .ql-snow .ql-picker.ql-size .ql-picker-item[data-value="10px"]::before {
+          content: '10px';
+          font-size: 10px;
+        }
+        .ql-snow .ql-picker.ql-size .ql-picker-label[data-value="11px"]::before,
+        .ql-snow .ql-picker.ql-size .ql-picker-item[data-value="11px"]::before {
+          content: '11px';
+          font-size: 11px;
+        }
+        .ql-snow .ql-picker.ql-size .ql-picker-label[data-value="12px"]::before,
+        .ql-snow .ql-picker.ql-size .ql-picker-item[data-value="12px"]::before {
+          content: '12px';
+          font-size: 12px;
+        }
+        .ql-snow .ql-picker.ql-size .ql-picker-label[data-value="14px"]::before,
+        .ql-snow .ql-picker.ql-size .ql-picker-item[data-value="14px"]::before {
+          content: '14px';
+          font-size: 14px;
+        }
+        .ql-snow .ql-picker.ql-size .ql-picker-label[data-value="16px"]::before,
+        .ql-snow .ql-picker.ql-size .ql-picker-item[data-value="16px"]::before {
+          content: '16px';
+          font-size: 16px;
+        }
+        .ql-snow .ql-picker.ql-size .ql-picker-label[data-value="18px"]::before,
+        .ql-snow .ql-picker.ql-size .ql-picker-item[data-value="18px"]::before {
+          content: '18px';
+          font-size: 18px;
+        }
+        .ql-snow .ql-picker.ql-size .ql-picker-label[data-value="20px"]::before,
+        .ql-snow .ql-picker.ql-size .ql-picker-item[data-value="20px"]::before {
+          content: '20px';
+          font-size: 20px;
+        }
+        .ql-snow .ql-picker.ql-size .ql-picker-label[data-value="24px"]::before,
+        .ql-snow .ql-picker.ql-size .ql-picker-item[data-value="24px"]::before {
+          content: '24px';
+          font-size: 24px;
+        }
+        .ql-snow .ql-picker.ql-size .ql-picker-label[data-value="30px"]::before,
+        .ql-snow .ql-picker.ql-size .ql-picker-item[data-value="30px"]::before {
+          content: '30px';
+          font-size: 30px;
+        }
+        .ql-snow .ql-picker.ql-size .ql-picker-label[data-value="36px"]::before,
+        .ql-snow .ql-picker.ql-size .ql-picker-item[data-value="36px"]::before {
+          content: '36px';
+          font-size: 36px;
+        }
+        
+        /* Apply actual sizes to the editor text */
+        .ql-size-8px {
+          font-size: 8px;
+        }
+        .ql-size-9px {
+          font-size: 9px;
+        }
+        .ql-size-10px {
+          font-size: 10px;
+        }
+        .ql-size-11px {
+          font-size: 11px;
+        }
+        .ql-size-12px {
+          font-size: 12px;
+        }
+        .ql-size-14px {
+          font-size: 14px;
+        }
+        .ql-size-16px {
+          font-size: 16px;
+        }
+        .ql-size-18px {
+          font-size: 18px;
+        }
+        .ql-size-20px {
+          font-size: 20px;
+        }
+        .ql-size-24px {
+          font-size: 24px;
+        }
+        .ql-size-30px {
+          font-size: 30px;
+        }
+        .ql-size-36px {
+          font-size: 36px;
+        }
+      `;
+      document.head.appendChild(style);
+      
+      // Register custom size format
+      const Quill = (ReactQuill as any).Quill;
+      if (Quill) {
+        const SizeStyle = Quill.import('attributors/style/size');
+        SizeStyle.whitelist = ['8px', '9px', '10px', '11px', '12px', '14px', '16px', '18px', '20px', '24px', '30px', '36px'];
+        Quill.register(SizeStyle, true);
+      }
+
+      return () => {
+        document.head.removeChild(style);
+      };
+    }
+  }, [mounted]);
 
   if (!mounted) {
     return (
