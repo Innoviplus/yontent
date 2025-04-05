@@ -96,7 +96,7 @@ const TransactionsTab = () => {
 
   return (
     <div className="space-y-4">
-      {transactions.map((transaction) => (
+      {transactions && transactions.map((transaction) => (
         <div 
           key={transaction.id}
           className="flex items-center justify-between p-4 bg-white rounded-lg border border-gray-100 hover:shadow-sm transition-shadow"
@@ -108,8 +108,19 @@ const TransactionsTab = () => {
             </span>
           </div>
           
-          <div className={`font-semibold ${transaction.type === 'EARNED' ? 'text-green-600' : 'text-red-600'}`}>
-            {transaction.type === 'EARNED' ? '+' : '-'}{transaction.amount} points
+          <div className={`font-semibold ${
+            // Always display "Welcome Bonus" as positive (green)
+            transaction.description === 'Welcome Bonus' || transaction.type === 'EARNED' 
+              ? 'text-green-600' 
+              : 'text-red-600'
+          }`}>
+            {
+              // Always show + for "Welcome Bonus" or earned type transactions
+              (transaction.description === 'Welcome Bonus' || transaction.type === 'EARNED') 
+                ? '+' 
+                : '-'
+            }
+            {transaction.amount} points
           </div>
         </div>
       ))}
