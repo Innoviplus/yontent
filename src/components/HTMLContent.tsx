@@ -14,6 +14,7 @@ const HTMLContent = ({ content, className = '' }: HTMLContentProps) => {
     <div 
       className={`prose max-w-none whitespace-pre-wrap ${className}`} 
       dangerouslySetInnerHTML={{ __html: sanitizedContent }} 
+      style={{ wordBreak: 'break-word' }}
     />
   );
 };
