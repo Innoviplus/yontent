@@ -14,6 +14,7 @@ export const useRewardsAdmin = () => {
       const { data, error } = await supabase
         .from('redemption_items')
         .select('*')
+        .order('display_order', { ascending: true })
         .order('points_required', { ascending: true });
       
       if (error) {
@@ -42,6 +43,13 @@ export const useRewardsAdmin = () => {
     try {
       console.log('Adding reward:', reward);
       
+      // Get the highest display order to put the new item at the end
+      let displayOrder = 0;
+      if (rewards.length > 0) {
+        const maxOrder = Math.max(...rewards.map(r => r.display_order || 0));
+        displayOrder = maxOrder + 10; // Use increments of 10 to leave room for manual adjustments
+      }
+      
       // Ensure the reward has all required fields
       const rewardData: Omit<RedemptionItem, 'id'> = {
         name: reward.name,
@@ -52,7 +60,8 @@ export const useRewardsAdmin = () => {
         is_active: reward.is_active,
         terms_conditions: reward.terms_conditions,
         redemption_details: reward.redemption_details,
-        redemption_type: reward.redemption_type
+        redemption_type: reward.redemption_type,
+        display_order: displayOrder
       };
       
       const { data, error } = await supabase
@@ -90,6 +99,7 @@ export const useRewardsAdmin = () => {
       if (updates.terms_conditions !== undefined) validUpdates.terms_conditions = updates.terms_conditions;
       if (updates.redemption_details !== undefined) validUpdates.redemption_details = updates.redemption_details;
       if (updates.redemption_type !== undefined) validUpdates.redemption_type = updates.redemption_type;
+      if (updates.display_order !== undefined) validUpdates.display_order = updates.display_order;
       
       const { data, error } = await supabase
         .from('redemption_items')
@@ -103,7 +113,12 @@ export const useRewardsAdmin = () => {
       }
       
       setRewards(prev => prev.map(item => item.id === id ? (data as RedemptionItem) : item));
-      toast.success('Reward updated successfully');
+      
+      // Refresh rewards data to ensure correct ordering after a display_order update
+      if (updates.display_order !== undefined) {
+        await fetchRewards();
+      }
+      
       return true;
     } catch (error) {
       console.error('Error updating reward:', error);

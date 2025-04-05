@@ -11,6 +11,7 @@ export const getRedemptionItems = async (): Promise<RedemptionItem[]> => {
       .from('redemption_items')
       .select('*')
       .eq('is_active', true)
+      .order('display_order', { ascending: true })
       .order('points_required', { ascending: true });
     
     if (error) {
@@ -33,6 +34,7 @@ export const getRedemptionItems = async (): Promise<RedemptionItem[]> => {
       is_active: item.is_active,
       terms_conditions: item.terms_conditions,
       redemption_details: item.redemption_details,
+      display_order: item.display_order,
       // Cast string to union type
       redemption_type: (item.redemption_type === 'CASH' ? 'CASH' : 'GIFT_VOUCHER') as 'GIFT_VOUCHER' | 'CASH'
     }));

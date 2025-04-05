@@ -10,4 +10,5 @@ export interface RedemptionItem {
   terms_conditions?: string;
   redemption_details?: string;
   redemption_type?: 'GIFT_VOUCHER' | 'CASH';
+  display_order?: number;
 }

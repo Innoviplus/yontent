@@ -3,8 +3,7 @@ import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@
 import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
 import { Switch } from '@/components/ui/switch';
-import { Pencil, Trash2, Gift, Wallet } from 'lucide-react';
-import { toast } from 'sonner';
+import { Pencil, Trash2, Gift, Wallet, Copy, ArrowUp, ArrowDown } from 'lucide-react';
 import { RedemptionItem } from '@/types/redemption';
 
 interface RewardListProps {
@@ -12,13 +11,17 @@ interface RewardListProps {
   onEdit: (reward: RedemptionItem) => void;
   onDelete: (id: string) => void;
   onToggleStatus: (reward: RedemptionItem) => Promise<boolean>;
+  onDuplicate: (reward: RedemptionItem) => void;
+  onUpdateOrder: (id: string, direction: 'up' | 'down') => Promise<boolean>;
 }
 
 const RewardList = ({ 
   rewards, 
   onEdit, 
   onDelete, 
-  onToggleStatus 
+  onToggleStatus,
+  onDuplicate,
+  onUpdateOrder
 }: RewardListProps) => {
   
   const getRedemptionTypeIcon = (type?: string) => {
@@ -47,7 +50,8 @@ const RewardList = ({
               <TableHead className="w-[100px]">Points</TableHead>
               <TableHead className="w-[100px]">Type</TableHead>
               <TableHead className="w-[100px]">Status</TableHead>
-              <TableHead className="w-[120px] text-right">Actions</TableHead>
+              <TableHead className="w-[80px]">Order</TableHead>
+              <TableHead className="w-[160px] text-right">Actions</TableHead>
             </TableRow>
           </TableHeader>
           <TableBody>
@@ -91,19 +95,49 @@ const RewardList = ({
                     </Badge>
                   </div>
                 </TableCell>
+                <TableCell>
+                  <div className="flex flex-col gap-1">
+                    <Button 
+                      variant="outline" 
+                      size="sm" 
+                      onClick={() => onUpdateOrder(reward.id, 'up')}
+                      className="h-7 w-7 p-0"
+                    >
+                      <ArrowUp className="h-4 w-4" />
+                    </Button>
+                    <Button 
+                      variant="outline" 
+                      size="sm" 
+                      onClick={() => onUpdateOrder(reward.id, 'down')}
+                      className="h-7 w-7 p-0"
+                    >
+                      <ArrowDown className="h-4 w-4" />
+                    </Button>
+                  </div>
+                </TableCell>
                 <TableCell className="text-right">
                   <div className="flex justify-end gap-2">
                     <Button 
                       variant="outline" 
                       size="sm" 
                       onClick={() => onEdit(reward)}
+                      title="Edit reward"
                     >
                       <Pencil className="h-4 w-4" />
                     </Button>
                     <Button 
                       variant="outline" 
                       size="sm" 
+                      onClick={() => onDuplicate(reward)}
+                      title="Duplicate reward"
+                    >
+                      <Copy className="h-4 w-4" />
+                    </Button>
+                    <Button 
+                      variant="outline" 
+                      size="sm" 
                       onClick={() => onDelete(reward.id)}
+                      title="Delete reward"
                     >
                       <Trash2 className="h-4 w-4" />
                     </Button>

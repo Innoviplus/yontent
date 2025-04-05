@@ -1,8 +1,11 @@
+
 import React from 'react';
 import HTMLContent from '@/components/HTMLContent';
+
 interface TermsAndConditionsProps {
   termsConditions?: string;
 }
+
 const TermsAndConditions: React.FC<TermsAndConditionsProps> = ({
   termsConditions
 }) => {
@@ -20,9 +23,15 @@ const TermsAndConditions: React.FC<TermsAndConditionsProps> = ({
       <li>Rewards are non-transferable and cannot be sold or transferred to another account.</li>
     </ol>
   `;
-  return <div className="bg-white rounded-lg p-6 shadow-sm">
-      <h2 className="font-bold mb-4 text-xs">Terms & Conditions</h2>
-      <HTMLContent content={termsConditions || defaultTerms} className="text-gray-700 max-w-none" />
-    </div>;
+
+  return (
+    <div className="bg-white rounded-lg p-4 md:p-6 shadow-sm">
+      <h2 className="font-bold mb-3 text-xs md:text-sm">Terms & Conditions</h2>
+      <div className="max-h-60 md:max-h-80 overflow-y-auto pr-2">
+        <HTMLContent content={termsConditions || defaultTerms} className="text-gray-700 text-xs md:text-sm" />
+      </div>
+    </div>
+  );
 };
+
 export default TermsAndConditions;
