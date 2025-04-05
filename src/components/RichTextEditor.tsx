@@ -4,6 +4,7 @@ import { useEditor, EditorContent } from '@tiptap/react';
 import StarterKit from '@tiptap/starter-kit';
 import Link from '@tiptap/extension-link';
 import Underline from '@tiptap/extension-underline';
+import TextStyle from '@tiptap/extension-text-style';
 import EditorToolbar from './editor/EditorToolbar';
 import useLinkHandling from './editor/useLinkHandling';
 
@@ -36,6 +37,7 @@ const RichTextEditor = ({
         },
       }),
       Underline,
+      TextStyle,
       Link.configure({
         openOnClick: false,
         HTMLAttributes: {

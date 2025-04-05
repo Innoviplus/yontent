@@ -2,6 +2,7 @@
 import { Bold, Italic, Underline, List, ListOrdered, Undo, Redo } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import LinkPopover from './LinkPopover';
+import FontSizeSelector from './FontSizeSelector';
 
 interface EditorToolbarProps {
   editor: any;
@@ -53,6 +54,9 @@ const EditorToolbar = ({
       >
         <Underline className="h-4 w-4" />
       </Button>
+      
+      <FontSizeSelector editor={editor} />
+      
       <Button
         variant="ghost"
         size="sm"
