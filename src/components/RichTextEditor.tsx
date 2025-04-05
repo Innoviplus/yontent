@@ -37,8 +37,12 @@ const RichTextEditor = ({
         },
       }),
       Underline,
-      // TextStyle extension without the invalid 'types' property
-      TextStyle,
+      // Properly configured TextStyle extension for font sizes
+      TextStyle.configure({
+        HTMLAttributes: {
+          class: 'text-style',
+        },
+      }),
       Link.configure({
         openOnClick: false,
         HTMLAttributes: {

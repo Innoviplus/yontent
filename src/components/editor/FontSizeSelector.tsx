@@ -32,11 +32,11 @@ const FontSizeSelector = ({ editor }: FontSizeSelectorProps) => {
   if (!editor) return null;
 
   const setFontSize = (fontSize: string) => {
-    // Focus the editor and clear existing selection if needed
+    // Make sure we have focus before applying the font size
     editor.chain().focus();
     
-    // Apply the font size using inline style
-    editor.chain().focus().setMark('textStyle', { fontSize }).run();
+    // Apply the font size using TextStyle mark
+    editor.chain().setMark('textStyle', { fontSize }).run();
     
     console.log(`Setting font size to: ${fontSize}`);
   };
