@@ -75,6 +75,12 @@ export const useEditReview = () => {
     fetchReview();
   }, [id, user, navigate, form, setExistingImages, setImagePreviewUrls]);
   
+  // Handle image reordering
+  const reorderImages = (newOrder: string[]) => {
+    setExistingImages(newOrder);
+    setImagePreviewUrls(newOrder);
+  };
+  
   // Submit the updated review
   const onSubmit = async (values: ReviewFormValues) => {
     if (!user || !id) {
@@ -117,6 +123,7 @@ export const useEditReview = () => {
     user,
     onSubmit,
     handleImageSelection,
-    removeImage
+    removeImage,
+    reorderImages
   };
 };

@@ -1,3 +1,4 @@
+
 import { useState, useEffect } from 'react';
 import { useSearchParams, useNavigate } from 'react-router-dom';
 import { toast } from 'sonner';
@@ -65,6 +66,12 @@ export const useSubmitReview = () => {
     
     fetchReview();
   }, [reviewId, user, form, setExistingImages, setImagePreviewUrls]);
+  
+  // Handle image reordering
+  const reorderImages = (newOrder: string[]) => {
+    setExistingImages(newOrder);
+    setImagePreviewUrls(newOrder);
+  };
   
   // Custom image selection handler that sets error if too many files are selected
   const handleImageSelectionWithValidation = (files: FileList | null) => {
@@ -168,6 +175,7 @@ export const useSubmitReview = () => {
     saveDraft,
     handleImageSelection: handleImageSelectionWithValidation,
     removeImage,
+    reorderImages,
     setImageError
   };
 };

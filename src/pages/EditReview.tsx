@@ -20,7 +20,8 @@ const EditReview = () => {
     user,
     onSubmit,
     handleImageSelection,
-    removeImage
+    removeImage,
+    reorderImages
   } = useEditReview();
 
   if (loading) {
@@ -55,6 +56,7 @@ const EditReview = () => {
                   imagePreviewUrls={imagePreviewUrls}
                   onFileSelect={handleImageSelection}
                   onRemoveImage={removeImage}
+                  onReorderImages={reorderImages}
                   error={imageError}
                   uploading={uploading}
                 />

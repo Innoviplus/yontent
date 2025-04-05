@@ -21,6 +21,7 @@ const SubmitReview = () => {
     saveDraft,
     handleImageSelection,
     removeImage,
+    reorderImages,
     setImageError
   } = useSubmitReview();
 
@@ -53,6 +54,7 @@ const SubmitReview = () => {
                     imagePreviewUrls={imagePreviewUrls}
                     onFileSelect={handleImageSelection}
                     onRemoveImage={removeImage}
+                    onReorderImages={reorderImages}
                     error={imageError}
                     uploading={uploading}
                   />
