@@ -1,12 +1,11 @@
-
 import React from 'react';
 import HTMLContent from '@/components/HTMLContent';
-
 interface TermsAndConditionsProps {
   termsConditions?: string;
 }
-
-const TermsAndConditions: React.FC<TermsAndConditionsProps> = ({ termsConditions }) => {
+const TermsAndConditions: React.FC<TermsAndConditionsProps> = ({
+  termsConditions
+}) => {
   // Default terms if none are provided
   const defaultTerms = `
     <p>By redeeming this reward, you agree to the following terms and conditions:</p>
@@ -21,16 +20,9 @@ const TermsAndConditions: React.FC<TermsAndConditionsProps> = ({ termsConditions
       <li>Rewards are non-transferable and cannot be sold or transferred to another account.</li>
     </ol>
   `;
-  
-  return (
-    <div className="bg-white rounded-lg p-6 shadow-sm">
-      <h2 className="text-xl font-bold mb-4">Terms & Conditions</h2>
-      <HTMLContent 
-        content={termsConditions || defaultTerms}
-        className="text-gray-700 max-w-none" 
-      />
-    </div>
-  );
+  return <div className="bg-white rounded-lg p-6 shadow-sm">
+      <h2 className="font-bold mb-4 text-xs">Terms & Conditions</h2>
+      <HTMLContent content={termsConditions || defaultTerms} className="text-gray-700 max-w-none" />
+    </div>;
 };
-
 export default TermsAndConditions;
