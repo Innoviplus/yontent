@@ -13,7 +13,7 @@ const MissionBanner = ({ mission }: MissionBannerProps) => {
   const isMobile = useIsMobile();
   
   return (
-    <div className="w-full bg-gray-100">
+    <div className="w-full bg-gray-100 pt-16 md:pt-20">
       <AspectRatio ratio={16/9} className="w-full">
         <div 
           className="w-full h-full bg-cover bg-center"
