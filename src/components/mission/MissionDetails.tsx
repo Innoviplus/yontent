@@ -3,6 +3,7 @@ import { Card, CardContent } from '@/components/ui/card';
 import { Mission } from '@/lib/types';
 import { Check, Gauge, Users } from 'lucide-react';
 import HTMLContent from '@/components/HTMLContent';
+import { formatNumber } from '@/lib/formatUtils';
 
 interface MissionDetailsProps {
   mission: Mission;
@@ -13,7 +14,14 @@ const MissionDetails = ({
 }: MissionDetailsProps) => {
   return <Card>
       <CardContent className="p-6">
-        <h2 className="text-xl font-semibold mb-3">Mission Details</h2>
+        <div className="flex justify-between items-center mb-3">
+          <h2 className="text-xl font-semibold">Mission Details</h2>
+          <div className="flex items-center text-brand-teal font-bold text-lg">
+            <img src="/lovable-uploads/87f7987e-62e4-4871-b384-8c77779df418.png" alt="Points" className="w-5 h-5 mr-1" />
+            <span>{formatNumber(mission.pointsReward)}</span>
+          </div>
+        </div>
+        
         <div className="text-gray-700 mb-6">
           <HTMLContent content={mission.description} />
         </div>
@@ -65,6 +73,13 @@ const MissionDetails = ({
               <li>Upload the receipt through our platform</li>
               <li>Our team will verify your submission</li>
             </ol>
+          </div>}
+          
+        {mission.faqContent && <div className="mb-6">
+            <h3 className="text-lg font-semibold mb-2">Frequently Asked Questions</h3>
+            <div className="p-4 bg-gray-50 rounded-lg">
+              <HTMLContent content={mission.faqContent} />
+            </div>
           </div>}
       </CardContent>
     </Card>;

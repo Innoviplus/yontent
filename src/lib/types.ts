@@ -71,6 +71,7 @@ export interface Mission {
   completionSteps?: string; // New field for "How To Complete This Mission"
   productDescription?: string; // New field for "About the product or service"
   productImages?: string[]; // New field for product images
+  faqContent?: string; // New field for FAQ content
 }
 
 // RedemptionRequest type updated with more fields for the UI

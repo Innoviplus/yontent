@@ -7,6 +7,7 @@ import TermsSection from './TermsSection';
 import CompletionStepsSection from './CompletionStepsSection';
 import ProductDescriptionSection from './ProductDescriptionSection';
 import ProductImagesSection from './ProductImagesSection';
+import FAQSection from './FAQSection';
 
 interface AdditionalDetailsProps {
   form: ReturnType<typeof useFormContext<MissionFormData>>;
@@ -20,7 +21,8 @@ const AdditionalDetails = ({ form }: AdditionalDetailsProps) => {
       requirementDescription: form.getValues('requirementDescription'),
       termsConditions: form.getValues('termsConditions'),
       completionSteps: form.getValues('completionSteps'),
-      productDescription: form.getValues('productDescription')
+      productDescription: form.getValues('productDescription'),
+      faqContent: form.getValues('faqContent')
     });
   }, [form]);
 
@@ -33,6 +35,7 @@ const AdditionalDetails = ({ form }: AdditionalDetailsProps) => {
       <CompletionStepsSection />
       <ProductDescriptionSection />
       <ProductImagesSection />
+      <FAQSection />
     </div>
   );
 };

@@ -48,13 +48,18 @@ const Login = () => {
   const onSubmit = async (values: LoginFormValues) => {
     try {
       const { error } = await signIn(values.email, values.password);
-      if (!error) {
-        toast.success("Login successful!");
-        console.log("Login successful, redirecting to:", from);
-        navigate(from, { replace: true });
+      if (error) {
+        // Display the specific error message from Supabase
+        toast.error(error.message || "Invalid email or password");
+        return;
       }
+      
+      toast.success("Login successful!");
+      console.log("Login successful, redirecting to:", from);
+      navigate(from, { replace: true });
     } catch (error) {
       console.error("Login error:", error);
+      toast.error("An error occurred during login. Please try again.");
     }
   };
 

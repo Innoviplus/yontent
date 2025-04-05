@@ -20,6 +20,7 @@ export const missionSchema = z.object({
   productDescription: z.string().optional(),
   productImages: z.array(z.string()).optional(),
   _productImageFiles: z.any().optional(), // temporary field to hold File objects
+  faqContent: z.string().optional(),
 });
 
 export type MissionFormData = z.infer<typeof missionSchema>;

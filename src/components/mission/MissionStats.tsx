@@ -1,3 +1,4 @@
+
 import { useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { Mission } from '@/lib/types';
@@ -86,12 +87,8 @@ const MissionStats = ({
   };
   return <Card className="overflow-hidden border-t-4 border-t-brand-teal">
       <CardContent className="p-6">
-        <div className="flex justify-between items-center mb-4">
+        <div className="mb-4">
           <h2 className="text-xl font-semibold">Mission - Key Information</h2>
-          <div className="flex items-center text-brand-teal font-bold text-lg">
-            <img src="/lovable-uploads/87f7987e-62e4-4871-b384-8c77779df418.png" alt="Points" className="w-5 h-5 mr-1" />
-            <span>{formatNumber(mission.pointsReward)}</span>
-          </div>
         </div>
         
         <div className="space-y-4">

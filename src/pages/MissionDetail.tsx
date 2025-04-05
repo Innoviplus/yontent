@@ -12,8 +12,6 @@ import MissionBanner from '@/components/mission/MissionBanner';
 import MissionDetails from '@/components/mission/MissionDetails';
 import MissionStats from '@/components/mission/MissionStats';
 import MissionTerms from '@/components/mission/MissionTerms';
-import CommunityEngagement from '@/components/mission/CommunityEngagement';
-import MissionTestimonials from '@/components/mission/MissionTestimonials';
 import MissionFAQ from '@/components/mission/MissionFAQ';
 import SupportSection from '@/components/mission/SupportSection';
 import MissionLoadingState from '@/components/mission/MissionLoadingState';
@@ -73,7 +71,8 @@ const MissionDetail = () => {
           updatedAt: new Date(data.updated_at),
           completionSteps: data.completion_steps || undefined,
           productDescription: data.product_description || undefined,
-          productImages: data.product_images || []
+          productImages: data.product_images || [],
+          faqContent: data.faq_content || undefined
         };
         
         setMission(transformedMission);
@@ -154,13 +153,11 @@ const MissionDetail = () => {
             {mission.termsConditions && (
               <MissionTerms termsConditions={mission.termsConditions} />
             )}
-            <MissionFAQ />
           </div>
           
           <div className="space-y-6">
             <SupportSection />
-            <MissionTestimonials />
-            <CommunityEngagement />
+            {!mission.faqContent && <MissionFAQ />}
           </div>
         </div>
       </div>
