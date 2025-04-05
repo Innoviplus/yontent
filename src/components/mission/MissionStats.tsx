@@ -126,7 +126,7 @@ const MissionStats = ({
           {mission.totalMaxSubmissions !== undefined && <div className="flex items-center">
               <Gauge className="h-5 w-5 text-gray-500 mr-3" />
               <div>
-                <p className="text-sm text-gray-500">Quota</p>
+                <p className="text-sm text-gray-500">Mission Quota</p>
                 <p className="font-medium">
                   {mission.totalMaxSubmissions} ({currentSubmissions === 1 ? '1 user' : `${currentSubmissions} users`} submitted)
                 </p>
