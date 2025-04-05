@@ -8,6 +8,7 @@ import { format } from 'date-fns';
 import { useState } from 'react';
 import { supabase } from '@/integrations/supabase/client';
 import { toast } from 'sonner';
+import HTMLContent from '@/components/HTMLContent';
 
 interface DraftReviewsTabProps {
   drafts: Review[];
@@ -104,9 +105,13 @@ const DraftReviewsTab = ({ drafts }: DraftReviewsTabProps) => {
                 </div>
                 
                 <div className="mt-3">
-                  <p className="line-clamp-2 text-gray-700">
-                    {review.content || 'No content'}
-                  </p>
+                  <div className="line-clamp-2 text-gray-700">
+                    {review.content ? (
+                      <HTMLContent content={review.content} />
+                    ) : (
+                      <span className="text-gray-400">No content</span>
+                    )}
+                  </div>
                 </div>
                 
                 <div className="mt-3 flex flex-wrap gap-2">
