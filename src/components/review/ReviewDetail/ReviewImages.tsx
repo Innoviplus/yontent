@@ -24,7 +24,7 @@ const ReviewImages = ({ images }: ReviewImagesProps) => {
   if (images.length === 0) return null;
 
   return (
-    <div className="relative h-96 bg-gray-100">
+    <div className="relative bg-gray-100" style={{ height: '400px' }}>
       <img 
         src={images[currentImageIndex]} 
         alt={`Review image ${currentImageIndex + 1}`} 
