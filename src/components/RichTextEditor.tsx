@@ -8,9 +8,16 @@ export interface RichTextEditorProps {
   onChange: (value: string) => void;
   placeholder?: string;
   className?: string;
+  simpleToolbar?: boolean;
 }
 
-const RichTextEditor = ({ value, onChange, placeholder, className = '' }: RichTextEditorProps) => {
+const RichTextEditor = ({ 
+  value, 
+  onChange, 
+  placeholder, 
+  className = '',
+  simpleToolbar = false
+}: RichTextEditorProps) => {
   const [mounted, setMounted] = useState(false);
   const quillRef = useRef<ReactQuill>(null);
 
@@ -19,20 +26,30 @@ const RichTextEditor = ({ value, onChange, placeholder, className = '' }: RichTe
     setMounted(true);
   }, []);
 
+  // Configure toolbar based on the simpleToolbar prop
+  const fullToolbar = [
+    [{ 'font': [] }, { 'size': ['small', false, 'large', 'huge'] }],
+    [{ 'header': [1, 2, 3, 4, 5, 6, false] }],
+    ['bold', 'italic', 'underline', 'strike'],
+    [{ 'color': [] }, { 'background': [] }],
+    [{ 'align': [] }],
+    [{ 'list': 'ordered' }, { 'list': 'bullet' }],
+    ['link', 'image'],
+    ['clean']
+  ];
+  
+  const basicToolbar = [
+    ['bold', 'italic', 'underline'],
+    ['link'],
+    ['clean']
+  ];
+
   const modules = {
-    toolbar: [
-      [{ 'font': [] }, { 'size': ['small', false, 'large', 'huge'] }],
-      [{ 'header': [1, 2, 3, 4, 5, 6, false] }],
-      ['bold', 'italic', 'underline', 'strike'],
-      [{ 'color': [] }, { 'background': [] }],
-      [{ 'align': [] }],
-      [{ 'list': 'ordered' }, { 'list': 'bullet' }],
-      ['link', 'image'],
-      ['clean']
-    ]
+    toolbar: simpleToolbar ? basicToolbar : fullToolbar
   };
 
-  const formats = [
+  // Format options based on toolbar
+  const fullFormats = [
     'font', 'size', 'header',
     'bold', 'italic', 'underline', 'strike',
     'color', 'background',
@@ -40,6 +57,13 @@ const RichTextEditor = ({ value, onChange, placeholder, className = '' }: RichTe
     'list', 'bullet',
     'link', 'image'
   ];
+
+  const basicFormats = [
+    'bold', 'italic', 'underline',
+    'link'
+  ];
+
+  const formats = simpleToolbar ? basicFormats : fullFormats;
 
   if (!mounted) {
     return (

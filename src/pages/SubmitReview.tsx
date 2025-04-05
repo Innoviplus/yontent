@@ -69,6 +69,7 @@ const SubmitReview = () => {
                             value={field.value}
                             onChange={field.onChange}
                             placeholder="Share your experience..."
+                            simpleToolbar={true}
                           />
                         </FormControl>
                         <FormMessage />
