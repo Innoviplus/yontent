@@ -3,29 +3,12 @@ import { useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { toast } from 'sonner';
 import { supabase } from '@/integrations/supabase/client';
-import { Mission } from '@/lib/types';
-import { Button } from '@/components/ui/button';
-import { Form, FormControl, FormField, FormItem, FormLabel, FormMessage } from '@/components/ui/form';
 import { useForm } from 'react-hook-form';
-import { z } from 'zod';
 import { zodResolver } from '@hookform/resolvers/zod';
-import ImageUpload from '@/components/review/ImageUpload';
-import { Textarea } from '@/components/ui/textarea';
-import { Loader2, Upload } from 'lucide-react';
+import { reviewSchema, ReviewFormValues } from './ReviewFormSchema';
+import { Mission } from '@/lib/types';
 
-// Form schema
-const reviewSchema = z.object({
-  content: z.string().min(20, { message: "Review must be at least 20 characters" }),
-});
-
-type ReviewFormValues = z.infer<typeof reviewSchema>;
-
-interface MissionReviewFormProps {
-  mission: Mission;
-  userId: string;
-}
-
-const MissionReviewForm = ({ mission, userId }: MissionReviewFormProps) => {
+export const useReviewSubmission = (mission: Mission, userId: string) => {
   const navigate = useNavigate();
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [selectedImages, setSelectedImages] = useState<File[]>([]);
@@ -138,65 +121,13 @@ const MissionReviewForm = ({ mission, userId }: MissionReviewFormProps) => {
     }
   };
 
-  return (
-    <Form {...form}>
-      <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-6">
-        <ImageUpload
-          imagePreviewUrls={imagePreviewUrls}
-          onFileSelect={handleImageSelection}
-          onRemoveImage={removeImage}
-          error={imageError}
-          uploading={isSubmitting}
-        />
-        
-        <FormField
-          control={form.control}
-          name="content"
-          render={({ field }) => (
-            <FormItem>
-              <FormLabel>Review</FormLabel>
-              <FormControl>
-                <Textarea 
-                  {...field}
-                  placeholder="Share your experience with the product..."
-                  className="min-h-[200px]"
-                />
-              </FormControl>
-              <FormMessage />
-            </FormItem>
-          )}
-        />
-        
-        <div className="flex justify-end space-x-4">
-          <Button 
-            variant="outline" 
-            onClick={() => navigate(`/mission/${mission.id}`)}
-            disabled={isSubmitting}
-            type="button"
-          >
-            Cancel
-          </Button>
-          <Button 
-            type="submit" 
-            disabled={isSubmitting}
-            className="bg-brand-teal hover:bg-brand-teal/90"
-          >
-            {isSubmitting ? (
-              <>
-                <Loader2 className="h-4 w-4 mr-2 animate-spin" />
-                Submitting...
-              </>
-            ) : (
-              <>
-                <Upload className="h-4 w-4 mr-2" />
-                Submit Review
-              </>
-            )}
-          </Button>
-        </div>
-      </form>
-    </Form>
-  );
+  return {
+    form,
+    isSubmitting,
+    imagePreviewUrls,
+    imageError,
+    handleImageSelection,
+    removeImage,
+    onSubmit
+  };
 };
-
-export default MissionReviewForm;

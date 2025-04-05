@@ -1,4 +1,3 @@
-
 import { useParams, Navigate } from 'react-router-dom';
 import { useAuth } from '@/contexts/AuthContext';
 import Navbar from '@/components/Navbar';
@@ -6,14 +5,13 @@ import { Card, CardContent, CardHeader } from '@/components/ui/card';
 import MissionSubmissionLoading from '@/components/mission/MissionSubmissionLoading';
 import MissionSubmissionError from '@/components/mission/MissionSubmissionError';
 import MissionRequirementsList from '@/components/mission/MissionRequirementsList';
-import MissionReviewForm from '@/components/mission/MissionReviewForm';
+import MissionReviewForm from '@/components/mission/review/MissionReviewForm';
 import { useMissionSubmission } from '@/hooks/mission/useMissionSubmission';
 
 const MissionReviewSubmission = () => {
   const { id } = useParams<{ id: string }>();
   const { user } = useAuth();
   
-  // Redirect if user is not logged in
   if (!user) {
     return <Navigate to="/login" replace />;
   }
