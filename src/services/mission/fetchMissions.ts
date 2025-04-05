@@ -45,7 +45,8 @@ export const fetchActiveMissions = async (): Promise<Mission[]> => {
       updatedAt: new Date(mission.updated_at),
       completionSteps: mission.completion_steps || undefined,
       productDescription: mission.product_description || undefined,
-      productImages: mission.product_images || []
+      productImages: mission.product_images || [],
+      faqContent: mission.faq_content || undefined
     }));
 
     console.log('Transformed missions:', missions);

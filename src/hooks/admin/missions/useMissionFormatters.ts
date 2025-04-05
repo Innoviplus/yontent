@@ -23,7 +23,8 @@ export const useMissionFormatters = () => {
     updatedAt: new Date(mission.updated_at),
     completionSteps: mission.completion_steps || undefined,
     productDescription: mission.product_description || undefined,
-    productImages: mission.product_images || []
+    productImages: mission.product_images || [],
+    faqContent: mission.faq_content || undefined
   });
 
   const formatMissionForDatabase = (mission: Omit<Mission, 'id' | 'createdAt' | 'updatedAt'>) => ({
@@ -43,7 +44,8 @@ export const useMissionFormatters = () => {
     expires_at: mission.expiresAt ? mission.expiresAt.toISOString() : null,
     completion_steps: mission.completionSteps,
     product_description: mission.productDescription,
-    product_images: mission.productImages || []
+    product_images: mission.productImages || [],
+    faq_content: mission.faqContent
   });
 
   const formatMissionUpdatesForDatabase = (updates: Partial<Mission>) => {
@@ -66,6 +68,7 @@ export const useMissionFormatters = () => {
     if (updates.completionSteps !== undefined) dbUpdates.completion_steps = updates.completionSteps;
     if (updates.productDescription !== undefined) dbUpdates.product_description = updates.productDescription;
     if (updates.productImages !== undefined) dbUpdates.product_images = updates.productImages;
+    if (updates.faqContent !== undefined) dbUpdates.faq_content = updates.faqContent;
     
     return dbUpdates;
   };

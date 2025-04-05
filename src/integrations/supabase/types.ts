@@ -54,6 +54,7 @@ export type Database = {
           created_at: string
           description: string
           expires_at: string | null
+          faq_content: string | null
           id: string
           max_submissions_per_user: number | null
           merchant_logo: string | null
@@ -76,6 +77,7 @@ export type Database = {
           created_at?: string
           description: string
           expires_at?: string | null
+          faq_content?: string | null
           id?: string
           max_submissions_per_user?: number | null
           merchant_logo?: string | null
@@ -98,6 +100,7 @@ export type Database = {
           created_at?: string
           description?: string
           expires_at?: string | null
+          faq_content?: string | null
           id?: string
           max_submissions_per_user?: number | null
           merchant_logo?: string | null

@@ -21,7 +21,7 @@ const MissionDetail = () => {
   const { id } = useParams<{ id: string }>();
   const { user } = useAuth();
   
-  // Return early BEFORE any hooks if user is not authenticated
+  // Return early BEFORE any hooks if user is not logged in
   if (!user) {
     return <Navigate to="/login" replace />;
   }
@@ -157,7 +157,7 @@ const MissionDetail = () => {
           
           <div className="space-y-6">
             <SupportSection />
-            {!mission.faqContent && <MissionFAQ />}
+            {mission.faqContent && <MissionFAQ faqContent={mission.faqContent} />}
           </div>
         </div>
       </div>

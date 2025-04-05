@@ -26,26 +26,6 @@ const MissionDetails = ({
           <HTMLContent content={mission.description} />
         </div>
         
-        {mission.requirementDescription && <div className="mb-6">
-            <h3 className="text-lg font-semibold mb-2">Requirements</h3>
-            <div className="p-4 bg-gray-50 rounded-lg">
-              <HTMLContent content={mission.requirementDescription} />
-            </div>
-          </div>}
-
-        {mission.productDescription && <div className="mb-6">
-            <h3 className="text-lg font-semibold mb-2">About the Product or Experience</h3>
-            <div className="p-4 bg-gray-50 rounded-lg">
-              <HTMLContent content={mission.productDescription} />
-              
-              {mission.productImages && mission.productImages.length > 0 && <div className="mt-4 grid grid-cols-2 md:grid-cols-3 gap-4">
-                  {mission.productImages.map((image, index) => <div key={index} className="relative aspect-square rounded-md overflow-hidden">
-                      <img src={image} alt={`Product image ${index + 1}`} className="object-cover w-full h-full" />
-                    </div>)}
-                </div>}
-            </div>
-          </div>}
-        
         {mission.completionSteps && <div className="mb-6">
             <h3 className="text-lg font-semibold mb-2">How To Complete This Mission</h3>
             <div className="p-4 bg-gray-50 rounded-lg">
@@ -75,10 +55,23 @@ const MissionDetails = ({
             </ol>
           </div>}
           
-        {mission.faqContent && <div className="mb-6">
-            <h3 className="text-lg font-semibold mb-2">Frequently Asked Questions</h3>
+        {mission.requirementDescription && <div className="mb-6">
+            <h3 className="text-lg font-semibold mb-2">Requirements</h3>
             <div className="p-4 bg-gray-50 rounded-lg">
-              <HTMLContent content={mission.faqContent} />
+              <HTMLContent content={mission.requirementDescription} />
+            </div>
+          </div>}
+
+        {mission.productDescription && <div className="mb-6">
+            <h3 className="text-lg font-semibold mb-2">About the Product or Experience</h3>
+            <div className="p-4 bg-gray-50 rounded-lg">
+              <HTMLContent content={mission.productDescription} />
+              
+              {mission.productImages && mission.productImages.length > 0 && <div className="mt-4 grid grid-cols-2 md:grid-cols-3 gap-4">
+                  {mission.productImages.map((image, index) => <div key={index} className="relative aspect-square rounded-md overflow-hidden">
+                      <img src={image} alt={`Product image ${index + 1}`} className="object-cover w-full h-full" />
+                    </div>)}
+                </div>}
             </div>
           </div>}
       </CardContent>
