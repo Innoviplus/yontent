@@ -26,6 +26,12 @@ const FontSizeSelector = ({ editor }: FontSizeSelectorProps) => {
   const setFontSize = (fontSize: string) => {
     // First remove any existing fontSize mark
     editor.chain().focus().unsetMark('textStyle').run();
+    
+    // Don't set a mark for default size
+    if (fontSize === 'default') {
+      return;
+    }
+    
     // Then apply the new fontSize
     editor.chain().focus().setMark('textStyle', { fontSize }).run();
   };
