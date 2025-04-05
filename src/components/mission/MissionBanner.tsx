@@ -12,7 +12,7 @@ const MissionBanner = ({ mission }: MissionBannerProps) => {
   const isMobile = useIsMobile();
   
   return (
-    <div className="w-full bg-gray-100 pt-16 md:pt-20">
+    <div className="w-full bg-gray-100 pt-20 md:pt-24">
       <div 
         className="w-full relative bg-cover bg-center"
         style={{ 

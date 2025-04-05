@@ -10,7 +10,7 @@ const RewardBanner: React.FC<RewardBannerProps> = ({ bannerImage, name }) => {
   if (!bannerImage) return null;
   
   return (
-    <div className="rounded-lg overflow-hidden h-full">
+    <div className="rounded-lg overflow-hidden h-full mt-4">
       <div 
         className="w-full bg-cover bg-center rounded-lg"
         style={{ 
