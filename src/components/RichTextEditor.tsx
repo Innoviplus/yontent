@@ -37,9 +37,8 @@ const RichTextEditor = ({
         },
       }),
       Underline,
-      TextStyle.configure({
-        types: ['textStyle'],
-      }),
+      // TextStyle extension without the invalid 'types' property
+      TextStyle,
       Link.configure({
         openOnClick: false,
         HTMLAttributes: {
