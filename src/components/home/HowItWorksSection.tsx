@@ -1,12 +1,14 @@
+
 import { Link } from 'react-router-dom';
 import { Star, Users, Gift, ArrowUpRight } from 'lucide-react';
 import { useAuth } from '@/contexts/AuthContext';
 import { Button } from '@/components/ui/button';
+
 const HowItWorksSection = () => {
-  const {
-    user
-  } = useAuth();
-  return <section className="py-16 md:py-24">
+  const { user } = useAuth();
+  
+  return (
+    <section className="py-16 md:py-24">
       <div className="container mx-auto px-4 sm:px-6">
         <div className="max-w-4xl mx-auto">
           <div className="text-center mb-12">
@@ -28,7 +30,7 @@ const HowItWorksSection = () => {
               </div>
               <h3 className="text-xl font-semibold mb-3">Complete Missions</h3>
               <p className="text-gray-600">
-                Write reviews, create content, and complete tasks to earn points and rewards.
+                Write reviews, create content, and complete tasks to earn points.
               </p>
             </div>
             
@@ -65,6 +67,8 @@ const HowItWorksSection = () => {
           </div>
         </div>
       </div>
-    </section>;
+    </section>
+  );
 };
+
 export default HowItWorksSection;
