@@ -37,7 +37,9 @@ const RichTextEditor = ({
         },
       }),
       Underline,
-      TextStyle,
+      TextStyle.configure({
+        types: ['textStyle'],
+      }),
       Link.configure({
         openOnClick: false,
         HTMLAttributes: {

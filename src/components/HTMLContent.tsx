@@ -7,8 +7,14 @@ interface HTMLContentProps {
 }
 
 const HTMLContent = ({ content, className = '' }: HTMLContentProps) => {
+  // Configure DOMPurify to allow style attributes
+  const sanitizeConfig = {
+    ALLOWED_TAGS: ['p', 'b', 'i', 'em', 'strong', 'a', 'h1', 'h2', 'h3', 'h4', 'h5', 'h6', 'ul', 'ol', 'li', 'span', 'div', 'br'],
+    ALLOWED_ATTR: ['href', 'target', 'rel', 'class', 'style'],
+  };
+  
   // Ensure content is sanitized before rendering
-  const sanitizedContent = content ? DOMPurify.sanitize(content) : '';
+  const sanitizedContent = content ? DOMPurify.sanitize(content, sanitizeConfig) : '';
   
   return (
     <div 

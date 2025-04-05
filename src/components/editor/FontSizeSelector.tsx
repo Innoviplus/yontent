@@ -32,20 +32,24 @@ const FontSizeSelector = ({ editor }: FontSizeSelectorProps) => {
   if (!editor) return null;
 
   const setFontSize = (fontSize: string) => {
-    // First remove any existing fontSize mark
-    editor.chain().focus().unsetMark('textStyle').run();
+    editor.chain().focus().run();
     
-    // Then apply the new fontSize
-    editor.chain().focus().setMark('textStyle', { fontSize }).run();
+    // Apply the new fontSize directly to the text style
+    editor.chain().focus()
+      .setMark('textStyle', { fontSize })
+      .run();
+    
+    console.log(`Setting font size to: ${fontSize}`);
   };
 
   const getCurrentSize = () => {
-    // Correctly check for active text style with fontSize
+    // Get the current font size from the editor state
     const attrs = editor.getAttributes('textStyle');
+    console.log('Current font style attributes:', attrs);
+    
     if (attrs.fontSize) {
-      // Find the matching label for the current fontSize
       const match = fontSizes.find(size => size.size === attrs.fontSize);
-      return match ? match.label : '14px'; // Default font size
+      return match ? match.label : '14px';
     }
     return '14px'; // Default font size
   };
