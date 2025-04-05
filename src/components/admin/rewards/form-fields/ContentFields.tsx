@@ -9,7 +9,7 @@ import {
 } from '@/components/ui/form';
 import { UseFormReturn } from 'react-hook-form';
 import { RewardFormData } from '../RewardFormSchema';
-import { Textarea } from '@/components/ui/textarea';
+import RichTextEditor from '@/components/RichTextEditor';
 
 interface ContentFieldsProps {
   form: UseFormReturn<RewardFormData>;
@@ -25,11 +25,10 @@ const ContentFields = ({ form }: ContentFieldsProps) => {
           <FormItem>
             <FormLabel>Redemption Details</FormLabel>
             <FormControl>
-              <Textarea
-                {...field}
+              <RichTextEditor
                 value={field.value || ''}
+                onChange={field.onChange}
                 placeholder="Enter redemption details here..."
-                className="min-h-[150px]"
               />
             </FormControl>
             <FormDescription>
@@ -47,11 +46,10 @@ const ContentFields = ({ form }: ContentFieldsProps) => {
           <FormItem>
             <FormLabel>Terms & Conditions</FormLabel>
             <FormControl>
-              <Textarea
-                {...field}
+              <RichTextEditor
                 value={field.value || ''}
+                onChange={field.onChange}
                 placeholder="Enter terms and conditions here..."
-                className="min-h-[150px]"
               />
             </FormControl>
             <FormDescription>

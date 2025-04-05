@@ -7,7 +7,7 @@ import { toast } from 'sonner';
 import { supabase } from '@/integrations/supabase/client';
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import { Loader2 } from 'lucide-react';
-import { Textarea } from '@/components/ui/textarea';
+import RichTextEditor from '@/components/RichTextEditor';
 
 type SiteContentType = {
   id: string;
@@ -118,9 +118,9 @@ const SiteContentTab = () => {
           
           <TabsContent value="privacy_policy" className="space-y-4">
             <h2 className="text-2xl font-semibold">{getContentTitle('privacy_policy')}</h2>
-            <Textarea
+            <RichTextEditor
               value={editedContent}
-              onChange={(e) => setEditedContent(e.target.value)}
+              onChange={setEditedContent}
               placeholder="Enter privacy policy content..."
               className="min-h-[500px]"
             />
@@ -128,9 +128,9 @@ const SiteContentTab = () => {
           
           <TabsContent value="terms_of_service" className="space-y-4">
             <h2 className="text-2xl font-semibold">{getContentTitle('terms_of_service')}</h2>
-            <Textarea
+            <RichTextEditor
               value={editedContent}
-              onChange={(e) => setEditedContent(e.target.value)}
+              onChange={setEditedContent}
               placeholder="Enter terms of service content..."
               className="min-h-[500px]"
             />

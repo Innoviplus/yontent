@@ -7,24 +7,27 @@ interface HTMLContentProps {
 }
 
 const HTMLContent = ({ content, className = '' }: HTMLContentProps) => {
-  // Basic sanitization configuration
+  // Configure DOMPurify to allow Quill's formatting tags
   const sanitizeConfig = {
-    ALLOWED_TAGS: ['p', 'br', 'div'],
-    ALLOWED_ATTR: ['class'],
+    ALLOWED_TAGS: [
+      'p', 'br', 'div', 'span', 'h1', 'h2', 'h3', 'h4', 'h5', 'h6',
+      'b', 'i', 'u', 'strong', 'em', 'strike', 'a', 'ul', 'ol', 'li',
+      'blockquote', 'pre', 'code'
+    ],
+    ALLOWED_ATTR: ['href', 'target', 'rel', 'class', 'style'],
+    ALLOWED_STYLES: [
+      'color', 'background-color', 'text-align', 'font-size',
+      'font-family', 'margin', 'padding', 'text-decoration'
+    ]
   };
   
   // Ensure content is sanitized before rendering
   const sanitizedContent = content ? DOMPurify.sanitize(content, sanitizeConfig) : '';
   
-  // Format text - replace line breaks with <br> tags for simple formatting
-  const formattedContent = sanitizedContent
-    .replace(/\n/g, '<br>');
-  
   return (
     <div 
-      className={`whitespace-pre-wrap ${className}`} 
-      dangerouslySetInnerHTML={{ __html: formattedContent }} 
-      style={{ wordBreak: 'break-word' }}
+      className={className} 
+      dangerouslySetInnerHTML={{ __html: sanitizedContent }} 
     />
   );
 };
