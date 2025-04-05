@@ -49,7 +49,7 @@ const MissionFAQ = ({ faqContent }: MissionFAQProps) => {
         </div>
         
         <div className="prose max-w-none">
-          <HTMLContent content={faqContent} />
+          <HTMLContent content={faqContent} className="space-y-2" />
         </div>
       </CardContent>
     </Card>

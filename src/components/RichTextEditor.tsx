@@ -28,7 +28,13 @@ const RichTextEditor = ({
 
   const editor = useEditor({
     extensions: [
-      StarterKit,
+      StarterKit.configure({
+        paragraph: {
+          HTMLAttributes: {
+            class: 'mb-2',
+          },
+        },
+      }),
       Underline,
       Link.configure({
         openOnClick: false,

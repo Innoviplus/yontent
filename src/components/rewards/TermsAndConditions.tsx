@@ -1,5 +1,6 @@
 
 import React from 'react';
+import HTMLContent from '@/components/HTMLContent';
 
 interface TermsAndConditionsProps {
   termsConditions?: string;
@@ -24,11 +25,9 @@ const TermsAndConditions: React.FC<TermsAndConditionsProps> = ({ termsConditions
   return (
     <div className="bg-white rounded-lg p-6 shadow-sm">
       <h2 className="text-xl font-bold mb-4">Terms & Conditions</h2>
-      <div 
-        className="prose prose-sm text-gray-700 max-w-none"
-        dangerouslySetInnerHTML={{ 
-          __html: termsConditions || defaultTerms 
-        }}
+      <HTMLContent 
+        content={termsConditions || defaultTerms}
+        className="text-gray-700 max-w-none" 
       />
     </div>
   );

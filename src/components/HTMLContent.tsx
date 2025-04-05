@@ -12,7 +12,7 @@ const HTMLContent = ({ content, className = '' }: HTMLContentProps) => {
   
   return (
     <div 
-      className={`prose max-w-none ${className}`} 
+      className={`prose max-w-none whitespace-pre-wrap ${className}`} 
       dangerouslySetInnerHTML={{ __html: sanitizedContent }} 
     />
   );
