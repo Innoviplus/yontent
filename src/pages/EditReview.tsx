@@ -6,7 +6,7 @@ import { Button } from '@/components/ui/button';
 import { Skeleton } from '@/components/ui/skeleton';
 import { Loader2 } from 'lucide-react';
 import ImageUpload from '@/components/review/ImageUpload';
-import RichTextEditor from '@/components/RichTextEditor';
+import { Textarea } from '@/components/ui/textarea';
 
 const EditReview = () => {
   const {
@@ -61,10 +61,10 @@ const EditReview = () => {
                       <FormItem>
                         <FormLabel>Review</FormLabel>
                         <FormControl>
-                          <RichTextEditor 
-                            value={field.value}
-                            onChange={field.onChange}
+                          <Textarea 
+                            {...field}
                             placeholder="Share your experience..."
+                            className="min-h-[200px]"
                           />
                         </FormControl>
                         <FormMessage />

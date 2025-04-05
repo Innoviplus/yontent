@@ -6,7 +6,7 @@ import Navbar from '@/components/Navbar';
 import { useSubmitReview } from '@/hooks/useSubmitReview';
 import { Skeleton } from '@/components/ui/skeleton';
 import ImageUpload from '@/components/review/ImageUpload';
-import RichTextEditor from '@/components/RichTextEditor';
+import { Textarea } from '@/components/ui/textarea';
 
 const SubmitReview = () => {
   const {
@@ -65,11 +65,10 @@ const SubmitReview = () => {
                       <FormItem>
                         <FormLabel>Review</FormLabel>
                         <FormControl>
-                          <RichTextEditor 
-                            value={field.value}
-                            onChange={field.onChange}
+                          <Textarea 
+                            {...field}
                             placeholder="Share your experience..."
-                            includeLink={false}
+                            className="min-h-[200px]"
                           />
                         </FormControl>
                         <FormMessage />
