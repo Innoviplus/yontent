@@ -2,6 +2,7 @@
 import { Link } from 'react-router-dom';
 import { Star, Award, ArrowUpRight } from 'lucide-react';
 import { useAuth } from '@/contexts/AuthContext';
+import { Button } from '@/components/ui/button';
 
 const HeroSection = () => {
   const { user } = useAuth();
@@ -31,12 +32,16 @@ const HeroSection = () => {
           </p>
           
           <div className="flex flex-col sm:flex-row gap-4 justify-center mb-8 animate-fade-up" style={{ animationDelay: '300ms' }}>
-            <Link to={user ? "/submit-review" : "/register"} className="btn-primary">
-              {user ? "Write a Review" : "Join Now"}
-            </Link>
-            <Link to="/reviews" className="btn-outline">
-              Explore Reviews
-            </Link>
+            <Button asChild className="bg-brand-teal hover:bg-brand-teal/90 text-white font-medium">
+              <Link to={user ? "/submit-review" : "/register"}>
+                {user ? "Write a Review" : "Join Now"}
+              </Link>
+            </Button>
+            <Button asChild variant="outline">
+              <Link to="/reviews">
+                Explore Reviews
+              </Link>
+            </Button>
           </div>
           
           <div className="py-2 px-4 bg-brand-slate/10 rounded-lg inline-flex items-center gap-2 animate-fade-up" style={{ animationDelay: '400ms' }}>

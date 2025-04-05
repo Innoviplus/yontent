@@ -20,7 +20,8 @@ export const fetchReviews = async (sortBy: string, userId?: string): Promise<Rev
           username,
           avatar
         )
-      `);
+      `)
+      .eq('status', 'PUBLISHED'); // Only fetch PUBLISHED reviews
 
     if (sortBy === 'recent') {
       query = query.order('created_at', { ascending: false });

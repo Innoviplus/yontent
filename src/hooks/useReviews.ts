@@ -1,4 +1,3 @@
-
 import { useState, useEffect } from 'react';
 import { Review } from '@/lib/types';
 import { supabase } from '@/integrations/supabase/client';
@@ -29,6 +28,7 @@ export const useReviews = () => {
             created_at
           )
         `)
+        .eq('status', 'PUBLISHED') // Only fetch PUBLISHED reviews
         .range(pageNum * ITEMS_PER_PAGE, (pageNum + 1) * ITEMS_PER_PAGE - 1);
 
       switch (sort) {

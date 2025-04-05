@@ -29,6 +29,7 @@ const FeaturedReviewsSection = ({ loading: initialLoading }: FeaturedReviewsSect
               created_at
             )
           `)
+          .eq('status', 'PUBLISHED') // Only fetch PUBLISHED reviews
           .order('created_at', { ascending: false })
           .limit(5);
           

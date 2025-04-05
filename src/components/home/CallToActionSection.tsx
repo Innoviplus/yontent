@@ -1,6 +1,7 @@
 
 import { Link } from 'react-router-dom';
 import { useAuth } from '@/contexts/AuthContext';
+import { Button } from '@/components/ui/button';
 
 const CallToActionSection = () => {
   const { user } = useAuth();
@@ -16,21 +17,29 @@ const CallToActionSection = () => {
           <div className="flex flex-col sm:flex-row gap-4 justify-center">
             {user ? (
               <>
-                <Link to="/missions" className="bg-white text-brand-slate hover:bg-gray-100 px-6 py-2.5 rounded-md font-medium transition-colors duration-200">
-                  Explore Missions
-                </Link>
-                <Link to="/reviews" className="bg-transparent border border-white text-white hover:bg-white/10 px-6 py-2.5 rounded-md font-medium transition-colors duration-200">
-                  Discover Reviews
-                </Link>
+                <Button asChild className="bg-white text-brand-slate hover:bg-gray-100">
+                  <Link to="/missions">
+                    Explore Missions
+                  </Link>
+                </Button>
+                <Button asChild variant="outline" className="border-white text-white hover:bg-white/10">
+                  <Link to="/reviews">
+                    Discover Reviews
+                  </Link>
+                </Button>
               </>
             ) : (
               <>
-                <Link to="/register" className="bg-white text-brand-slate hover:bg-gray-100 px-6 py-2.5 rounded-md font-medium transition-colors duration-200">
-                  Sign Up Now
-                </Link>
-                <Link to="/login" className="bg-transparent border border-white text-white hover:bg-white/10 px-6 py-2.5 rounded-md font-medium transition-colors duration-200">
-                  Login
-                </Link>
+                <Button asChild className="bg-white text-brand-slate hover:bg-gray-100">
+                  <Link to="/register">
+                    Sign Up Now
+                  </Link>
+                </Button>
+                <Button asChild variant="outline" className="border-white text-white hover:bg-white/10">
+                  <Link to="/login">
+                    Login
+                  </Link>
+                </Button>
               </>
             )}
           </div>
