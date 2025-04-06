@@ -4,6 +4,7 @@ import { User, Settings } from 'lucide-react';
 import { User as UserType } from '@/lib/types';
 import { SocialMediaIcons } from '@/components/dashboard/SocialMediaIcons';
 import UserStatsCard, { UserStats } from '@/components/user/UserStatsCard';
+import HTMLContent from '@/components/HTMLContent';
 
 interface UserProfileHeaderProps {
   user: UserType & {
@@ -31,6 +32,9 @@ const UserProfileHeader = ({ user }: UserProfileHeaderProps) => {
     pointsCount: user.points
   };
   
+  // Format bio to preserve line breaks
+  const formattedBio = bio ? bio.replace(/\n/g, '<br />') : '';
+  
   return (
     <div className="bg-white rounded-xl shadow-card p-6 sm:p-8 mb-8 animate-fade-in">
       <div className="flex flex-col sm:flex-row items-center sm:items-start gap-6">
@@ -49,7 +53,9 @@ const UserProfileHeader = ({ user }: UserProfileHeaderProps) => {
           
           {/* Bio or prompt to add bio */}
           {bio ? (
-            <p className="text-gray-600 mt-2 mb-4">{bio}</p>
+            <div className="text-gray-600 mt-2 mb-4 whitespace-pre-line">
+              <HTMLContent content={formattedBio} />
+            </div>
           ) : (
             <Link to="/settings" className="block text-brand-teal font-medium mt-2 mb-4 hover:underline">
               Click here to fill in your profile &gt;

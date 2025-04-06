@@ -125,7 +125,7 @@ export const ProfileTab: React.FC<ProfileTabProps> = ({
               <Button 
                 type="button" 
                 onClick={handleSubmit}
-                className="w-full md:w-auto" 
+                className="w-full md:w-auto bg-brand-teal hover:bg-brand-teal/90" 
                 disabled={isUpdating}
               >
                 {isUpdating ? (

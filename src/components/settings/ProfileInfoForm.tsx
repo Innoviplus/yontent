@@ -142,7 +142,7 @@ export const ProfileInfoForm: React.FC<ProfileInfoFormProps> = ({
 
         <Button 
           type="submit" 
-          className="w-full md:w-auto" 
+          className="w-full md:w-auto bg-brand-teal hover:bg-brand-teal/90" 
           disabled={isUpdating}
         >
           {isUpdating ? (
