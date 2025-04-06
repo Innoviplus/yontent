@@ -24,6 +24,7 @@ export const useReviewComments = (reviewId: string) => {
     try {
       setLoading(true);
       
+      // Use a simpler join approach to avoid the relationship error
       const { data, error } = await supabase
         .from('review_comments')
         .select(`
@@ -31,43 +32,63 @@ export const useReviewComments = (reviewId: string) => {
           content,
           created_at,
           user_id,
-          profiles (
-            id,
-            username,
-            avatar
-          )
+          reviews!inner(id)
         `)
         .eq('review_id', reviewId)
         .order('created_at', { ascending: true });
         
       if (error) {
         console.error('Error fetching comments:', error);
-        throw error;
-      }
-      
-      if (!data) {
-        setComments([]);
+        toast.error('Failed to load comments');
         return;
       }
       
+      if (!data || data.length === 0) {
+        setComments([]);
+        setLoading(false);
+        return;
+      }
+      
+      // Fetch profile information separately
+      const userIds = data.map(comment => comment.user_id);
+      const { data: profilesData, error: profilesError } = await supabase
+        .from('profiles')
+        .select('id, username, avatar')
+        .in('id', userIds);
+        
+      if (profilesError) {
+        console.error('Error fetching profiles:', profilesError);
+        toast.error('Failed to load user profiles');
+        return;
+      }
+      
+      // Create a lookup map for quick profile access
+      const profilesMap = new Map();
+      if (profilesData) {
+        profilesData.forEach(profile => {
+          profilesMap.set(profile.id, profile);
+        });
+      }
+      
+      // Transform the comments with profile data
       const transformedComments: Comment[] = data.map(comment => {
-        // Safely handle the profiles data which might be null or have errors
-        const profile = comment.profiles as any; // Cast to any to safely access properties
+        const profile = profilesMap.get(comment.user_id);
+        
         return {
           id: comment.id,
           content: comment.content,
           createdAt: new Date(comment.created_at),
           user: {
             id: comment.user_id,
-            username: profile && typeof profile === 'object' ? profile.username || 'Anonymous' : 'Anonymous',
-            avatar: profile && typeof profile === 'object' ? profile.avatar : undefined
+            username: profile ? profile.username : 'Anonymous',
+            avatar: profile ? profile.avatar : undefined
           }
         };
       });
       
       setComments(transformedComments);
     } catch (error) {
-      console.error('Error fetching comments:', error);
+      console.error('Unexpected error fetching comments:', error);
       toast.error('Failed to load comments');
     } finally {
       setLoading(false);
