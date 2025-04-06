@@ -2,6 +2,7 @@
 import { supabase } from '@/integrations/supabase/client';
 import { Review } from '@/lib/types';
 import { toast } from 'sonner';
+import { extractAvatarUrl } from '@/hooks/admin/api/types/participationTypes';
 
 export const fetchReview = async (id: string): Promise<Review | null> => {
   try {
@@ -29,9 +30,8 @@ export const fetchReview = async (id: string): Promise<Review | null> => {
       return null;
     }
     
-    // Extract avatar URL from extended_data safely
-    const extendedData = data.profiles?.extended_data || {};
-    const avatarUrl = typeof extendedData === 'object' ? extendedData.avatarUrl : undefined;
+    // Extract avatar URL using the shared utility function
+    const avatarUrl = extractAvatarUrl(data.profiles?.extended_data);
     
     return {
       id: data.id,
@@ -70,7 +70,7 @@ export const trackReviewView = async (reviewId: string): Promise<void> => {
   }
 };
 
-// Add a function to fetch multiple reviews
+// Fetch multiple reviews
 export const fetchReviews = async (options = {}) => {
   try {
     const { data, error } = await supabase
@@ -96,9 +96,8 @@ export const fetchReviews = async (options = {}) => {
     }
     
     return data.map(item => {
-      // Extract avatar URL from extended_data safely
-      const extendedData = item.profiles?.extended_data || {};
-      const avatarUrl = typeof extendedData === 'object' ? extendedData.avatarUrl : undefined;
+      // Extract avatar URL using the shared utility function
+      const avatarUrl = extractAvatarUrl(item.profiles?.extended_data);
       
       return {
         id: item.id,

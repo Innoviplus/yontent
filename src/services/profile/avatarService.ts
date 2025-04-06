@@ -1,6 +1,7 @@
 
 import { supabase } from '@/integrations/supabase/client';
 import { toast } from 'sonner';
+import { Json } from '@/lib/types';
 
 /**
  * Uploads an avatar image to Supabase storage
@@ -72,8 +73,8 @@ export const updateAvatarUrl = async (userId: string, avatarUrl: string): Promis
     }
 
     // Prepare updated extended_data with new avatar URL
-    let currentData = profileData?.extended_data || {};
     let extendedData: Record<string, any> = {};
+    let currentData = profileData?.extended_data as Json || {};
     
     // Handle extended_data correctly whether it's a string or an object
     if (typeof currentData === 'string') {
@@ -86,11 +87,13 @@ export const updateAvatarUrl = async (userId: string, avatarUrl: string): Promis
       } catch (e) {
         extendedData = { avatarUrl };
       }
-    } else {
+    } else if (typeof currentData === 'object' && currentData !== null) {
       extendedData = {
         ...(currentData as Record<string, any>),
         avatarUrl
       };
+    } else {
+      extendedData = { avatarUrl };
     }
 
     // Update the profile
