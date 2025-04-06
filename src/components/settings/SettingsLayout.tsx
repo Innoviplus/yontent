@@ -1,15 +1,34 @@
+import React from 'react';
+import { Tabs, TabsList, TabsTrigger, TabsContent } from "@/components/ui/tabs"
+import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card"
+import { Label } from "@/components/ui/label"
+import { Input } from "@/components/ui/input"
+import { Button } from "@/components/ui/button"
+import { Switch } from "@/components/ui/switch"
+import { Slider } from "@/components/ui/slider"
+import { UseFormReturn } from 'react-hook-form';
+import { ProfileTab } from './ProfileTab';
 
-import { useRef } from "react";
-import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
-import { ProfileTab } from "./ProfileTab";
-import { GeneralTab } from "./GeneralTab";
-import { AccountTab } from "./AccountTab";
-import { SocialMediaTab } from "./SocialMediaTab";
-import { AvatarUploader } from "./AvatarUploader";
-import { User } from "lucide-react";
-import PointsBadge from "../PointsBadge";
+interface SettingsLayoutProps {
+  userProfile: any;
+  avatarUrl: string | null;
+  uploading: boolean;
+  handleAvatarUpload: (event: React.ChangeEvent<HTMLInputElement>) => Promise<void>;
+  profileForm: UseFormReturn<any>;
+  settingsForm: UseFormReturn<any>;
+  onProfileSubmit: (values: any) => Promise<void>;
+  onSettingsSubmit: (values: any) => Promise<void>;
+  isUpdating: boolean;
+  isSubmitting: boolean;
+  extendedProfile: any;
+  handleResetPassword: () => Promise<void>;
+  handleLogout: () => Promise<void>;
+  handleDeleteAccount: () => Promise<void>;
+  activeTab: string;
+  setActiveTab: (tab: string) => void;
+}
 
-export function SettingsLayout({
+export const SettingsLayout: React.FC<SettingsLayoutProps> = ({
   userProfile,
   avatarUrl,
   uploading,
@@ -25,84 +44,72 @@ export function SettingsLayout({
   handleLogout,
   handleDeleteAccount,
   activeTab,
-  setActiveTab,
-}) {
-  const fileInputRef = useRef(null);
-
+  setActiveTab
+}) => {
   return (
-    <div className="container mx-auto px-4 py-8 max-w-5xl">
-      <div className="flex flex-col md:flex-row gap-8">
-        <div className="w-full md:w-1/3 space-y-6">
-          <div className="bg-white rounded-lg shadow-sm p-6 text-center">
-            <h2 className="text-xl font-semibold mb-6">Your Profile</h2>
-            <AvatarUploader
-              avatarUrl={avatarUrl}
-              uploading={uploading}
-              handleAvatarUpload={handleAvatarUpload}
-              fileInputRef={fileInputRef}
-              username={userProfile?.username || "User"}
-            />
-            <h3 className="mt-4 text-lg font-medium">{userProfile?.username}</h3>
-            {userProfile?.points !== undefined && (
-              <PointsBadge points={userProfile.points} className="mt-2" />
-            )}
-          </div>
-        </div>
-
-        <div className="w-full md:w-2/3">
-          <Tabs value={activeTab} onValueChange={setActiveTab} className="w-full">
-            <TabsList className="grid grid-cols-4 mb-8">
-              <TabsTrigger value="profile" className="flex items-center gap-2">
-                <User className="h-4 w-4" />
-                <span className="hidden sm:inline">Profile</span>
-              </TabsTrigger>
-              <TabsTrigger value="general">General</TabsTrigger>
-              <TabsTrigger value="social">Social</TabsTrigger>
-              <TabsTrigger value="account">Account</TabsTrigger>
-            </TabsList>
-            
-            <TabsContent value="profile" className="mt-0">
-              <ProfileTab
-                userProfile={userProfile}
-                avatarUrl={avatarUrl}
-                uploading={uploading}
-                handleAvatarUpload={handleAvatarUpload}
-                profileForm={profileForm}
-                onProfileSubmit={onProfileSubmit}
-                isUpdating={isUpdating}
-                extendedProfile={extendedProfile}
-              />
-            </TabsContent>
-            
-            <TabsContent value="general" className="mt-0">
-              <GeneralTab
-                handleLogout={handleLogout}
-                handleDeleteAccount={handleDeleteAccount}
-              />
-            </TabsContent>
-            
-            <TabsContent value="social" className="mt-0">
-              <SocialMediaTab
-                profileForm={profileForm}
-                onSubmit={onProfileSubmit}
-                isUpdating={isUpdating}
-              />
-            </TabsContent>
-            
-            <TabsContent value="account" className="mt-0">
-              <AccountTab
-                settingsForm={settingsForm}
-                onSettingsSubmit={onSettingsSubmit}
-                isUpdating={isUpdating}
-                isSubmitting={isSubmitting}
-                handleResetPassword={handleResetPassword}
-                handleLogout={handleLogout}
-                handleDeleteAccount={handleDeleteAccount}
-              />
-            </TabsContent>
-          </Tabs>
-        </div>
-      </div>
+    <div className="container relative h-full max-w-5xl">
+      <Tabs defaultValue="profile" className="w-full">
+        <TabsList className="grid w-full grid-cols-2">
+          <TabsTrigger value="profile" onClick={() => setActiveTab("profile")}>Profile</TabsTrigger>
+          <TabsTrigger value="account" onClick={() => setActiveTab("account")}>Account</TabsTrigger>
+        </TabsList>
+        <TabsContent value="profile">
+          <ProfileTab
+            userProfile={userProfile}
+            avatarUrl={avatarUrl}
+            uploading={uploading}
+            handleAvatarUpload={handleAvatarUpload}
+            profileForm={profileForm}
+            onProfileSubmit={onProfileSubmit}
+            isUpdating={isUpdating}
+            extendedProfile={extendedProfile}
+          />
+        </TabsContent>
+        <TabsContent value="account">
+          <Card>
+            <CardHeader>
+              <CardTitle>Account Settings</CardTitle>
+              <CardDescription>Manage your account settings.</CardDescription>
+            </CardHeader>
+            <CardContent className="grid gap-6">
+              <div className="grid gap-2">
+                <Label htmlFor="email">Email</Label>
+                <Input id="email" defaultValue={userProfile?.email} className="bg-muted/50 text-muted-foreground" readOnly />
+              </div>
+              <div className="grid gap-2">
+                <Label htmlFor="username">Username</Label>
+                <Input id="username" defaultValue={userProfile?.username} className="bg-muted/50 text-muted-foreground" readOnly />
+              </div>
+              <div className="flex items-center justify-between rounded-md border p-4">
+                <div className="space-y-1">
+                  <p className="text-sm font-medium leading-none">Two-Factor Authentication</p>
+                  <p className="text-sm text-muted-foreground">Add an extra layer of security to your account.</p>
+                </div>
+                <Switch id="2fa" />
+              </div>
+              <div className="grid gap-2">
+                <Label htmlFor="apiKey">API Key</Label>
+                <Input id="apiKey" className="bg-muted/50 text-muted-foreground" readOnly value="xxxxxxxx-xxxx-xxxx-xxxx-xxxxxxxxxxxx" />
+              </div>
+              <Button variant="outline" size="sm">
+                Generate New Key
+              </Button>
+              <div className="grid gap-2">
+                <Label htmlFor="delete">Delete Account</Label>
+                <Button variant="destructive" onClick={handleDeleteAccount}>
+                  Delete Account
+                </Button>
+              </div>
+              <div className="grid gap-2">
+                <Label htmlFor="logout">Logout</Label>
+                <Button variant="secondary" onClick={handleLogout}>
+                  Logout
+                </Button>
+              </div>
+            </CardContent>
+          </Card>
+        </TabsContent>
+      </Tabs>
     </div>
   );
-}
+};
