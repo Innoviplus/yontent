@@ -4,6 +4,7 @@ import { Review } from '@/lib/types';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { User } from 'lucide-react';
 import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
+import HTMLContent from '@/components/HTMLContent';
 
 interface RelatedReviewsProps {
   reviewId: string;
@@ -14,6 +15,12 @@ const RelatedReviews = ({ reviewId, relatedReviews }: RelatedReviewsProps) => {
   if (!relatedReviews || relatedReviews.length === 0) {
     return null;
   }
+  
+  // Function to strip HTML tags from content
+  const stripHtml = (html: string) => {
+    const doc = new DOMParser().parseFromString(html, 'text/html');
+    return doc.body.textContent || '';
+  };
   
   return (
     <Card>
@@ -64,7 +71,7 @@ const RelatedReviews = ({ reviewId, relatedReviews }: RelatedReviewsProps) => {
                 </div>
                 
                 <p className="text-sm text-gray-600 line-clamp-2">
-                  {review.content}
+                  {stripHtml(review.content)}
                 </p>
               </div>
             </Link>
