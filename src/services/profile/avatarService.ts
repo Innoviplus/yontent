@@ -10,11 +10,11 @@ export const uploadAvatar = async (userId: string, file: File): Promise<string |
 
     console.log("Uploading avatar with path:", filePath);
     
-    // Create the storage bucket if it doesn't exist
-    const { data: bucketData, error: bucketError } = await supabase.storage
-      .getBucket('avatars');
+    // Check if bucket exists, create it if it doesn't
+    const { data: buckets } = await supabase.storage.listBuckets();
+    const avatarBucketExists = buckets?.some(bucket => bucket.name === 'avatars');
     
-    if (bucketError && bucketError.message.includes('The resource was not found')) {
+    if (!avatarBucketExists) {
       console.log("Avatars bucket doesn't exist, creating it...");
       const { error: createBucketError } = await supabase.storage
         .createBucket('avatars', {
@@ -28,9 +28,6 @@ export const uploadAvatar = async (userId: string, file: File): Promise<string |
         throw createBucketError;
       }
       console.log("Avatars bucket created successfully");
-    } else if (bucketError) {
-      console.error("Error checking bucket:", bucketError);
-      throw bucketError;
     }
 
     // Upload the file to the storage bucket

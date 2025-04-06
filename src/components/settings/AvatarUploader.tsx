@@ -49,7 +49,7 @@ export const AvatarUploader: React.FC<AvatarUploaderProps> = ({
       console.log("Avatar upload complete");
     } catch (error: any) {
       console.error("Error handling file:", error);
-      toast.error(`Upload failed: ${error.message}`);
+      toast.error(`Upload failed: ${error.message || "Unknown error"}`);
       // Revert to previous preview on error
       setPreview(avatarUrl);
     }

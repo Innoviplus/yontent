@@ -7,6 +7,7 @@ import { toast } from 'sonner';
 import { ExtendedProfile } from '@/lib/types';
 import React from 'react';
 import { updateProfileData } from '@/services/profile/profileUpdateService';
+import { subYears } from 'date-fns';
 
 // Helper function to format URLs
 const formatUrl = (url: string | undefined | null): string | null => {
@@ -33,6 +34,18 @@ const urlSchema = z.string()
   .nullable()
   .transform(val => val === '' ? null : val);
 
+// Date validation to ensure the user is at least 18 years old
+const birthDateSchema = z.date().optional().refine(
+  (date) => {
+    if (!date) return true; // Optional, so null/undefined is valid
+    const eighteenYearsAgo = subYears(new Date(), 18);
+    return date <= eighteenYearsAgo;
+  },
+  {
+    message: "You must be at least 18 years old."
+  }
+);
+
 // Form schema
 export const profileFormSchema = z.object({
   username: z.string().optional(),
@@ -40,7 +53,7 @@ export const profileFormSchema = z.object({
   lastName: z.string().min(1, "Last name is required").max(50),
   bio: z.string().max(500).optional(),
   gender: z.string().optional(),
-  birthDate: z.date().optional(),
+  birthDate: birthDateSchema,
   websiteUrl: urlSchema,
   facebookUrl: urlSchema,
   instagramUrl: urlSchema,
@@ -120,6 +133,16 @@ export const useProfileForm = (
     console.log("Birth date:", values.birthDate);
     
     try {
+      // Validate birthdate
+      if (values.birthDate) {
+        const eighteenYearsAgo = subYears(new Date(), 18);
+        if (values.birthDate > eighteenYearsAgo) {
+          toast.error("You must be at least 18 years old");
+          setIsUpdating(false);
+          return;
+        }
+      }
+      
       // Get current extended profile data to preserve other fields
       const currentExtendedProfile = extendedProfile || {};
       

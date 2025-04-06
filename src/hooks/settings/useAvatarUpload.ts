@@ -27,6 +27,7 @@ export const useAvatarUpload = () => {
       setUploading(true);
       
       if (!user) {
+        toast.error("User not authenticated.");
         throw new Error("User not authenticated.");
       }
 
@@ -48,10 +49,12 @@ export const useAvatarUpload = () => {
             console.log("Refreshing user profile after avatar update");
             await refreshUserProfile();
           }
+        } else {
+          toast.error("Failed to generate avatar URL");
         }
       } catch (uploadError: any) {
         console.error("Upload failed:", uploadError);
-        toast.error(`Failed to update avatar: ${uploadError.message}`);
+        toast.error(`Failed to update avatar: ${uploadError.message || "Unknown error"}`);
       }
     } catch (error: any) {
       console.error("Error handling avatar upload:", error.message);
