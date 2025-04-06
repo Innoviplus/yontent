@@ -1,5 +1,5 @@
 
-import { useState, useCallback } from 'react';
+import { useState, useCallback, useEffect } from 'react';
 import { toast } from 'sonner';
 import { 
   MissionParticipation,
@@ -97,8 +97,6 @@ export const useMissionParticipations = () => {
   }, [refreshParticipations]);
 
   // Load participations on mount
-  import { useEffect } from 'react';
-  
   useEffect(() => {
     loadParticipations();
   }, [loadParticipations]);

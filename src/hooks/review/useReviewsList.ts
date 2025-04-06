@@ -10,7 +10,7 @@ export const useReviewsList = (userId?: string) => {
 
   const { data: reviews, isLoading, error, refetch } = useQuery({
     queryKey: ['reviews', sortBy, userId],
-    queryFn: () => fetchReviews(sortBy, userId),
+    queryFn: () => fetchReviews(),
   });
   
   const totalPages = reviews ? Math.ceil(reviews.length / itemsPerPage) : 0;
