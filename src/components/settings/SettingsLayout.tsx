@@ -18,6 +18,7 @@ export function SettingsLayout({
   handleDeleteAccount,
   activeTab,
   setActiveTab,
+  userEmail,
 }) {
   return (
     <div className="container mx-auto px-4 py-8 max-w-5xl">
@@ -50,6 +51,7 @@ export function SettingsLayout({
               handleResetPassword={handleResetPassword}
               handleLogout={handleLogout}
               handleDeleteAccount={handleDeleteAccount}
+              userEmail={userEmail}
             />
           </TabsContent>
         </Tabs>

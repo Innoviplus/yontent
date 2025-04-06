@@ -8,6 +8,8 @@ import { Input } from '@/components/ui/input';
 import { Loader2 } from 'lucide-react';
 import { Form, FormControl, FormField, FormItem, FormLabel, FormMessage } from '@/components/ui/form';
 import { Separator } from '@/components/ui/separator';
+import { AvatarUploader } from './AvatarUploader';
+import { useAvatarUpload } from '@/hooks/settings/useAvatarUpload';
 
 interface ProfileTabProps {
   userProfile: any;
@@ -24,6 +26,12 @@ export const ProfileTab: React.FC<ProfileTabProps> = ({
   isUpdating,
   extendedProfile
 }) => {
+  const userId = userProfile?.id;
+  const username = userProfile?.username;
+  const avatarUrl = extendedProfile?.avatarUrl;
+
+  const { uploading, handleAvatarUpload } = useAvatarUpload(userId);
+
   const handleSubmit = async () => {
     await onProfileSubmit(profileForm.getValues());
   };
@@ -36,6 +44,14 @@ export const ProfileTab: React.FC<ProfileTabProps> = ({
       </CardHeader>
       <CardContent>
         <div className="flex flex-col md:flex-row gap-8 mb-8">
+          <div className="flex-shrink-0 flex flex-col items-center">
+            <AvatarUploader 
+              avatarUrl={avatarUrl}
+              username={username} 
+              uploading={uploading}
+              handleAvatarUpload={handleAvatarUpload}
+            />
+          </div>
           <div className="flex-1">
             <ProfileInfoForm 
               profileForm={profileForm}

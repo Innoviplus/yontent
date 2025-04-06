@@ -5,6 +5,7 @@ import Navbar from '@/components/Navbar';
 
 const Settings = () => {
   const {
+    user,
     userProfile,
     isUpdating,
     isSubmitting,
@@ -38,6 +39,7 @@ const Settings = () => {
           handleDeleteAccount={handleDeleteAccount}
           activeTab={activeTab}
           setActiveTab={setActiveTab}
+          userEmail={user?.email}
         />
       </div>
     </>

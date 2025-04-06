@@ -21,9 +21,14 @@ const HTMLContent = ({ content, className = '' }: HTMLContentProps) => {
     ]
   };
   
-  // Process content to replace newlines with <br> tags if they're not already
-  // part of HTML content (e.g., plain text input from textareas)
-  const processedContent = content ? content.replace(/\n/g, '<br />') : '';
+  // Process content to replace newlines with <br> tags
+  // First check if it's already HTML content (contains tags)
+  const isHTML = content?.includes('<') && content?.includes('>');
+  
+  // If it's plain text, replace newlines with <br> tags
+  const processedContent = content && !isHTML 
+    ? content.replace(/\n/g, '<br />') 
+    : content || '';
   
   // Ensure content is sanitized before rendering
   const sanitizedContent = processedContent ? DOMPurify.sanitize(processedContent, sanitizeConfig) : '';

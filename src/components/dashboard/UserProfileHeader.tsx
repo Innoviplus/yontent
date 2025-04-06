@@ -20,6 +20,7 @@ const UserProfileHeader = ({ user }: UserProfileHeaderProps) => {
   // Extract extended data for bio and social links
   const extendedData = user?.extendedData || {};
   const bio = extendedData?.bio || '';
+  const avatarUrl = extendedData?.avatarUrl || '';
   const hasSocialMedia = !!extendedData?.websiteUrl || !!extendedData?.facebookUrl || 
                         !!extendedData?.instagramUrl || !!extendedData?.youtubeUrl || 
                         !!extendedData?.tiktokUrl;
@@ -32,16 +33,13 @@ const UserProfileHeader = ({ user }: UserProfileHeaderProps) => {
     pointsCount: user.points
   };
   
-  // Format bio to preserve line breaks
-  const formattedBio = bio ? bio.replace(/\n/g, '<br />') : '';
-  
   return (
     <div className="bg-white rounded-xl shadow-card p-6 sm:p-8 mb-8 animate-fade-in">
       <div className="flex flex-col sm:flex-row items-center sm:items-start gap-6">
         {/* Avatar */}
         <div className="w-24 h-24 rounded-full bg-brand-teal/10 flex items-center justify-center text-brand-teal overflow-hidden">
-          {user.avatar ? (
-            <img src={user.avatar} alt={user.username} className="w-24 h-24 rounded-full object-cover" />
+          {avatarUrl ? (
+            <img src={avatarUrl} alt={user.username} className="w-24 h-24 rounded-full object-cover" />
           ) : (
             <User className="h-12 w-12" />
           )}
@@ -53,8 +51,8 @@ const UserProfileHeader = ({ user }: UserProfileHeaderProps) => {
           
           {/* Bio or prompt to add bio */}
           {bio ? (
-            <div className="text-gray-600 mt-2 mb-4 whitespace-pre-line">
-              <HTMLContent content={formattedBio} />
+            <div className="text-gray-600 mt-2 mb-4">
+              <HTMLContent content={bio} />
             </div>
           ) : (
             <Link to="/settings" className="block text-brand-teal font-medium mt-2 mb-4 hover:underline">
