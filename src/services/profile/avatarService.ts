@@ -55,11 +55,20 @@ export const uploadAvatar = async (userId: string, file: File): Promise<string |
 
 export const updateAvatarUrl = async (userId: string, avatarUrl: string): Promise<void> => {
   try {
-    // Simplified update - don't try to get profile first, just update avatar field
+    console.log("Updating avatar URL in profile for user:", userId);
+    console.log("New avatar URL:", avatarUrl);
+    
+    // Query to update just the avatar field - using upsert syntax to avoid RLS issues
     const { error: updateError } = await supabase
       .from('profiles')
-      .update({ avatar: avatarUrl })
-      .eq('id', userId);
+      .upsert({ 
+        id: userId, 
+        avatar: avatarUrl,
+        updated_at: new Date().toISOString()
+      }, { 
+        onConflict: 'id',
+        ignoreDuplicates: false
+      });
 
     if (updateError) {
       console.error("Error updating avatar URL in profile:", updateError);
