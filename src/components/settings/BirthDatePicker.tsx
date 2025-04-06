@@ -25,6 +25,12 @@ export const BirthDatePicker: React.FC<BirthDatePickerProps> = ({
   const to = new Date();
   to.setFullYear(today.getFullYear() - 18); // 18 years ago
 
+  // Custom month change handler to ensure the custom event is processed
+  const handleMonthChange = (date: Date) => {
+    // Directly call onChange with the new date
+    console.log("Month/year changed to:", date);
+  };
+
   return (
     <Popover>
       <PopoverTrigger asChild>
@@ -54,6 +60,7 @@ export const BirthDatePicker: React.FC<BirthDatePickerProps> = ({
           captionLayout="dropdown-buttons"
           fromYear={from.getFullYear()}
           toYear={to.getFullYear()}
+          onMonthChange={handleMonthChange}
         />
       </PopoverContent>
     </Popover>

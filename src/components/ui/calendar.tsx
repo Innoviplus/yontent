@@ -93,40 +93,31 @@ function Calendar({
             </Select>
           );
         },
-        Caption: ({ displayMonth, id }: CaptionProps) => {
+        Caption: ({ displayMonth, id, ...captionProps }: CaptionProps) => {
+          // Get the onMonthChange prop from the parent props
+          const calendarProps = props as any;
+          
           // Create handler functions for month and year changes
           const handleMonthChange = (monthStr: string) => {
             const newDate = new Date(displayMonth);
             newDate.setMonth(parseInt(monthStr));
-            const customEvent = new CustomEvent("daypicker-month-change", { 
-              detail: { date: newDate }
-            });
-            document.dispatchEvent(customEvent);
+            
+            // Call the parent's onMonthChange if provided
+            if (calendarProps.onMonthChange) {
+              calendarProps.onMonthChange(newDate);
+            }
           };
           
           const handleYearChange = (yearStr: string) => {
             const newDate = new Date(displayMonth);
             newDate.setFullYear(parseInt(yearStr));
-            const customEvent = new CustomEvent("daypicker-month-change", { 
-              detail: { date: newDate }
-            });
-            document.dispatchEvent(customEvent);
+            
+            // Call the parent's onMonthChange if provided
+            if (calendarProps.onMonthChange) {
+              console.log("Year changed to:", yearStr, "Setting date to:", newDate);
+              calendarProps.onMonthChange(newDate);
+            }
           };
-          
-          React.useEffect(() => {
-            const handler = (e: Event) => {
-              const customEvent = e as CustomEvent;
-              if (props.onMonthChange) {
-                props.onMonthChange(customEvent.detail.date);
-              }
-            };
-            
-            document.addEventListener('daypicker-month-change', handler);
-            
-            return () => {
-              document.removeEventListener('daypicker-month-change', handler);
-            };
-          }, [props.onMonthChange]);
 
           return (
             <div className="flex justify-center space-x-2 py-1 w-full">
