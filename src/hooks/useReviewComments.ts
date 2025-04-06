@@ -31,7 +31,7 @@ export const useReviewComments = (reviewId: string) => {
           content,
           created_at,
           user_id,
-          profiles(
+          profiles:user_id (
             id,
             username,
             avatar
@@ -91,7 +91,7 @@ export const useReviewComments = (reviewId: string) => {
           content, 
           created_at,
           user_id,
-          profiles(
+          profiles:user_id (
             id,
             username,
             avatar

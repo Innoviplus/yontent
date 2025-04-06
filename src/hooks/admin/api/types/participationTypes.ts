@@ -35,6 +35,10 @@ export interface SubmissionData {
   reviewImages?: string[];
   receiptImage?: string;
   submission_type?: 'REVIEW' | 'RECEIPT';
+  receipt_images?: string[];
+  review_id?: string;
+  review_images?: string[];
+  review_url?: string;
   [key: string]: any;
 }
 

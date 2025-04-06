@@ -12,6 +12,7 @@ export type MissionParticipation = {
     submission_type: 'RECEIPT' | 'REVIEW';
   } | null;
   createdAt: Date;
+  // Add the missing fields
   userName?: string;
   userAvatar?: string;
   missionTitle?: string;

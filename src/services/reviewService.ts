@@ -15,7 +15,7 @@ export const fetchReviews = async (sortBy: string, userId?: string): Promise<Rev
         views_count,
         likes_count,
         created_at,
-        profiles(
+        profiles:user_id (
           id,
           username,
           avatar
@@ -47,7 +47,7 @@ export const fetchReviews = async (sortBy: string, userId?: string): Promise<Rev
       likesCount: review.likes_count || 0, // Ensure it's never undefined
       createdAt: new Date(review.created_at),
       user: review.profiles ? {
-        id: review.profiles.id,
+        id: review.profiles.id || review.user_id,
         username: review.profiles.username || 'Anonymous',
         email: '',
         points: 0,

@@ -27,7 +27,7 @@ const FeaturedReviewsSection = ({ loading: initialLoading }: FeaturedReviewsSect
             views_count,
             likes_count,
             created_at,
-            profiles(
+            profiles:user_id (
               id,
               username,
               avatar,
@@ -54,14 +54,14 @@ const FeaturedReviewsSection = ({ loading: initialLoading }: FeaturedReviewsSect
           createdAt: new Date(review.created_at),
           productName: 'Review',
           rating: 5,
-          user: review.profiles ? {
-            id: review.profiles.id,
-            username: review.profiles.username || 'Anonymous',
+          user: {
+            id: review.profiles?.id || review.user_id,
+            username: review.profiles?.username || 'Anonymous',
             email: '',
-            points: review.profiles.points || 0,
-            createdAt: new Date(review.profiles.created_at),
-            avatar: review.profiles.avatar
-          } : undefined
+            points: review.profiles?.points || 0,
+            createdAt: new Date(review.profiles?.created_at || review.created_at),
+            avatar: review.profiles?.avatar
+          }
         }));
         
         setReviews(transformedReviews);

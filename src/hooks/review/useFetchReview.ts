@@ -25,7 +25,7 @@ export const useFetchReview = (id: string | undefined) => {
           views_count,
           likes_count,
           created_at,
-          profiles(
+          profiles:user_id (
             id,
             username,
             avatar
@@ -51,7 +51,7 @@ export const useFetchReview = (id: string | undefined) => {
         likesCount: data.likes_count,
         createdAt: new Date(data.created_at),
         user: data.profiles ? {
-          id: data.profiles.id,
+          id: data.profiles.id || data.user_id,
           username: data.profiles.username || 'Anonymous',
           email: '',
           points: 0,

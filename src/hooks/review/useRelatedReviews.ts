@@ -18,7 +18,7 @@ export const useRelatedReviews = (review: Review | null) => {
           views_count,
           likes_count,
           created_at,
-          profiles(
+          profiles:user_id (
             id,
             username,
             avatar,
@@ -43,11 +43,11 @@ export const useRelatedReviews = (review: Review | null) => {
         likesCount: item.likes_count,
         createdAt: new Date(item.created_at),
         user: item.profiles ? {
-          id: item.profiles.id,
+          id: item.profiles.id || item.user_id,
           username: item.profiles.username || 'Anonymous',
           email: '',
           points: item.profiles.points || 0,
-          createdAt: new Date(item.profiles.created_at),
+          createdAt: new Date(item.profiles.created_at || item.created_at),
           avatar: item.profiles.avatar
         } : undefined
       }));

@@ -9,6 +9,7 @@ import {
 } from './api/missionParticipationsApi';
 import { MissionParticipation, ParticipationStatus } from './api/types/participationTypes';
 
+// Re-export the type from the API types
 export type { MissionParticipation } from './api/types/participationTypes';
 
 export const useMissionParticipations = () => {
@@ -29,7 +30,20 @@ export const useMissionParticipations = () => {
       const response = await fetchMissionParticipationsWithFilters({ status: filterToUse });
       
       if (response.success && response.participations) {
-        setParticipations(response.participations);
+        // Transform API response to the format expected by components
+        const transformedParticipations = response.participations.map(p => ({
+          ...p,
+          userName: p.user.username,
+          userAvatar: p.user.avatar || undefined,
+          missionTitle: p.mission.title,
+          missionDescription: p.mission.description,
+          missionPointsReward: p.mission.pointsReward,
+          missionType: p.mission.type,
+          // Convert string date to Date object for compatibility
+          createdAt: new Date(p.createdAt)
+        }));
+        
+        setParticipations(transformedParticipations);
       } else {
         setError(response.error || 'Failed to load participations');
       }
