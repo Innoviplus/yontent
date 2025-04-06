@@ -7,10 +7,10 @@ import {
   rejectParticipation,
   updateMissionParticipationStatus
 } from './api/missionParticipationsApi';
-import { MissionParticipation, ParticipationStatus } from './api/types/participationTypes';
+import { MissionParticipation as ApiMissionParticipation, ParticipationStatus } from './api/types/participationTypes';
+import { MissionParticipation } from './types/missionParticipationTypes';
 
-// Re-export the type from the API types
-export type { MissionParticipation } from './api/types/participationTypes';
+export type { MissionParticipation } from './types/missionParticipationTypes';
 
 export const useMissionParticipations = () => {
   const [participations, setParticipations] = useState<MissionParticipation[]>([]);
@@ -32,15 +32,18 @@ export const useMissionParticipations = () => {
       if (response.success && response.participations) {
         // Transform API response to the format expected by components
         const transformedParticipations = response.participations.map(p => ({
-          ...p,
+          id: p.id,
+          userId: p.userId,
+          missionId: p.missionId,
+          status: p.status,
+          submissionData: p.submissionData,
+          createdAt: new Date(p.createdAt),
           userName: p.user.username,
           userAvatar: p.user.avatar || undefined,
           missionTitle: p.mission.title,
           missionDescription: p.mission.description,
           missionPointsReward: p.mission.pointsReward,
-          missionType: p.mission.type,
-          // Convert string date to Date object for compatibility
-          createdAt: new Date(p.createdAt)
+          missionType: p.mission.type
         }));
         
         setParticipations(transformedParticipations);

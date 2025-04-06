@@ -4,7 +4,7 @@ import { Card, CardContent } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
 import { Loader2, Eye, Check, X, ExternalLink, FileImage, Award, Tag } from 'lucide-react';
-import { MissionParticipation } from '@/hooks/admin/useMissionParticipations';
+import { MissionParticipation } from '@/hooks/admin/types/missionParticipationTypes';
 import ParticipationStatusBadge from './ParticipationStatusBadge';
 import PointsBadge from '@/components/PointsBadge';
 
@@ -48,7 +48,7 @@ const ParticipationCard: React.FC<ParticipationCardProps> = ({
               <div>
                 <h4 className="font-medium">{participation.userName}</h4>
                 <p className="text-sm text-muted-foreground">
-                  {new Date(participation.createdAt).toLocaleDateString()}
+                  {participation.createdAt.toLocaleDateString()}
                 </p>
               </div>
             </div>

@@ -12,13 +12,13 @@ export type MissionParticipation = {
     submission_type: 'RECEIPT' | 'REVIEW';
   } | null;
   createdAt: Date;
-  // Add the missing fields
-  userName?: string;
+  // These fields are added during transformation from API data
+  userName: string;
   userAvatar?: string;
-  missionTitle?: string;
-  missionDescription?: string;
-  missionPointsReward?: number;
-  missionType?: 'RECEIPT' | 'REVIEW';
+  missionTitle: string;
+  missionDescription: string;
+  missionPointsReward: number;
+  missionType: 'RECEIPT' | 'REVIEW';
 };
 
 export type FetchParticipationsResult = {

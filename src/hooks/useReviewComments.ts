@@ -103,6 +103,7 @@ export const useReviewComments = (reviewId: string) => {
         throw error;
       }
       
+      // Safely handle potential null or undefined values in the response
       const newCommentData: Comment = {
         id: data.id,
         content: data.content,

@@ -36,7 +36,7 @@ const ParticipationUserInfo: React.FC<ParticipationUserInfoProps> = ({
         <div>
           <p className="font-medium">{userName}</p>
           <p className="text-sm text-muted-foreground">
-            {new Date(createdAt).toLocaleString()}
+            {createdAt.toLocaleString()}
           </p>
         </div>
       </div>

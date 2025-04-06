@@ -469,6 +469,13 @@ export type Database = {
         }
         Returns: undefined
       }
+      update_avatar_url: {
+        Args: {
+          user_id: string
+          avatar_url: string
+        }
+        Returns: undefined
+      }
     }
     Enums: {
       [_ in never]: never

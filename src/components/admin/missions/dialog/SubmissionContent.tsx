@@ -9,6 +9,8 @@ interface SubmissionContentProps {
     receipt_images?: string[];
     review_id?: string;
     review_images?: string[];
+    review_url?: string;
+    submission_type?: 'RECEIPT' | 'REVIEW';
   } | null;
   openReviewLink: (reviewId: string) => void;
 }
