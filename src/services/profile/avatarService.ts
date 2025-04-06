@@ -10,28 +10,11 @@ export const uploadAvatar = async (userId: string, file: File): Promise<string |
 
     console.log("Uploading avatar with path:", filePath);
     
-    // Check if bucket exists
-    const { data: buckets } = await supabase.storage.listBuckets();
-    const avatarBucketExists = buckets?.some(bucket => bucket.name === 'avatars');
+    // Check if avatars bucket exists, but don't try to create it via JavaScript
+    // as this will fail due to RLS policies
     
-    if (!avatarBucketExists) {
-      console.log("Avatars bucket doesn't exist, creating it...");
-      const { error: createBucketError } = await supabase.storage
-        .createBucket('avatars', {
-          public: true,
-          allowedMimeTypes: ['image/png', 'image/jpeg', 'image/gif', 'image/webp'],
-          fileSizeLimit: 5 * 1024 * 1024 // 5MB
-        });
-      
-      if (createBucketError) {
-        console.error("Error creating bucket:", createBucketError);
-        throw createBucketError;
-      }
-      console.log("Avatars bucket created successfully");
-    }
-
     // Upload the file to the storage bucket
-    const { error: uploadError } = await supabase.storage
+    const { error: uploadError, data } = await supabase.storage
       .from('avatars')
       .upload(filePath, file, { upsert: true });
 
@@ -40,10 +23,12 @@ export const uploadAvatar = async (userId: string, file: File): Promise<string |
       throw uploadError;
     }
 
-    const { data } = supabase.storage.from('avatars').getPublicUrl(filePath);
-    if (data && data.publicUrl) {
-      console.log("Avatar uploaded successfully, URL:", data.publicUrl);
-      return data.publicUrl;
+    // Get the public URL after a successful upload
+    const { data: urlData } = supabase.storage.from('avatars').getPublicUrl(filePath);
+    
+    if (urlData && urlData.publicUrl) {
+      console.log("Avatar uploaded successfully, URL:", urlData.publicUrl);
+      return urlData.publicUrl;
     }
     
     return null;
