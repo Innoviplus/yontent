@@ -9,7 +9,7 @@ export type MissionParticipation = {
     review_id?: string;
     review_images?: string[];
     review_url?: string;
-    submission_type: 'RECEIPT' | 'REVIEW';
+    submission_type?: 'RECEIPT' | 'REVIEW'; // Made optional
   } | null;
   createdAt: Date;
   // These fields are added during transformation from API data

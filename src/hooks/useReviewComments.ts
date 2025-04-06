@@ -44,16 +44,20 @@ export const useReviewComments = (reviewId: string) => {
         throw error;
       }
       
-      const transformedComments: Comment[] = (data || []).map(comment => ({
-        id: comment.id,
-        content: comment.content,
-        createdAt: new Date(comment.created_at),
-        user: {
-          id: comment.user_id,
-          username: comment.profiles?.username || 'Anonymous',
-          avatar: comment.profiles?.avatar || undefined
-        }
-      }));
+      const transformedComments: Comment[] = (data || []).map(comment => {
+        // Safely handle the profiles data which might be null or have errors
+        const profile = comment.profiles || {};
+        return {
+          id: comment.id,
+          content: comment.content,
+          createdAt: new Date(comment.created_at),
+          user: {
+            id: comment.user_id,
+            username: typeof profile === 'object' && profile.username ? profile.username : 'Anonymous',
+            avatar: typeof profile === 'object' && profile.avatar ? profile.avatar : undefined
+          }
+        };
+      });
       
       setComments(transformedComments);
     } catch (error) {
@@ -104,14 +108,15 @@ export const useReviewComments = (reviewId: string) => {
       }
       
       // Safely handle potential null or undefined values in the response
+      const profile = data.profiles || {};
       const newCommentData: Comment = {
         id: data.id,
         content: data.content,
         createdAt: new Date(data.created_at),
         user: {
           id: data.user_id,
-          username: data.profiles?.username || 'Anonymous',
-          avatar: data.profiles?.avatar || undefined
+          username: typeof profile === 'object' && profile.username ? profile.username : 'Anonymous',
+          avatar: typeof profile === 'object' && profile.avatar ? profile.avatar : undefined
         }
       };
       

@@ -24,6 +24,11 @@ const ParticipationUserInfo: React.FC<ParticipationUserInfoProps> = ({
       .toUpperCase();
   };
 
+  // Format the date properly
+  const formattedDate = createdAt instanceof Date 
+    ? createdAt.toLocaleString() 
+    : new Date(createdAt).toLocaleString();
+
   return (
     <div className="flex items-center justify-between">
       <div className="flex items-center gap-2">
@@ -36,7 +41,7 @@ const ParticipationUserInfo: React.FC<ParticipationUserInfoProps> = ({
         <div>
           <p className="font-medium">{userName}</p>
           <p className="text-sm text-muted-foreground">
-            {createdAt.toLocaleString()}
+            {formattedDate}
           </p>
         </div>
       </div>

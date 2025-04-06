@@ -7,7 +7,7 @@ import {
   rejectParticipation,
   updateMissionParticipationStatus
 } from './api/missionParticipationsApi';
-import { MissionParticipation as ApiMissionParticipation, ParticipationStatus } from './api/types/participationTypes';
+import { ParticipationStatus } from './api/types/participationTypes';
 import { MissionParticipation } from './types/missionParticipationTypes';
 
 export type { MissionParticipation } from './types/missionParticipationTypes';
@@ -31,7 +31,7 @@ export const useMissionParticipations = () => {
       
       if (response.success && response.participations) {
         // Transform API response to the format expected by components
-        const transformedParticipations = response.participations.map(p => ({
+        const transformedParticipations: MissionParticipation[] = response.participations.map(p => ({
           id: p.id,
           userId: p.userId,
           missionId: p.missionId,
