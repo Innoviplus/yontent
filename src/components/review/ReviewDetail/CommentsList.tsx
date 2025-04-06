@@ -53,7 +53,7 @@ const CommentsList = ({ comments, loading }: CommentsListProps) => {
                 {comment.user.username}
               </Link>
               <span className="text-xs text-gray-500 ml-2">
-                {format(new Date(comment.created_at), 'MMM d, yyyy • h:mm a')}
+                {format(new Date(comment.createdAt), 'MMM d, yyyy • h:mm a')}
               </span>
             </div>
             <p className="text-gray-700">{comment.content}</p>

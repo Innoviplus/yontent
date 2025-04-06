@@ -19,6 +19,14 @@ export const useReviewsList = (userId?: string) => {
   const paginatedReviews = reviews ? 
     reviews.slice((page - 1) * itemsPerPage, page * itemsPerPage) : 
     [];
+    
+  const hasMore = reviews ? (page * itemsPerPage) < reviews.length : false;
+  
+  const loadMore = () => {
+    if (page < totalPages) {
+      setPage(page + 1);
+    }
+  };
 
   return {
     reviews: paginatedReviews,
@@ -30,6 +38,8 @@ export const useReviewsList = (userId?: string) => {
     page,
     setPage,
     totalPages,
-    itemsPerPage
+    itemsPerPage,
+    hasMore,
+    loadMore
   };
 };

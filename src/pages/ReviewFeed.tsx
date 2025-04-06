@@ -7,14 +7,15 @@ import FeedHeader from '@/components/review/FeedHeader';
 import EmptyFeed from '@/components/review/EmptyFeed';
 import { useAuth } from '@/contexts/AuthContext';
 import { useReviews } from '@/hooks/useReviews';
+import { SortOption } from '@/hooks/review/useReviewsList';
 
 const ReviewFeed = () => {
   const { user } = useAuth();
   const { reviews, loading, hasMore, loadMore } = useReviews();
   
   // Define mock functions for sortBy and setSortBy since they're removed from the hook
-  const sortBy = "recent";
-  const setSortBy = (sort: string) => {
+  const sortBy: SortOption = "recent";
+  const setSortBy = (sort: SortOption) => {
     console.log("Sort option selected:", sort);
     // This is a placeholder - the actual implementation would need to be added
     // to the useReviews hook if sorting is needed

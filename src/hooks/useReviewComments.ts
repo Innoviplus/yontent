@@ -2,7 +2,6 @@
 import { useState, useEffect } from 'react';
 import { supabase } from '@/integrations/supabase/client';
 import { toast } from 'sonner';
-import { User as SupabaseUser } from '@supabase/supabase-js';
 
 export interface Comment {
   id: string;
@@ -75,22 +74,7 @@ export const useReviewComments = (reviewId: string) => {
     try {
       setSubmitting(true);
       
-      // First, add the comment
-      const { data: commentData, error: commentError } = await supabase
-        .from('review_comments')
-        .insert([
-          {
-            review_id: reviewId,
-            user_id: supabase.auth.getUser().then(({ data }) => data.user?.id),
-            content: content.trim()
-          }
-        ])
-        .select()
-        .single();
-        
-      if (commentError) throw commentError;
-      
-      // Then, get the user profile data
+      // Get the current user first
       const { data: userData } = await supabase.auth.getUser();
       const userId = userData.user?.id;
       
@@ -98,6 +82,20 @@ export const useReviewComments = (reviewId: string) => {
         throw new Error('User not authenticated');
       }
       
+      // Then add the comment
+      const { data: commentData, error: commentError } = await supabase
+        .from('review_comments')
+        .insert({
+          review_id: reviewId,
+          user_id: userId,
+          content: content.trim()
+        })
+        .select()
+        .single();
+        
+      if (commentError) throw commentError;
+      
+      // Get the user profile data
       const { data: profileData, error: profileError } = await supabase
         .from('profiles')
         .select('id, username, avatar')
