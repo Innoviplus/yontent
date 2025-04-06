@@ -32,27 +32,30 @@ export const useAvatarUpload = () => {
 
       console.log("Starting avatar upload process for file:", file.name);
 
-      // Upload the avatar and get the URL
-      const newAvatarUrl = await uploadAvatar(user.id, file);
-      
-      if (newAvatarUrl) {
-        console.log("Avatar uploaded, URL:", newAvatarUrl);
+      try {
+        // Upload the avatar and get the URL
+        const newAvatarUrl = await uploadAvatar(user.id, file);
         
-        // Update the avatar URL in the database
-        await updateAvatarUrl(user.id, newAvatarUrl);
-        setAvatarUrl(newAvatarUrl);
-        
-        // Refresh the user profile data to get the updated avatar
-        if (refreshUserProfile) {
-          console.log("Refreshing user profile after avatar update");
-          await refreshUserProfile();
+        if (newAvatarUrl) {
+          console.log("Avatar uploaded, URL:", newAvatarUrl);
+          
+          // Update the avatar URL in the database
+          await updateAvatarUrl(user.id, newAvatarUrl);
+          setAvatarUrl(newAvatarUrl);
+          
+          // Refresh the user profile data to get the updated avatar
+          if (refreshUserProfile) {
+            console.log("Refreshing user profile after avatar update");
+            await refreshUserProfile();
+          }
         }
-        
-        toast.success("Avatar updated successfully!");
+      } catch (uploadError: any) {
+        console.error("Upload failed:", uploadError);
+        toast.error(`Failed to update avatar: ${uploadError.message}`);
       }
     } catch (error: any) {
-      console.error("Error uploading avatar:", error.message);
-      toast.error("Failed to update avatar: " + error.message);
+      console.error("Error handling avatar upload:", error.message);
+      toast.error("Failed to process avatar upload");
     } finally {
       setUploading(false);
     }

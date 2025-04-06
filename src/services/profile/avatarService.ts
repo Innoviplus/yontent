@@ -6,24 +6,52 @@ export const uploadAvatar = async (userId: string, file: File): Promise<string |
   try {
     const fileExt = file.name.split('.').pop();
     const fileName = `${userId}.${fileExt}`;
-    const filePath = `avatars/${fileName}`;
+    const filePath = `${fileName}`;
 
+    console.log("Uploading avatar with path:", filePath);
+    
+    // Create the storage bucket if it doesn't exist
+    const { data: bucketData, error: bucketError } = await supabase.storage
+      .getBucket('avatars');
+    
+    if (bucketError && bucketError.message.includes('The resource was not found')) {
+      console.log("Avatars bucket doesn't exist, creating it...");
+      const { error: createBucketError } = await supabase.storage
+        .createBucket('avatars', {
+          public: true,
+          allowedMimeTypes: ['image/png', 'image/jpeg', 'image/gif', 'image/webp'],
+          fileSizeLimit: 5 * 1024 * 1024 // 5MB
+        });
+      
+      if (createBucketError) {
+        console.error("Error creating bucket:", createBucketError);
+        throw createBucketError;
+      }
+      console.log("Avatars bucket created successfully");
+    } else if (bucketError) {
+      console.error("Error checking bucket:", bucketError);
+      throw bucketError;
+    }
+
+    // Upload the file to the storage bucket
     let { error: uploadError } = await supabase.storage
       .from('avatars')
       .upload(filePath, file, { upsert: true });
 
     if (uploadError) {
+      console.error("Upload error:", uploadError);
       throw uploadError;
     }
 
     const { data } = supabase.storage.from('avatars').getPublicUrl(filePath);
     if (data && data.publicUrl) {
+      console.log("Avatar uploaded successfully, URL:", data.publicUrl);
       return data.publicUrl;
     }
     
     return null;
   } catch (error: any) {
-    console.error("Error uploading avatar:", error.message);
+    console.error("Error uploading avatar:", error);
     throw error;
   }
 };
@@ -36,9 +64,11 @@ export const updateAvatarUrl = async (userId: string, avatarUrl: string): Promis
       .eq('id', userId);
 
     if (updateError) {
+      console.error("Error updating avatar URL in profile:", updateError);
       throw updateError;
     }
     
+    console.log("Avatar URL updated in profile successfully");
     toast.success("Avatar updated successfully!");
   } catch (error: any) {
     console.error("Error updating avatar URL:", error.message);

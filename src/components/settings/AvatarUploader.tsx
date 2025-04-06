@@ -4,6 +4,7 @@ import { Input } from '@/components/ui/input';
 import { Button } from '@/components/ui/button';
 import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
 import { Camera, Loader2 } from 'lucide-react';
+import { toast } from 'sonner';
 
 export interface AvatarUploaderProps {
   avatarUrl: string | null;
@@ -43,11 +44,14 @@ export const AvatarUploader: React.FC<AvatarUploaderProps> = ({
       const objectUrl = URL.createObjectURL(file);
       setPreview(objectUrl);
       
-      // Call the upload handler directly - no more cropping that might cause issues
+      // Call the upload handler
       await handleAvatarUpload(e);
       console.log("Avatar upload complete");
-    } catch (error) {
+    } catch (error: any) {
       console.error("Error handling file:", error);
+      toast.error(`Upload failed: ${error.message}`);
+      // Revert to previous preview on error
+      setPreview(avatarUrl);
     }
   };
 
@@ -73,7 +77,7 @@ export const AvatarUploader: React.FC<AvatarUploaderProps> = ({
           asChild
           disabled={uploading}
         >
-          <label htmlFor="avatar-upload">
+          <label htmlFor="avatar-upload" className="cursor-pointer">
             {uploading ? (
               <Loader2 className="h-4 w-4 animate-spin mr-2" />
             ) : (
