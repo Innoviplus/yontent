@@ -22,8 +22,8 @@ const HeroSection = () => {
           </div>
           
           <h1 className="text-4xl md:text-5xl font-bold text-gray-900 mb-6 animate-fade-up" style={{ animationDelay: '100ms' }}>
-            Get Rewarded for Your
-            <span className="text-brand-teal block mt-2">Honest Reviews</span>
+            Get Recognised for Your
+            <span className="text-brand-teal block mt-2">Brand Love</span>
           </h1>
           
           <p className="text-xl text-gray-600 mb-8 animate-fade-up" style={{ animationDelay: '200ms' }}>
