@@ -20,20 +20,24 @@ export const useAvatarUpload = () => {
   const handleAvatarUpload = async (event: React.ChangeEvent<HTMLInputElement>) => {
     try {
       if (!event.target.files || event.target.files.length === 0) {
+        console.log("No file selected");
         return;
       }
       
       const file = event.target.files[0];
+      console.log("File selected:", file.name, "Type:", file.type, "Size:", (file.size / 1024).toFixed(2), "KB");
       
       // Validate file type
       const validTypes = ['image/jpeg', 'image/png', 'image/gif', 'image/webp'];
       if (!validTypes.includes(file.type)) {
+        console.error("Invalid file type:", file.type);
         toast.error("Please upload a valid image file (JPEG, PNG, GIF, or WEBP)");
         return;
       }
       
       // Validate file size (max 5MB)
       if (file.size > 5 * 1024 * 1024) {
+        console.error("File too large:", (file.size / 1024 / 1024).toFixed(2), "MB");
         toast.error("Image file is too large. Maximum size is 5MB.");
         return;
       }
@@ -42,8 +46,10 @@ export const useAvatarUpload = () => {
       toast.info("Uploading your avatar...");
       
       if (!user) {
+        console.error("User not authenticated");
         toast.error("User not authenticated.");
-        throw new Error("User not authenticated.");
+        setUploading(false);
+        return;
       }
 
       console.log("Starting avatar upload process for file:", file.name);
@@ -66,6 +72,7 @@ export const useAvatarUpload = () => {
             toast.success("Avatar updated successfully!");
           }
         } else {
+          console.error("Failed to generate avatar URL");
           toast.error("Failed to generate avatar URL");
         }
       } catch (uploadError: any) {

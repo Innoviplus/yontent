@@ -29,11 +29,10 @@ export const ProfileTab: React.FC<ProfileTabProps> = ({
 }) => {
   const fileInputRef = useRef<HTMLInputElement>(null);
   
-  // Ensure avatar URL is properly set
+  // Ensure avatar URL is properly set and logged for debugging
   useEffect(() => {
-    if (userProfile?.avatar && !avatarUrl) {
-      console.log("Ensuring avatar URL is set:", userProfile.avatar);
-    }
+    console.log("ProfileTab - Current avatar URL:", avatarUrl);
+    console.log("ProfileTab - User profile avatar:", userProfile?.avatar);
   }, [userProfile, avatarUrl]);
 
   // Log the current state for debugging

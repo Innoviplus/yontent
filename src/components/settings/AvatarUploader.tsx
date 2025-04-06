@@ -29,6 +29,7 @@ export const AvatarUploader: React.FC<AvatarUploaderProps> = ({
 
   // Update preview when avatarUrl changes
   useEffect(() => {
+    console.log("AvatarUploader received avatarUrl:", avatarUrl);
     if (avatarUrl) {
       setPreview(avatarUrl);
     }
@@ -36,18 +37,22 @@ export const AvatarUploader: React.FC<AvatarUploaderProps> = ({
   
   const handleFileChange = async (e: React.ChangeEvent<HTMLInputElement>) => {
     const file = e.target.files?.[0];
-    if (!file) return;
+    if (!file) {
+      console.log("No file selected in handleFileChange");
+      return;
+    }
     
-    console.log("File selected:", file.name, "Type:", file.type, "Size:", (file.size / 1024).toFixed(2), "KB");
+    console.log("File selected in handleFileChange:", file.name, "Type:", file.type, "Size:", (file.size / 1024).toFixed(2), "KB");
     
     try {
       // Show a preview before actual upload
       const objectUrl = URL.createObjectURL(file);
+      console.log("Created object URL for preview:", objectUrl);
       setPreview(objectUrl);
       
       // Call the upload handler
       await handleAvatarUpload(e);
-      console.log("Avatar upload complete");
+      console.log("Avatar upload complete in handleFileChange");
     } catch (error: any) {
       console.error("Error handling file:", error);
       toast.error(`Upload failed: ${error.message || "Unknown error"}`);
@@ -61,7 +66,7 @@ export const AvatarUploader: React.FC<AvatarUploaderProps> = ({
       <Avatar className="w-32 h-32 mb-4 border-2 border-gray-200">
         <AvatarImage src={preview || ''} alt={username || 'User'} />
         <AvatarFallback className="bg-primary/10">
-          {username?.charAt(0).toUpperCase() || 'U'}
+          {username ? username.charAt(0).toUpperCase() : 'U'}
         </AvatarFallback>
       </Avatar>
       <div className="relative">
