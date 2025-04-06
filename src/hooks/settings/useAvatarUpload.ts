@@ -24,7 +24,22 @@ export const useAvatarUpload = () => {
       }
       
       const file = event.target.files[0];
+      
+      // Validate file type
+      const validTypes = ['image/jpeg', 'image/png', 'image/gif', 'image/webp'];
+      if (!validTypes.includes(file.type)) {
+        toast.error("Please upload a valid image file (JPEG, PNG, GIF, or WEBP)");
+        return;
+      }
+      
+      // Validate file size (max 5MB)
+      if (file.size > 5 * 1024 * 1024) {
+        toast.error("Image file is too large. Maximum size is 5MB.");
+        return;
+      }
+      
       setUploading(true);
+      toast.info("Uploading your avatar...");
       
       if (!user) {
         toast.error("User not authenticated.");

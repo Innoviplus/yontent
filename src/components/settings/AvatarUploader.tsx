@@ -3,7 +3,7 @@ import React, { useState, useEffect, RefObject } from 'react';
 import { Input } from '@/components/ui/input';
 import { Button } from '@/components/ui/button';
 import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
-import { Camera, Loader2 } from 'lucide-react';
+import { Camera, Loader2, Upload } from 'lucide-react';
 import { toast } from 'sonner';
 
 export interface AvatarUploaderProps {
@@ -35,9 +35,10 @@ export const AvatarUploader: React.FC<AvatarUploaderProps> = ({
   }, [avatarUrl]);
   
   const handleFileChange = async (e: React.ChangeEvent<HTMLInputElement>) => {
-    console.log("File selected:", e.target.files?.[0]?.name);
     const file = e.target.files?.[0];
     if (!file) return;
+    
+    console.log("File selected:", file.name, "Type:", file.type, "Size:", (file.size / 1024).toFixed(2), "KB");
     
     try {
       // Show a preview before actual upload
@@ -57,14 +58,16 @@ export const AvatarUploader: React.FC<AvatarUploaderProps> = ({
 
   return (
     <div className="flex flex-col items-center">
-      <Avatar className="w-32 h-32 mb-4">
+      <Avatar className="w-32 h-32 mb-4 border-2 border-gray-200">
         <AvatarImage src={preview || ''} alt={username || 'User'} />
-        <AvatarFallback>{username?.charAt(0).toUpperCase() || 'U'}</AvatarFallback>
+        <AvatarFallback className="bg-primary/10">
+          {username?.charAt(0).toUpperCase() || 'U'}
+        </AvatarFallback>
       </Avatar>
       <div className="relative">
         <Input
           type="file"
-          accept="image/*"
+          accept="image/jpeg,image/png,image/gif,image/webp"
           onChange={handleFileChange}
           className="hidden"
           id="avatar-upload"
@@ -77,16 +80,19 @@ export const AvatarUploader: React.FC<AvatarUploaderProps> = ({
           asChild
           disabled={uploading}
         >
-          <label htmlFor="avatar-upload" className="cursor-pointer">
+          <label htmlFor="avatar-upload" className="cursor-pointer flex items-center">
             {uploading ? (
               <Loader2 className="h-4 w-4 animate-spin mr-2" />
             ) : (
-              <Camera className="h-4 w-4 mr-2" />
+              <Upload className="h-4 w-4 mr-2" />
             )}
             {uploading ? 'Uploading...' : 'Change Avatar'}
           </label>
         </Button>
       </div>
+      {!avatarUrl && !preview && !uploading && (
+        <p className="text-xs text-gray-500 mt-2">Upload an image to personalize your profile</p>
+      )}
     </div>
   );
 };

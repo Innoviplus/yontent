@@ -4,6 +4,7 @@ import { UseFormReturn } from 'react-hook-form';
 import { ProfileInfoForm } from './ProfileInfoForm';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { AvatarUploader } from './AvatarUploader';
+import { toast } from 'sonner';
 
 interface ProfileTabProps {
   userProfile: any;
@@ -34,6 +35,24 @@ export const ProfileTab: React.FC<ProfileTabProps> = ({
       console.log("Ensuring avatar URL is set:", userProfile.avatar);
     }
   }, [userProfile, avatarUrl]);
+
+  // Log the current state for debugging
+  useEffect(() => {
+    console.log("ProfileTab loaded with:", {
+      hasUserProfile: !!userProfile,
+      avatarUrl,
+      uploading,
+      profileFormValues: profileForm?.formState?.defaultValues
+    });
+  }, [userProfile, avatarUrl, uploading, profileForm]);
+
+  const triggerAvatarUpload = () => {
+    if (fileInputRef.current) {
+      fileInputRef.current.click();
+    } else {
+      toast.error("Cannot access file input");
+    }
+  };
 
   return (
     <Card>
