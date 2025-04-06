@@ -25,9 +25,9 @@ export const BirthDatePicker: React.FC<BirthDatePickerProps> = ({
   const to = new Date();
   to.setFullYear(today.getFullYear() - 18); // 18 years ago
 
-  // Custom month change handler to ensure the custom event is processed
+  // Custom month/year change handler to ensure the onChange is called
   const handleMonthChange = (date: Date) => {
-    // Directly call onChange with the new date
+    // Log the change but don't call onChange here
     console.log("Month/year changed to:", date);
   };
 

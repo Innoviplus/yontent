@@ -106,6 +106,13 @@ function Calendar({
             if (calendarProps.onMonthChange) {
               calendarProps.onMonthChange(newDate);
             }
+            
+            // Important: This is what was missing - we need to call onSelect to actually update the date
+            if (calendarProps.onSelect && calendarProps.selected) {
+              const selectedDate = new Date(calendarProps.selected);
+              selectedDate.setMonth(parseInt(monthStr));
+              calendarProps.onSelect(selectedDate);
+            }
           };
           
           const handleYearChange = (yearStr: string) => {
@@ -116,6 +123,13 @@ function Calendar({
             if (calendarProps.onMonthChange) {
               console.log("Year changed to:", yearStr, "Setting date to:", newDate);
               calendarProps.onMonthChange(newDate);
+            }
+            
+            // Important: This is what was missing - we need to call onSelect to actually update the date
+            if (calendarProps.onSelect && calendarProps.selected) {
+              const selectedDate = new Date(calendarProps.selected);
+              selectedDate.setFullYear(parseInt(yearStr));
+              calendarProps.onSelect(selectedDate);
             }
           };
 

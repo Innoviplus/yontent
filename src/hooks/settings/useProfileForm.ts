@@ -1,3 +1,4 @@
+
 import { useForm } from 'react-hook-form';
 import { zodResolver } from '@hookform/resolvers/zod';
 import * as z from 'zod';
@@ -76,6 +77,8 @@ export const useProfileForm = (
     if (userProfile?.extended_data) {
       const extData = userProfile.extended_data;
       
+      console.log("Loading profile data:", extData);
+      
       profileForm.reset({
         username: userProfile.username || '',
         firstName: extData.firstName || '',
@@ -96,6 +99,7 @@ export const useProfileForm = (
     if (!user) return;
     
     setIsUpdating(true);
+    console.log("Submitting profile data:", values);
     
     try {
       // Get current extended profile data to preserve other fields
@@ -109,14 +113,19 @@ export const useProfileForm = (
         instagramUrl: formatUrl(values.instagramUrl),
         youtubeUrl: formatUrl(values.youtubeUrl),
         tiktokUrl: formatUrl(values.tiktokUrl),
+        // Explicitly include bio and birthDate to ensure they're saved
+        bio: values.bio || null,
+        birthDate: values.birthDate,
       };
+      
+      console.log("Formatted values:", formattedValues);
       
       // Merge with new values, preserving existing fields from other tabs
       const extendedData: ExtendedProfile = {
         ...currentExtendedProfile,
         firstName: formattedValues.firstName,
         lastName: formattedValues.lastName,
-        bio: formattedValues.bio || null,
+        bio: formattedValues.bio,
         gender: formattedValues.gender || null,
         birthDate: formattedValues.birthDate || null,
         websiteUrl: formattedValues.websiteUrl,
@@ -125,6 +134,8 @@ export const useProfileForm = (
         youtubeUrl: formattedValues.youtubeUrl,
         tiktokUrl: formattedValues.tiktokUrl,
       };
+      
+      console.log("Saving extended data:", extendedData);
       
       // Use the updateProfileData service function
       const success = await updateProfileData(user.id, extendedData);
@@ -141,6 +152,7 @@ export const useProfileForm = (
       }
       
     } catch (error: any) {
+      console.error("Profile update error:", error);
       toast.error("Update Failed: " + error.message);
     } finally {
       setIsUpdating(false);

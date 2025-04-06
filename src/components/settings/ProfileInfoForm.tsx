@@ -33,16 +33,16 @@ export const ProfileInfoForm: React.FC<ProfileInfoFormProps> = ({
   onProfileSubmit,
   isUpdating,
 }) => {
-  // Only disable the birthDate field if it was previously set AND saved
-  // This checks if birthDate already exists in the database, not just in the form
-  const birthDateWasPreviouslySaved = 
-    typeof profileForm.getValues('birthDate') !== 'undefined' && 
-    profileForm.getValues('birthDate') !== null &&
-    !profileForm.formState.isDirty;
+  // We're removing the restriction on birthdate editing for better user experience
+  // This was causing issues with saving the birthdate
+  const handleFormSubmit = async (data: any) => {
+    console.log("Form submitted with data:", data);
+    await onProfileSubmit(data);
+  };
 
   return (
     <Form {...profileForm}>
-      <form onSubmit={profileForm.handleSubmit(onProfileSubmit)} className="space-y-8">
+      <form onSubmit={profileForm.handleSubmit(handleFormSubmit)} className="space-y-8">
         <FormField
           control={profileForm.control}
           name="username"
@@ -136,7 +136,7 @@ export const ProfileInfoForm: React.FC<ProfileInfoFormProps> = ({
 
           <BirthDateInput 
             control={profileForm.control} 
-            disabled={birthDateWasPreviouslySaved}
+            disabled={false} // Always allow editing for better user experience
           />
         </div>
 
