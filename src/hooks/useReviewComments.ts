@@ -2,7 +2,7 @@
 import { useState, useEffect } from 'react';
 import { supabase } from '@/integrations/supabase/client';
 import { toast } from 'sonner';
-import { extractAvatarUrl } from '@/hooks/admin/api/types/participationTypes';
+import { extractAvatarUrl } from './admin/api/types/participationTypes';
 
 export interface Comment {
   id: string;
@@ -33,7 +33,7 @@ export const useReviewComments = (reviewId: string) => {
           content,
           created_at,
           user_id,
-          profiles:user_id (
+          profiles(
             username,
             points,
             extended_data
@@ -96,11 +96,18 @@ export const useReviewComments = (reviewId: string) => {
     }
     
     try {
+      const { user } = await supabase.auth.getUser();
+      
+      if (!user) {
+        toast.error('You must be logged in to comment');
+        return false;
+      }
+      
       const { data, error } = await supabase
         .from('review_comments')
         .insert({
           review_id: reviewId,
-          user_id: supabase.auth.getUser().then(({ data }) => data.user?.id || ''),
+          user_id: user.id,
           content: content.trim()
         })
         .select(`
@@ -108,7 +115,7 @@ export const useReviewComments = (reviewId: string) => {
           content,
           created_at,
           user_id,
-          profiles:user_id (
+          profiles(
             username,
             points,
             extended_data

@@ -1,7 +1,16 @@
 
 import { supabase } from '@/integrations/supabase/client';
-import { ApiResponse, MissionParticipation, MissionParticipationFilters } from './types/participationTypes';
+import { 
+  ApiResponse, 
+  MissionParticipation, 
+  MissionParticipationFilters 
+} from './types/participationTypes';
 import { transformParticipationData } from './utils/transformationUtils';
+import { 
+  updateMissionParticipationStatus,
+  approveParticipation as approveParticipationAction,
+  rejectParticipation as rejectParticipationAction
+} from './participationStatusActions';
 
 /**
  * Fetches all mission participations
@@ -91,11 +100,21 @@ export const fetchMissionParticipationsWithFilters = async (
   }
 };
 
+// Export the status action functions with the same names to maintain API compatibility
+export const approveParticipation = approveParticipationAction;
+export const rejectParticipation = rejectParticipationAction;
+export const updateMissionParticipationStatus = updateMissionParticipationStatus;
+
+// Re-export the MissionParticipation type
+export type { MissionParticipation } from './types/participationTypes';
+
 // API functions export
 export const useMissionParticipationsApi = () => {
   return {
     fetchMissionParticipations,
     fetchMissionParticipationsWithFilters,
-    // Add any additional functions here as they're implemented
+    updateMissionParticipationStatus,
+    approveParticipation,
+    rejectParticipation
   };
 };
