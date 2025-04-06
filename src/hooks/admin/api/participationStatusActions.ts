@@ -1,62 +1,104 @@
 
 import { supabase } from '@/integrations/supabase/client';
 import { ParticipationStatusResponse } from './types/participationTypes';
-import { toast } from 'sonner';
 
 /**
- * Approves a participation and awards points to the user
+ * Updates the status of a mission participation
+ */
+export const updateMissionParticipationStatus = async (
+  id: string,
+  status: string
+): Promise<ParticipationStatusResponse> => {
+  try {
+    const { error } = await supabase
+      .from('mission_participations')
+      .update({ status, updated_at: new Date() })
+      .eq('id', id);
+
+    if (error) {
+      console.error('Error updating participation status:', error);
+      return { success: false, error: error.message };
+    }
+
+    return { success: true };
+  } catch (error: any) {
+    console.error('Error in updateMissionParticipationStatus:', error);
+    return { success: false, error: error.message };
+  }
+};
+
+/**
+ * Approves a participation and awards points if applicable
  */
 export const approveParticipation = async (id: string): Promise<ParticipationStatusResponse> => {
   try {
-    // Get the participation details
+    // First, get the participation to check its current status
     const { data: participation, error: fetchError } = await supabase
       .from('mission_participations')
-      .select('*, missions(points_reward, title), user_id')
+      .select(`
+        id,
+        status,
+        user_id,
+        missions:mission_id (points_reward)
+      `)
       .eq('id', id)
       .single();
 
     if (fetchError) {
+      console.error('Error fetching participation for approval:', fetchError);
       return { success: false, error: fetchError.message };
     }
 
-    // Check if already approved
+    // If already approved, return early
     if (participation.status === 'APPROVED') {
-      return { success: true, error: 'This submission was already approved' };
+      return { 
+        success: true, 
+        error: 'This submission was already approved.'
+      };
     }
 
-    // Update status to APPROVED
+    // Get the points reward from the mission
+    const pointsReward = participation.missions?.points_reward || 0;
+    const userId = participation.user_id;
+
+    // Begin a transaction to update both the participation status and award points
     const { error: updateError } = await supabase
       .from('mission_participations')
-      .update({ 
-        status: 'APPROVED',
-        updated_at: new Date().toISOString()
-      })
+      .update({ status: 'APPROVED', updated_at: new Date() })
       .eq('id', id);
 
     if (updateError) {
+      console.error('Error approving participation:', updateError);
       return { success: false, error: updateError.message };
     }
 
     // Award points to the user
-    const pointsToAward = participation.missions?.points_reward || 0;
-    if (pointsToAward > 0) {
+    if (pointsReward > 0) {
+      // Update user points in profiles table
       const { error: pointsError } = await supabase.rpc('increment_points', {
-        user_id_param: participation.user_id,
-        points_amount_param: pointsToAward
+        user_id_param: userId,
+        points_amount_param: pointsReward
       });
 
       if (pointsError) {
         console.error('Error awarding points:', pointsError);
-        // Continue despite points error, but log it
+        // We don't return an error here as the participation was approved
+        // But we should log this for admin attention
       } else {
-        // Log the points transaction
-        const missionTitle = participation.missions?.title || 'Unknown mission';
-        await supabase.from('point_transactions').insert({
-          user_id: participation.user_id,
-          amount: pointsToAward,
-          type: 'MISSION_COMPLETION',
-          description: `Completed mission: ${missionTitle}`
-        });
+        // Create a transaction record
+        const { error: transactionError } = await supabase
+          .from('point_transactions')
+          .insert({
+            user_id: userId,
+            amount: pointsReward,
+            type: 'EARNED',
+            description: 'Mission participation approved'
+          });
+
+        if (transactionError) {
+          console.error('Error creating point transaction:', transactionError);
+          // Again, we don't return an error as the main operation succeeded
+        }
       }
     }
 
@@ -72,62 +114,19 @@ export const approveParticipation = async (id: string): Promise<ParticipationSta
  */
 export const rejectParticipation = async (id: string): Promise<ParticipationStatusResponse> => {
   try {
-    // Check if already rejected
-    const { data: participation, error: fetchError } = await supabase
+    const { error } = await supabase
       .from('mission_participations')
-      .select('status')
-      .eq('id', id)
-      .single();
-
-    if (fetchError) {
-      return { success: false, error: fetchError.message };
-    }
-
-    if (participation.status === 'REJECTED') {
-      return { success: true, error: 'This submission was already rejected' };
-    }
-
-    // Update status to REJECTED
-    const { error: updateError } = await supabase
-      .from('mission_participations')
-      .update({ 
-        status: 'REJECTED',
-        updated_at: new Date().toISOString() 
-      })
+      .update({ status: 'REJECTED', updated_at: new Date() })
       .eq('id', id);
 
-    if (updateError) {
-      return { success: false, error: updateError.message };
+    if (error) {
+      console.error('Error rejecting participation:', error);
+      return { success: false, error: error.message };
     }
 
     return { success: true };
   } catch (error: any) {
     console.error('Error in rejectParticipation:', error);
     return { success: false, error: error.message };
-  }
-};
-
-/**
- * Updates a mission participation status
- */
-export const updateMissionParticipationStatus = async (
-  id: string,
-  status: string
-): Promise<boolean> => {
-  try {
-    const { error } = await supabase
-      .from('mission_participations')
-      .update({ status, updated_at: new Date().toISOString() })
-      .eq('id', id);
-
-    if (error) {
-      throw error;
-    }
-
-    return true;
-  } catch (error: any) {
-    console.error('Error updating mission participation status:', error);
-    toast.error(`Error: ${error.message}`);
-    return false;
   }
 };

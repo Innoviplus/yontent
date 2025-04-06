@@ -57,8 +57,7 @@ export const extractAvatarUrl = (extendedData: Json | null): string | undefined 
   
   // Handle object case
   if (typeof extendedData === 'object' && extendedData !== null) {
-    // Need to use bracket notation for TypeScript compatibility with Json type
-    return extendedData['avatarUrl'] as string | undefined;
+    return extendedData.avatarUrl as string | undefined;
   }
   
   return undefined;

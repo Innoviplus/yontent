@@ -9,6 +9,7 @@ import { Skeleton } from '@/components/ui/skeleton';
 import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
 import UserStatsCard, { UserStats } from '@/components/user/UserStatsCard';
 import { useAuth } from '@/contexts/AuthContext';
+import { extractAvatarUrl } from '@/hooks/admin/api/types/participationTypes';
 
 interface ReviewAuthorProfileProps {
   userId: string;
@@ -43,7 +44,7 @@ const ReviewAuthorProfile = ({ userId }: ReviewAuthorProfileProps) => {
           id: profileData.id,
           username: profileData.username || 'Anonymous',
           email: '', // Add the required email property even though it's not in profile data
-          avatar: profileData.extended_data?.avatarUrl,
+          avatar: extractAvatarUrl(profileData.extended_data),
           points: profileData.points || 0,
           createdAt: new Date(profileData.created_at),
         };

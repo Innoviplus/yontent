@@ -21,6 +21,8 @@ export const uploadAvatar = async (file: File, userId: string): Promise<string |
     const fileName = `${userId}-${Date.now()}.${fileExt}`;
     const filePath = `avatars/${fileName}`;
 
+    console.log(`Uploading avatar to profiles bucket, path: ${filePath}`);
+
     // Upload the file to Supabase storage
     const { data, error } = await supabase.storage
       .from('profiles')
@@ -34,14 +36,17 @@ export const uploadAvatar = async (file: File, userId: string): Promise<string |
       throw error;
     }
 
+    console.log("Upload successful, getting public URL");
+
     // Get the public URL
     const { data: { publicUrl } } = supabase.storage
       .from('profiles')
       .getPublicUrl(filePath);
 
+    console.log("Received public URL:", publicUrl);
     return publicUrl;
   } catch (error: any) {
-    console.error("Avatar upload failed:", error.message);
+    console.error("Avatar upload failed:", error);
     toast.error(`Upload failed: ${error.message}`);
     return null;
   }
@@ -60,6 +65,8 @@ export const updateAvatarUrl = async (userId: string, avatarUrl: string): Promis
   }
 
   try {
+    console.log(`Updating avatar URL for user ${userId}: ${avatarUrl}`);
+    
     // First fetch the current extended_data to preserve other values
     const { data: profileData, error: fetchError } = await supabase
       .from('profiles')
@@ -75,6 +82,8 @@ export const updateAvatarUrl = async (userId: string, avatarUrl: string): Promis
     // Prepare updated extended_data with new avatar URL
     let extendedData: Record<string, any> = {};
     let currentData = profileData?.extended_data as Json || {};
+    
+    console.log("Current extended_data:", currentData);
     
     // Handle extended_data correctly whether it's a string or an object
     if (typeof currentData === 'string') {
@@ -96,6 +105,8 @@ export const updateAvatarUrl = async (userId: string, avatarUrl: string): Promis
       extendedData = { avatarUrl };
     }
 
+    console.log("Updated extended_data:", extendedData);
+
     // Update the profile
     const { error: updateError } = await supabase
       .from('profiles')
@@ -107,6 +118,7 @@ export const updateAvatarUrl = async (userId: string, avatarUrl: string): Promis
       throw updateError;
     }
 
+    console.log("Profile update successful");
     return true;
   } catch (error: any) {
     console.error("Failed to update avatar URL:", error.message);

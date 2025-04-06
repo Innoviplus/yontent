@@ -1,26 +1,30 @@
-
-import { Link } from 'react-router-dom';
-import { ChevronRight } from 'lucide-react';
-import ReviewCard from '@/components/ReviewCard';
-import { Review } from '@/lib/types';
 import { useEffect, useState } from 'react';
+import { Review } from '@/lib/types';
 import { supabase } from '@/integrations/supabase/client';
+import ReviewCard from '../ReviewCard';
+import { extractAvatarUrl } from '@/hooks/admin/api/types/participationTypes';
 
 interface FeaturedReviewsSectionProps {
-  loading?: boolean;
+  // You can add props here if needed
 }
 
-const FeaturedReviewsSection = ({ loading: initialLoading }: FeaturedReviewsSectionProps) => {
+const FeaturedReviewsSection = () => {
   const [reviews, setReviews] = useState<Review[]>([]);
-  const [loading, setLoading] = useState<boolean>(initialLoading || true);
+  const [loading, setLoading] = useState(true);
 
   useEffect(() => {
-    const fetchReviews = async () => {
+    const fetchFeaturedReviews = async () => {
       try {
         const { data, error } = await supabase
           .from('reviews')
           .select(`
-            *,
+            id,
+            user_id,
+            content,
+            images,
+            views_count,
+            likes_count,
+            created_at,
             profiles:user_id (
               id,
               username,
@@ -29,80 +33,57 @@ const FeaturedReviewsSection = ({ loading: initialLoading }: FeaturedReviewsSect
               extended_data
             )
           `)
-          .eq('status', 'PUBLISHED') // Only fetch PUBLISHED reviews
-          .order('created_at', { ascending: false })
-          .limit(5);
-          
-        if (error) {
-          console.error('Error fetching reviews:', error);
-          return;
-        }
+          .eq('status', 'PUBLISHED')
+          .order('likes_count', { ascending: false })
+          .limit(6);
         
-        const transformedReviews: Review[] = data.map(review => ({
-          id: review.id,
-          userId: review.user_id,
-          content: review.content,
-          images: review.images || [],
-          viewsCount: review.views_count,
-          likesCount: review.likes_count,
-          createdAt: new Date(review.created_at),
-          user: review.profiles ? {
-            id: review.profiles.id,
-            username: review.profiles.username || 'Anonymous',
+        if (error) throw error;
+        
+        // Transform the data to match Review type
+        const transformedReviews: Review[] = data.map(item => ({
+          id: item.id,
+          userId: item.user_id,
+          content: item.content,
+          images: item.images || [],
+          createdAt: new Date(item.created_at),
+          viewsCount: item.views_count,
+          likesCount: item.likes_count,
+          user: item.profiles ? {
+            id: item.profiles.id,
+            username: item.profiles.username || 'Anonymous',
             email: '',
-            points: review.profiles.points || 0,
-            createdAt: new Date(review.profiles.created_at),
-            avatar: review.profiles.extended_data?.avatarUrl
+            points: item.profiles.points || 0,
+            createdAt: new Date(item.profiles.created_at),
+            avatar: extractAvatarUrl(item.profiles.extended_data)
           } : undefined
         }));
         
         setReviews(transformedReviews);
       } catch (error) {
-        console.error('Unexpected error:', error);
+        console.error('Error fetching featured reviews:', error);
       } finally {
         setLoading(false);
       }
     };
     
-    fetchReviews();
+    fetchFeaturedReviews();
   }, []);
 
-  // Hide section completely when no reviews are available and loading is complete
-  if ((!loading && reviews.length === 0)) {
-    return null;
-  }
-
   return (
-    <section className="py-16 md:py-24 bg-gray-50">
-      <div className="container mx-auto px-4 sm:px-6">
-        <div className="flex justify-between items-center mb-10">
-          <div>
-            <div className="inline-flex items-center gap-2 px-4 py-1.5 bg-brand-slate/10 rounded-full mb-2">
-              <span className="text-sm font-medium text-brand-slate">Featured</span>
-            </div>
-            <h2 className="text-3xl font-bold text-gray-900">Recent Reviews</h2>
-          </div>
-          <Link to="/reviews" className="flex items-center text-brand-slate hover:text-brand-lightSlate transition-colors">
-            <span className="font-medium">View all</span>
-            <ChevronRight className="h-5 w-5 ml-1" />
-          </Link>
-        </div>
-        
+    <div className="bg-white py-12">
+      <div className="container mx-auto px-4">
+        <h2 className="text-2xl font-bold text-gray-800 mb-8">Featured Reviews</h2>
         {loading ? (
-          <div className="flex justify-center items-center py-12">
-            <div className="animate-spin rounded-full h-12 w-12 border-t-2 border-b-2 border-brand-teal"></div>
-          </div>
+          <p>Loading featured reviews...</p>
         ) : (
-          <div className="flex overflow-x-auto pb-4 space-x-6">
-            {reviews.map((review) => (
-              <div key={review.id} className="min-w-[280px] w-[280px] flex-shrink-0">
-                <ReviewCard review={review} />
-              </div>
+          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6">
+            {reviews.map(review => (
+              <ReviewCard key={review.id} review={review} />
             ))}
           </div>
         )}
       </div>
-    </section>
+    </div>
   );
 };
 
