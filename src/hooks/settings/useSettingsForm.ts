@@ -9,7 +9,7 @@ import { useSettingsSubmit } from './useSettingsSubmit';
 export const useSettingsForm = () => {
   const navigate = useNavigate();
   const { user } = useAuth();
-  const [activeTab, setActiveTab] = useState('general');
+  const [activeTab, setActiveTab] = useState('profile');
   
   // Get form state
   const { form, isSubmitting } = useSettingsFormState();

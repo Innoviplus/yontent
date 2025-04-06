@@ -1,150 +1,80 @@
 
 import React from 'react';
-import { UseFormReturn } from 'react-hook-form';
-import { Loader2, MessageSquare } from 'lucide-react';
-import {
-  Form,
-  FormControl,
-  FormDescription,
-  FormField,
-  FormItem,
-  FormLabel,
-  FormMessage,
-} from '@/components/ui/form';
-import { Input } from '@/components/ui/input';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
-import { PhoneInput } from './PhoneInput';
-import { toast } from 'sonner';
+import { UseFormReturn } from 'react-hook-form';
 
 export interface AccountTabProps {
-  settingsForm: UseFormReturn<any>;
-  onSettingsSubmit: (values: any) => Promise<void>;
-  isUpdating: boolean;
-  isSubmitting?: boolean;
-  handleResetPassword: () => Promise<void>;
   handleLogout: () => Promise<void>;
   handleDeleteAccount: () => Promise<void>;
+  handleResetPassword?: () => Promise<void> | undefined;
+  settingsForm?: UseFormReturn<any>;
+  onSettingsSubmit?: (values: any) => Promise<void>;
+  isUpdating?: boolean;
+  isSubmitting?: boolean;
 }
 
 export const AccountTab: React.FC<AccountTabProps> = ({
+  handleLogout,
+  handleDeleteAccount,
+  handleResetPassword,
   settingsForm,
   onSettingsSubmit,
   isUpdating,
-  isSubmitting = false,
-  handleResetPassword,
-  handleLogout,
-  handleDeleteAccount
+  isSubmitting
 }) => {
-  const handleContactUs = () => {
-    window.open('https://api.whatsapp.com/send?phone=85254278104', '_blank');
-  };
-
-  const [isResettingPassword, setIsResettingPassword] = React.useState(false);
-  
-  const onResetPassword = async () => {
-    try {
-      setIsResettingPassword(true);
-      await handleResetPassword();
-      toast.success('Password reset link sent to your email');
-    } catch (error) {
-      toast.error('Failed to send password reset link');
-      console.error(error);
-    } finally {
-      setIsResettingPassword(false);
-    }
-  };
-
   return (
-    <Card>
-      <CardHeader>
-        <CardTitle>Account Settings</CardTitle>
-        <CardDescription>Manage your account details and security</CardDescription>
-      </CardHeader>
-      <CardContent className="space-y-8">
-        <Form {...settingsForm}>
-          <form onSubmit={settingsForm.handleSubmit(onSettingsSubmit)} className="space-y-6">
-            <FormField
-              control={settingsForm.control}
-              name="email"
-              render={({ field }) => (
-                <FormItem>
-                  <FormLabel>Email Address</FormLabel>
-                  <FormControl>
-                    <Input type="email" {...field} readOnly />
-                  </FormControl>
-                  <FormDescription>
-                    Your email address cannot be changed directly.
-                  </FormDescription>
-                </FormItem>
-              )}
-            />
-            
-            <FormField
-              control={settingsForm.control}
-              name="phoneNumber"
-              render={({ field }) => (
-                <FormItem>
-                  <FormLabel>Phone Number</FormLabel>
-                  <FormControl>
-                    <PhoneInput
-                      value={field.value || ''}
-                      onChange={field.onChange}
-                      countryCode={settingsForm.watch('phoneCountryCode') || ''}
-                      onCountryCodeChange={(code) => {
-                        settingsForm.setValue('phoneCountryCode', code);
-                      }}
-                    />
-                  </FormControl>
-                  <FormMessage />
-                </FormItem>
-              )}
-            />
-            
-            <FormField
-              control={settingsForm.control}
-              name="country"
-              render={({ field }) => (
-                <FormItem>
-                  <FormLabel>Current Country</FormLabel>
-                  <FormControl>
-                    <Input placeholder="United States" {...field} value={field.value || ''} />
-                  </FormControl>
-                  <FormMessage />
-                </FormItem>
-              )}
-            />
-            
-            <Button type="submit" disabled={isUpdating || isSubmitting}>
-              {(isUpdating || isSubmitting) && <Loader2 className="mr-2 h-4 w-4 animate-spin" />}
-              Save Settings
+    <>
+      <Card>
+        <CardHeader>
+          <CardTitle>Account Settings</CardTitle>
+          <CardDescription>Manage your account settings and security</CardDescription>
+        </CardHeader>
+        <CardContent className="space-y-8">
+          <div className="border-b pb-6">
+            <h3 className="text-lg font-medium mb-4">Security</h3>
+            <p className="text-muted-foreground mb-4">
+              Manage your password and security preferences.
+            </p>
+            {handleResetPassword && (
+              <Button 
+                onClick={handleResetPassword} 
+                className="w-auto px-8 bg-brand-teal hover:bg-brand-teal/90"
+              >
+                Reset Password
+              </Button>
+            )}
+          </div>
+          
+          <div className="border-b pb-6">
+            <h3 className="text-lg font-medium mb-4">Contact Us</h3>
+            <p className="text-muted-foreground mb-4">
+              If you have any questions or need support, please get in touch with our team.
+            </p>
+            <Button className="bg-brand-teal hover:bg-brand-teal/90">
+              Send Message
             </Button>
-          </form>
-        </Form>
-        
-        <div className="pt-6 border-t">
-          <h3 className="text-lg font-medium mb-4">Password</h3>
-          <Button 
-            variant="outline" 
-            onClick={onResetPassword}
-            disabled={isResettingPassword}
-          >
-            {isResettingPassword && <Loader2 className="mr-2 h-4 w-4 animate-spin" />}
-            Reset Password
-          </Button>
-        </div>
-        
-        <div className="pt-6 border-t">
-          <h3 className="text-lg font-medium mb-4">Contact Us</h3>
-          <Button onClick={handleContactUs} className="bg-brand-teal hover:bg-brand-teal/90">
-            <MessageSquare className="mr-2 h-4 w-4" />
-            Send Message
-          </Button>
-          <p className="text-sm text-gray-500 mt-2">
-            Opens WhatsApp to connect with our support team
-          </p>
-        </div>
-      </CardContent>
-    </Card>
+          </div>
+          
+          <div className="pb-6">
+            <h3 className="text-lg font-medium mb-4">Account Actions</h3>
+            <div className="space-y-4">
+              <Button onClick={handleLogout} className="w-auto px-8 bg-brand-teal hover:bg-brand-teal/90">
+                Log out
+              </Button>
+            </div>
+          </div>
+        </CardContent>
+      </Card>
+      
+      <div className="mt-8 text-center">
+        <button 
+          onClick={handleDeleteAccount}
+          className="text-red-500 text-sm hover:underline"
+        >
+          Delete Account
+        </button>
+      </div>
+    </>
   );
 };
