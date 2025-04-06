@@ -1,4 +1,3 @@
-
 import { useForm } from 'react-hook-form';
 import { zodResolver } from '@hookform/resolvers/zod';
 import * as z from 'zod';
@@ -8,6 +7,31 @@ import { ExtendedProfile } from '@/lib/types';
 import React from 'react';
 import { updateProfileData } from '@/services/profile/profileUpdateService';
 
+// Helper function to format URLs
+const formatUrl = (url: string | undefined | null): string | null => {
+  if (!url || url.trim() === '') return null;
+  url = url.trim();
+  
+  // Check if the URL already starts with http:// or https://
+  if (url.startsWith('http://') || url.startsWith('https://')) {
+    return url;
+  }
+  
+  // Otherwise prepend https://
+  return `https://${url}`;
+};
+
+// URL validation schema that accepts URLs with or without protocol
+const urlSchema = z.string()
+  .refine(val => {
+    if (!val || val.trim() === '') return true;
+    // Just basic validation, we'll format it properly before saving
+    return val.includes('.');
+  }, "Please enter a valid URL")
+  .optional()
+  .nullable()
+  .transform(val => val === '' ? null : val);
+
 // Form schema
 export const profileFormSchema = z.object({
   username: z.string().optional(),
@@ -16,11 +40,11 @@ export const profileFormSchema = z.object({
   bio: z.string().max(500).optional(),
   gender: z.string().optional(),
   birthDate: z.date().optional(),
-  websiteUrl: z.string().url("Please enter a valid URL").or(z.string().length(0)).optional(),
-  facebookUrl: z.string().url("Please enter a valid URL").or(z.string().length(0)).optional(),
-  instagramUrl: z.string().url("Please enter a valid URL").or(z.string().length(0)).optional(),
-  youtubeUrl: z.string().url("Please enter a valid URL").or(z.string().length(0)).optional(),
-  tiktokUrl: z.string().url("Please enter a valid URL").or(z.string().length(0)).optional(),
+  websiteUrl: urlSchema,
+  facebookUrl: urlSchema,
+  instagramUrl: urlSchema,
+  youtubeUrl: urlSchema,
+  tiktokUrl: urlSchema,
 });
 
 export const useProfileForm = (
@@ -77,19 +101,29 @@ export const useProfileForm = (
       // Get current extended profile data to preserve other fields
       const currentExtendedProfile = extendedProfile || {};
       
+      // Format URL fields to ensure they have proper http/https prefix
+      const formattedValues = {
+        ...values,
+        websiteUrl: formatUrl(values.websiteUrl),
+        facebookUrl: formatUrl(values.facebookUrl),
+        instagramUrl: formatUrl(values.instagramUrl),
+        youtubeUrl: formatUrl(values.youtubeUrl),
+        tiktokUrl: formatUrl(values.tiktokUrl),
+      };
+      
       // Merge with new values, preserving existing fields from other tabs
       const extendedData: ExtendedProfile = {
         ...currentExtendedProfile,
-        firstName: values.firstName,
-        lastName: values.lastName,
-        bio: values.bio || null,
-        gender: values.gender || null,
-        birthDate: values.birthDate || null,
-        websiteUrl: values.websiteUrl || null,
-        facebookUrl: values.facebookUrl || null,
-        instagramUrl: values.instagramUrl || null,
-        youtubeUrl: values.youtubeUrl || null,
-        tiktokUrl: values.tiktokUrl || null,
+        firstName: formattedValues.firstName,
+        lastName: formattedValues.lastName,
+        bio: formattedValues.bio || null,
+        gender: formattedValues.gender || null,
+        birthDate: formattedValues.birthDate || null,
+        websiteUrl: formattedValues.websiteUrl,
+        facebookUrl: formattedValues.facebookUrl,
+        instagramUrl: formattedValues.instagramUrl,
+        youtubeUrl: formattedValues.youtubeUrl,
+        tiktokUrl: formattedValues.tiktokUrl,
       };
       
       // Use the updateProfileData service function

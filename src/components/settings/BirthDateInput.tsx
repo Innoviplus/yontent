@@ -22,8 +22,8 @@ export const BirthDateInput: React.FC<BirthDateInputProps> = ({
           <FormLabel>Birth Date</FormLabel>
           <FormControl>
             <BirthDatePicker 
-              date={field.value} 
-              setDate={field.onChange}
+              value={field.value} 
+              onChange={field.onChange}
               disabled={disabled}
             />
           </FormControl>

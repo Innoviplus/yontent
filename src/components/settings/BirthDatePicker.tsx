@@ -1,80 +1,61 @@
 
 import React from 'react';
-import { Control } from 'react-hook-form';
-import { format, subYears } from 'date-fns';
-import { CalendarIcon } from 'lucide-react';
-import {
-  FormControl,
-  FormField,
-  FormItem,
-  FormLabel,
-  FormMessage,
-  FormDescription,
-} from '@/components/ui/form';
-import { Button } from '@/components/ui/button';
-import {
-  Popover,
-  PopoverContent,
-  PopoverTrigger,
-} from '@/components/ui/popover';
 import { Calendar } from '@/components/ui/calendar';
+import { Popover, PopoverContent, PopoverTrigger } from '@/components/ui/popover';
+import { Button } from '@/components/ui/button';
+import { cn } from '@/lib/utils';
+import { format } from 'date-fns';
+import { CalendarIcon } from 'lucide-react';
 
 interface BirthDatePickerProps {
-  control: Control<any>;
+  value?: Date | null;
+  onChange: (date: Date | undefined) => void;
   disabled?: boolean;
 }
 
-export const BirthDatePicker: React.FC<BirthDatePickerProps> = ({ control, disabled = false }) => {
-  // Calculate date for 18 years ago from today
-  const maxDate = subYears(new Date(), 18);
-  
+export const BirthDatePicker: React.FC<BirthDatePickerProps> = ({ 
+  value, 
+  onChange,
+  disabled = false 
+}) => {
+  // Calculate date ranges
+  const today = new Date();
+  const from = new Date();
+  from.setFullYear(today.getFullYear() - 100); // 100 years ago
+  const to = new Date();
+  to.setFullYear(today.getFullYear() - 18); // 18 years ago
+
   return (
-    <FormField
-      control={control}
-      name="birthDate"
-      render={({ field }) => (
-        <FormItem className="flex flex-col">
-          <FormLabel>Date of Birth</FormLabel>
-          <Popover>
-            <PopoverTrigger asChild>
-              <FormControl>
-                <Button
-                  variant={"outline"}
-                  className={`w-full justify-start text-left font-normal ${
-                    !field.value && "text-muted-foreground"
-                  } ${disabled ? "bg-gray-100" : ""}`}
-                  disabled={disabled}
-                >
-                  {field.value ? (
-                    format(field.value, "PPP")
-                  ) : (
-                    <span>Pick a date</span>
-                  )}
-                  <CalendarIcon className="ml-auto h-4 w-4 opacity-50" />
-                </Button>
-              </FormControl>
-            </PopoverTrigger>
-            <PopoverContent className="w-auto p-0 pointer-events-auto" align="start">
-              <Calendar
-                mode="single"
-                selected={field.value}
-                onSelect={field.onChange}
-                disabled={(date) =>
-                  date > maxDate || date < new Date("1900-01-01")
-                }
-                initialFocus
-                fromYear={1900}
-                toYear={maxDate.getFullYear()}
-                className="p-3 pointer-events-auto"
-              />
-            </PopoverContent>
-          </Popover>
-          <FormDescription>
-            {disabled ? 'Date of birth cannot be changed once set.' : 'Select your date of birth.'}
-          </FormDescription>
-          <FormMessage />
-        </FormItem>
-      )}
-    />
+    <Popover>
+      <PopoverTrigger asChild>
+        <Button
+          variant="outline"
+          className={cn(
+            "w-full justify-start text-left font-normal",
+            !value && "text-muted-foreground"
+          )}
+          disabled={disabled}
+        >
+          <CalendarIcon className="mr-2 h-4 w-4" />
+          {value ? format(value, "PPP") : <span>Pick a date</span>}
+        </Button>
+      </PopoverTrigger>
+      <PopoverContent className="w-auto p-0" align="start">
+        <Calendar
+          mode="single"
+          selected={value || undefined}
+          onSelect={onChange}
+          disabled={disabled || { 
+            from: new Date(0), 
+            to: from,
+            after: to
+          }}
+          initialFocus
+          captionLayout="dropdown-buttons"
+          fromYear={from.getFullYear()}
+          toYear={to.getFullYear()}
+        />
+      </PopoverContent>
+    </Popover>
   );
 };
