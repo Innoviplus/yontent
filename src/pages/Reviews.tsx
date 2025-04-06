@@ -2,7 +2,7 @@
 import { Loader2 } from 'lucide-react';
 import Navbar from '@/components/Navbar';
 import { useAuth } from '@/contexts/AuthContext';
-import { useReviewsList } from '@/hooks/review/useReviewsList';
+import { useReviewsList, SortOption } from '@/hooks/review/useReviewsList';
 import ReviewSorter from '@/components/review/ReviewSorter';
 import EmptyReviews from '@/components/review/EmptyReviews';
 import ReviewsError from '@/components/review/ReviewsError';
@@ -24,7 +24,7 @@ const Reviews = () => {
   } = useReviewsList(user?.id);
 
   const handleSortChange = (value: string) => {
-    setSortBy(value);
+    setSortBy(value as SortOption);
     setPage(1);
   };
 

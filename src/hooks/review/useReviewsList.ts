@@ -3,8 +3,10 @@ import { useState } from 'react';
 import { useQuery } from '@tanstack/react-query';
 import { fetchReviews } from '@/services/reviewService';
 
+export type SortOption = 'recent' | 'popular' | 'trending';
+
 export const useReviewsList = (userId?: string) => {
-  const [sortBy, setSortBy] = useState<string>('recent');
+  const [sortBy, setSortBy] = useState<SortOption>('recent');
   const [page, setPage] = useState(1);
   const itemsPerPage = 10;
 

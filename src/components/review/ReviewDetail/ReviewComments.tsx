@@ -1,4 +1,5 @@
 
+import { useState } from 'react';
 import { useAuth } from '@/contexts/AuthContext';
 import { useReviewComments } from '@/hooks/useReviewComments';
 import CommentsList from './CommentsList';
@@ -12,15 +13,18 @@ const ReviewComments = ({ reviewId }: ReviewCommentsProps) => {
   const { user, userProfile } = useAuth();
   const {
     comments,
-    newComment,
-    setNewComment,
-    isSubmitting,
     loading,
-    handleSubmitComment
+    addComment,
+    submitting,
+    refreshComments,
+    newComment,
+    setNewComment
   } = useReviewComments(reviewId);
   
-  const submitComment = () => {
-    handleSubmitComment(user);
+  const handleSubmitComment = () => {
+    if (user) {
+      addComment(newComment);
+    }
   };
   
   return (
@@ -35,8 +39,8 @@ const ReviewComments = ({ reviewId }: ReviewCommentsProps) => {
           userProfile={userProfile}
           newComment={newComment}
           onCommentChange={setNewComment}
-          onSubmit={submitComment}
-          isSubmitting={isSubmitting}
+          onSubmit={handleSubmitComment}
+          isSubmitting={submitting}
         />
       </div>
     </div>

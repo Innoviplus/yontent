@@ -7,7 +7,7 @@ import { User as SupabaseUser } from '@supabase/supabase-js';
 export interface Comment {
   id: string;
   content: string;
-  created_at: string;
+  createdAt: string;
   user: {
     id: string;
     username: string;
@@ -18,7 +18,7 @@ export interface Comment {
 export const useReviewComments = (reviewId: string) => {
   const [comments, setComments] = useState<Comment[]>([]);
   const [newComment, setNewComment] = useState('');
-  const [isSubmitting, setIsSubmitting] = useState(false);
+  const [submitting, setSubmitting] = useState(false);
   const [loading, setLoading] = useState(true);
 
   const fetchComments = async () => {
@@ -50,7 +50,7 @@ export const useReviewComments = (reviewId: string) => {
           return {
             id: comment.id,
             content: comment.content,
-            created_at: comment.created_at,
+            createdAt: comment.created_at,
             user: {
               id: comment.user_id,
               username: profileError ? 'Anonymous' : (profileData?.username || 'Anonymous'),
@@ -69,11 +69,11 @@ export const useReviewComments = (reviewId: string) => {
     }
   };
   
-  const handleSubmitComment = async (user: SupabaseUser | null) => {
-    if (!user || !reviewId || !newComment.trim()) return;
+  const addComment = async (content: string): Promise<boolean> => {
+    if (!reviewId || !content.trim()) return false;
     
     try {
-      setIsSubmitting(true);
+      setSubmitting(true);
       
       // First, add the comment
       const { data: commentData, error: commentError } = await supabase
@@ -81,8 +81,8 @@ export const useReviewComments = (reviewId: string) => {
         .insert([
           {
             review_id: reviewId,
-            user_id: user.id,
-            content: newComment.trim()
+            user_id: supabase.auth.getUser().then(({ data }) => data.user?.id),
+            content: content.trim()
           }
         ])
         .select()
@@ -91,10 +91,17 @@ export const useReviewComments = (reviewId: string) => {
       if (commentError) throw commentError;
       
       // Then, get the user profile data
+      const { data: userData } = await supabase.auth.getUser();
+      const userId = userData.user?.id;
+      
+      if (!userId) {
+        throw new Error('User not authenticated');
+      }
+      
       const { data: profileData, error: profileError } = await supabase
         .from('profiles')
         .select('id, username, avatar')
-        .eq('id', user.id)
+        .eq('id', userId)
         .single();
         
       if (profileError) {
@@ -105,9 +112,9 @@ export const useReviewComments = (reviewId: string) => {
       const newCommentObj: Comment = {
         id: commentData.id,
         content: commentData.content,
-        created_at: commentData.created_at,
+        createdAt: commentData.created_at,
         user: {
-          id: user.id,
+          id: userId,
           username: profileData?.username || 'Anonymous',
           avatar: profileData?.avatar
         }
@@ -116,12 +123,18 @@ export const useReviewComments = (reviewId: string) => {
       setComments([...comments, newCommentObj]);
       setNewComment('');
       toast.success('Comment added successfully');
+      return true;
     } catch (error) {
       console.error('Error adding comment:', error);
       toast.error('Failed to add comment');
+      return false;
     } finally {
-      setIsSubmitting(false);
+      setSubmitting(false);
     }
+  };
+  
+  const refreshComments = async () => {
+    await fetchComments();
   };
   
   useEffect(() => {
@@ -130,10 +143,11 @@ export const useReviewComments = (reviewId: string) => {
   
   return {
     comments,
-    newComment,
-    setNewComment,
-    isSubmitting,
     loading,
-    handleSubmitComment
+    addComment,
+    submitting,
+    refreshComments,
+    newComment,
+    setNewComment
   };
 };
