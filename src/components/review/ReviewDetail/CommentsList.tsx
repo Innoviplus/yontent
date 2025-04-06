@@ -2,6 +2,7 @@
 import { format } from 'date-fns';
 import { Link } from 'react-router-dom';
 import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
+import { Skeleton } from '@/components/ui/skeleton';
 import { Comment } from '@/hooks/useReviewComments';
 
 interface CommentsListProps {
@@ -52,7 +53,7 @@ const CommentsList = ({ comments, loading }: CommentsListProps) => {
                 {comment.user.username}
               </Link>
               <span className="text-xs text-gray-500 ml-2">
-                {format(comment.createdAt, 'MMM d, yyyy • h:mm a')}
+                {format(new Date(comment.created_at), 'MMM d, yyyy • h:mm a')}
               </span>
             </div>
             <p className="text-gray-700">{comment.content}</p>

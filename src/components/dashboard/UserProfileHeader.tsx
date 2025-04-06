@@ -4,7 +4,6 @@ import { User, Settings } from 'lucide-react';
 import { User as UserType } from '@/lib/types';
 import { SocialMediaIcons } from '@/components/dashboard/SocialMediaIcons';
 import UserStatsCard, { UserStats } from '@/components/user/UserStatsCard';
-import HTMLContent from '@/components/HTMLContent';
 
 interface UserProfileHeaderProps {
   user: UserType & {
@@ -20,7 +19,6 @@ const UserProfileHeader = ({ user }: UserProfileHeaderProps) => {
   // Extract extended data for bio and social links
   const extendedData = user?.extendedData || {};
   const bio = extendedData?.bio || '';
-  const avatarUrl = extendedData?.avatarUrl || '';
   const hasSocialMedia = !!extendedData?.websiteUrl || !!extendedData?.facebookUrl || 
                         !!extendedData?.instagramUrl || !!extendedData?.youtubeUrl || 
                         !!extendedData?.tiktokUrl;
@@ -38,8 +36,8 @@ const UserProfileHeader = ({ user }: UserProfileHeaderProps) => {
       <div className="flex flex-col sm:flex-row items-center sm:items-start gap-6">
         {/* Avatar */}
         <div className="w-24 h-24 rounded-full bg-brand-teal/10 flex items-center justify-center text-brand-teal overflow-hidden">
-          {avatarUrl ? (
-            <img src={avatarUrl} alt={user.username} className="w-24 h-24 rounded-full object-cover" />
+          {user.avatar ? (
+            <img src={user.avatar} alt={user.username} className="w-24 h-24 rounded-full object-cover" />
           ) : (
             <User className="h-12 w-12" />
           )}
@@ -51,9 +49,7 @@ const UserProfileHeader = ({ user }: UserProfileHeaderProps) => {
           
           {/* Bio or prompt to add bio */}
           {bio ? (
-            <div className="text-gray-600 mt-2 mb-4">
-              <HTMLContent content={bio} />
-            </div>
+            <p className="text-gray-600 mt-2 mb-4">{bio}</p>
           ) : (
             <Link to="/settings" className="block text-brand-teal font-medium mt-2 mb-4 hover:underline">
               Click here to fill in your profile &gt;

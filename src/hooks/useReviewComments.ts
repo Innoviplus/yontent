@@ -2,61 +2,65 @@
 import { useState, useEffect } from 'react';
 import { supabase } from '@/integrations/supabase/client';
 import { toast } from 'sonner';
-import { extractAvatarUrl } from './admin/api/types/participationTypes';
+import { User as SupabaseUser } from '@supabase/supabase-js';
 
 export interface Comment {
   id: string;
   content: string;
-  createdAt: Date;
+  created_at: string;
   user: {
-    userId: string;
+    id: string;
     username: string;
-    points: number;
     avatar: string | null;
   };
 }
 
 export const useReviewComments = (reviewId: string) => {
   const [comments, setComments] = useState<Comment[]>([]);
-  const [loading, setLoading] = useState(true);
-  const [submitting, setSubmitting] = useState(false);
   const [newComment, setNewComment] = useState('');
-  
+  const [isSubmitting, setIsSubmitting] = useState(false);
+  const [loading, setLoading] = useState(true);
+
   const fetchComments = async () => {
+    if (!reviewId) return;
+    
     try {
       setLoading(true);
       
+      // First get the comments without the join
       const { data, error } = await supabase
         .from('review_comments')
-        .select(`
-          id,
-          content,
-          created_at,
-          user_id,
-          profiles(
-            username,
-            points,
-            extended_data
-          )
-        `)
+        .select('id, content, created_at, user_id')
         .eq('review_id', reviewId)
         .order('created_at', { ascending: true });
         
       if (error) throw error;
       
-      const transformedComments = data.map(comment => ({
-        id: comment.id,
-        content: comment.content,
-        createdAt: new Date(comment.created_at),
-        user: {
-          userId: comment.user_id,
-          username: comment.profiles?.username || 'Anonymous',
-          points: comment.profiles?.points || 0,
-          avatar: extractAvatarUrl(comment.profiles?.extended_data)
-        }
-      }));
+      // Then fetch user profiles separately and map them to comments
+      const commentWithProfiles = await Promise.all(
+        data.map(async (comment) => {
+          // Get profile data for each comment
+          const { data: profileData, error: profileError } = await supabase
+            .from('profiles')
+            .select('id, username, avatar')
+            .eq('id', comment.user_id)
+            .single();
+          
+          // Return comment with user data
+          return {
+            id: comment.id,
+            content: comment.content,
+            created_at: comment.created_at,
+            user: {
+              id: comment.user_id,
+              username: profileError ? 'Anonymous' : (profileData?.username || 'Anonymous'),
+              avatar: profileError ? null : profileData?.avatar
+            }
+          };
+        })
+      );
       
-      setComments(transformedComments);
+      setComments(commentWithProfiles);
     } catch (error) {
       console.error('Error fetching comments:', error);
       toast.error('Failed to load comments');
@@ -65,102 +69,71 @@ export const useReviewComments = (reviewId: string) => {
     }
   };
   
-  const handleSubmitComment = async (user: any) => {
-    if (!user) {
-      toast.error('You must be logged in to comment');
-      return;
-    }
-    
-    if (!newComment.trim()) {
-      toast.error('Comment cannot be empty');
-      return;
-    }
+  const handleSubmitComment = async (user: SupabaseUser | null) => {
+    if (!user || !reviewId || !newComment.trim()) return;
     
     try {
-      setSubmitting(true);
+      setIsSubmitting(true);
       
-      const result = await addComment(newComment);
-      
-      if (result) {
-        setNewComment('');
-      }
-    } finally {
-      setSubmitting(false);
-    }
-  };
-  
-  const addComment = async (content: string) => {
-    if (!content.trim()) {
-      toast.error('Comment cannot be empty');
-      return false;
-    }
-    
-    try {
-      const { user } = await supabase.auth.getUser();
-      
-      if (!user) {
-        toast.error('You must be logged in to comment');
-        return false;
-      }
-      
-      const { data, error } = await supabase
+      // First, add the comment
+      const { data: commentData, error: commentError } = await supabase
         .from('review_comments')
-        .insert({
-          review_id: reviewId,
-          user_id: user.id,
-          content: content.trim()
-        })
-        .select(`
-          id,
-          content,
-          created_at,
-          user_id,
-          profiles(
-            username,
-            points,
-            extended_data
-          )
-        `)
+        .insert([
+          {
+            review_id: reviewId,
+            user_id: user.id,
+            content: newComment.trim()
+          }
+        ])
+        .select()
         .single();
         
-      if (error) throw error;
+      if (commentError) throw commentError;
       
-      const newComment = {
-        id: data.id,
-        content: data.content,
-        createdAt: new Date(data.created_at),
+      // Then, get the user profile data
+      const { data: profileData, error: profileError } = await supabase
+        .from('profiles')
+        .select('id, username, avatar')
+        .eq('id', user.id)
+        .single();
+        
+      if (profileError) {
+        console.warn('Could not fetch profile data:', profileError);
+        // Continue with a fallback for the profile data
+      }
+      
+      const newCommentObj: Comment = {
+        id: commentData.id,
+        content: commentData.content,
+        created_at: commentData.created_at,
         user: {
-          userId: data.user_id,
-          username: data.profiles?.username || 'Anonymous',
-          points: data.profiles?.points || 0,
-          avatar: extractAvatarUrl(data.profiles?.extended_data)
+          id: user.id,
+          username: profileData?.username || 'Anonymous',
+          avatar: profileData?.avatar
         }
       };
       
-      setComments(prev => [...prev, newComment]);
+      setComments([...comments, newCommentObj]);
+      setNewComment('');
       toast.success('Comment added successfully');
-      return true;
-    } catch (error: any) {
+    } catch (error) {
       console.error('Error adding comment:', error);
-      toast.error(error.message || 'Failed to add comment');
-      return false;
+      toast.error('Failed to add comment');
+    } finally {
+      setIsSubmitting(false);
     }
   };
   
   useEffect(() => {
-    if (reviewId) {
-      fetchComments();
-    }
+    fetchComments();
   }, [reviewId]);
   
-  return { 
-    comments, 
-    loading, 
-    submitting, 
-    newComment, 
-    setNewComment, 
-    addComment, 
-    handleSubmitComment, 
-    refreshComments: fetchComments 
+  return {
+    comments,
+    newComment,
+    setNewComment,
+    isSubmitting,
+    loading,
+    handleSubmitComment
   };
 };

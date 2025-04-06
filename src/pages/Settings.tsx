@@ -5,8 +5,9 @@ import Navbar from '@/components/Navbar';
 
 const Settings = () => {
   const {
-    user,
     userProfile,
+    avatarUrl,
+    uploading,
     isUpdating,
     isSubmitting,
     activeTab,
@@ -14,6 +15,7 @@ const Settings = () => {
     extendedProfile,
     profileForm,
     settingsForm,
+    handleAvatarUpload,
     onProfileSubmit,
     onSettingsSubmit,
     handleResetPassword,
@@ -27,6 +29,9 @@ const Settings = () => {
       <div className="pt-24">
         <SettingsLayout
           userProfile={userProfile}
+          avatarUrl={avatarUrl}
+          uploading={uploading}
+          handleAvatarUpload={handleAvatarUpload}
           profileForm={profileForm}
           settingsForm={settingsForm}
           onProfileSubmit={onProfileSubmit}
@@ -39,7 +44,6 @@ const Settings = () => {
           handleDeleteAccount={handleDeleteAccount}
           activeTab={activeTab}
           setActiveTab={setActiveTab}
-          userEmail={user?.email}
         />
       </div>
     </>

@@ -24,7 +24,7 @@ const RankingsContent = ({ activeTab }: RankingsContentProps) => {
         if (activeTab === 'points') {
           const { data: pointsData, error: pointsError } = await supabase
             .from('profiles')
-            .select('id, username, points, extended_data, created_at')
+            .select('id, username, points, avatar, created_at')
             .order('points', { ascending: false })
             .limit(20);
             
@@ -37,7 +37,7 @@ const RankingsContent = ({ activeTab }: RankingsContentProps) => {
             .select(`
               user_id,
               views_count,
-              profiles:user_id (id, username, points, extended_data, created_at)
+              profiles:user_id (id, username, points, avatar, created_at)
             `)
             .gte('created_at', new Date(new Date().setDate(1)).toISOString()) // Current month
             .order('views_count', { ascending: false })
@@ -45,24 +45,17 @@ const RankingsContent = ({ activeTab }: RankingsContentProps) => {
             
           if (viewsError) throw viewsError;
           
-          const userViews: Record<string, any> = {};
-          
-          viewsData.forEach(review => {
+          const userViews = viewsData.reduce((acc: Record<string, any>, review) => {
             const userId = review.user_id;
-            if (!userViews[userId] && review.profiles) {
-              userViews[userId] = {
-                id: review.profiles.id,
-                username: review.profiles.username,
-                points: review.profiles.points,
-                extended_data: review.profiles.extended_data,
-                created_at: review.profiles.created_at,
+            if (!acc[userId]) {
+              acc[userId] = {
+                ...review.profiles,
                 totalViews: 0
               };
             }
-            if (userViews[userId]) {
-              userViews[userId].totalViews += review.views_count || 0;
-            }
-          });
+            acc[userId].totalViews += review.views_count || 0;
+            return acc;
+          }, {});
           
           data = Object.values(userViews)
             .sort((a: any, b: any) => b.totalViews - a.totalViews)
@@ -74,7 +67,7 @@ const RankingsContent = ({ activeTab }: RankingsContentProps) => {
             .select(`
               user_id,
               likes_count,
-              profiles:user_id (id, username, points, extended_data, created_at)
+              profiles:user_id (id, username, points, avatar, created_at)
             `)
             .gte('created_at', new Date(new Date().setDate(1)).toISOString()) // Current month
             .order('likes_count', { ascending: false })
@@ -82,24 +75,17 @@ const RankingsContent = ({ activeTab }: RankingsContentProps) => {
             
           if (likesError) throw likesError;
           
-          const userLikes: Record<string, any> = {};
-          
-          likesData.forEach(review => {
+          const userLikes = likesData.reduce((acc: Record<string, any>, review) => {
             const userId = review.user_id;
-            if (!userLikes[userId] && review.profiles) {
-              userLikes[userId] = {
-                id: review.profiles.id,
-                username: review.profiles.username,
-                points: review.profiles.points,
-                extended_data: review.profiles.extended_data,
-                created_at: review.profiles.created_at,
+            if (!acc[userId]) {
+              acc[userId] = {
+                ...review.profiles,
                 totalLikes: 0
               };
             }
-            if (userLikes[userId]) {
-              userLikes[userId].totalLikes += review.likes_count || 0;
-            }
-          });
+            acc[userId].totalLikes += review.likes_count || 0;
+            return acc;
+          }, {});
           
           data = Object.values(userLikes)
             .sort((a: any, b: any) => b.totalLikes - a.totalLikes)
@@ -113,7 +99,7 @@ const RankingsContent = ({ activeTab }: RankingsContentProps) => {
             email: '',
             points: item.points || 0,
             createdAt: new Date(item.created_at),
-            avatar: item.extended_data?.avatarUrl,
+            avatar: item.avatar,
             rank: index + 1,
             stats: activeTab === 'points' 
               ? item.points 

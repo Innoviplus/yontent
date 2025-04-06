@@ -9,7 +9,6 @@ import { Skeleton } from '@/components/ui/skeleton';
 import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
 import UserStatsCard, { UserStats } from '@/components/user/UserStatsCard';
 import { useAuth } from '@/contexts/AuthContext';
-import { extractAvatarUrl } from '@/hooks/admin/api/types/participationTypes';
 
 interface ReviewAuthorProfileProps {
   userId: string;
@@ -33,7 +32,7 @@ const ReviewAuthorProfile = ({ userId }: ReviewAuthorProfileProps) => {
         // Fetch user profile
         const { data: profileData, error: profileError } = await supabase
           .from('profiles')
-          .select('*, followers_count, following_count, extended_data')
+          .select('*, followers_count, following_count')
           .eq('id', userId)
           .single();
           
@@ -44,7 +43,7 @@ const ReviewAuthorProfile = ({ userId }: ReviewAuthorProfileProps) => {
           id: profileData.id,
           username: profileData.username || 'Anonymous',
           email: '', // Add the required email property even though it's not in profile data
-          avatar: extractAvatarUrl(profileData.extended_data),
+          avatar: profileData.avatar,
           points: profileData.points || 0,
           createdAt: new Date(profileData.created_at),
         };

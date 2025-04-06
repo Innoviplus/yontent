@@ -1,11 +1,16 @@
 
+import { useRef } from "react";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { ProfileTab } from "./ProfileTab";
+import { GeneralTab } from "./GeneralTab";
 import { AccountTab } from "./AccountTab";
 import { User } from "lucide-react";
 
 export function SettingsLayout({
   userProfile,
+  avatarUrl,
+  uploading,
+  handleAvatarUpload,
   profileForm,
   settingsForm,
   onProfileSubmit,
@@ -18,27 +23,39 @@ export function SettingsLayout({
   handleDeleteAccount,
   activeTab,
   setActiveTab,
-  userEmail,
 }) {
+  const fileInputRef = useRef(null);
+
   return (
     <div className="container mx-auto px-4 py-8 max-w-5xl">
       <div className="w-full">
         <Tabs value={activeTab} onValueChange={setActiveTab} className="w-full">
-          <TabsList className="grid grid-cols-2 mb-8">
+          <TabsList className="grid grid-cols-3 mb-8">
             <TabsTrigger value="profile" className="flex items-center gap-2">
               <User className="h-4 w-4" />
               <span className="hidden sm:inline">Profile</span>
             </TabsTrigger>
+            <TabsTrigger value="general">General</TabsTrigger>
             <TabsTrigger value="account">Account</TabsTrigger>
           </TabsList>
           
           <TabsContent value="profile" className="mt-0">
             <ProfileTab
               userProfile={userProfile}
+              avatarUrl={avatarUrl}
+              uploading={uploading}
+              handleAvatarUpload={handleAvatarUpload}
               profileForm={profileForm}
               onProfileSubmit={onProfileSubmit}
               isUpdating={isUpdating}
               extendedProfile={extendedProfile}
+            />
+          </TabsContent>
+          
+          <TabsContent value="general" className="mt-0">
+            <GeneralTab
+              handleLogout={handleLogout}
+              handleDeleteAccount={handleDeleteAccount}
             />
           </TabsContent>
           
@@ -51,7 +68,6 @@ export function SettingsLayout({
               handleResetPassword={handleResetPassword}
               handleLogout={handleLogout}
               handleDeleteAccount={handleDeleteAccount}
-              userEmail={userEmail}
             />
           </TabsContent>
         </Tabs>

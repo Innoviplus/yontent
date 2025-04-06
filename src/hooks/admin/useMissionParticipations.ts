@@ -1,25 +1,21 @@
 
-import { useState, useCallback, useEffect } from 'react';
+import { useState, useEffect } from 'react';
 import { toast } from 'sonner';
+import { MissionParticipation } from './types/missionParticipationTypes';
 import { 
-  MissionParticipation,
   fetchMissionParticipations,
-  approveParticipation,
-  rejectParticipation
+  approveParticipation as approveParticipationApi,
+  rejectParticipation as rejectParticipationApi
 } from './api/missionParticipationsApi';
 
-/**
- * Hook for managing mission participations state and actions
- */
+export type { MissionParticipation } from './types/missionParticipationTypes';
+
 export const useMissionParticipations = () => {
   const [participations, setParticipations] = useState<MissionParticipation[]>([]);
   const [isLoading, setIsLoading] = useState(true);
   const [isRefreshing, setIsRefreshing] = useState(false);
 
-  /**
-   * Load participations data
-   */
-  const loadParticipations = useCallback(async () => {
+  const loadParticipations = async () => {
     try {
       setIsLoading(true);
       const result = await fetchMissionParticipations();
@@ -27,31 +23,26 @@ export const useMissionParticipations = () => {
       if (result.error) {
         toast.error('Failed to load mission participations');
       } else {
-        setParticipations(result.participations || []);
+        setParticipations(result.participations);
       }
-    } catch (error) {
-      console.error('Error loading participations:', error);
-      toast.error('An error occurred while loading participations');
     } finally {
       setIsLoading(false);
     }
-  }, []);
+  };
 
-  /**
-   * Refresh participations data
-   */
-  const refreshParticipations = useCallback(async () => {
+  const refreshParticipations = async () => {
     setIsRefreshing(true);
     await loadParticipations();
     setIsRefreshing(false);
-  }, [loadParticipations]);
+  };
 
-  /**
-   * Approve a participation
-   */
-  const handleApproveParticipation = useCallback(async (id: string) => {
+  useEffect(() => {
+    loadParticipations();
+  }, []);
+
+  const approveParticipation = async (id: string) => {
     try {
-      const result = await approveParticipation(id);
+      const result = await approveParticipationApi(id);
       
       if (result.error) {
         if (result.success) {
@@ -72,14 +63,11 @@ export const useMissionParticipations = () => {
       toast.error('Failed to approve participation');
       return false;
     }
-  }, [refreshParticipations]);
+  };
 
-  /**
-   * Reject a participation
-   */
-  const handleRejectParticipation = useCallback(async (id: string) => {
+  const rejectParticipation = async (id: string) => {
     try {
-      const result = await rejectParticipation(id);
+      const result = await rejectParticipationApi(id);
       
       if (!result.success) {
         toast.error('Failed to reject participation');
@@ -94,21 +82,14 @@ export const useMissionParticipations = () => {
       toast.error('Failed to reject participation');
       return false;
     }
-  }, [refreshParticipations]);
-
-  // Load participations on mount
-  useEffect(() => {
-    loadParticipations();
-  }, [loadParticipations]);
+  };
 
   return {
     participations,
     isLoading,
     isRefreshing,
     refreshParticipations,
-    approveParticipation: handleApproveParticipation,
-    rejectParticipation: handleRejectParticipation
+    approveParticipation,
+    rejectParticipation
   };
 };
-
-export type { MissionParticipation } from './api/missionParticipationsApi';

@@ -4,7 +4,6 @@ import { Review } from '@/lib/types';
 import { supabase } from '@/integrations/supabase/client';
 import { toast } from 'sonner';
 import { trackReviewView } from '@/services/reviewService';
-import { extractAvatarUrl } from '@/hooks/admin/api/types/participationTypes';
 
 export const useFetchReview = (id: string | undefined) => {
   const [review, setReview] = useState<Review | null>(null);
@@ -29,7 +28,7 @@ export const useFetchReview = (id: string | undefined) => {
           profiles:user_id (
             id,
             username,
-            extended_data
+            avatar
           )
         `)
         .eq('id', id)
@@ -57,7 +56,7 @@ export const useFetchReview = (id: string | undefined) => {
           email: '',
           points: 0,
           createdAt: new Date(),
-          avatar: extractAvatarUrl(data.profiles.extended_data)
+          avatar: data.profiles.avatar
         } : undefined
       };
       

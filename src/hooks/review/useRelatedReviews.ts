@@ -2,7 +2,6 @@
 import { useState, useEffect } from 'react';
 import { Review } from '@/lib/types';
 import { supabase } from '@/integrations/supabase/client';
-import { extractAvatarUrl } from '@/hooks/admin/api/types/participationTypes';
 
 export const useRelatedReviews = (review: Review | null) => {
   const [relatedReviews, setRelatedReviews] = useState<Review[]>([]);
@@ -22,9 +21,9 @@ export const useRelatedReviews = (review: Review | null) => {
           profiles:user_id (
             id,
             username,
+            avatar,
             points,
-            created_at,
-            extended_data
+            created_at
           )
         `)
         .neq('id', reviewData.id)
@@ -49,7 +48,7 @@ export const useRelatedReviews = (review: Review | null) => {
           email: '',
           points: item.profiles.points || 0,
           createdAt: new Date(item.profiles.created_at),
-          avatar: extractAvatarUrl(item.profiles.extended_data)
+          avatar: item.profiles.avatar
         } : undefined
       }));
       

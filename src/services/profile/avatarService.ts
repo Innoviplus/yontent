@@ -1,128 +1,105 @@
 
 import { supabase } from '@/integrations/supabase/client';
 import { toast } from 'sonner';
-import { Json } from '@/lib/types';
 
-/**
- * Uploads an avatar image to Supabase storage
- * @param file The image file to upload
- * @param userId The user ID to associate with the avatar
- * @returns URL of the uploaded avatar or null if failed
- */
-export const uploadAvatar = async (file: File, userId: string): Promise<string | null> => {
-  if (!file || !userId) {
-    console.error("Missing file or user ID for avatar upload");
-    return null;
-  }
-
+export const uploadAvatar = async (userId: string, file: File): Promise<string | null> => {
   try {
-    // Create a unique file name using user ID and timestamp
     const fileExt = file.name.split('.').pop();
-    const fileName = `${userId}-${Date.now()}.${fileExt}`;
-    const filePath = `avatars/${fileName}`;
+    const fileName = `${userId}.${fileExt}`;
+    const filePath = `${fileName}`;
 
-    console.log(`Uploading avatar to profiles bucket, path: ${filePath}`);
-
-    // Upload the file to Supabase storage
-    const { data, error } = await supabase.storage
-      .from('profiles')
-      .upload(filePath, file, {
-        upsert: true,
-        contentType: file.type,
-      });
-
-    if (error) {
-      console.error("Error uploading avatar:", error);
-      throw error;
+    console.log("Uploading avatar with path:", filePath);
+    
+    // Check if bucket exists, create it if it doesn't
+    const { data: buckets } = await supabase.storage.listBuckets();
+    const avatarBucketExists = buckets?.some(bucket => bucket.name === 'avatars');
+    
+    if (!avatarBucketExists) {
+      console.log("Avatars bucket doesn't exist, creating it...");
+      const { error: createBucketError } = await supabase.storage
+        .createBucket('avatars', {
+          public: true,
+          allowedMimeTypes: ['image/png', 'image/jpeg', 'image/gif', 'image/webp'],
+          fileSizeLimit: 5 * 1024 * 1024 // 5MB
+        });
+      
+      if (createBucketError) {
+        console.error("Error creating bucket:", createBucketError);
+        throw createBucketError;
+      }
+      console.log("Avatars bucket created successfully");
     }
 
-    console.log("Upload successful, getting public URL");
+    // Upload the file to the storage bucket
+    let { error: uploadError } = await supabase.storage
+      .from('avatars')
+      .upload(filePath, file, { upsert: true });
 
-    // Get the public URL
-    const { data: { publicUrl } } = supabase.storage
-      .from('profiles')
-      .getPublicUrl(filePath);
+    if (uploadError) {
+      console.error("Upload error:", uploadError);
+      throw uploadError;
+    }
 
-    console.log("Received public URL:", publicUrl);
-    return publicUrl;
-  } catch (error: any) {
-    console.error("Avatar upload failed:", error);
-    toast.error(`Upload failed: ${error.message}`);
+    const { data } = supabase.storage.from('avatars').getPublicUrl(filePath);
+    if (data && data.publicUrl) {
+      console.log("Avatar uploaded successfully, URL:", data.publicUrl);
+      return data.publicUrl;
+    }
+    
     return null;
+  } catch (error: any) {
+    console.error("Error uploading avatar:", error);
+    throw error;
   }
 };
 
-/**
- * Updates the avatar URL in user's profile
- * @param userId User ID
- * @param avatarUrl The new avatar URL
- * @returns Success status
- */
-export const updateAvatarUrl = async (userId: string, avatarUrl: string): Promise<boolean> => {
-  if (!userId || !avatarUrl) {
-    console.error("Missing user ID or avatar URL");
-    return false;
-  }
-
+export const updateAvatarUrl = async (userId: string, avatarUrl: string): Promise<void> => {
   try {
-    console.log(`Updating avatar URL for user ${userId}: ${avatarUrl}`);
+    console.log("Updating avatar URL in profile for user:", userId);
+    console.log("New avatar URL:", avatarUrl);
     
-    // First fetch the current extended_data to preserve other values
-    const { data: profileData, error: fetchError } = await supabase
-      .from('profiles')
-      .select('extended_data')
-      .eq('id', userId)
-      .single();
-
-    if (fetchError) {
-      console.error("Error fetching profile data:", fetchError);
-      throw fetchError;
+    // First check if profile exists using direct query to bypass TypeScript type checking
+    const { data, error } = await supabase.rpc(
+      'get_profile_by_id' as any, 
+      { user_id_input: userId }
+    );
+    
+    if (error) {
+      console.error("Error checking profile existence:", error);
+      throw error;
     }
-
-    // Prepare updated extended_data with new avatar URL
-    let extendedData: Record<string, any> = {};
-    let currentData = profileData?.extended_data as Json || {};
     
-    console.log("Current extended_data:", currentData);
-    
-    // Handle extended_data correctly whether it's a string or an object
-    if (typeof currentData === 'string') {
-      try {
-        const parsedData = JSON.parse(currentData);
-        extendedData = {
-          ...parsedData,
-          avatarUrl
-        };
-      } catch (e) {
-        extendedData = { avatarUrl };
+    // Check if data is an array and has at least one item
+    if (data && Array.isArray(data) && data.length > 0) {
+      // If profile exists, update it
+      console.log("Profile exists, updating avatar URL via RPC");
+      const { error: updateError } = await supabase.rpc(
+        'update_avatar_url' as any, 
+        { user_id_input: userId, avatar_url_input: avatarUrl }
+      );
+        
+      if (updateError) {
+        console.error("Error updating avatar URL:", updateError);
+        throw updateError;
       }
-    } else if (typeof currentData === 'object' && currentData !== null) {
-      extendedData = {
-        ...(currentData as Record<string, any>),
-        avatarUrl
-      };
     } else {
-      extendedData = { avatarUrl };
+      // If profile doesn't exist, insert it via RPC
+      console.log("Profile doesn't exist, inserting new profile with avatar URL via RPC");
+      const { error: insertError } = await supabase.rpc(
+        'insert_profile_with_avatar' as any, 
+        { user_id_input: userId, avatar_url_input: avatarUrl }
+      );
+        
+      if (insertError) {
+        console.error("Error inserting new profile:", insertError);
+        throw insertError;
+      }
     }
-
-    console.log("Updated extended_data:", extendedData);
-
-    // Update the profile
-    const { error: updateError } = await supabase
-      .from('profiles')
-      .update({ extended_data: extendedData })
-      .eq('id', userId);
-
-    if (updateError) {
-      console.error("Error updating avatar URL:", updateError);
-      throw updateError;
-    }
-
-    console.log("Profile update successful");
-    return true;
+    
+    console.log("Avatar URL updated in profile successfully");
   } catch (error: any) {
-    console.error("Failed to update avatar URL:", error.message);
-    toast.error(`Failed to update profile: ${error.message}`);
-    return false;
+    console.error("Error updating avatar URL:", error.message);
+    toast.error("Failed to update avatar. Please try again.");
+    throw error;
   }
 };

@@ -1,123 +1,107 @@
-
 import { useState, useEffect } from 'react';
-import { supabase } from '@/integrations/supabase/client';
 import { Review } from '@/lib/types';
-import { extractAvatarUrl } from '@/hooks/admin/api/types/participationTypes';
+import { supabase } from '@/integrations/supabase/client';
+import { toast } from 'sonner';
 
-export const useReviews = (limit = 10, initialFilter = 'recent') => {
+type SortOption = 'recent' | 'views' | 'relevant';
+
+const ITEMS_PER_PAGE = 20;
+
+export const useReviews = () => {
   const [reviews, setReviews] = useState<Review[]>([]);
   const [loading, setLoading] = useState(true);
+  const [sortBy, setSortBy] = useState<SortOption>('recent');
+  const [page, setPage] = useState(0);
   const [hasMore, setHasMore] = useState(true);
-  const [page, setPage] = useState(1);
-  const [sortBy, setSortBy] = useState(initialFilter);
   
-  const fetchReviews = async (currentPage = 1, orderBy = sortBy) => {
+  const fetchReviews = async (pageNum: number, sort: SortOption) => {
     try {
-      setLoading(true);
-      
-      // Calculate pagination
-      const from = (currentPage - 1) * limit;
-      const to = from + limit - 1;
-      
-      // Determine order based on filter
-      let orderColumn = 'created_at';
-      let ascending = false;
-      
-      if (orderBy === 'popular') {
-        orderColumn = 'likes_count';
-        ascending = false;
-      } else if (orderBy === 'oldest') {
-        orderColumn = 'created_at';
-        ascending = true;
-      }
-      
-      const { data, error } = await supabase
+      let query = supabase
         .from('reviews')
         .select(`
-          id,
-          user_id,
-          content,
-          images,
-          views_count,
-          likes_count,
-          created_at,
-          profiles:user_id (
+          *,
+          profiles (
             id,
             username,
+            avatar,
             points,
-            created_at,
-            extended_data
+            created_at
           )
         `)
-        .eq('status', 'PUBLISHED')
-        .order(orderColumn, { ascending })
-        .range(from, to);
+        .eq('status', 'PUBLISHED') // Only fetch PUBLISHED reviews
+        .range(pageNum * ITEMS_PER_PAGE, (pageNum + 1) * ITEMS_PER_PAGE - 1);
+
+      switch (sort) {
+        case 'recent':
+          query = query.order('created_at', { ascending: false });
+          break;
+        case 'views':
+          query = query.order('views_count', { ascending: false });
+          break;
+        case 'relevant':
+          query = query.order('views_count', { ascending: false });
+          break;
+      }
         
-      if (error) throw error;
-      
-      // If we got fewer items than the limit, there are no more to load
-      if (data.length < limit) {
-        setHasMore(false);
+      const { data, error } = await query;
+        
+      if (error) {
+        console.error('Error fetching reviews:', error);
+        toast.error('Failed to load reviews');
+        return;
       }
       
-      // Transform the data to match the Review type
-      const transformedReviews: Review[] = data.map(item => ({
-        id: item.id,
-        userId: item.user_id,
-        content: item.content,
-        images: item.images || [],
-        viewsCount: item.views_count,
-        likesCount: item.likes_count,
-        createdAt: new Date(item.created_at),
-        user: item.profiles ? {
-          id: item.profiles.id,
-          username: item.profiles.username || 'Anonymous',
+      const transformedReviews: Review[] = data.map(review => ({
+        id: review.id,
+        userId: review.user_id,
+        content: review.content,
+        images: review.images || [],
+        viewsCount: review.views_count,
+        likesCount: review.likes_count,
+        createdAt: new Date(review.created_at),
+        user: review.profiles ? {
+          id: review.profiles.id,
+          username: review.profiles.username || 'Anonymous',
           email: '',
-          points: item.profiles.points || 0,
-          createdAt: new Date(item.profiles.created_at),
-          avatar: extractAvatarUrl(item.profiles.extended_data)
+          points: review.profiles.points || 0,
+          createdAt: new Date(review.profiles.created_at),
+          avatar: review.profiles.avatar
         } : undefined
       }));
-      
-      // If it's the first page, replace the array, otherwise append
-      if (currentPage === 1) {
+
+      if (pageNum === 0) {
         setReviews(transformedReviews);
       } else {
         setReviews(prev => [...prev, ...transformedReviews]);
       }
+      
+      setHasMore(transformedReviews.length === ITEMS_PER_PAGE);
+      
     } catch (error) {
-      console.error('Error fetching reviews:', error);
+      console.error('Unexpected error:', error);
+      toast.error('An unexpected error occurred');
     } finally {
       setLoading(false);
     }
   };
   
   useEffect(() => {
-    // Reset pagination when filter changes
-    setPage(1);
-    setHasMore(true);
-    fetchReviews(1);
+    setPage(0);
+    fetchReviews(0, sortBy);
   }, [sortBy]);
   
   useEffect(() => {
-    if (page > 1) {
-      fetchReviews(page);
+    if (page > 0) {
+      fetchReviews(page, sortBy);
     }
   }, [page]);
   
-  const loadMore = () => {
-    if (!loading && hasMore) {
-      setPage(prevPage => prevPage + 1);
-    }
-  };
-  
-  return { 
-    reviews, 
-    loading, 
-    hasMore, 
-    loadMore,
+  return {
+    reviews,
+    loading,
     sortBy,
     setSortBy,
-    setPage
+    setPage,
+    hasMore,
   };
 };

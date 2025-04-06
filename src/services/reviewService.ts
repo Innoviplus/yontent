@@ -1,12 +1,11 @@
 
 import { supabase } from '@/integrations/supabase/client';
-import { Review } from '@/lib/types';
 import { toast } from 'sonner';
-import { extractAvatarUrl } from '@/hooks/admin/api/types/participationTypes';
+import { Review } from '@/lib/types';
 
-export const fetchReview = async (id: string): Promise<Review | null> => {
+export const fetchReviews = async (sortBy: string, userId?: string): Promise<Review[]> => {
   try {
-    const { data, error } = await supabase
+    let query = supabase
       .from('reviews')
       .select(`
         id,
@@ -19,45 +18,64 @@ export const fetchReview = async (id: string): Promise<Review | null> => {
         profiles:user_id (
           id,
           username,
-          extended_data
+          avatar
         )
       `)
-      .eq('id', id)
-      .single();
+      .eq('status', 'PUBLISHED'); // Only fetch PUBLISHED reviews
+
+    if (sortBy === 'recent') {
+      query = query.order('created_at', { ascending: false });
+    } else if (sortBy === 'relevant' && userId) {
+      query = query.order('created_at', { ascending: false });
+    }
+
+    const { data, error } = await query;
     
     if (error) {
-      console.error('Error fetching review:', error);
-      return null;
+      console.error('Error fetching reviews:', error);
+      throw new Error('Failed to load reviews');
     }
     
-    // Extract avatar URL using the shared utility function
-    const avatarUrl = extractAvatarUrl(data.profiles?.extended_data);
-    
-    return {
-      id: data.id,
-      userId: data.user_id,
-      content: data.content,
-      images: data.images || [],
-      viewsCount: data.views_count,
-      likesCount: data.likes_count,
-      createdAt: new Date(data.created_at),
-      user: data.profiles ? {
-        id: data.profiles.id,
-        username: data.profiles.username || 'Anonymous',
+    const transformedReviews: Review[] = data.map(review => ({
+      id: review.id,
+      userId: review.user_id,
+      productName: "Review",
+      rating: 5,
+      content: review.content,
+      images: review.images || [],
+      viewsCount: review.views_count || 0, // Ensure it's never undefined
+      likesCount: review.likes_count || 0, // Ensure it's never undefined
+      createdAt: new Date(review.created_at),
+      user: review.profiles ? {
+        id: review.profiles.id,
+        username: review.profiles.username || 'Anonymous',
         email: '',
         points: 0,
         createdAt: new Date(),
-        avatar: avatarUrl
+        avatar: review.profiles.avatar
       } : undefined
-    };
+    }));
+    
+    return transformedReviews;
   } catch (error) {
     console.error('Unexpected error:', error);
-    return null;
+    throw new Error('An unexpected error occurred');
   }
 };
 
-export const trackReviewView = async (reviewId: string): Promise<void> => {
+// Track viewed reviews in session storage to avoid counting multiple views
+const viewedReviews = new Set<string>(); 
+
+export const trackReviewView = async (reviewId: string) => {
   try {
+    // Only count a view once per session for each review
+    if (viewedReviews.has(reviewId)) {
+      return;
+    }
+    
+    // Add to viewed reviews set
+    viewedReviews.add(reviewId);
+    
     const { error } = await supabase.rpc('increment_view_count', {
       review_id: reviewId
     });
@@ -66,59 +84,81 @@ export const trackReviewView = async (reviewId: string): Promise<void> => {
       console.error('Error tracking review view:', error);
     }
   } catch (error) {
-    console.error('Unexpected error:', error);
+    console.error('Unexpected error tracking view:', error);
   }
 };
 
-// Fetch multiple reviews
-export const fetchReviews = async (options = {}) => {
+export const submitReview = async ({ 
+  userId, 
+  content, 
+  images,
+  isDraft = false 
+}: { 
+  userId: string; 
+  content: string; 
+  images: File[];
+  isDraft?: boolean;
+}) => {
   try {
-    const { data, error } = await supabase
-      .from('reviews')
-      .select(`
-        id,
-        user_id,
-        content,
-        images,
-        views_count,
-        likes_count,
-        created_at,
-        profiles:user_id (
-          id,
-          username,
-          extended_data
-        )
-      `)
-      .order('created_at', { ascending: false });
+    // Upload images
+    const imageUrls: string[] = [];
     
-    if (error) {
-      throw error;
+    for (const image of images) {
+      const fileExt = image.name.split('.').pop();
+      const fileName = `${Math.random().toString(36).substring(2, 15)}.${fileExt}`;
+      const filePath = `${userId}/${fileName}`;
+      
+      // Upload the image to the review-images bucket
+      const { error: uploadError, data } = await supabase
+        .storage
+        .from('review-images')
+        .upload(filePath, image, {
+          cacheControl: '3600',
+          upsert: false
+        });
+        
+      if (uploadError) {
+        console.error('Error uploading image:', uploadError);
+        throw new Error(`Failed to upload image: ${uploadError.message}`);
+      }
+      
+      // Get the public URL of the uploaded image
+      const { data: publicURL } = supabase
+        .storage
+        .from('review-images')
+        .getPublicUrl(filePath);
+        
+      if (publicURL) {
+        imageUrls.push(publicURL.publicUrl);
+      }
     }
     
-    return data.map(item => {
-      // Extract avatar URL using the shared utility function
-      const avatarUrl = extractAvatarUrl(item.profiles?.extended_data);
+    // Insert review
+    const { error: insertError } = await supabase
+      .from('reviews')
+      .insert({
+        user_id: userId,
+        content,
+        images: imageUrls,
+        // Initialize with 0 views count, not random value
+        views_count: 0,
+        likes_count: 0,
+        status: isDraft ? 'DRAFT' : 'PUBLISHED'
+      });
       
-      return {
-        id: item.id,
-        userId: item.user_id,
-        content: item.content,
-        images: item.images || [],
-        viewsCount: item.views_count,
-        likesCount: item.likes_count,
-        createdAt: new Date(item.created_at),
-        user: item.profiles ? {
-          id: item.profiles.id,
-          username: item.profiles.username || 'Anonymous',
-          email: '',
-          points: 0,
-          createdAt: new Date(),
-          avatar: avatarUrl
-        } : undefined
-      };
-    });
+    if (insertError) {
+      console.error('Error creating review:', insertError);
+      throw new Error(`Failed to create review: ${insertError.message}`);
+    }
+    
+    return true;
   } catch (error) {
-    console.error('Error fetching reviews:', error);
-    return [];
+    console.error('Unexpected error:', error);
+    if (error instanceof Error) {
+      toast.error(error.message);
+    } else {
+      toast.error('Failed to submit review');
+    }
+    throw error;
   }
 };

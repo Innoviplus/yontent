@@ -8,6 +8,8 @@ export const useSettingsState = () => {
   const navigate = useNavigate();
   const { user, userProfile, signOut } = useAuth();
   
+  const [avatarUrl, setAvatarUrl] = useState<string | null>(userProfile?.avatar || null);
+  const [uploading, setUploading] = useState(false);
   const [isUpdating, setIsUpdating] = useState(false);
   const [activeTab, setActiveTab] = useState("profile");
   const [extendedProfile, setExtendedProfile] = useState<ExtendedProfile | null>(null);
@@ -16,6 +18,10 @@ export const useSettingsState = () => {
     user,
     userProfile,
     signOut,
+    avatarUrl,
+    setAvatarUrl,
+    uploading,
+    setUploading,
     isUpdating,
     setIsUpdating,
     activeTab,
