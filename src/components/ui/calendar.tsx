@@ -1,4 +1,3 @@
-
 import * as React from "react";
 import { ChevronLeft, ChevronRight } from "lucide-react";
 import { DayPicker, DropdownProps, CaptionProps } from "react-day-picker";
@@ -7,14 +6,33 @@ import { cn } from "@/lib/utils";
 import { buttonVariants } from "@/components/ui/button";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 
-export type CalendarProps = React.ComponentProps<typeof DayPicker>;
+export type CalendarProps = React.ComponentProps<typeof DayPicker> & {
+  month?: Date;
+  onMonthSelect?: (month: number) => void;
+  onYearSelect?: (year: number) => void;
+};
 
 function Calendar({
   className,
   classNames,
   showOutsideDays = true,
+  month,
+  onMonthSelect,
+  onYearSelect,
   ...props
 }: CalendarProps) {
+  // Internal state to keep track of current display month
+  const [currentMonth, setCurrentMonth] = React.useState<Date | undefined>(
+    month || props.defaultMonth || new Date()
+  );
+  
+  // Update internal state when external month prop changes
+  React.useEffect(() => {
+    if (month) {
+      setCurrentMonth(month);
+    }
+  }, [month]);
+
   return (
     <DayPicker
       showOutsideDays={showOutsideDays}
@@ -100,11 +118,24 @@ function Calendar({
           // Create handler functions for month and year changes
           const handleMonthChange = (monthStr: string) => {
             console.log("Month changed to:", monthStr);
-            const newDate = new Date(displayMonth);
-            newDate.setMonth(parseInt(monthStr));
+            const monthNum = parseInt(monthStr);
+            
+            // Update internal state
+            if (currentMonth) {
+              const newDate = new Date(currentMonth);
+              newDate.setMonth(monthNum);
+              setCurrentMonth(newDate);
+            }
+            
+            // Call the custom month select handler if provided
+            if (onMonthSelect) {
+              onMonthSelect(monthNum);
+            }
             
             // Call the parent's onMonthChange if provided
             if (calendarProps.onMonthChange) {
+              const newDate = new Date(displayMonth);
+              newDate.setMonth(monthNum);
               console.log("Calling onMonthChange with:", newDate);
               calendarProps.onMonthChange(newDate);
             }
@@ -112,11 +143,24 @@ function Calendar({
           
           const handleYearChange = (yearStr: string) => {
             console.log("Year changed to:", yearStr);
-            const newDate = new Date(displayMonth);
-            newDate.setFullYear(parseInt(yearStr));
+            const yearNum = parseInt(yearStr);
+            
+            // Update internal state
+            if (currentMonth) {
+              const newDate = new Date(currentMonth);
+              newDate.setFullYear(yearNum);
+              setCurrentMonth(newDate);
+            }
+            
+            // Call the custom year select handler if provided
+            if (onYearSelect) {
+              onYearSelect(yearNum);
+            }
             
             // Call the parent's onMonthChange if provided
             if (calendarProps.onMonthChange) {
+              const newDate = new Date(displayMonth);
+              newDate.setFullYear(yearNum);
               console.log("Calling onMonthChange with:", newDate);
               calendarProps.onMonthChange(newDate);
             }
@@ -173,6 +217,13 @@ function Calendar({
               )}
             </div>
           );
+        }
+      }}
+      month={currentMonth}
+      onMonthChange={(newMonth) => {
+        setCurrentMonth(newMonth);
+        if (props.onMonthChange) {
+          props.onMonthChange(newMonth);
         }
       }}
       {...props}

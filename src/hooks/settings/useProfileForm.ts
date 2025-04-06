@@ -1,3 +1,4 @@
+
 import { useForm } from 'react-hook-form';
 import { zodResolver } from '@hookform/resolvers/zod';
 import * as z from 'zod';
@@ -78,13 +79,30 @@ export const useProfileForm = (
       
       console.log("Loading profile data:", extData);
       
+      // Special handling for birthDate to ensure it's a proper Date object
+      let birthDate = undefined;
+      if (extData.birthDate) {
+        try {
+          birthDate = new Date(extData.birthDate);
+          console.log("Parsed birthDate:", birthDate);
+          // Check if date is valid
+          if (isNaN(birthDate.getTime())) {
+            console.error("Invalid date value:", extData.birthDate);
+            birthDate = undefined;
+          }
+        } catch (err) {
+          console.error("Error parsing birthDate:", err);
+          birthDate = undefined;
+        }
+      }
+      
       profileForm.reset({
         username: userProfile.username || '',
         firstName: extData.firstName || '',
         lastName: extData.lastName || '',
         bio: extData.bio || '',
         gender: extData.gender || '',
-        birthDate: extData.birthDate ? new Date(extData.birthDate) : undefined,
+        birthDate: birthDate,
         websiteUrl: extData.websiteUrl || '',
         facebookUrl: extData.facebookUrl || '',
         instagramUrl: extData.instagramUrl || '',
@@ -99,6 +117,7 @@ export const useProfileForm = (
     
     setIsUpdating(true);
     console.log("Submitting profile data:", values);
+    console.log("Birth date:", values.birthDate);
     
     try {
       // Get current extended profile data to preserve other fields
@@ -144,7 +163,7 @@ export const useProfileForm = (
         toast.success('Profile updated successfully!');
         
         // Mark form as pristine to indicate data has been saved
-        profileForm.reset(values, { keepValues: true });
+        profileForm.reset(formattedValues, { keepValues: true });
       }
       
     } catch (error: any) {
