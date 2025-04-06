@@ -31,7 +31,7 @@ export const useReviewComments = (reviewId: string) => {
           content,
           created_at,
           user_id,
-          profiles:user_id (
+          profiles (
             id,
             username,
             avatar
@@ -41,10 +41,16 @@ export const useReviewComments = (reviewId: string) => {
         .order('created_at', { ascending: true });
         
       if (error) {
+        console.error('Error fetching comments:', error);
         throw error;
       }
       
-      const transformedComments: Comment[] = (data || []).map(comment => {
+      if (!data) {
+        setComments([]);
+        return;
+      }
+      
+      const transformedComments: Comment[] = data.map(comment => {
         // Safely handle the profiles data which might be null or have errors
         const profile = comment.profiles as any; // Cast to any to safely access properties
         return {
@@ -77,12 +83,25 @@ export const useReviewComments = (reviewId: string) => {
     try {
       setSubmitting(true);
       
-      const { data: userData } = await supabase.auth.getUser();
-      if (!userData.user) {
+      const { data: userData, error: userError } = await supabase.auth.getUser();
+      if (userError || !userData.user) {
         toast.error('You need to be logged in to comment');
         return;
       }
       
+      // First get the user profile
+      const { data: profileData, error: profileError } = await supabase
+        .from('profiles')
+        .select('id, username, avatar')
+        .eq('id', userData.user.id)
+        .single();
+      
+      if (profileError) {
+        console.error('Error fetching user profile:', profileError);
+        throw new Error('Could not verify user profile');
+      }
+      
+      // Now insert the comment
       const { data, error } = await supabase
         .from('review_comments')
         .insert({
@@ -90,33 +109,23 @@ export const useReviewComments = (reviewId: string) => {
           user_id: userData.user.id,
           content
         })
-        .select(`
-          id, 
-          content, 
-          created_at,
-          user_id,
-          profiles:user_id (
-            id,
-            username,
-            avatar
-          )
-        `)
+        .select('id, content, created_at')
         .single();
         
       if (error) {
+        console.error('Error adding comment:', error);
         throw error;
       }
       
-      // Safely handle potential null or undefined values in the response
-      const profile = data.profiles as any; // Cast to any to safely access properties
+      // Create a new comment object with the profile data we fetched earlier
       const newCommentData: Comment = {
         id: data.id,
         content: data.content,
         createdAt: new Date(data.created_at),
         user: {
-          id: data.user_id,
-          username: profile && typeof profile === 'object' ? profile.username || 'Anonymous' : 'Anonymous',
-          avatar: profile && typeof profile === 'object' ? profile.avatar : undefined
+          id: profileData.id,
+          username: profileData.username || 'Anonymous',
+          avatar: profileData.avatar
         }
       };
       
@@ -136,7 +145,9 @@ export const useReviewComments = (reviewId: string) => {
   };
   
   useEffect(() => {
-    fetchComments();
+    if (reviewId) {
+      fetchComments();
+    }
   }, [reviewId]);
   
   return {
