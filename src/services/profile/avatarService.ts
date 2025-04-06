@@ -73,10 +73,25 @@ export const updateAvatarUrl = async (userId: string, avatarUrl: string): Promis
 
     // Prepare updated extended_data with new avatar URL
     const currentData = profileData?.extended_data || {};
-    const extendedData = {
-      ...currentData,
-      avatarUrl
-    };
+    
+    // Handle extended_data correctly whether it's a string or an object
+    let extendedData;
+    if (typeof currentData === 'string') {
+      try {
+        const parsedData = JSON.parse(currentData);
+        extendedData = {
+          ...parsedData,
+          avatarUrl
+        };
+      } catch (e) {
+        extendedData = { avatarUrl };
+      }
+    } else {
+      extendedData = {
+        ...currentData,
+        avatarUrl
+      };
+    }
 
     // Update the profile
     const { error: updateError } = await supabase

@@ -1,3 +1,4 @@
+
 import { supabase } from '@/integrations/supabase/client';
 import { Review } from '@/lib/types';
 import { toast } from 'sonner';
@@ -53,7 +54,7 @@ export const fetchReview = async (id: string): Promise<Review | null> => {
 
 export const trackReviewView = async (reviewId: string): Promise<void> => {
   try {
-    const { error } = await supabase.rpc('increment_review_views', {
+    const { error } = await supabase.rpc('increment_view_count', {
       review_id: reviewId
     });
     
@@ -65,4 +66,50 @@ export const trackReviewView = async (reviewId: string): Promise<void> => {
   }
 };
 
-// Additional functions can be added here for other review-related operations
+// Add a function to fetch multiple reviews
+export const fetchReviews = async (options = {}) => {
+  try {
+    const { data, error } = await supabase
+      .from('reviews')
+      .select(`
+        id,
+        user_id,
+        content,
+        images,
+        views_count,
+        likes_count,
+        created_at,
+        profiles:user_id (
+          id,
+          username,
+          extended_data
+        )
+      `)
+      .order('created_at', { ascending: false });
+    
+    if (error) {
+      throw error;
+    }
+    
+    return data.map(item => ({
+      id: item.id,
+      userId: item.user_id,
+      content: item.content,
+      images: item.images || [],
+      viewsCount: item.views_count,
+      likesCount: item.likes_count,
+      createdAt: new Date(item.created_at),
+      user: item.profiles ? {
+        id: item.profiles.id,
+        username: item.profiles.username || 'Anonymous',
+        email: '',
+        points: 0,
+        createdAt: new Date(),
+        avatar: item.profiles.extended_data?.avatarUrl
+      } : undefined
+    }));
+  } catch (error) {
+    console.error('Error fetching reviews:', error);
+    return [];
+  }
+};

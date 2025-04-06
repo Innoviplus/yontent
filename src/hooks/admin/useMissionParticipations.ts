@@ -1,14 +1,14 @@
 
 import { useState, useEffect } from 'react';
 import { toast } from 'sonner';
-import { MissionParticipation } from './types/missionParticipationTypes';
 import { 
+  MissionParticipation,
   fetchMissionParticipations,
   approveParticipation as approveParticipationApi,
   rejectParticipation as rejectParticipationApi
 } from './api/missionParticipationsApi';
 
-export type { MissionParticipation } from './types/missionParticipationTypes';
+export type { MissionParticipation } from './api/missionParticipationsApi';
 
 export const useMissionParticipations = () => {
   const [participations, setParticipations] = useState<MissionParticipation[]>([]);
@@ -23,7 +23,7 @@ export const useMissionParticipations = () => {
       if (result.error) {
         toast.error('Failed to load mission participations');
       } else {
-        setParticipations(result.participations);
+        setParticipations(result.participations || []);
       }
     } finally {
       setIsLoading(false);
