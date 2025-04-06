@@ -6,6 +6,7 @@ import { supabase } from '@/integrations/supabase/client';
 import { toast } from 'sonner';
 import { ExtendedProfile } from '@/lib/types';
 import React from 'react';
+import { updateProfileData } from '@/services/profile/profileUpdateService';
 
 // Form schema
 export const profileFormSchema = z.object({
@@ -73,8 +74,12 @@ export const useProfileForm = (
     setIsUpdating(true);
     
     try {
-      // Prepare extended data object
+      // Get current extended profile data to preserve other fields
+      const currentExtendedProfile = extendedProfile || {};
+      
+      // Merge with new values, preserving existing fields from other tabs
       const extendedData: ExtendedProfile = {
+        ...currentExtendedProfile,
         firstName: values.firstName,
         lastName: values.lastName,
         bio: values.bio || null,
@@ -85,34 +90,21 @@ export const useProfileForm = (
         instagramUrl: values.instagramUrl || null,
         youtubeUrl: values.youtubeUrl || null,
         tiktokUrl: values.tiktokUrl || null,
-        phoneNumber: extendedProfile?.phoneNumber || null,
-        phoneCountryCode: extendedProfile?.phoneCountryCode || null,
-        country: extendedProfile?.country || null,
       };
       
-      // Convert ExtendedProfile to a plain object for storage
-      const jsonData = Object.fromEntries(
-        Object.entries(extendedData).map(([key, value]) => [key, value])
-      );
+      // Use the updateProfileData service function
+      const success = await updateProfileData(user.id, extendedData);
       
-      // Update the profile with extended data
-      const { error: updateError } = await supabase
-        .from('profiles')
-        .update({ extended_data: jsonData })
-        .eq('id', user.id);
-      
-      if (updateError) {
-        throw updateError;
+      if (success) {
+        // Update local state
+        setExtendedProfile(extendedData);
+        
+        // Show success notification
+        toast.success('Profile updated successfully!');
+        
+        // Mark form as pristine to indicate data has been saved
+        profileForm.reset(values, { keepValues: true });
       }
-      
-      // Update local state
-      setExtendedProfile(extendedData);
-      
-      // Show success notification
-      toast.success('Profile updated successfully!');
-      
-      // Mark form as pristine to indicate data has been saved
-      profileForm.reset(values, { keepValues: true });
       
     } catch (error: any) {
       toast.error("Update Failed: " + error.message);

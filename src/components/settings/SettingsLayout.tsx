@@ -84,7 +84,7 @@ export function SettingsLayout({
             <TabsContent value="social" className="mt-0">
               <SocialMediaTab
                 profileForm={profileForm}
-                onSubmit={() => onProfileSubmit(profileForm.getValues())}
+                onSubmit={onProfileSubmit}
                 isUpdating={isUpdating}
               />
             </TabsContent>

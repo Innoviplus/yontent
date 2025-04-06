@@ -1,8 +1,7 @@
-
 import React from 'react';
 import { UseFormReturn } from 'react-hook-form';
-import { Loader2 } from 'lucide-react';
-import { toast } from 'sonner';
+import { Button } from '@/components/ui/button';
+import { Input } from '@/components/ui/input';
 import {
   Form,
   FormControl,
@@ -11,47 +10,41 @@ import {
   FormLabel,
   FormMessage,
 } from '@/components/ui/form';
-import { Input } from '@/components/ui/input';
-import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
+import { Loader2 } from 'lucide-react';
 
-export interface SocialMediaTabProps {
-  profileForm?: UseFormReturn<any>;
-  settingsForm?: UseFormReturn<any>;
-  onSubmit?: () => void;
-  onSettingsSubmit?: (values: any) => Promise<void>;
+interface SocialMediaTabProps {
+  profileForm: UseFormReturn<any>;
+  onSubmit: (values: any) => Promise<void>;
   isUpdating: boolean;
 }
 
 export const SocialMediaTab: React.FC<SocialMediaTabProps> = ({
   profileForm,
-  settingsForm,
   onSubmit,
-  onSettingsSubmit,
-  isUpdating
+  isUpdating,
 }) => {
-  // Use either profileForm or settingsForm - prioritize profileForm
-  const formToUse = profileForm || settingsForm;
-  
-  const submitHandler = async () => {
-    try {
-      if (onSubmit) {
-        onSubmit();
-        toast.success('Social media profiles saved successfully!');
-      } else if (onSettingsSubmit && formToUse) {
-        await onSettingsSubmit(formToUse.getValues());
-        toast.success('Social media profiles saved successfully!');
-      }
-    } catch (error) {
-      toast.error('Failed to save social media profiles');
-      console.error('Error saving social media profiles:', error);
-    }
+  const handleSubmit = async () => {
+    // Get only social media related values from the form
+    const values = profileForm.getValues();
+    const socialMediaValues = {
+      websiteUrl: values.websiteUrl,
+      facebookUrl: values.facebookUrl,
+      instagramUrl: values.instagramUrl,
+      youtubeUrl: values.youtubeUrl,
+      tiktokUrl: values.tiktokUrl,
+      // Keep other values from the form to preserve them
+      username: values.username,
+      firstName: values.firstName,
+      lastName: values.lastName,
+      bio: values.bio,
+      gender: values.gender,
+      birthDate: values.birthDate,
+    };
+    
+    // Submit only social media related values
+    await onSubmit(socialMediaValues);
   };
-  
-  if (!formToUse) {
-    console.error("No form provided to SocialMediaTab");
-    return <div>Error: No form data available</div>;
-  }
 
   return (
     <Card>
@@ -60,14 +53,14 @@ export const SocialMediaTab: React.FC<SocialMediaTabProps> = ({
         <CardDescription>Connect your social media accounts</CardDescription>
       </CardHeader>
       <CardContent>
-        <Form {...formToUse}>
-          <form className="space-y-6">
+        <Form {...profileForm}>
+          <div className="space-y-8">
             <FormField
-              control={formToUse.control}
+              control={profileForm.control}
               name="websiteUrl"
               render={({ field }) => (
                 <FormItem>
-                  <FormLabel>Website</FormLabel>
+                  <FormLabel>Personal Website</FormLabel>
                   <FormControl>
                     <Input placeholder="https://yourwebsite.com" {...field} value={field.value || ''} />
                   </FormControl>
@@ -77,13 +70,13 @@ export const SocialMediaTab: React.FC<SocialMediaTabProps> = ({
             />
             
             <FormField
-              control={formToUse.control}
+              control={profileForm.control}
               name="facebookUrl"
               render={({ field }) => (
                 <FormItem>
-                  <FormLabel>Facebook Profile</FormLabel>
+                  <FormLabel>Facebook</FormLabel>
                   <FormControl>
-                    <Input placeholder="https://facebook.com/username" {...field} value={field.value || ''} />
+                    <Input placeholder="https://facebook.com/yourusername" {...field} value={field.value || ''} />
                   </FormControl>
                   <FormMessage />
                 </FormItem>
@@ -91,13 +84,13 @@ export const SocialMediaTab: React.FC<SocialMediaTabProps> = ({
             />
             
             <FormField
-              control={formToUse.control}
+              control={profileForm.control}
               name="instagramUrl"
               render={({ field }) => (
                 <FormItem>
-                  <FormLabel>Instagram Profile</FormLabel>
+                  <FormLabel>Instagram</FormLabel>
                   <FormControl>
-                    <Input placeholder="https://instagram.com/username" {...field} value={field.value || ''} />
+                    <Input placeholder="https://instagram.com/yourusername" {...field} value={field.value || ''} />
                   </FormControl>
                   <FormMessage />
                 </FormItem>
@@ -105,13 +98,13 @@ export const SocialMediaTab: React.FC<SocialMediaTabProps> = ({
             />
             
             <FormField
-              control={formToUse.control}
+              control={profileForm.control}
               name="youtubeUrl"
               render={({ field }) => (
                 <FormItem>
-                  <FormLabel>YouTube Channel</FormLabel>
+                  <FormLabel>YouTube</FormLabel>
                   <FormControl>
-                    <Input placeholder="https://youtube.com/c/channelname" {...field} value={field.value || ''} />
+                    <Input placeholder="https://youtube.com/c/yourchannel" {...field} value={field.value || ''} />
                   </FormControl>
                   <FormMessage />
                 </FormItem>
@@ -119,24 +112,33 @@ export const SocialMediaTab: React.FC<SocialMediaTabProps> = ({
             />
             
             <FormField
-              control={formToUse.control}
+              control={profileForm.control}
               name="tiktokUrl"
               render={({ field }) => (
                 <FormItem>
-                  <FormLabel>TikTok Profile</FormLabel>
+                  <FormLabel>TikTok</FormLabel>
                   <FormControl>
-                    <Input placeholder="https://tiktok.com/@username" {...field} value={field.value || ''} />
+                    <Input placeholder="https://tiktok.com/@yourusername" {...field} value={field.value || ''} />
                   </FormControl>
                   <FormMessage />
                 </FormItem>
               )}
             />
             
-            <Button type="button" onClick={submitHandler} disabled={isUpdating}>
-              {isUpdating && <Loader2 className="mr-2 h-4 w-4 animate-spin" />}
-              Save Social Profiles
+            <Button 
+              type="button" 
+              onClick={handleSubmit}
+              className="w-full md:w-auto" 
+              disabled={isUpdating}
+            >
+              {isUpdating ? (
+                <>
+                  <Loader2 className="mr-2 h-4 w-4 animate-spin" />
+                  Updating...
+                </>
+              ) : 'Save Social Media'}
             </Button>
-          </form>
+          </div>
         </Form>
       </CardContent>
     </Card>
