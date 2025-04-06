@@ -58,25 +58,27 @@ export const updateAvatarUrl = async (userId: string, avatarUrl: string): Promis
     console.log("Updating avatar URL in profile for user:", userId);
     console.log("New avatar URL:", avatarUrl);
     
-    // First check if profile exists using generic RPC to bypass TypeScript type checking
+    // First check if profile exists using generic method to bypass TypeScript type checking
     const { data, error } = await supabase.rpc(
       'get_profile_by_id', 
       { user_id_input: userId }
-    );
+    ) as any;
     
     if (error) {
       console.error("Error checking profile existence:", error);
       throw error;
     }
     
-    // Check if data is an array and has at least one item
+    console.log("Profile check result:", data);
+    
+    // Check if data has any items
     if (data && Array.isArray(data) && data.length > 0) {
       // If profile exists, update it
       console.log("Profile exists, updating avatar URL via RPC");
       const { error: updateError } = await supabase.rpc(
         'update_avatar_url', 
         { user_id_input: userId, avatar_url_input: avatarUrl }
-      );
+      ) as any;
         
       if (updateError) {
         console.error("Error updating avatar URL:", updateError);
@@ -88,7 +90,7 @@ export const updateAvatarUrl = async (userId: string, avatarUrl: string): Promis
       const { error: insertError } = await supabase.rpc(
         'insert_profile_with_avatar', 
         { user_id_input: userId, avatar_url_input: avatarUrl }
-      );
+      ) as any;
         
       if (insertError) {
         console.error("Error inserting new profile:", insertError);

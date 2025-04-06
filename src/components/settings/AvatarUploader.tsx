@@ -80,7 +80,7 @@ export const AvatarUploader: React.FC<AvatarUploaderProps> = ({
           ref={fileInputRef}
         />
         <Button
-          variant="outline"
+          variant="primary"
           className="relative"
           asChild
           disabled={uploading}
