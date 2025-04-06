@@ -25,7 +25,7 @@ export const useFetchReview = (id: string | undefined) => {
           views_count,
           likes_count,
           created_at,
-          profiles:user_id (
+          profiles(
             id,
             username,
             avatar

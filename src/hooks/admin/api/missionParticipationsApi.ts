@@ -7,7 +7,7 @@ import {
 } from './types/participationTypes';
 import { transformParticipationData } from './utils/transformationUtils';
 import { 
-  updateMissionParticipationStatus as updateStatusAction,
+  updateMissionParticipationStatus as updateParticipationStatus,
   approveParticipation as approveParticipationAction,
   rejectParticipation as rejectParticipationAction
 } from './participationStatusActions';
@@ -103,7 +103,7 @@ export const fetchMissionParticipationsWithFilters = async (
 // Export the status action functions with the same names to maintain API compatibility
 export const approveParticipation = approveParticipationAction;
 export const rejectParticipation = rejectParticipationAction;
-export const updateMissionParticipationStatus = updateStatusAction;
+export const updateMissionParticipationStatus = updateParticipationStatus;
 
 // Re-export the MissionParticipation type
 export type { MissionParticipation } from './types/participationTypes';

@@ -10,17 +10,18 @@ export const useReviewsList = (userId?: string) => {
   const [page, setPage] = useState(1);
   const itemsPerPage = 10;
 
-  const { data: reviews, isLoading, error, refetch } = useQuery({
+  const { data: reviews = [], isLoading, error, refetch } = useQuery({
     queryKey: ['reviews', sortBy, userId],
     queryFn: () => fetchReviews(sortBy, userId),
+    onError: (err) => {
+      console.error('Error fetching reviews:', err);
+    }
   });
   
-  const totalPages = reviews ? Math.ceil(reviews.length / itemsPerPage) : 0;
-  const paginatedReviews = reviews ? 
-    reviews.slice((page - 1) * itemsPerPage, page * itemsPerPage) : 
-    [];
+  const totalPages = Math.ceil(reviews.length / itemsPerPage);
+  const paginatedReviews = reviews.slice((page - 1) * itemsPerPage, page * itemsPerPage);
     
-  const hasMore = reviews ? (page * itemsPerPage) < reviews.length : false;
+  const hasMore = (page * itemsPerPage) < reviews.length;
   
   const loadMore = () => {
     if (page < totalPages) {

@@ -6,7 +6,7 @@ export const extractAvatarUrl = (profileData: any): string | null => {
   if (!profileData) return null;
   
   if (typeof profileData === 'object') {
-    // Direct avatar property
+    // Try to get avatar directly
     if (profileData.avatar) return profileData.avatar;
     
     // Handle case where avatar might be in extended_data

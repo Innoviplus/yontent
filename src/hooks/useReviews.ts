@@ -1,3 +1,4 @@
+
 import { useState, useEffect } from 'react';
 import { Review } from '@/lib/types';
 import { supabase } from '@/integrations/supabase/client';
@@ -19,8 +20,14 @@ export const useReviews = () => {
       let query = supabase
         .from('reviews')
         .select(`
-          *,
-          profiles (
+          id,
+          user_id,
+          content,
+          images,
+          views_count,
+          likes_count,
+          created_at,
+          profiles(
             id,
             username,
             avatar,
@@ -28,8 +35,7 @@ export const useReviews = () => {
             created_at
           )
         `)
-        .eq('status', 'PUBLISHED') // Only fetch PUBLISHED reviews
-        .range(pageNum * ITEMS_PER_PAGE, (pageNum + 1) * ITEMS_PER_PAGE - 1);
+        .eq('status', 'PUBLISHED'); // Only fetch PUBLISHED reviews
 
       switch (sort) {
         case 'recent':
@@ -43,6 +49,7 @@ export const useReviews = () => {
           break;
       }
         
+      query = query.range(pageNum * ITEMS_PER_PAGE, (pageNum + 1) * ITEMS_PER_PAGE - 1);
       const { data, error } = await query;
         
       if (error) {
@@ -59,6 +66,8 @@ export const useReviews = () => {
         viewsCount: review.views_count,
         likesCount: review.likes_count,
         createdAt: new Date(review.created_at),
+        productName: 'Review',
+        rating: 5,
         user: review.profiles ? {
           id: review.profiles.id,
           username: review.profiles.username || 'Anonymous',
@@ -96,6 +105,10 @@ export const useReviews = () => {
     }
   }, [page]);
   
+  const loadMore = () => {
+    setPage(prevPage => prevPage + 1);
+  };
+  
   return {
     reviews,
     loading,
@@ -103,5 +116,6 @@ export const useReviews = () => {
     setSortBy,
     setPage,
     hasMore,
+    loadMore
   };
 };

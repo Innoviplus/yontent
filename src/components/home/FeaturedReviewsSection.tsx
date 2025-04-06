@@ -20,8 +20,14 @@ const FeaturedReviewsSection = ({ loading: initialLoading }: FeaturedReviewsSect
         const { data, error } = await supabase
           .from('reviews')
           .select(`
-            *,
-            profiles (
+            id,
+            user_id,
+            content,
+            images,
+            views_count,
+            likes_count,
+            created_at,
+            profiles(
               id,
               username,
               avatar,
@@ -46,6 +52,8 @@ const FeaturedReviewsSection = ({ loading: initialLoading }: FeaturedReviewsSect
           viewsCount: review.views_count,
           likesCount: review.likes_count,
           createdAt: new Date(review.created_at),
+          productName: 'Review',
+          rating: 5,
           user: review.profiles ? {
             id: review.profiles.id,
             username: review.profiles.username || 'Anonymous',

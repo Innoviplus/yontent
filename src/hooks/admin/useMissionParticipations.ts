@@ -1,95 +1,113 @@
 
 import { useState, useEffect } from 'react';
 import { toast } from 'sonner';
-import { MissionParticipation } from './types/missionParticipationTypes';
 import { 
   fetchMissionParticipations,
-  approveParticipation as approveParticipationApi,
-  rejectParticipation as rejectParticipationApi
+  fetchMissionParticipationsWithFilters,
+  approveParticipation,
+  rejectParticipation,
+  MissionParticipation
 } from './api/missionParticipationsApi';
+import { ParticipationStatus } from './api/types/participationTypes';
 
-export type { MissionParticipation } from './types/missionParticipationTypes';
-
-export const useMissionParticipations = () => {
+export const useMissionParticipations = (initialFilter?: ParticipationStatus) => {
   const [participations, setParticipations] = useState<MissionParticipation[]>([]);
-  const [isLoading, setIsLoading] = useState(true);
-  const [isRefreshing, setIsRefreshing] = useState(false);
+  const [loading, setLoading] = useState(true);
+  const [error, setError] = useState<string | null>(null);
+  const [filter, setFilter] = useState<ParticipationStatus | undefined>(initialFilter);
+  const [selectedParticipation, setSelectedParticipation] = useState<MissionParticipation | null>(null);
+  const [isDialogOpen, setIsDialogOpen] = useState(false);
 
+  // Function to load participations
   const loadParticipations = async () => {
+    setLoading(true);
+    setError(null);
+    
     try {
-      setIsLoading(true);
-      const result = await fetchMissionParticipations();
+      let response;
       
-      if (result.error) {
-        toast.error('Failed to load mission participations');
+      if (filter) {
+        response = await fetchMissionParticipationsWithFilters({ status: filter });
       } else {
-        setParticipations(result.participations);
+        response = await fetchMissionParticipations();
       }
+      
+      if (response.success && response.participations) {
+        // Use setParticipations with the correct type
+        setParticipations([...response.participations]);
+      } else {
+        setError(response.error || 'Failed to load participations');
+      }
+    } catch (err) {
+      console.error('Error in loadParticipations:', err);
+      setError('An unexpected error occurred');
     } finally {
-      setIsLoading(false);
+      setLoading(false);
     }
   };
 
-  const refreshParticipations = async () => {
-    setIsRefreshing(true);
-    await loadParticipations();
-    setIsRefreshing(false);
-  };
-
+  // Load participations on initial render and when filter changes
   useEffect(() => {
     loadParticipations();
-  }, []);
+  }, [filter]);
 
-  const approveParticipation = async (id: string) => {
+  // Function to handle approving participation
+  const handleApprove = async (participationId: string) => {
     try {
-      const result = await approveParticipationApi(id);
+      const success = await approveParticipation(participationId);
       
-      if (result.error) {
-        if (result.success) {
-          // This handles the case where the submission was already approved
-          toast.info(result.error);
-          return true;
-        } else {
-          toast.error('Failed to approve participation');
-          return false;
-        }
+      if (success) {
+        toast.success('Participation approved successfully');
+        await loadParticipations();
+      } else {
+        toast.error('Failed to approve participation');
       }
-      
-      toast.success('Participation approved and points awarded');
-      await refreshParticipations();
-      return true;
-    } catch (error: any) {
-      console.error('Error in approveParticipation hook:', error.message);
-      toast.error('Failed to approve participation');
-      return false;
+    } catch (err) {
+      console.error('Error approving participation:', err);
+      toast.error('An error occurred while approving');
     }
   };
 
-  const rejectParticipation = async (id: string) => {
+  // Function to handle rejecting participation
+  const handleReject = async (participationId: string) => {
     try {
-      const result = await rejectParticipationApi(id);
+      const success = await rejectParticipation(participationId);
       
-      if (!result.success) {
+      if (success) {
+        toast.success('Participation rejected successfully');
+        await loadParticipations();
+      } else {
         toast.error('Failed to reject participation');
-        return false;
       }
-      
-      toast.success('Participation rejected successfully');
-      await refreshParticipations();
-      return true;
-    } catch (error: any) {
-      console.error('Error in rejectParticipation hook:', error.message);
-      toast.error('Failed to reject participation');
-      return false;
+    } catch (err) {
+      console.error('Error rejecting participation:', err);
+      toast.error('An error occurred while rejecting');
     }
+  };
+
+  // Function to open dialog with selected participation
+  const openParticipationDetails = (participation: MissionParticipation) => {
+    setSelectedParticipation(participation);
+    setIsDialogOpen(true);
+  };
+
+  // Function to close dialog
+  const closeParticipationDetails = () => {
+    setIsDialogOpen(false);
   };
 
   return {
     participations,
-    isLoading,
-    isRefreshing,
-    refreshParticipations,
-    approveParticipation,
-    rejectParticipation
+    loading,
+    error,
+    filter,
+    setFilter,
+    selectedParticipation,
+    isDialogOpen,
+    openParticipationDetails,
+    closeParticipationDetails,
+    handleApprove,
+    handleReject,
+    refreshParticipations: loadParticipations
   };
 };

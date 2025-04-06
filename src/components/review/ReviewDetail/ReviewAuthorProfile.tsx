@@ -29,21 +29,25 @@ const ReviewAuthorProfile = ({ userId }: ReviewAuthorProfileProps) => {
   useEffect(() => {
     const fetchAuthorProfile = async () => {
       try {
-        // Fetch user profile
+        // Fetch user profile with an explicit query for avatar
         const { data: profileData, error: profileError } = await supabase
           .from('profiles')
-          .select('*, followers_count, following_count')
+          .select('id, username, points, followers_count, following_count, created_at')
           .eq('id', userId)
           .single();
           
         if (profileError) throw profileError;
+        
+        // Fetch avatar separately
+        const { data: authUser } = await supabase.auth.getUser(userId);
+        const avatarUrl = authUser?.user?.user_metadata?.avatar_url;
         
         // Transform to User type
         const userProfile: UserType = {
           id: profileData.id,
           username: profileData.username || 'Anonymous',
           email: '', // Add the required email property even though it's not in profile data
-          avatar: profileData.avatar,
+          avatar: avatarUrl,
           points: profileData.points || 0,
           createdAt: new Date(profileData.created_at),
         };

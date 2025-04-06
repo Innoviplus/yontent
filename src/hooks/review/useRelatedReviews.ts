@@ -18,7 +18,7 @@ export const useRelatedReviews = (review: Review | null) => {
           views_count,
           likes_count,
           created_at,
-          profiles:user_id (
+          profiles(
             id,
             username,
             avatar,

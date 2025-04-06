@@ -34,7 +34,7 @@ export interface SubmissionData {
   reviewId?: string;
   reviewImages?: string[];
   receiptImage?: string;
-  submissionType: 'REVIEW' | 'RECEIPT';
+  submission_type?: 'REVIEW' | 'RECEIPT';
   [key: string]: any;
 }
 

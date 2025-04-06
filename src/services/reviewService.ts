@@ -15,7 +15,7 @@ export const fetchReviews = async (sortBy: string, userId?: string): Promise<Rev
         views_count,
         likes_count,
         created_at,
-        profiles:user_id (
+        profiles(
           id,
           username,
           avatar
