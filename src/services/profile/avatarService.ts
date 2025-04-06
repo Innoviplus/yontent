@@ -10,9 +10,6 @@ export const uploadAvatar = async (userId: string, file: File): Promise<string |
 
     console.log("Uploading avatar with path:", filePath);
     
-    // Check if avatars bucket exists, but don't try to create it via JavaScript
-    // as this will fail due to RLS policies
-    
     // Upload the file to the storage bucket
     const { error: uploadError, data } = await supabase.storage
       .from('avatars')
@@ -43,11 +40,11 @@ export const updateAvatarUrl = async (userId: string, avatarUrl: string): Promis
     console.log("Updating avatar URL in profile for user:", userId);
     console.log("New avatar URL:", avatarUrl);
     
-    // Update the profile directly
-    const { error } = await supabase
-      .from('profiles')
-      .update({ avatar: avatarUrl, updated_at: new Date().toISOString() })
-      .eq('id', userId);
+    // Update the profile using the update_avatar_url function for better security
+    const { error } = await supabase.rpc('update_avatar_url', {
+      user_id_input: userId,
+      avatar_url_input: avatarUrl
+    });
     
     if (error) {
       console.error("Error updating avatar URL:", error);
