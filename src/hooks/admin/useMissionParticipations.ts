@@ -1,113 +1,101 @@
 
-import { useState, useEffect } from 'react';
-import { toast } from 'sonner';
+import { useState } from 'react';
 import { 
   fetchMissionParticipations,
-  fetchMissionParticipationsWithFilters,
-  approveParticipation,
+  fetchMissionParticipationsWithFilters, 
+  approveParticipation, 
   rejectParticipation,
-  MissionParticipation
+  updateMissionParticipationStatus
 } from './api/missionParticipationsApi';
-import { ParticipationStatus } from './api/types/participationTypes';
+import { MissionParticipation, ParticipationStatus } from './api/types/participationTypes';
 
-export const useMissionParticipations = (initialFilter?: ParticipationStatus) => {
+export type { MissionParticipation } from './api/types/participationTypes';
+
+export const useMissionParticipations = () => {
   const [participations, setParticipations] = useState<MissionParticipation[]>([]);
   const [loading, setLoading] = useState(true);
-  const [error, setError] = useState<string | null>(null);
-  const [filter, setFilter] = useState<ParticipationStatus | undefined>(initialFilter);
+  const [isRefreshing, setIsRefreshing] = useState(false);
+  const [error, setError] = useState('');
+  const [filter, setFilter] = useState<ParticipationStatus>('PENDING');
   const [selectedParticipation, setSelectedParticipation] = useState<MissionParticipation | null>(null);
-  const [isDialogOpen, setIsDialogOpen] = useState(false);
+  const [processingId, setProcessingId] = useState<string | null>(null);
 
-  // Function to load participations
-  const loadParticipations = async () => {
-    setLoading(true);
-    setError(null);
-    
+  const loadParticipations = async (status?: ParticipationStatus) => {
     try {
-      let response;
+      setLoading(true);
+      setError('');
       
-      if (filter) {
-        response = await fetchMissionParticipationsWithFilters({ status: filter });
-      } else {
-        response = await fetchMissionParticipations();
-      }
+      const filterToUse = status || filter;
+      const response = await fetchMissionParticipationsWithFilters({ status: filterToUse });
       
       if (response.success && response.participations) {
-        // Use setParticipations with the correct type
-        setParticipations([...response.participations]);
+        setParticipations(response.participations);
       } else {
         setError(response.error || 'Failed to load participations');
       }
-    } catch (err) {
-      console.error('Error in loadParticipations:', err);
-      setError('An unexpected error occurred');
+    } catch (error: any) {
+      setError(error.message || 'An error occurred loading participations');
     } finally {
       setLoading(false);
     }
   };
-
-  // Load participations on initial render and when filter changes
-  useEffect(() => {
-    loadParticipations();
-  }, [filter]);
-
-  // Function to handle approving participation
-  const handleApprove = async (participationId: string) => {
+  
+  const refreshParticipations = async () => {
+    setIsRefreshing(true);
+    await loadParticipations();
+    setIsRefreshing(false);
+  };
+  
+  const handleApproveParticipation = async (id: string) => {
     try {
-      const success = await approveParticipation(participationId);
-      
-      if (success) {
-        toast.success('Participation approved successfully');
-        await loadParticipations();
-      } else {
-        toast.error('Failed to approve participation');
+      setProcessingId(id);
+      const result = await approveParticipation(id);
+      if (result) {
+        await refreshParticipations();
       }
-    } catch (err) {
-      console.error('Error approving participation:', err);
-      toast.error('An error occurred while approving');
+      return result;
+    } finally {
+      setProcessingId(null);
     }
   };
 
-  // Function to handle rejecting participation
-  const handleReject = async (participationId: string) => {
+  const handleRejectParticipation = async (id: string) => {
     try {
-      const success = await rejectParticipation(participationId);
-      
-      if (success) {
-        toast.success('Participation rejected successfully');
-        await loadParticipations();
-      } else {
-        toast.error('Failed to reject participation');
+      setProcessingId(id);
+      const result = await rejectParticipation(id);
+      if (result) {
+        await refreshParticipations();
       }
-    } catch (err) {
-      console.error('Error rejecting participation:', err);
-      toast.error('An error occurred while rejecting');
+      return result;
+    } finally {
+      setProcessingId(null);
     }
   };
-
-  // Function to open dialog with selected participation
-  const openParticipationDetails = (participation: MissionParticipation) => {
+  
+  const selectParticipation = (participation: MissionParticipation) => {
     setSelectedParticipation(participation);
-    setIsDialogOpen(true);
   };
-
-  // Function to close dialog
-  const closeParticipationDetails = () => {
-    setIsDialogOpen(false);
+  
+  const clearSelectedParticipation = () => {
+    setSelectedParticipation(null);
   };
 
   return {
     participations,
     loading,
+    isLoading: loading,
+    isRefreshing,
     error,
     filter,
     setFilter,
+    loadParticipations,
+    refreshParticipations,
+    approveParticipation: handleApproveParticipation,
+    rejectParticipation: handleRejectParticipation,
     selectedParticipation,
-    isDialogOpen,
-    openParticipationDetails,
-    closeParticipationDetails,
-    handleApprove,
-    handleReject,
-    refreshParticipations: loadParticipations
+    selectParticipation,
+    clearSelectedParticipation,
+    processingId,
+    updateMissionParticipationStatus
   };
 };

@@ -13,8 +13,10 @@ export const useReviewsList = (userId?: string) => {
   const { data: reviews = [], isLoading, error, refetch } = useQuery({
     queryKey: ['reviews', sortBy, userId],
     queryFn: () => fetchReviews(sortBy, userId),
-    onError: (err) => {
-      console.error('Error fetching reviews:', err);
+    meta: {
+      onError: (err: Error) => {
+        console.error('Error fetching reviews:', err);
+      }
     }
   });
   
