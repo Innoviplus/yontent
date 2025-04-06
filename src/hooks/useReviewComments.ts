@@ -46,15 +46,15 @@ export const useReviewComments = (reviewId: string) => {
       
       const transformedComments: Comment[] = (data || []).map(comment => {
         // Safely handle the profiles data which might be null or have errors
-        const profile = comment.profiles || {};
+        const profile = comment.profiles as any; // Cast to any to safely access properties
         return {
           id: comment.id,
           content: comment.content,
           createdAt: new Date(comment.created_at),
           user: {
             id: comment.user_id,
-            username: typeof profile === 'object' && profile.username ? profile.username : 'Anonymous',
-            avatar: typeof profile === 'object' && profile.avatar ? profile.avatar : undefined
+            username: profile && typeof profile === 'object' ? profile.username || 'Anonymous' : 'Anonymous',
+            avatar: profile && typeof profile === 'object' ? profile.avatar : undefined
           }
         };
       });
@@ -108,15 +108,15 @@ export const useReviewComments = (reviewId: string) => {
       }
       
       // Safely handle potential null or undefined values in the response
-      const profile = data.profiles || {};
+      const profile = data.profiles as any; // Cast to any to safely access properties
       const newCommentData: Comment = {
         id: data.id,
         content: data.content,
         createdAt: new Date(data.created_at),
         user: {
           id: data.user_id,
-          username: typeof profile === 'object' && profile.username ? profile.username : 'Anonymous',
-          avatar: typeof profile === 'object' && profile.avatar ? profile.avatar : undefined
+          username: profile && typeof profile === 'object' ? profile.username || 'Anonymous' : 'Anonymous',
+          avatar: profile && typeof profile === 'object' ? profile.avatar : undefined
         }
       };
       
