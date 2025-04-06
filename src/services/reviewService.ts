@@ -43,8 +43,8 @@ export const fetchReviews = async (sortBy: string, userId?: string): Promise<Rev
       rating: 5,
       content: review.content,
       images: review.images || [],
-      viewsCount: review.views_count,
-      likesCount: review.likes_count,
+      viewsCount: review.views_count || 0, // Ensure it's never undefined
+      likesCount: review.likes_count || 0, // Ensure it's never undefined
       createdAt: new Date(review.created_at),
       user: review.profiles ? {
         id: review.profiles.id,
@@ -63,8 +63,8 @@ export const fetchReviews = async (sortBy: string, userId?: string): Promise<Rev
   }
 };
 
-// Modified to avoid counting multiple views from the same session
-const viewedReviews = new Set<string>(); // Track reviews viewed in current session
+// Track viewed reviews in session storage to avoid counting multiple views
+const viewedReviews = new Set<string>(); 
 
 export const trackReviewView = async (reviewId: string) => {
   try {

@@ -57,7 +57,7 @@ export const BirthDateInput: React.FC<BirthDateInputProps> = ({ control, disable
               <FormLabel>Date of Birth</FormLabel>
               <div className="flex gap-2">
                 {/* Month Dropdown - Increased width for longer month names */}
-                <div className="w-[40%]">
+                <div className="w-[45%]">
                   <Select
                     value={selectedMonth?.toString() ?? ""}
                     onValueChange={(value) => handleDateChange('month', value)}
@@ -97,7 +97,7 @@ export const BirthDateInput: React.FC<BirthDateInputProps> = ({ control, disable
                 </div>
                 
                 {/* Year Dropdown */}
-                <div className="w-[35%]">
+                <div className="w-[30%]">
                   <Select
                     value={selectedYear?.toString() ?? ""}
                     onValueChange={(value) => handleDateChange('year', value)}
