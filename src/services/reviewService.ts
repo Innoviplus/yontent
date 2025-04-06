@@ -63,8 +63,19 @@ export const fetchReviews = async (sortBy: string, userId?: string): Promise<Rev
   }
 };
 
+// Modified to avoid counting multiple views from the same session
+const viewedReviews = new Set<string>(); // Track reviews viewed in current session
+
 export const trackReviewView = async (reviewId: string) => {
   try {
+    // Only count a view once per session for each review
+    if (viewedReviews.has(reviewId)) {
+      return;
+    }
+    
+    // Add to viewed reviews set
+    viewedReviews.add(reviewId);
+    
     const { error } = await supabase.rpc('increment_view_count', {
       review_id: reviewId
     });
@@ -129,6 +140,7 @@ export const submitReview = async ({
         user_id: userId,
         content,
         images: imageUrls,
+        // Initialize with 0 views count, not random value
         views_count: 0,
         likes_count: 0,
         status: isDraft ? 'DRAFT' : 'PUBLISHED'

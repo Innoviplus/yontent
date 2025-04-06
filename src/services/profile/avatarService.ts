@@ -55,9 +55,33 @@ export const uploadAvatar = async (userId: string, file: File): Promise<string |
 
 export const updateAvatarUrl = async (userId: string, avatarUrl: string): Promise<void> => {
   try {
+    // Get the user's current profile to ensure we have all required data
+    const { data: profileData, error: profileError } = await supabase
+      .from('profiles')
+      .select('*')
+      .eq('id', userId)
+      .single();
+      
+    if (profileError) {
+      console.error("Error fetching profile before update:", profileError);
+      throw profileError;
+    }
+    
+    // Now update with all the existing data plus the new avatar URL
     const { error: updateError } = await supabase
       .from('profiles')
-      .update({ avatar: avatarUrl })
+      .update({ 
+        avatar: avatarUrl,
+        // Include all other required fields from the current profile
+        username: profileData.username,
+        email: profileData.email,
+        phone_number: profileData.phone_number,
+        phone_country_code: profileData.phone_country_code,
+        points: profileData.points,
+        followers_count: profileData.followers_count,
+        following_count: profileData.following_count,
+        extended_data: profileData.extended_data
+      })
       .eq('id', userId);
 
     if (updateError) {
