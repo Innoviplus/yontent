@@ -1,9 +1,10 @@
 
-import React from 'react';
+import React, { useCallback } from 'react';
 import { UseFormReturn } from 'react-hook-form';
 import { ProfileInfoForm } from './ProfileInfoForm';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
-import { AvatarSection } from './AvatarSection';
+import { AvatarUploader } from './AvatarUploader';
+import { toast } from 'sonner';
 
 interface ProfileTabProps {
   userProfile: any;
@@ -26,6 +27,8 @@ export const ProfileTab: React.FC<ProfileTabProps> = ({
   isUpdating,
   extendedProfile
 }) => {
+  const fileInputRef = React.useRef<HTMLInputElement>(null);
+  
   // Log important state for debugging
   React.useEffect(() => {
     console.log("ProfileTab - Current avatar URL:", avatarUrl);
@@ -41,6 +44,14 @@ export const ProfileTab: React.FC<ProfileTabProps> = ({
     });
   }, [userProfile, avatarUrl, uploading, profileForm]);
 
+  const triggerAvatarUpload = useCallback(() => {
+    if (fileInputRef.current) {
+      fileInputRef.current.click();
+    } else {
+      toast.error("Cannot access file input");
+    }
+  }, []);
+
   return (
     <Card>
       <CardHeader>
@@ -49,12 +60,15 @@ export const ProfileTab: React.FC<ProfileTabProps> = ({
       </CardHeader>
       <CardContent>
         <div className="flex flex-col md:flex-row gap-8 mb-8">
-          <AvatarSection
-            avatarUrl={avatarUrl}
-            username={userProfile?.username}
-            uploading={uploading}
-            handleAvatarUpload={handleAvatarUpload}
-          />
+          <div className="flex flex-col items-center">
+            <AvatarUploader
+              avatarUrl={avatarUrl}
+              username={userProfile?.username}
+              uploading={uploading}
+              handleAvatarUpload={handleAvatarUpload}
+              fileInputRef={fileInputRef}
+            />
+          </div>
           
           <div className="flex-1">
             <ProfileInfoForm 
