@@ -5,7 +5,6 @@ import { Eye, EyeOff, Lock } from 'lucide-react';
 import { useAuth } from '@/contexts/AuthContext';
 import { Input } from '@/components/ui/input';
 import { Form, FormControl, FormField, FormItem, FormLabel, FormMessage } from '@/components/ui/form';
-import { Button } from '@/components/ui/button';
 import { zodResolver } from '@hookform/resolvers/zod';
 import { useForm } from 'react-hook-form';
 import * as z from 'zod';
@@ -200,18 +199,17 @@ const RegisterForm = () => {
             )}
           />
           
-          <Button
+          <button
             type="submit"
-            variant="primary"
             disabled={isLoading}
-            className="w-full"
+            className="w-full btn-primary flex justify-center items-center"
           >
             {isLoading ? (
               <div className="h-5 w-5 border-2 border-white border-t-transparent rounded-full animate-spin" />
             ) : (
               "Create Account"
             )}
-          </Button>
+          </button>
         </form>
       </Form>
       

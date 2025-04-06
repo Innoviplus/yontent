@@ -1,5 +1,5 @@
 
-import React, { useCallback } from 'react';
+import React, { useEffect, useRef } from 'react';
 import { UseFormReturn } from 'react-hook-form';
 import { ProfileInfoForm } from './ProfileInfoForm';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
@@ -27,30 +27,31 @@ export const ProfileTab: React.FC<ProfileTabProps> = ({
   isUpdating,
   extendedProfile
 }) => {
-  const fileInputRef = React.useRef<HTMLInputElement>(null);
+  const fileInputRef = useRef<HTMLInputElement>(null);
   
-  // Log important state for debugging
-  React.useEffect(() => {
+  // Ensure avatar URL is properly set and logged for debugging
+  useEffect(() => {
     console.log("ProfileTab - Current avatar URL:", avatarUrl);
     console.log("ProfileTab - User profile avatar:", userProfile?.avatar);
   }, [userProfile, avatarUrl]);
 
-  React.useEffect(() => {
+  // Log the current state for debugging
+  useEffect(() => {
     console.log("ProfileTab loaded with:", {
       hasUserProfile: !!userProfile,
       avatarUrl,
       uploading,
-      profileFormValues: profileForm?.getValues()
+      profileFormValues: profileForm?.formState?.defaultValues
     });
   }, [userProfile, avatarUrl, uploading, profileForm]);
 
-  const triggerAvatarUpload = useCallback(() => {
+  const triggerAvatarUpload = () => {
     if (fileInputRef.current) {
       fileInputRef.current.click();
     } else {
       toast.error("Cannot access file input");
     }
-  }, []);
+  };
 
   return (
     <Card>
