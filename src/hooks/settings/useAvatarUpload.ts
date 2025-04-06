@@ -48,6 +48,7 @@ export const useAvatarUpload = () => {
           if (refreshUserProfile) {
             console.log("Refreshing user profile after avatar update");
             await refreshUserProfile();
+            toast.success("Avatar updated successfully!");
           }
         } else {
           toast.error("Failed to generate avatar URL");
