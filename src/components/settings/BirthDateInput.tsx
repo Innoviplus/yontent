@@ -113,6 +113,9 @@ export const BirthDateInput: React.FC<BirthDateInputProps> = ({ control, disable
             field.onChange(newDate);
           };
 
+          // Only disable if explicitly set to disabled, not based on form state
+          const daySelectDisabled = disabled || (selectedMonth === null);
+
           return (
             <FormItem className="space-y-2">
               <FormLabel>Date of Birth</FormLabel>
@@ -142,7 +145,7 @@ export const BirthDateInput: React.FC<BirthDateInputProps> = ({ control, disable
                   <Select
                     value={selectedDay?.toString() ?? ""}
                     onValueChange={(value) => handleDateChange('day', value)}
-                    disabled={disabled || selectedMonth === null}
+                    disabled={daySelectDisabled}
                   >
                     <SelectTrigger>
                       <SelectValue placeholder="Day" />

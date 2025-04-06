@@ -21,6 +21,7 @@ export interface AccountTabProps {
   settingsForm: UseFormReturn<any>;
   onSettingsSubmit: (values: any) => Promise<void>;
   isUpdating: boolean;
+  isSubmitting?: boolean;
   handleResetPassword: () => Promise<void>;
   handleLogout: () => Promise<void>;
   handleDeleteAccount: () => Promise<void>;
@@ -30,6 +31,7 @@ export const AccountTab: React.FC<AccountTabProps> = ({
   settingsForm,
   onSettingsSubmit,
   isUpdating,
+  isSubmitting = false,
   handleResetPassword,
   handleLogout,
   handleDeleteAccount
@@ -113,8 +115,8 @@ export const AccountTab: React.FC<AccountTabProps> = ({
               )}
             />
             
-            <Button type="submit" disabled={isUpdating}>
-              {isUpdating && <Loader2 className="mr-2 h-4 w-4 animate-spin" />}
+            <Button type="submit" disabled={isUpdating || isSubmitting}>
+              {(isUpdating || isSubmitting) && <Loader2 className="mr-2 h-4 w-4 animate-spin" />}
               Save Settings
             </Button>
           </form>

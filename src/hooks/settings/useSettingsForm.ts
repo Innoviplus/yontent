@@ -1,3 +1,4 @@
+
 import { useEffect, useState } from 'react';
 import { useAuth } from '@/contexts/AuthContext';
 import { useProfileData } from './useProfileData';
@@ -8,6 +9,7 @@ import { useNavigate } from 'react-router-dom';
 import { supabase } from '@/integrations/supabase/client';
 import { useToast } from '@/hooks/use-toast';
 import { toast as sonnerToast } from 'sonner';
+import { ExtendedProfile } from '@/lib/types';
 
 const profileFormSchema = z.object({
   firstName: z.string().optional(),
@@ -24,6 +26,7 @@ const profileFormSchema = z.object({
   email: z.string().email("Please enter a valid email").optional(),
   phoneNumber: z.string().optional(),
   phoneCountryCode: z.string().optional(),
+  country: z.string().optional(),
 });
 
 export type ProfileFormValues = z.infer<typeof profileFormSchema>;
@@ -34,6 +37,7 @@ export const useSettingsForm = () => {
   const [activeTab, setActiveTab] = useState('general');
   const navigate = useNavigate();
   const { toast } = useToast();
+  const [isSubmitting, setIsSubmitting] = useState(false);
 
   const form = useForm<ProfileFormValues>({
     resolver: zodResolver(profileFormSchema),
@@ -52,6 +56,7 @@ export const useSettingsForm = () => {
       email: user?.email || "",
       phoneNumber: "",
       phoneCountryCode: "",
+      country: "",
     }
   });
 
@@ -74,6 +79,7 @@ export const useSettingsForm = () => {
         email: profileData.email || user?.email || "",
         phoneNumber: userProfile.phone_number || "",
         phoneCountryCode: userProfile.phone_country_code || "",
+        country: profileData.country || "",
       });
     }
   }, [userProfile, user, form]);
@@ -81,8 +87,10 @@ export const useSettingsForm = () => {
   const onSubmit = async (values: ProfileFormValues) => {
     if (!user) return;
     
+    setIsSubmitting(true);
+    
     try {
-      const success = await updateProfileData({
+      const profileData: ExtendedProfile = {
         firstName: values.firstName,
         lastName: values.lastName,
         bio: values.bio,
@@ -97,10 +105,15 @@ export const useSettingsForm = () => {
         email: values.email,
         phoneNumber: values.phoneNumber,
         phoneCountryCode: values.phoneCountryCode,
-      });
+        country: values.country,
+      };
 
+      const success = await updateProfileData(profileData);
+      
       if (success) {
-        navigate('/settings');
+        sonnerToast.success('Your profile has been updated');
+      } else {
+        throw new Error('Failed to update profile');
       }
     } catch (error: any) {
       toast({
@@ -108,6 +121,8 @@ export const useSettingsForm = () => {
         description: error.message,
         variant: "destructive",
       });
+    } finally {
+      setIsSubmitting(false);
     }
   };
   
@@ -138,6 +153,7 @@ export const useSettingsForm = () => {
     avatarUrl,
     uploading,
     handleAvatarUpload,
-    handleResetPassword
+    handleResetPassword,
+    isSubmitting
   };
 };

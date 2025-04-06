@@ -10,6 +10,8 @@ export const updateProfileData = async (userId: string, profileData: ExtendedPro
   }
 
   try {
+    console.log("Updating profile with data:", profileData);
+    
     // Convert the Date object to ISO string for JSON compatibility
     const jsonSafeProfile = {
       ...profileData,
@@ -26,6 +28,7 @@ export const updateProfileData = async (userId: string, profileData: ExtendedPro
       .eq('id', userId);
 
     if (updateError) {
+      console.error("Supabase update error:", updateError);
       throw updateError;
     }
     

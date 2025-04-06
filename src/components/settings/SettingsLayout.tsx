@@ -19,6 +19,7 @@ export function SettingsLayout({
   onProfileSubmit,
   onSettingsSubmit,
   isUpdating,
+  isSubmitting,
   extendedProfile,
   handleResetPassword,
   handleLogout,
@@ -93,6 +94,7 @@ export function SettingsLayout({
                 settingsForm={settingsForm}
                 onSettingsSubmit={onSettingsSubmit}
                 isUpdating={isUpdating}
+                isSubmitting={isSubmitting}
                 handleResetPassword={handleResetPassword}
                 handleLogout={handleLogout}
                 handleDeleteAccount={handleDeleteAccount}

@@ -9,6 +9,7 @@ const Settings = () => {
     avatarUrl,
     uploading,
     isUpdating,
+    isSubmitting,
     activeTab,
     setActiveTab,
     extendedProfile,
@@ -36,6 +37,7 @@ const Settings = () => {
           onProfileSubmit={onProfileSubmit}
           onSettingsSubmit={onSettingsSubmit}
           isUpdating={isUpdating}
+          isSubmitting={isSubmitting}
           extendedProfile={extendedProfile}
           handleResetPassword={handleResetPassword}
           handleLogout={handleLogout}

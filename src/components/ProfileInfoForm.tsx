@@ -20,6 +20,7 @@ import {
   SelectValue,
 } from '@/components/ui/select';
 import { BirthDateInput } from '@/components/settings/BirthDateInput';
+import { Loader2 } from 'lucide-react';
 
 interface ProfileInfoFormProps {
   profileForm: UseFormReturn<any>;
@@ -146,7 +147,7 @@ export const ProfileInfoForm: React.FC<ProfileInfoFormProps> = ({
         >
           {isUpdating ? (
             <>
-              <span className="animate-spin mr-2">⌛</span>
+              <Loader2 className="mr-2 h-4 w-4 animate-spin" />
               Updating...
             </>
           ) : 'Save Changes'}
