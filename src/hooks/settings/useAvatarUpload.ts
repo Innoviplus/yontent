@@ -38,7 +38,7 @@ export const useAvatarUpload = () => {
         const newAvatarUrl = await uploadAvatar(user.id, file);
         
         if (newAvatarUrl) {
-          console.log("Avatar uploaded, URL:", newAvatarUrl);
+          console.log("Avatar uploaded successfully, URL:", newAvatarUrl);
           
           // Update the avatar URL in the database
           await updateAvatarUrl(user.id, newAvatarUrl);

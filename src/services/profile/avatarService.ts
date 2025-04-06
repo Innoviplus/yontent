@@ -58,21 +58,48 @@ export const updateAvatarUrl = async (userId: string, avatarUrl: string): Promis
     console.log("Updating avatar URL in profile for user:", userId);
     console.log("New avatar URL:", avatarUrl);
     
-    // Query to update just the avatar field - using upsert syntax to avoid RLS issues
-    const { error: updateError } = await supabase
+    // First check if profile exists
+    const { data: existingProfile, error: fetchError } = await supabase
       .from('profiles')
-      .upsert({ 
-        id: userId, 
-        avatar: avatarUrl,
-        updated_at: new Date().toISOString()
-      }, { 
-        onConflict: 'id',
-        ignoreDuplicates: false
-      });
-
-    if (updateError) {
-      console.error("Error updating avatar URL in profile:", updateError);
-      throw updateError;
+      .select('id')
+      .eq('id', userId)
+      .single();
+      
+    if (fetchError && fetchError.code !== 'PGRST116') { // PGRST116 is "no rows returned" error
+      console.error("Error checking profile existence:", fetchError);
+      throw fetchError;
+    }
+    
+    if (existingProfile) {
+      // If profile exists, update it
+      console.log("Profile exists, updating avatar URL");
+      const { error: updateError } = await supabase
+        .from('profiles')
+        .update({ 
+          avatar: avatarUrl,
+          updated_at: new Date().toISOString()
+        })
+        .eq('id', userId);
+        
+      if (updateError) {
+        console.error("Error updating avatar URL:", updateError);
+        throw updateError;
+      }
+    } else {
+      // If profile doesn't exist, insert it
+      console.log("Profile doesn't exist, inserting new profile with avatar URL");
+      const { error: insertError } = await supabase
+        .from('profiles')
+        .insert({ 
+          id: userId, 
+          avatar: avatarUrl,
+          updated_at: new Date().toISOString()
+        });
+        
+      if (insertError) {
+        console.error("Error inserting new profile:", insertError);
+        throw insertError;
+      }
     }
     
     console.log("Avatar URL updated in profile successfully");
