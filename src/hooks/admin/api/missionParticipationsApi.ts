@@ -25,7 +25,10 @@ export {
  */
 export const useMissionParticipationsApi = () => {
   return {
+    fetchMissionParticipations,
     fetchMissionParticipationsWithFilters,
-    updateMissionParticipationStatus
+    updateMissionParticipationStatus,
+    approveParticipation,
+    rejectParticipation
   };
 };
