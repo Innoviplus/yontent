@@ -3,7 +3,7 @@ import { supabase } from '@/integrations/supabase/client';
 import { ParticipationStatusResponse } from './types/participationTypes';
 
 /**
- * Updates the status of a mission participation
+ * Update mission participation status
  */
 export const updateMissionParticipationStatus = async (
   id: string,
@@ -12,11 +12,14 @@ export const updateMissionParticipationStatus = async (
   try {
     const { error } = await supabase
       .from('mission_participations')
-      .update({ status, updated_at: new Date() })
+      .update({
+        status: status,
+        updated_at: new Date().toISOString()
+      })
       .eq('id', id);
 
     if (error) {
-      console.error('Error updating participation status:', error);
+      console.error('Error updating mission participation:', error);
       return { success: false, error: error.message };
     }
 
@@ -28,18 +31,20 @@ export const updateMissionParticipationStatus = async (
 };
 
 /**
- * Approves a participation and awards points if applicable
+ * Approve a mission participation
  */
-export const approveParticipation = async (id: string): Promise<ParticipationStatusResponse> => {
+export const approveParticipation = async (
+  id: string
+): Promise<ParticipationStatusResponse> => {
   try {
-    // First, get the participation to check its current status
+    // First, get participation information to determine reward
     const { data: participation, error: fetchError } = await supabase
       .from('mission_participations')
       .select(`
-        id,
-        status,
         user_id,
-        missions:mission_id (points_reward)
+        missions:mission_id (
+          points_reward
+        )
       `)
       .eq('id', id)
       .single();
@@ -49,58 +54,25 @@ export const approveParticipation = async (id: string): Promise<ParticipationSta
       return { success: false, error: fetchError.message };
     }
 
-    // If already approved, return early
-    if (participation.status === 'APPROVED') {
-      return { 
-        success: true, 
-        error: 'This submission was already approved.'
-      };
-    }
-
-    // Get the points reward from the mission
-    const pointsReward = participation.missions?.points_reward || 0;
-    const userId = participation.user_id;
-
-    // Begin a transaction to update both the participation status and award points
+    // Update status to APPROVED
     const { error: updateError } = await supabase
       .from('mission_participations')
-      .update({ status: 'APPROVED', updated_at: new Date() })
+      .update({
+        status: 'APPROVED',
+        updated_at: new Date().toISOString()
+      })
       .eq('id', id);
 
     if (updateError) {
-      console.error('Error approving participation:', updateError);
+      console.error('Error updating mission participation status:', updateError);
       return { success: false, error: updateError.message };
     }
 
-    // Award points to the user
-    if (pointsReward > 0) {
-      // Update user points in profiles table
-      const { error: pointsError } = await supabase.rpc('increment_points', {
-        user_id_param: userId,
-        points_amount_param: pointsReward
-      });
-
-      if (pointsError) {
-        console.error('Error awarding points:', pointsError);
-        // We don't return an error here as the participation was approved
-        // But we should log this for admin attention
-      } else {
-        // Create a transaction record
-        const { error: transactionError } = await supabase
-          .from('point_transactions')
-          .insert({
-            user_id: userId,
-            amount: pointsReward,
-            type: 'EARNED',
-            description: 'Mission participation approved'
-          });
-
-        if (transactionError) {
-          console.error('Error creating point transaction:', transactionError);
-          // Again, we don't return an error as the main operation succeeded
-        }
-      }
-    }
+    // Create a point transaction for the user
+    const pointAmount = participation.missions.points_reward;
+    
+    // Add points to user and create transaction record
+    await addPointsToUser(participation.user_id, pointAmount, 'Approved mission participation');
 
     return { success: true };
   } catch (error: any) {
@@ -110,17 +82,22 @@ export const approveParticipation = async (id: string): Promise<ParticipationSta
 };
 
 /**
- * Rejects a participation
+ * Reject a mission participation
  */
-export const rejectParticipation = async (id: string): Promise<ParticipationStatusResponse> => {
+export const rejectParticipation = async (
+  id: string
+): Promise<ParticipationStatusResponse> => {
   try {
     const { error } = await supabase
       .from('mission_participations')
-      .update({ status: 'REJECTED', updated_at: new Date() })
+      .update({
+        status: 'REJECTED',
+        updated_at: new Date().toISOString()
+      })
       .eq('id', id);
 
     if (error) {
-      console.error('Error rejecting participation:', error);
+      console.error('Error rejecting mission participation:', error);
       return { success: false, error: error.message };
     }
 
@@ -128,5 +105,45 @@ export const rejectParticipation = async (id: string): Promise<ParticipationStat
   } catch (error: any) {
     console.error('Error in rejectParticipation:', error);
     return { success: false, error: error.message };
+  }
+};
+
+/**
+ * Helper function to add points to a user and log the transaction
+ */
+const addPointsToUser = async (userId: string, amount: number, description: string): Promise<void> => {
+  try {
+    // First increment the points in the user's profile
+    const { data: profile, error: profileError } = await supabase
+      .from('profiles')
+      .select('points')
+      .eq('id', userId)
+      .single();
+      
+    if (profileError) throw profileError;
+    
+    const newPoints = (profile.points || 0) + amount;
+    
+    const { error: updateError } = await supabase
+      .from('profiles')
+      .update({ points: newPoints })
+      .eq('id', userId);
+      
+    if (updateError) throw updateError;
+    
+    // Then log the transaction
+    const { error: transactionError } = await supabase
+      .from('point_transactions')
+      .insert({
+        user_id: userId,
+        amount: amount,
+        type: 'EARNED',
+        description: description
+      });
+      
+    if (transactionError) throw transactionError;
+  } catch (error) {
+    console.error('Error adding points to user:', error);
+    throw error;
   }
 };

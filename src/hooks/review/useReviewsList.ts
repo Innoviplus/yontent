@@ -8,6 +8,7 @@ export const useReviewsList = (userId?: string) => {
   const [page, setPage] = useState(1);
   const itemsPerPage = 10;
 
+  // Fix: Remove extra parameter
   const { data: reviews, isLoading, error, refetch } = useQuery({
     queryKey: ['reviews', sortBy, userId],
     queryFn: () => fetchReviews(),

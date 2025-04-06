@@ -14,7 +14,7 @@ const ReviewComments = ({ reviewId }: ReviewCommentsProps) => {
     comments,
     newComment,
     setNewComment,
-    isSubmitting,
+    submitting,
     loading,
     handleSubmitComment
   } = useReviewComments(reviewId);
@@ -36,7 +36,7 @@ const ReviewComments = ({ reviewId }: ReviewCommentsProps) => {
           newComment={newComment}
           onCommentChange={setNewComment}
           onSubmit={submitComment}
-          isSubmitting={isSubmitting}
+          isSubmitting={submitting}
         />
       </div>
     </div>

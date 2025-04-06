@@ -45,20 +45,28 @@ export interface ParticipationStatusResponse {
 export const extractAvatarUrl = (extendedData: Json | null): string | undefined => {
   if (!extendedData) return undefined;
   
-  // Handle string case (needs parsing)
-  if (typeof extendedData === 'string') {
-    try {
-      const parsed = JSON.parse(extendedData);
-      return parsed?.avatarUrl;
-    } catch (e) {
-      return undefined;
+  try {
+    // Handle string case (needs parsing)
+    if (typeof extendedData === 'string') {
+      try {
+        const parsed = JSON.parse(extendedData);
+        return parsed?.avatarUrl;
+      } catch (e) {
+        return undefined;
+      }
     }
+    
+    // Handle object case
+    if (typeof extendedData === 'object' && extendedData !== null) {
+      // Make sure it's not an array
+      if (!Array.isArray(extendedData) && 'avatarUrl' in extendedData) {
+        return extendedData.avatarUrl as string | undefined;
+      }
+    }
+    
+    return undefined;
+  } catch (e) {
+    console.error('Error extracting avatar URL:', e);
+    return undefined;
   }
-  
-  // Handle object case
-  if (typeof extendedData === 'object' && extendedData !== null) {
-    return extendedData.avatarUrl as string | undefined;
-  }
-  
-  return undefined;
 };

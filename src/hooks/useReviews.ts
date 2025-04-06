@@ -1,15 +1,17 @@
+
 import { useState, useEffect } from 'react';
 import { supabase } from '@/integrations/supabase/client';
 import { Review } from '@/lib/types';
 import { extractAvatarUrl } from '@/hooks/admin/api/types/participationTypes';
 
-export const useReviews = (limit = 10, filter = 'recent') => {
+export const useReviews = (limit = 10, initialFilter = 'recent') => {
   const [reviews, setReviews] = useState<Review[]>([]);
   const [loading, setLoading] = useState(true);
   const [hasMore, setHasMore] = useState(true);
   const [page, setPage] = useState(1);
+  const [sortBy, setSortBy] = useState(initialFilter);
   
-  const fetchReviews = async (currentPage = 1, orderBy = filter) => {
+  const fetchReviews = async (currentPage = 1, orderBy = sortBy) => {
     try {
       setLoading(true);
       
@@ -91,15 +93,31 @@ export const useReviews = (limit = 10, filter = 'recent') => {
   };
   
   useEffect(() => {
-    fetchReviews();
-  }, [filter]);
+    // Reset pagination when filter changes
+    setPage(1);
+    setHasMore(true);
+    fetchReviews(1);
+  }, [sortBy]);
+  
+  useEffect(() => {
+    if (page > 1) {
+      fetchReviews(page);
+    }
+  }, [page]);
   
   const loadMore = () => {
     if (!loading && hasMore) {
       setPage(prevPage => prevPage + 1);
-      fetchReviews(page + 1, filter);
     }
   };
   
-  return { reviews, loading, hasMore, loadMore };
+  return { 
+    reviews, 
+    loading, 
+    hasMore, 
+    loadMore,
+    sortBy,
+    setSortBy,
+    setPage
+  };
 };
