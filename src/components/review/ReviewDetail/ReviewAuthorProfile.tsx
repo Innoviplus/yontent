@@ -32,7 +32,7 @@ const ReviewAuthorProfile = ({ userId }: ReviewAuthorProfileProps) => {
         // Fetch user profile
         const { data: profileData, error: profileError } = await supabase
           .from('profiles')
-          .select('*, followers_count, following_count')
+          .select('*, followers_count, following_count, extended_data')
           .eq('id', userId)
           .single();
           
@@ -43,7 +43,7 @@ const ReviewAuthorProfile = ({ userId }: ReviewAuthorProfileProps) => {
           id: profileData.id,
           username: profileData.username || 'Anonymous',
           email: '', // Add the required email property even though it's not in profile data
-          avatar: profileData.avatar,
+          avatar: profileData.extended_data?.avatarUrl,
           points: profileData.points || 0,
           createdAt: new Date(profileData.created_at),
         };

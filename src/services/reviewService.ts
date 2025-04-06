@@ -1,11 +1,10 @@
-
 import { supabase } from '@/integrations/supabase/client';
-import { toast } from 'sonner';
 import { Review } from '@/lib/types';
+import { toast } from 'sonner';
 
-export const fetchReviews = async (sortBy: string, userId?: string): Promise<Review[]> => {
+export const fetchReview = async (id: string): Promise<Review | null> => {
   try {
-    let query = supabase
+    const { data, error } = await supabase
       .from('reviews')
       .select(`
         id,
@@ -18,65 +17,43 @@ export const fetchReviews = async (sortBy: string, userId?: string): Promise<Rev
         profiles:user_id (
           id,
           username,
-          avatar
+          extended_data
         )
       `)
-      .eq('status', 'PUBLISHED'); // Only fetch PUBLISHED reviews
-
-    if (sortBy === 'recent') {
-      query = query.order('created_at', { ascending: false });
-    } else if (sortBy === 'relevant' && userId) {
-      query = query.order('created_at', { ascending: false });
-    }
-
-    const { data, error } = await query;
+      .eq('id', id)
+      .single();
     
     if (error) {
-      console.error('Error fetching reviews:', error);
-      throw new Error('Failed to load reviews');
+      console.error('Error fetching review:', error);
+      return null;
     }
     
-    const transformedReviews: Review[] = data.map(review => ({
-      id: review.id,
-      userId: review.user_id,
-      productName: "Review",
-      rating: 5,
-      content: review.content,
-      images: review.images || [],
-      viewsCount: review.views_count || 0, // Ensure it's never undefined
-      likesCount: review.likes_count || 0, // Ensure it's never undefined
-      createdAt: new Date(review.created_at),
-      user: review.profiles ? {
-        id: review.profiles.id,
-        username: review.profiles.username || 'Anonymous',
+    return {
+      id: data.id,
+      userId: data.user_id,
+      content: data.content,
+      images: data.images || [],
+      viewsCount: data.views_count,
+      likesCount: data.likes_count,
+      createdAt: new Date(data.created_at),
+      user: data.profiles ? {
+        id: data.profiles.id,
+        username: data.profiles.username || 'Anonymous',
         email: '',
         points: 0,
         createdAt: new Date(),
-        avatar: review.profiles.avatar
+        avatar: data.profiles.extended_data?.avatarUrl
       } : undefined
-    }));
-    
-    return transformedReviews;
+    };
   } catch (error) {
     console.error('Unexpected error:', error);
-    throw new Error('An unexpected error occurred');
+    return null;
   }
 };
 
-// Track viewed reviews in session storage to avoid counting multiple views
-const viewedReviews = new Set<string>(); 
-
-export const trackReviewView = async (reviewId: string) => {
+export const trackReviewView = async (reviewId: string): Promise<void> => {
   try {
-    // Only count a view once per session for each review
-    if (viewedReviews.has(reviewId)) {
-      return;
-    }
-    
-    // Add to viewed reviews set
-    viewedReviews.add(reviewId);
-    
-    const { error } = await supabase.rpc('increment_view_count', {
+    const { error } = await supabase.rpc('increment_review_views', {
       review_id: reviewId
     });
     
@@ -84,81 +61,8 @@ export const trackReviewView = async (reviewId: string) => {
       console.error('Error tracking review view:', error);
     }
   } catch (error) {
-    console.error('Unexpected error tracking view:', error);
+    console.error('Unexpected error:', error);
   }
 };
 
-export const submitReview = async ({ 
-  userId, 
-  content, 
-  images,
-  isDraft = false 
-}: { 
-  userId: string; 
-  content: string; 
-  images: File[];
-  isDraft?: boolean;
-}) => {
-  try {
-    // Upload images
-    const imageUrls: string[] = [];
-    
-    for (const image of images) {
-      const fileExt = image.name.split('.').pop();
-      const fileName = `${Math.random().toString(36).substring(2, 15)}.${fileExt}`;
-      const filePath = `${userId}/${fileName}`;
-      
-      // Upload the image to the review-images bucket
-      const { error: uploadError, data } = await supabase
-        .storage
-        .from('review-images')
-        .upload(filePath, image, {
-          cacheControl: '3600',
-          upsert: false
-        });
-        
-      if (uploadError) {
-        console.error('Error uploading image:', uploadError);
-        throw new Error(`Failed to upload image: ${uploadError.message}`);
-      }
-      
-      // Get the public URL of the uploaded image
-      const { data: publicURL } = supabase
-        .storage
-        .from('review-images')
-        .getPublicUrl(filePath);
-        
-      if (publicURL) {
-        imageUrls.push(publicURL.publicUrl);
-      }
-    }
-    
-    // Insert review
-    const { error: insertError } = await supabase
-      .from('reviews')
-      .insert({
-        user_id: userId,
-        content,
-        images: imageUrls,
-        // Initialize with 0 views count, not random value
-        views_count: 0,
-        likes_count: 0,
-        status: isDraft ? 'DRAFT' : 'PUBLISHED'
-      });
-      
-    if (insertError) {
-      console.error('Error creating review:', insertError);
-      throw new Error(`Failed to create review: ${insertError.message}`);
-    }
-    
-    return true;
-  } catch (error) {
-    console.error('Unexpected error:', error);
-    if (error instanceof Error) {
-      toast.error(error.message);
-    } else {
-      toast.error('Failed to submit review');
-    }
-    throw error;
-  }
-};
+// Additional functions can be added here for other review-related operations

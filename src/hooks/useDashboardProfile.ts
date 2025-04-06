@@ -61,7 +61,7 @@ export const useDashboardProfile = (userId: string | undefined) => {
           id: profile.id,
           username: profile.username || 'Anonymous',
           email: '', // Add a default empty string for email as it's required by User type
-          avatar: profile.avatar || undefined,
+          avatar: profile.extended_data?.avatarUrl,
           points: profile.points || 0,
           createdAt: new Date(profile.created_at), // Convert string date to Date object
           completedReviews: reviewsCount || 0,

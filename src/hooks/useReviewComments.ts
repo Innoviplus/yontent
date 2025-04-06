@@ -42,7 +42,7 @@ export const useReviewComments = (reviewId: string) => {
           // Get profile data for each comment
           const { data: profileData, error: profileError } = await supabase
             .from('profiles')
-            .select('id, username, avatar')
+            .select('id, username, extended_data')
             .eq('id', comment.user_id)
             .single();
           
@@ -54,7 +54,7 @@ export const useReviewComments = (reviewId: string) => {
             user: {
               id: comment.user_id,
               username: profileError ? 'Anonymous' : (profileData?.username || 'Anonymous'),
-              avatar: profileError ? null : profileData?.avatar
+              avatar: profileError ? null : profileData?.extended_data?.avatarUrl
             }
           };
         })
@@ -93,7 +93,7 @@ export const useReviewComments = (reviewId: string) => {
       // Then, get the user profile data
       const { data: profileData, error: profileError } = await supabase
         .from('profiles')
-        .select('id, username, avatar')
+        .select('id, username, extended_data')
         .eq('id', user.id)
         .single();
         
@@ -109,7 +109,7 @@ export const useReviewComments = (reviewId: string) => {
         user: {
           id: user.id,
           username: profileData?.username || 'Anonymous',
-          avatar: profileData?.avatar
+          avatar: profileData?.extended_data?.avatarUrl
         }
       };
       

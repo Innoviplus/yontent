@@ -4,7 +4,7 @@ import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { UseFormReturn } from 'react-hook-form';
 import { AlertDialog, AlertDialogAction, AlertDialogCancel, AlertDialogContent, AlertDialogDescription, AlertDialogFooter, AlertDialogHeader, AlertDialogTitle, AlertDialogTrigger } from '@/components/ui/alert-dialog';
-import { Loader2, Mail, WhatsApp } from 'lucide-react';
+import { Loader2, Mail, MessageCircle } from 'lucide-react';
 import { Label } from '@/components/ui/label';
 
 export interface AccountTabProps {
@@ -64,7 +64,7 @@ export const AccountTab: React.FC<AccountTabProps> = ({
               onClick={openWhatsApp} 
               className="w-auto bg-green-500 hover:bg-green-600 flex items-center gap-2"
             >
-              <WhatsApp className="h-4 w-4" />
+              <MessageCircle className="h-4 w-4" />
               Contact via WhatsApp
             </Button>
           </div>

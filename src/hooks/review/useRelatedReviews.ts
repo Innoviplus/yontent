@@ -21,9 +21,9 @@ export const useRelatedReviews = (review: Review | null) => {
           profiles:user_id (
             id,
             username,
-            avatar,
             points,
-            created_at
+            created_at,
+            extended_data
           )
         `)
         .neq('id', reviewData.id)
@@ -48,7 +48,7 @@ export const useRelatedReviews = (review: Review | null) => {
           email: '',
           points: item.profiles.points || 0,
           createdAt: new Date(item.profiles.created_at),
-          avatar: item.profiles.avatar
+          avatar: item.profiles.extended_data?.avatarUrl
         } : undefined
       }));
       

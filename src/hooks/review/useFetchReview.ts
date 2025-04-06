@@ -28,7 +28,7 @@ export const useFetchReview = (id: string | undefined) => {
           profiles:user_id (
             id,
             username,
-            avatar
+            extended_data
           )
         `)
         .eq('id', id)
@@ -56,7 +56,7 @@ export const useFetchReview = (id: string | undefined) => {
           email: '',
           points: 0,
           createdAt: new Date(),
-          avatar: data.profiles.avatar
+          avatar: data.profiles.extended_data?.avatarUrl
         } : undefined
       };
       

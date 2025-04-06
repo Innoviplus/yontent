@@ -1,3 +1,4 @@
+
 import { useState, useEffect } from 'react';
 import { Review } from '@/lib/types';
 import { supabase } from '@/integrations/supabase/client';
@@ -20,12 +21,12 @@ export const useReviews = () => {
         .from('reviews')
         .select(`
           *,
-          profiles (
+          profiles:user_id (
             id,
             username,
-            avatar,
             points,
-            created_at
+            created_at,
+            extended_data
           )
         `)
         .eq('status', 'PUBLISHED') // Only fetch PUBLISHED reviews
@@ -65,7 +66,7 @@ export const useReviews = () => {
           email: '',
           points: review.profiles.points || 0,
           createdAt: new Date(review.profiles.created_at),
-          avatar: review.profiles.avatar
+          avatar: review.profiles.extended_data?.avatarUrl
         } : undefined
       }));
 

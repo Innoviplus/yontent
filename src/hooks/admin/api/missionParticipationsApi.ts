@@ -1,179 +1,133 @@
 
 import { supabase } from '@/integrations/supabase/client';
 import { toast } from 'sonner';
-import { FetchParticipationsResult, MissionParticipation, ParticipationActionResult } from '../types/missionParticipationTypes';
-import { addPointsToUser } from '@/hooks/admin/utils/points';
 
-/**
- * Fetches all mission participations with user and mission data
- */
-export const fetchMissionParticipations = async (): Promise<FetchParticipationsResult> => {
-  try {
-    // First, get all mission participations
-    const { data: participationsData, error: participationsError } = await supabase
-      .from('mission_participations')
-      .select('*')
-      .order('created_at', { ascending: false });
+export interface MissionParticipation {
+  id: string;
+  missionId: string;
+  userId: string;
+  status: string;
+  submissionData: any;
+  createdAt: Date;
+  updatedAt: Date;
+  user?: {
+    username: string;
+    avatarUrl?: string;
+  };
+  mission?: {
+    title: string;
+    pointsReward: number;
+  };
+}
 
-    if (participationsError) {
-      throw participationsError;
-    }
+export interface MissionParticipationFilters {
+  status?: string;
+  missionId?: string;
+  userId?: string;
+  page?: number;
+  pageSize?: number;
+}
 
-    // Create an array to store all participations with joined data
-    const enrichedParticipations: MissionParticipation[] = [];
+export const useMissionParticipationsApi = () => {
+  const fetchMissionParticipations = async (
+    filters: MissionParticipationFilters = {}
+  ): Promise<{ data: MissionParticipation[]; total: number }> => {
+    try {
+      const pageSize = filters.pageSize || 10;
+      const page = filters.page || 0;
+      const start = page * pageSize;
+      const end = start + pageSize - 1;
 
-    // For each participation, get the associated user and mission data
-    for (const participation of participationsData) {
-      // Get user profile data
-      const { data: userData, error: userError } = await supabase
-        .from('profiles')
-        .select('username, avatar')
-        .eq('id', participation.user_id)
-        .single();
+      let query = supabase
+        .from('mission_participations')
+        .select(`
+          *,
+          profiles:user_id (
+            id,
+            username,
+            extended_data
+          ),
+          missions:mission_id (
+            title,
+            points_reward
+          )
+        `, { count: 'exact' });
 
-      if (userError) {
-        console.error('Error fetching user data:', userError);
+      if (filters.status) {
+        query = query.eq('status', filters.status);
       }
 
-      // Get mission data
-      const { data: missionData, error: missionError } = await supabase
-        .from('missions')
-        .select('title, description, points_reward, type')
-        .eq('id', participation.mission_id)
-        .single();
-
-      if (missionError) {
-        console.error('Error fetching mission data:', missionError);
+      if (filters.missionId) {
+        query = query.eq('mission_id', filters.missionId);
       }
 
-      // Transform the data to match our frontend model
-      enrichedParticipations.push({
-        id: participation.id,
-        userId: participation.user_id,
-        missionId: participation.mission_id,
-        status: participation.status,
-        submissionData: participation.submission_data as {
-          receipt_images?: string[];
-          review_id?: string;
-          review_images?: string[];
-          review_url?: string;
-          submission_type: 'RECEIPT' | 'REVIEW';
-        },
-        createdAt: new Date(participation.created_at),
-        userName: userData?.username || 'Unknown User',
-        userAvatar: userData?.avatar || undefined,
-        missionTitle: missionData?.title || 'Unknown Mission',
-        missionDescription: missionData?.description || '',
-        missionPointsReward: missionData?.points_reward || 0,
-        missionType: missionData?.type as 'RECEIPT' | 'REVIEW' || 'RECEIPT',
-      });
-    }
+      if (filters.userId) {
+        query = query.eq('user_id', filters.userId);
+      }
 
-    return { participations: enrichedParticipations };
-  } catch (error: any) {
-    console.error('Error fetching mission participations:', error.message);
-    return { 
-      participations: [],
-      error: error.message 
-    };
-  }
-};
+      // Apply pagination
+      query = query.range(start, end).order('created_at', { ascending: false });
 
-/**
- * Approves a mission participation and awards points to the user
- */
-export const approveParticipation = async (id: string): Promise<ParticipationActionResult> => {
-  try {
-    // First get the participation details to access user ID and mission points
-    const { data: participation, error: fetchError } = await supabase
-      .from('mission_participations')
-      .select('user_id, mission_id, status')
-      .eq('id', id)
-      .single();
+      const { data, error, count } = await query;
 
-    if (fetchError) {
-      throw fetchError;
-    }
+      if (error) {
+        throw error;
+      }
 
-    // Don't allow approving already approved participations
-    if (participation.status === 'APPROVED') {
-      return { 
-        success: true,
-        error: 'This submission is already approved'
-      };
-    }
+      // Transform data to match MissionParticipation interface
+      const transformedData: MissionParticipation[] = data.map((item) => ({
+        id: item.id,
+        missionId: item.mission_id,
+        userId: item.user_id,
+        status: item.status,
+        submissionData: item.submission_data,
+        createdAt: new Date(item.created_at),
+        updatedAt: new Date(item.updated_at),
+        user: item.profiles ? {
+          username: item.profiles.username || 'Anonymous',
+          avatarUrl: item.profiles.extended_data?.avatarUrl
+        } : undefined,
+        mission: item.missions ? {
+          title: item.missions.title,
+          pointsReward: item.missions.points_reward
+        } : undefined
+      }));
 
-    // Get the mission details to know how many points to award
-    const { data: mission, error: missionError } = await supabase
-      .from('missions')
-      .select('title, points_reward')
-      .eq('id', participation.mission_id)
-      .single();
-
-    if (missionError) {
-      throw missionError;
-    }
-    
-    // Update the participation status
-    const { error: updateError } = await supabase
-      .from('mission_participations')
-      .update({ status: 'APPROVED' })
-      .eq('id', id);
-
-    if (updateError) {
-      throw updateError;
-    }
-
-    // Add points to the user
-    const pointsResult = await addPointsToUser(
-      participation.user_id,
-      mission.points_reward,
-      'EARNED',
-      'MISSION_REVIEW',
-      `Completed mission: ${mission.title}`,
-      participation.mission_id
-    );
-
-    if (!pointsResult.success) {
-      console.error('Error adding points:', pointsResult.error);
       return {
-        success: true,
-        error: 'Submission approved but failed to add points to user'
+        data: transformedData,
+        total: count || 0
       };
+    } catch (error: any) {
+      console.error('Error fetching mission participations:', error);
+      toast.error(`Error: ${error.message}`);
+      return { data: [], total: 0 };
     }
+  };
 
-    return { 
-      success: true
-    };
-  } catch (error: any) {
-    console.error('Error approving participation:', error.message);
-    return { 
-      success: false,
-      error: error.message
-    };
-  }
-};
+  const updateMissionParticipationStatus = async (
+    id: string,
+    status: string
+  ): Promise<boolean> => {
+    try {
+      const { error } = await supabase
+        .from('mission_participations')
+        .update({ status, updated_at: new Date().toISOString() })
+        .eq('id', id);
 
-/**
- * Rejects a mission participation
- */
-export const rejectParticipation = async (id: string): Promise<ParticipationActionResult> => {
-  try {
-    const { error } = await supabase
-      .from('mission_participations')
-      .update({ status: 'REJECTED' })
-      .eq('id', id);
+      if (error) {
+        throw error;
+      }
 
-    if (error) {
-      throw error;
+      return true;
+    } catch (error: any) {
+      console.error('Error updating mission participation status:', error);
+      toast.error(`Error: ${error.message}`);
+      return false;
     }
+  };
 
-    return { success: true };
-  } catch (error: any) {
-    console.error('Error rejecting participation:', error.message);
-    return { 
-      success: false,
-      error: error.message
-    };
-  }
+  return {
+    fetchMissionParticipations,
+    updateMissionParticipationStatus
+  };
 };

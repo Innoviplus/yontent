@@ -72,8 +72,9 @@ export const updateAvatarUrl = async (userId: string, avatarUrl: string): Promis
     }
 
     // Prepare updated extended_data with new avatar URL
+    const currentData = profileData?.extended_data || {};
     const extendedData = {
-      ...(profileData?.extended_data || {}),
+      ...currentData,
       avatarUrl
     };
 
