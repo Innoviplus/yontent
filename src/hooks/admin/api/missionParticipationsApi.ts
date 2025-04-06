@@ -64,6 +64,7 @@ export const fetchMissionParticipations = async (): Promise<ApiResponse<MissionP
       // Handle possible error responses safely
       const userProfile = item.profiles || {};
       const mission = item.missions || {};
+      const extendedData = userProfile.extended_data || {};
       
       return {
         id: item.id,
@@ -74,11 +75,11 @@ export const fetchMissionParticipations = async (): Promise<ApiResponse<MissionP
         createdAt: new Date(item.created_at),
         updatedAt: new Date(item.updated_at),
         userName: userProfile.username || 'Anonymous',
-        userAvatar: userProfile.extended_data?.avatarUrl,
-        missionTitle: mission.title,
-        missionDescription: mission.description,
-        missionPointsReward: mission.points_reward,
-        missionType: mission.type
+        userAvatar: typeof extendedData === 'object' ? extendedData.avatarUrl : undefined,
+        missionTitle: mission.title || '',
+        missionDescription: mission.description || '',
+        missionPointsReward: mission.points_reward || 0,
+        missionType: mission.type || ''
       };
     });
 
@@ -97,7 +98,7 @@ export const approveParticipation = async (id: string): Promise<{ success: boole
     // Get the participation details
     const { data: participation, error: fetchError } = await supabase
       .from('mission_participations')
-      .select('*,missions(points_reward),user_id')
+      .select('*, missions(points_reward, title), user_id')
       .eq('id', id)
       .single();
 
@@ -136,11 +137,12 @@ export const approveParticipation = async (id: string): Promise<{ success: boole
         // Continue despite points error, but log it
       } else {
         // Log the points transaction
+        const missionTitle = participation.missions?.title || 'Unknown mission';
         await supabase.from('point_transactions').insert({
           user_id: participation.user_id,
           amount: pointsToAward,
           type: 'MISSION_COMPLETION',
-          description: `Completed mission: ${participation.missions?.title || 'Unknown mission'}`
+          description: `Completed mission: ${missionTitle}`
         });
       }
     }
@@ -240,6 +242,7 @@ export const useMissionParticipationsApi = () => {
       const transformedData: MissionParticipation[] = data.map((item) => {
         const userProfile = item.profiles || {};
         const mission = item.missions || {};
+        const extendedData = userProfile.extended_data || {};
         
         return {
           id: item.id,
@@ -250,9 +253,9 @@ export const useMissionParticipationsApi = () => {
           createdAt: new Date(item.created_at),
           updatedAt: new Date(item.updated_at),
           userName: userProfile.username || 'Anonymous',
-          userAvatar: userProfile.extended_data?.avatarUrl,
-          missionTitle: mission.title,
-          missionPointsReward: mission.points_reward
+          userAvatar: typeof extendedData === 'object' ? extendedData.avatarUrl : undefined,
+          missionTitle: mission.title || '',
+          missionPointsReward: mission.points_reward || 0
         };
       });
 

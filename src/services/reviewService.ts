@@ -29,6 +29,10 @@ export const fetchReview = async (id: string): Promise<Review | null> => {
       return null;
     }
     
+    // Extract avatar URL from extended_data safely
+    const extendedData = data.profiles?.extended_data || {};
+    const avatarUrl = typeof extendedData === 'object' ? extendedData.avatarUrl : undefined;
+    
     return {
       id: data.id,
       userId: data.user_id,
@@ -43,7 +47,7 @@ export const fetchReview = async (id: string): Promise<Review | null> => {
         email: '',
         points: 0,
         createdAt: new Date(),
-        avatar: data.profiles.extended_data?.avatarUrl
+        avatar: avatarUrl
       } : undefined
     };
   } catch (error) {
@@ -91,23 +95,29 @@ export const fetchReviews = async (options = {}) => {
       throw error;
     }
     
-    return data.map(item => ({
-      id: item.id,
-      userId: item.user_id,
-      content: item.content,
-      images: item.images || [],
-      viewsCount: item.views_count,
-      likesCount: item.likes_count,
-      createdAt: new Date(item.created_at),
-      user: item.profiles ? {
-        id: item.profiles.id,
-        username: item.profiles.username || 'Anonymous',
-        email: '',
-        points: 0,
-        createdAt: new Date(),
-        avatar: item.profiles.extended_data?.avatarUrl
-      } : undefined
-    }));
+    return data.map(item => {
+      // Extract avatar URL from extended_data safely
+      const extendedData = item.profiles?.extended_data || {};
+      const avatarUrl = typeof extendedData === 'object' ? extendedData.avatarUrl : undefined;
+      
+      return {
+        id: item.id,
+        userId: item.user_id,
+        content: item.content,
+        images: item.images || [],
+        viewsCount: item.views_count,
+        likesCount: item.likes_count,
+        createdAt: new Date(item.created_at),
+        user: item.profiles ? {
+          id: item.profiles.id,
+          username: item.profiles.username || 'Anonymous',
+          email: '',
+          points: 0,
+          createdAt: new Date(),
+          avatar: avatarUrl
+        } : undefined
+      };
+    });
   } catch (error) {
     console.error('Error fetching reviews:', error);
     return [];

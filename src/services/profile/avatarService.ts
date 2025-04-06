@@ -72,10 +72,10 @@ export const updateAvatarUrl = async (userId: string, avatarUrl: string): Promis
     }
 
     // Prepare updated extended_data with new avatar URL
-    const currentData = profileData?.extended_data || {};
+    let currentData = profileData?.extended_data || {};
+    let extendedData: Record<string, any> = {};
     
     // Handle extended_data correctly whether it's a string or an object
-    let extendedData;
     if (typeof currentData === 'string') {
       try {
         const parsedData = JSON.parse(currentData);
@@ -88,7 +88,7 @@ export const updateAvatarUrl = async (userId: string, avatarUrl: string): Promis
       }
     } else {
       extendedData = {
-        ...currentData,
+        ...(currentData as Record<string, any>),
         avatarUrl
       };
     }
