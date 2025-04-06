@@ -1,12 +1,21 @@
 
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import { useAuth } from '@/contexts/AuthContext';
 import { uploadAvatar, updateAvatarUrl } from '@/services/profile/avatarService';
+import { toast } from 'sonner';
 
 export const useAvatarUpload = () => {
-  const { user, refreshUserProfile } = useAuth();
+  const { user, refreshUserProfile, userProfile } = useAuth();
   const [avatarUrl, setAvatarUrl] = useState<string | null>(null);
   const [uploading, setUploading] = useState(false);
+
+  // Initialize avatar URL from userProfile when component mounts or userProfile changes
+  useEffect(() => {
+    if (userProfile && userProfile.avatar) {
+      console.log("Setting avatar URL from profile:", userProfile.avatar);
+      setAvatarUrl(userProfile.avatar);
+    }
+  }, [userProfile]);
 
   const handleAvatarUpload = async (event: React.ChangeEvent<HTMLInputElement>) => {
     try {
@@ -21,21 +30,29 @@ export const useAvatarUpload = () => {
         throw new Error("User not authenticated.");
       }
 
+      console.log("Starting avatar upload process for file:", file.name);
+
       // Upload the avatar and get the URL
       const newAvatarUrl = await uploadAvatar(user.id, file);
       
       if (newAvatarUrl) {
+        console.log("Avatar uploaded, URL:", newAvatarUrl);
+        
         // Update the avatar URL in the database
         await updateAvatarUrl(user.id, newAvatarUrl);
         setAvatarUrl(newAvatarUrl);
         
         // Refresh the user profile data to get the updated avatar
         if (refreshUserProfile) {
+          console.log("Refreshing user profile after avatar update");
           await refreshUserProfile();
         }
+        
+        toast.success("Avatar updated successfully!");
       }
     } catch (error: any) {
       console.error("Error uploading avatar:", error.message);
+      toast.error("Failed to update avatar: " + error.message);
     } finally {
       setUploading(false);
     }

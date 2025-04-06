@@ -1,5 +1,5 @@
 
-import React from 'react';
+import React, { useEffect } from 'react';
 import { Calendar } from '@/components/ui/calendar';
 import { Popover, PopoverContent, PopoverTrigger } from '@/components/ui/popover';
 import { Button } from '@/components/ui/button';
@@ -27,8 +27,19 @@ export const BirthDatePicker: React.FC<BirthDatePickerProps> = ({
 
   // Custom month/year change handler to ensure the onChange is called
   const handleMonthChange = (date: Date) => {
-    // Log the change but don't call onChange here
     console.log("Month/year changed to:", date);
+    
+    // If there's already a selected date, update it with the new month/year
+    if (value) {
+      const newDate = new Date(value);
+      newDate.setFullYear(date.getFullYear(), date.getMonth());
+      console.log("Updating selected date to:", newDate);
+      onChange(newDate);
+    } else {
+      // If no date is selected, select this one
+      console.log("No previous date, selecting new date:", date);
+      onChange(date);
+    }
   };
 
   return (
@@ -61,6 +72,7 @@ export const BirthDatePicker: React.FC<BirthDatePickerProps> = ({
           fromYear={from.getFullYear()}
           toYear={to.getFullYear()}
           onMonthChange={handleMonthChange}
+          defaultMonth={value || undefined}
         />
       </PopoverContent>
     </Popover>

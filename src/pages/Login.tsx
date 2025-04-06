@@ -10,6 +10,7 @@ import { zodResolver } from '@hookform/resolvers/zod';
 import { useForm } from 'react-hook-form';
 import * as z from 'zod';
 import { toast } from 'sonner';
+import { Button } from '@/components/ui/button';
 
 const loginSchema = z.object({
   email: z.string().email('Please enter a valid email address'),
@@ -141,17 +142,19 @@ const Login = () => {
                   )}
                 />
                 
-                <button
+                <Button
                   type="submit"
                   disabled={isLoading}
-                  className="w-full btn-primary flex justify-center items-center"
+                  className="w-full"
+                  variant="default"
+                  size="default"
                 >
                   {isLoading ? (
                     <div className="h-5 w-5 border-2 border-white border-t-transparent rounded-full animate-spin" />
                   ) : (
                     "Sign In"
                   )}
-                </button>
+                </Button>
               </form>
             </Form>
             

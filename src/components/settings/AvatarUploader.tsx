@@ -34,63 +34,21 @@ export const AvatarUploader: React.FC<AvatarUploaderProps> = ({
   }, [avatarUrl]);
   
   const handleFileChange = async (e: React.ChangeEvent<HTMLInputElement>) => {
+    console.log("File selected:", e.target.files?.[0]?.name);
     const file = e.target.files?.[0];
     if (!file) return;
     
-    // Show a preview before actual upload
-    const objectUrl = URL.createObjectURL(file);
-    
-    // Create image to get dimensions for cropping
-    const img = new Image();
-    img.onload = async () => {
-      // Create canvas for square crop
-      const canvas = document.createElement('canvas');
-      const ctx = canvas.getContext('2d');
-      if (!ctx) return;
+    try {
+      // Show a preview before actual upload
+      const objectUrl = URL.createObjectURL(file);
+      setPreview(objectUrl);
       
-      // Determine dimensions for square crop
-      const size = Math.min(img.width, img.height);
-      const xOffset = (img.width - size) / 2;
-      const yOffset = (img.height - size) / 2;
-      
-      // Set canvas size to square
-      canvas.width = size;
-      canvas.height = size;
-      
-      // Draw cropped image on canvas
-      ctx.drawImage(
-        img,
-        xOffset, yOffset, size, size,
-        0, 0, size, size
-      );
-      
-      // Convert canvas to blob
-      canvas.toBlob(async (blob) => {
-        if (!blob) return;
-        
-        // Create new file from blob
-        const croppedFile = new File([blob], file.name, {
-          type: file.type,
-          lastModified: Date.now(),
-        });
-        
-        // Create new event with cropped file
-        const dataTransfer = new DataTransfer();
-        dataTransfer.items.add(croppedFile);
-        
-        if (fileInputRef.current) {
-          fileInputRef.current.files = dataTransfer.files;
-          
-          // Use the preview immediately
-          setPreview(canvas.toDataURL());
-          
-          // Trigger the upload handler with the modified input
-          await handleAvatarUpload(e);
-        }
-      }, file.type);
-    };
-    
-    img.src = objectUrl;
+      // Call the upload handler directly - no more cropping that might cause issues
+      await handleAvatarUpload(e);
+      console.log("Avatar upload complete");
+    } catch (error) {
+      console.error("Error handling file:", error);
+    }
   };
 
   return (

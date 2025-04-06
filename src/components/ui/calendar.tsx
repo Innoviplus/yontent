@@ -94,42 +94,31 @@ function Calendar({
           );
         },
         Caption: ({ displayMonth, id, ...captionProps }: CaptionProps) => {
-          // Get the onMonthChange prop from the parent props
+          // Get the onMonthChange and onSelect prop from the parent props
           const calendarProps = props as any;
           
           // Create handler functions for month and year changes
           const handleMonthChange = (monthStr: string) => {
+            console.log("Month changed to:", monthStr);
             const newDate = new Date(displayMonth);
             newDate.setMonth(parseInt(monthStr));
             
             // Call the parent's onMonthChange if provided
             if (calendarProps.onMonthChange) {
+              console.log("Calling onMonthChange with:", newDate);
               calendarProps.onMonthChange(newDate);
-            }
-            
-            // Important: This is what was missing - we need to call onSelect to actually update the date
-            if (calendarProps.onSelect && calendarProps.selected) {
-              const selectedDate = new Date(calendarProps.selected);
-              selectedDate.setMonth(parseInt(monthStr));
-              calendarProps.onSelect(selectedDate);
             }
           };
           
           const handleYearChange = (yearStr: string) => {
+            console.log("Year changed to:", yearStr);
             const newDate = new Date(displayMonth);
             newDate.setFullYear(parseInt(yearStr));
             
             // Call the parent's onMonthChange if provided
             if (calendarProps.onMonthChange) {
-              console.log("Year changed to:", yearStr, "Setting date to:", newDate);
+              console.log("Calling onMonthChange with:", newDate);
               calendarProps.onMonthChange(newDate);
-            }
-            
-            // Important: This is what was missing - we need to call onSelect to actually update the date
-            if (calendarProps.onSelect && calendarProps.selected) {
-              const selectedDate = new Date(calendarProps.selected);
-              selectedDate.setFullYear(parseInt(yearStr));
-              calendarProps.onSelect(selectedDate);
             }
           };
 

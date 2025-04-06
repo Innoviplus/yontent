@@ -1,4 +1,3 @@
-
 import { useForm } from 'react-hook-form';
 import { zodResolver } from '@hookform/resolvers/zod';
 import * as z from 'zod';
@@ -113,9 +112,6 @@ export const useProfileForm = (
         instagramUrl: formatUrl(values.instagramUrl),
         youtubeUrl: formatUrl(values.youtubeUrl),
         tiktokUrl: formatUrl(values.tiktokUrl),
-        // Explicitly include bio and birthDate to ensure they're saved
-        bio: values.bio || null,
-        birthDate: values.birthDate,
       };
       
       console.log("Formatted values:", formattedValues);
@@ -125,7 +121,7 @@ export const useProfileForm = (
         ...currentExtendedProfile,
         firstName: formattedValues.firstName,
         lastName: formattedValues.lastName,
-        bio: formattedValues.bio,
+        bio: formattedValues.bio || null,
         gender: formattedValues.gender || null,
         birthDate: formattedValues.birthDate || null,
         websiteUrl: formattedValues.websiteUrl,
