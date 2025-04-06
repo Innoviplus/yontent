@@ -1,5 +1,4 @@
 
-import { useRef } from "react";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { ProfileTab } from "./ProfileTab";
 import { GeneralTab } from "./GeneralTab";
@@ -8,9 +7,6 @@ import { User } from "lucide-react";
 
 export function SettingsLayout({
   userProfile,
-  avatarUrl,
-  uploading,
-  handleAvatarUpload,
   profileForm,
   settingsForm,
   onProfileSubmit,
@@ -24,8 +20,6 @@ export function SettingsLayout({
   activeTab,
   setActiveTab,
 }) {
-  const fileInputRef = useRef(null);
-
   return (
     <div className="container mx-auto px-4 py-8 max-w-5xl">
       <div className="w-full">
@@ -42,9 +36,6 @@ export function SettingsLayout({
           <TabsContent value="profile" className="mt-0">
             <ProfileTab
               userProfile={userProfile}
-              avatarUrl={avatarUrl}
-              uploading={uploading}
-              handleAvatarUpload={handleAvatarUpload}
               profileForm={profileForm}
               onProfileSubmit={onProfileSubmit}
               isUpdating={isUpdating}

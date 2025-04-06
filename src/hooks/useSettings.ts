@@ -1,9 +1,7 @@
 
 import { useSettingsState } from './settings/useSettingsState';
-import { useAvatarUpload } from './settings/useAvatarUpload';
 import { useProfileForm } from './settings/useProfileForm';
 import { useAccountActions } from './settings/useAccountActions';
-import { useProfileData } from './settings/useProfileData';
 import { useSettingsForm } from './settings/useSettingsForm';
 import { useEffect } from 'react';
 
@@ -20,9 +18,6 @@ export const useSettings = () => {
     setExtendedProfile,
     navigate
   } = useSettingsState();
-
-  // Use refactored hooks
-  const { avatarUrl, uploading, handleAvatarUpload } = useAvatarUpload();
   
   const { profileForm, onProfileSubmit } = useProfileForm(
     user, 
@@ -31,9 +26,6 @@ export const useSettings = () => {
     setExtendedProfile, 
     setIsUpdating
   );
-  
-  // Get the updateProfileData function from useProfileData
-  const { updateProfileData } = useProfileData();
   
   // Get form-related functions from useSettingsForm
   const { form: settingsForm, handleResetPassword, onSubmit: onSettingsSubmit, isSubmitting } = useSettingsForm();
@@ -57,15 +49,12 @@ export const useSettings = () => {
   return {
     user,
     userProfile,
-    avatarUrl,
-    uploading,
     isUpdating,
     activeTab,
     setActiveTab,
     extendedProfile,
     profileForm,
     settingsForm,
-    handleAvatarUpload,
     onProfileSubmit,
     onSettingsSubmit,
     handleResetPassword,
