@@ -40,10 +40,10 @@ export const updateAvatarUrl = async (userId: string, avatarUrl: string): Promis
     console.log("Updating avatar URL in profile for user:", userId);
     console.log("New avatar URL:", avatarUrl);
     
-    // Update the profile using the update_avatar_url function for better security
+    // Update the profile using the update_avatar_url function with correct parameter names
     const { error } = await supabase.rpc('update_avatar_url', {
-      user_id_input: userId,
-      avatar_url_input: avatarUrl
+      user_id: userId,
+      avatar_url: avatarUrl
     });
     
     if (error) {

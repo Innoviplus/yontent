@@ -1,3 +1,4 @@
+
 import React, { useEffect } from "react";
 import { createBrowserRouter, RouterProvider } from "react-router-dom";
 import "./App.css";
@@ -35,7 +36,7 @@ import SetAvatar from "./pages/SetAvatar"; // Add this import
 // Contexts
 import { AuthProvider } from "./contexts/AuthContext";
 import { PointsProvider } from "./contexts/PointsContext";
-import { ToastProvider } from "@/hooks/use-toast";
+import { Toaster } from "sonner";
 
 const router = createBrowserRouter([
   {
@@ -52,7 +53,11 @@ const router = createBrowserRouter([
   },
   {
     path: "/dashboard",
-    element: <ProtectedRoute><Dashboard /></ProtectedRoute>,
+    element: <ProtectedRoute />,
+    children: [{
+      path: "",
+      element: <Dashboard />
+    }]
   },
   {
     path: "/reviews",
@@ -64,15 +69,27 @@ const router = createBrowserRouter([
   },
   {
     path: "/edit-review/:id",
-    element: <ProtectedRoute><EditReview /></ProtectedRoute>,
+    element: <ProtectedRoute />,
+    children: [{
+      path: "",
+      element: <EditReview />
+    }]
   },
   {
     path: "/submit-review",
-    element: <ProtectedRoute><SubmitReview /></ProtectedRoute>,
+    element: <ProtectedRoute />,
+    children: [{
+      path: "",
+      element: <SubmitReview />
+    }]
   },
   {
     path: "/create-review",
-    element: <ProtectedRoute><CreateReview /></ProtectedRoute>,
+    element: <ProtectedRoute />,
+    children: [{
+      path: "",
+      element: <CreateReview />
+    }]
   },
   {
     path: "/rewards",
@@ -92,19 +109,35 @@ const router = createBrowserRouter([
   },
   {
     path: "/mission/:id/review",
-    element: <ProtectedRoute><MissionReviewSubmission /></ProtectedRoute>,
+    element: <ProtectedRoute />,
+    children: [{
+      path: "",
+      element: <MissionReviewSubmission />
+    }]
   },
   {
     path: "/mission/:id/receipt",
-    element: <ProtectedRoute><MissionReceiptSubmission /></ProtectedRoute>,
+    element: <ProtectedRoute />,
+    children: [{
+      path: "",
+      element: <MissionReceiptSubmission />
+    }]
   },
   {
     path: "/admin",
-    element: <ProtectedRoute><AdminPanel /></ProtectedRoute>,
+    element: <ProtectedRoute />,
+    children: [{
+      path: "",
+      element: <AdminPanel />
+    }]
   },
   {
     path: "/settings",
-    element: <ProtectedRoute><Settings /></ProtectedRoute>,
+    element: <ProtectedRoute />,
+    children: [{
+      path: "",
+      element: <Settings />
+    }]
   },
   {
     path: "/user/:username",
@@ -116,7 +149,11 @@ const router = createBrowserRouter([
   },
   {
     path: "/edit-profile",
-    element: <ProtectedRoute><EditProfile /></ProtectedRoute>,
+    element: <ProtectedRoute />,
+    children: [{
+      path: "",
+      element: <EditProfile />
+    }]
   },
   {
     path: "/user/:username/followers",
@@ -154,13 +191,14 @@ function App() {
   }, []);
 
   return (
-    <ToastProvider>
+    <>
       <AuthProvider>
         <PointsProvider>
           <RouterProvider router={router} />
         </PointsProvider>
       </AuthProvider>
-    </ToastProvider>
+      <Toaster position="top-right" />
+    </>
   );
 }
 

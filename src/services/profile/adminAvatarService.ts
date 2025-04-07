@@ -32,10 +32,10 @@ export const setUserAvatarByEmail = async (
       return false;
     }
     
-    // Update the avatar URL for the user
+    // Update the avatar URL for the user using correct parameter names
     const { error: updateError } = await supabase.rpc('update_avatar_url', {
-      user_id_input: userData.id,
-      avatar_url_input: imageUrl
+      user_id: userData.id,
+      avatar_url: imageUrl
     });
     
     if (updateError) {

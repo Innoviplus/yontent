@@ -39,3 +39,17 @@ CREATE POLICY "Auth Users Update Access"
 CREATE POLICY "Auth Users Delete Access"
   ON storage.objects FOR DELETE
   USING (bucket_id = 'avatars');
+
+-- Drop and recreate the update_avatar_url function with consistent parameter naming
+DROP FUNCTION IF EXISTS public.update_avatar_url;
+
+CREATE OR REPLACE FUNCTION public.update_avatar_url(user_id uuid, avatar_url text)
+ RETURNS void
+ LANGUAGE plpgsql
+AS $function$
+BEGIN
+  UPDATE profiles
+  SET avatar = avatar_url, updated_at = now()
+  WHERE id = user_id;
+END;
+$function$;

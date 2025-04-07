@@ -1,3 +1,4 @@
+
 export interface User {
   id: string;
   username: string;
@@ -25,7 +26,7 @@ export interface PointTransaction {
   id: string;
   userId: string;
   amount: number;
-  type: 'EARNED' | 'REDEEMED' | 'REFUNDED' | 'ADJUSTED';
+  type: 'EARNED' | 'REDEEMED' | 'REFUNDED' | 'ADJUSTED' | 'WELCOME';
   source: 'MISSION_REVIEW' | 'RECEIPT_SUBMISSION' | 'REDEMPTION' | 'ADMIN_ADJUSTMENT';
   sourceId?: string;
   description?: string;

@@ -26,7 +26,7 @@ const TransactionsTab = () => {
         .insert({
           user_id: userId,
           amount: 10,
-          type: 'EARNED',
+          type: 'WELCOME',
           description: 'Welcome Bonus'
         });
     }
@@ -61,7 +61,7 @@ const TransactionsTab = () => {
           id: item.id,
           userId: item.user_id,
           amount: item.amount,
-          type: (item.type || 'EARNED') as 'EARNED' | 'REDEEMED' | 'REFUNDED' | 'ADJUSTED',
+          type: (item.type || 'EARNED') as 'EARNED' | 'REDEEMED' | 'REFUNDED' | 'ADJUSTED' | 'WELCOME',
           source: 'ADMIN_ADJUSTMENT', // Default value since it doesn't exist in database
           sourceId: undefined,  // Default to undefined as it's optional
           description: item.description || '',
@@ -108,8 +108,8 @@ const TransactionsTab = () => {
             </span>
           </div>
           
-          <div className={`font-semibold ${transaction.type === 'EARNED' ? 'text-green-600' : 'text-red-600'}`}>
-            {transaction.type === 'EARNED' ? '+' : '-'}
+          <div className={`font-semibold ${transaction.type === 'EARNED' || transaction.type === 'WELCOME' ? 'text-green-600' : 'text-red-600'}`}>
+            {transaction.type === 'EARNED' || transaction.type === 'WELCOME' ? '+' : '-'}
             {transaction.amount} points
           </div>
         </div>
