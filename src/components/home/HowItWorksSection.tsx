@@ -1,22 +1,20 @@
-
 import { Link } from 'react-router-dom';
 import { Star, Users, Gift, ArrowUpRight } from 'lucide-react';
 import { useAuth } from '@/contexts/AuthContext';
 import { Button } from '@/components/ui/button';
-
 const HowItWorksSection = () => {
-  const { user } = useAuth();
-  
-  return (
-    <section className="py-16 md:py-24">
+  const {
+    user
+  } = useAuth();
+  return <section className="py-16 md:py-24">
       <div className="container mx-auto px-4 sm:px-6">
         <div className="max-w-4xl mx-auto">
           <div className="text-center mb-12">
             <div className="inline-flex items-center gap-2 px-4 py-1.5 bg-brand-teal/10 rounded-full mb-3">
               <span className="text-sm font-medium text-brand-teal">How It Works</span>
             </div>
-            <h2 className="text-3xl font-bold mb-4">Turn Your Reviews Into Rewards</h2>
-            <p className="text-gray-600 max-w-2xl mx-auto text-lg">
+            <h2 className="text-3xl font-bold mb-4 text-center">Turn Your Reviews Into Rewards</h2>
+            <p className="text-gray-600 max-w-2xl mx-auto text-lg text-center">
               Our platform makes it easy to share your product experiences
               and get rewarded for your valuable feedback.
             </p>
@@ -67,8 +65,6 @@ const HowItWorksSection = () => {
           </div>
         </div>
       </div>
-    </section>
-  );
+    </section>;
 };
-
 export default HowItWorksSection;
