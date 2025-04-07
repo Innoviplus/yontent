@@ -108,8 +108,8 @@ const TransactionsTab = () => {
             </span>
           </div>
           
-          <div className={`font-semibold ${transaction.type === 'EARNED' || transaction.type === 'WELCOME' ? 'text-green-600' : 'text-red-600'}`}>
-            {transaction.type === 'EARNED' || transaction.type === 'WELCOME' ? '+' : '-'}
+          <div className={`font-semibold ${transaction.type === 'EARNED' ? 'text-green-600' : 'text-red-600'}`}>
+            {transaction.type === 'EARNED' ? '+' : '-'}
             {transaction.amount} points
           </div>
         </div>

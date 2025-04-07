@@ -1,101 +1,166 @@
+import React, { useEffect } from "react";
+import { createBrowserRouter, RouterProvider } from "react-router-dom";
+import "./App.css";
 
-import React, { useEffect } from 'react';
-import { Route, Routes, Navigate } from 'react-router-dom';
-import Index from './pages/Index';
-import Login from './pages/Login';
-import Register from './pages/Register';
-import NotFound from './pages/NotFound';
-import Settings from './pages/Settings';
-import EditProfile from './pages/EditProfile';
-import AdminPanel from './pages/AdminPanel';
-import RewardDetail from './pages/RewardDetail';
-import Rewards from './pages/Rewards';
-import UserProfile from './pages/UserProfile';
-import Dashboard from './pages/Dashboard';
-import Reviews from './pages/Reviews';
-import SubmitReview from './pages/SubmitReview';
-import EditReview from './pages/EditReview';
-import ProtectedRoute from './components/ProtectedRoute';
-import ReviewDetail from './pages/ReviewDetail';
-import Missions from './pages/Missions';
-import MissionDetail from './pages/MissionDetail';
-import MissionReceiptSubmission from './pages/MissionReceiptSubmission';
-import MissionReviewSubmission from './pages/MissionReviewSubmission';
-import UserRankings from './pages/UserRankings';
-import FollowersList from './pages/FollowersList';
-import FollowingList from './pages/FollowingList';
-import PrivacyPolicy from './pages/PrivacyPolicy';
-import TermsOfService from './pages/TermsOfService';
-import Footer from './components/home/Footer';
-import { useAuth } from './contexts/AuthContext';
+// Pages
+import Index from "./pages/Index";
+import Login from "./pages/Login";
+import Register from "./pages/Register";
+import Dashboard from "./pages/Dashboard";
+import Reviews from "./pages/Reviews";
+import ReviewDetail from "./pages/ReviewDetail";
+import EditReview from "./pages/EditReview";
+import Rewards from "./pages/Rewards";
+import RewardDetail from "./pages/RewardDetail";
+import Missions from "./pages/Missions";
+import MissionDetail from "./pages/MissionDetail";
+import MissionReviewSubmission from "./pages/MissionReviewSubmission";
+import MissionReceiptSubmission from "./pages/MissionReceiptSubmission";
+import AdminPanel from "./pages/AdminPanel";
+import Settings from "./pages/Settings";
+import UserProfile from "./pages/UserProfile";
+import UserRankings from "./pages/UserRankings";
+import ProtectedRoute from "@/components/ProtectedRoute";
+import NotFound from "./pages/NotFound";
+import FollowersList from "./pages/FollowersList";
+import FollowingList from "./pages/FollowingList";
+import EditProfile from "./pages/EditProfile";
+import SubmitReview from "./pages/SubmitReview";
+import CreateReview from "./pages/CreateReview";
+import ReviewFeed from "./pages/ReviewFeed";
+import PrivacyPolicy from "./pages/PrivacyPolicy";
+import TermsOfService from "./pages/TermsOfService";
+import SetAvatar from "./pages/SetAvatar"; // Add this import
 
-// Layout component to add Footer to all pages except TermsOfService and PrivacyPolicy
-const Layout = ({ children, includeFooter = true }: { children: React.ReactNode, includeFooter?: boolean }) => {
-  return (
-    <>
-      {children}
-      {includeFooter && <Footer />}
-    </>
-  );
-};
+// Contexts
+import { AuthProvider } from "./contexts/AuthContext";
+import { PointsProvider } from "./contexts/PointsContext";
+import { ToastProvider } from "@/hooks/use-toast";
 
-// Component to handle redirects based on auth status
-const AuthRedirect = ({ children }: { children: React.ReactNode }) => {
-  const { user, loading } = useAuth();
-  
-  useEffect(() => {
-    console.log("Auth redirect check:", { hasUser: !!user, isLoading: loading });
-  }, [user, loading]);
-  
-  // If still loading, show nothing yet
-  if (loading) {
-    return <div className="flex items-center justify-center h-screen">Loading...</div>;
-  }
-  
-  return <>{children}</>;
-};
+const router = createBrowserRouter([
+  {
+    path: "/",
+    element: <Index />,
+  },
+  {
+    path: "/login",
+    element: <Login />,
+  },
+  {
+    path: "/register",
+    element: <Register />,
+  },
+  {
+    path: "/dashboard",
+    element: <ProtectedRoute><Dashboard /></ProtectedRoute>,
+  },
+  {
+    path: "/reviews",
+    element: <Reviews />,
+  },
+  {
+    path: "/review/:id",
+    element: <ReviewDetail />,
+  },
+  {
+    path: "/edit-review/:id",
+    element: <ProtectedRoute><EditReview /></ProtectedRoute>,
+  },
+  {
+    path: "/submit-review",
+    element: <ProtectedRoute><SubmitReview /></ProtectedRoute>,
+  },
+  {
+    path: "/create-review",
+    element: <ProtectedRoute><CreateReview /></ProtectedRoute>,
+  },
+  {
+    path: "/rewards",
+    element: <Rewards />,
+  },
+  {
+    path: "/reward/:id",
+    element: <RewardDetail />,
+  },
+  {
+    path: "/missions",
+    element: <Missions />,
+  },
+  {
+    path: "/mission/:id",
+    element: <MissionDetail />,
+  },
+  {
+    path: "/mission/:id/review",
+    element: <ProtectedRoute><MissionReviewSubmission /></ProtectedRoute>,
+  },
+  {
+    path: "/mission/:id/receipt",
+    element: <ProtectedRoute><MissionReceiptSubmission /></ProtectedRoute>,
+  },
+  {
+    path: "/admin",
+    element: <ProtectedRoute><AdminPanel /></ProtectedRoute>,
+  },
+  {
+    path: "/settings",
+    element: <ProtectedRoute><Settings /></ProtectedRoute>,
+  },
+  {
+    path: "/user/:username",
+    element: <UserProfile />,
+  },
+  {
+    path: "/rankings",
+    element: <UserRankings />,
+  },
+  {
+    path: "/edit-profile",
+    element: <ProtectedRoute><EditProfile /></ProtectedRoute>,
+  },
+  {
+    path: "/user/:username/followers",
+    element: <FollowersList />,
+  },
+  {
+    path: "/user/:username/following",
+    element: <FollowingList />,
+  },
+  {
+    path: "/review-feed",
+    element: <ReviewFeed />,
+  },
+  {
+    path: "/privacy-policy",
+    element: <PrivacyPolicy />,
+  },
+  {
+    path: "/terms-of-service",
+    element: <TermsOfService />,
+  },
+  {
+    path: "/set-avatar",
+    element: <SetAvatar />,
+  },
+  {
+    path: "*",
+    element: <NotFound />,
+  },
+]);
 
 function App() {
+  useEffect(() => {
+    document.title = "Lovable";
+  }, []);
+
   return (
-    <AuthRedirect>
-      <Routes>
-        {/* Public routes */}
-        <Route path="/" element={<Layout><Index /></Layout>} />
-        <Route path="/login" element={<Layout><Login /></Layout>} />
-        <Route path="/register" element={<Layout><Register /></Layout>} />
-        <Route path="/reviews" element={<Layout><Reviews /></Layout>} />
-        <Route path="/review/:id" element={<Layout><ReviewDetail /></Layout>} />
-        <Route path="/missions" element={<Layout><Missions /></Layout>} />
-        <Route path="/mission/:id" element={<Layout><MissionDetail /></Layout>} />
-        <Route path="/user-rankings" element={<Layout><UserRankings /></Layout>} />
-        <Route path="/user/:username" element={<Layout><UserProfile /></Layout>} />
-        <Route path="/rewards" element={<Layout><Rewards /></Layout>} />
-        <Route path="/privacy" element={<PrivacyPolicy />} />
-        <Route path="/terms" element={<TermsOfService />} />
-        
-        {/* Redirect /profile to /settings */}
-        <Route path="/profile" element={<Navigate to="/settings" replace />} />
-        
-        {/* Protected routes */}
-        <Route element={<ProtectedRoute />}>
-          <Route path="/profile/:id" element={<Layout><Navigate to="/user/:username" replace /></Layout>} />
-          <Route path="/followers/:id" element={<Layout><FollowersList /></Layout>} />
-          <Route path="/following/:id" element={<Layout><FollowingList /></Layout>} />
-          <Route path="/settings" element={<Layout><Settings /></Layout>} />
-          <Route path="/edit-profile" element={<Layout><EditProfile /></Layout>} />
-          <Route path="/dashboard" element={<Layout><Dashboard /></Layout>} />
-          <Route path="/rewards/:id" element={<Layout><RewardDetail /></Layout>} />
-          <Route path="/mission/:id/submit-receipt" element={<Layout><MissionReceiptSubmission /></Layout>} />
-          <Route path="/mission/:id/submit-review" element={<Layout><MissionReviewSubmission /></Layout>} />
-          <Route path="/submit-review" element={<Layout><SubmitReview /></Layout>} />
-          <Route path="/edit-review/:id" element={<Layout><EditReview /></Layout>} />
-          <Route path="/admin" element={<Layout><AdminPanel /></Layout>} />
-        </Route>
-        
-        {/* 404 route */}
-        <Route path="*" element={<Layout><NotFound /></Layout>} />
-      </Routes>
-    </AuthRedirect>
+    <ToastProvider>
+      <AuthProvider>
+        <PointsProvider>
+          <RouterProvider router={router} />
+        </PointsProvider>
+      </AuthProvider>
+    </ToastProvider>
   );
 }
 
