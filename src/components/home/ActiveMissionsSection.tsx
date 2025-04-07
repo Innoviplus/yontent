@@ -1,27 +1,23 @@
-
 import { useState, useEffect } from 'react';
 import { Mission } from '@/lib/types';
 import MissionCard from '@/components/MissionCard';
 import { Button } from '@/components/ui/button';
 import { Link } from 'react-router-dom';
 import { supabase } from '@/integrations/supabase/client';
-
 const ActiveMissionsSection = () => {
   const [missions, setMissions] = useState<Mission[]>([]);
   const [isLoading, setIsLoading] = useState(true);
-
   useEffect(() => {
     const fetchMissions = async () => {
       try {
-        const { data, error } = await supabase
-          .from('missions')
-          .select('*')
-          .eq('status', 'ACTIVE')
-          .order('created_at', { ascending: false })
-          .limit(3);
-        
+        const {
+          data,
+          error
+        } = await supabase.from('missions').select('*').eq('status', 'ACTIVE').order('created_at', {
+          ascending: false
+        }).limit(3);
         if (error) throw error;
-        
+
         // Transform the data to match the Mission type
         const transformedMissions: Mission[] = data.map(mission => ({
           id: mission.id,
@@ -42,9 +38,7 @@ const ActiveMissionsSection = () => {
           createdAt: new Date(mission.created_at),
           updatedAt: new Date(mission.updated_at)
         }));
-        
         console.log('Fetched missions:', transformedMissions);
-        
         if (transformedMissions.length === 0) {
           console.log('No missions found');
         }
@@ -54,12 +48,10 @@ const ActiveMissionsSection = () => {
         const sortedMissions = [...transformedMissions].sort((a, b) => {
           const aExpired = a.expiresAt && now > a.expiresAt;
           const bExpired = b.expiresAt && now > b.expiresAt;
-          
           if (aExpired && !bExpired) return 1; // a is expired, b is not -> a goes after b
           if (!aExpired && bExpired) return -1; // a is not expired, b is -> a goes before b
           return 0; // No change in order based on expiration
         });
-
         setMissions(sortedMissions);
       } catch (error) {
         console.error('Error fetching missions:', error);
@@ -67,13 +59,10 @@ const ActiveMissionsSection = () => {
         setIsLoading(false);
       }
     };
-
     fetchMissions();
   }, []);
-
   if (isLoading) {
-    return (
-      <section className="py-16 bg-gray-50">
+    return <section className="py-16 bg-gray-50">
         <div className="container mx-auto px-4">
           <div className="text-center mb-12">
             <h2 className="text-3xl font-bold text-gray-900 mb-4">Active Missions</h2>
@@ -83,33 +72,25 @@ const ActiveMissionsSection = () => {
           </div>
 
           <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6 max-w-6xl mx-auto">
-            {[1, 2, 3].map((i) => (
-              <div key={i} className="bg-white rounded-xl shadow-sm animate-pulse h-72" />
-            ))}
+            {[1, 2, 3].map(i => <div key={i} className="bg-white rounded-xl shadow-sm animate-pulse h-72" />)}
           </div>
         </div>
-      </section>
-    );
+      </section>;
   }
-
   if (missions.length === 0) {
     return null;
   }
-
-  return (
-    <section className="py-16 bg-gray-50">
+  return <section className="py-16 bg-gray-50">
       <div className="container mx-auto px-4">
         <div className="text-center mb-12">
-          <h2 className="text-3xl font-bold text-gray-900 mb-4">Active Missions</h2>
-          <p className="text-xl text-gray-600 max-w-2xl mx-auto">
+          <h2 className="text-3xl font-bold text-gray-900 mb-4 text-center">Active Missions</h2>
+          <p className="text-xl text-gray-600 max-w-2xl mx-auto text-center">
             Complete missions to earn points and unlock rewards.
           </p>
         </div>
 
         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6 max-w-6xl mx-auto">
-          {missions.map((mission) => (
-            <MissionCard key={mission.id} mission={mission} />
-          ))}
+          {missions.map(mission => <MissionCard key={mission.id} mission={mission} />)}
         </div>
 
         <div className="text-center mt-10">
@@ -120,8 +101,6 @@ const ActiveMissionsSection = () => {
           </Link>
         </div>
       </div>
-    </section>
-  );
+    </section>;
 };
-
 export default ActiveMissionsSection;

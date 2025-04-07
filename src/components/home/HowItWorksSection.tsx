@@ -26,8 +26,8 @@ const HowItWorksSection = () => {
               <div className="bg-indigo-100 w-16 h-16 rounded-xl flex items-center justify-center mx-auto mb-5">
                 <Star className="h-7 w-7 text-indigo-600" />
               </div>
-              <h3 className="text-xl font-semibold mb-3">Complete Missions</h3>
-              <p className="text-gray-600">
+              <h3 className="text-xl font-semibold mb-3 text-center">Complete Missions</h3>
+              <p className="text-gray-600 text-center">
                 Write reviews, create content, and complete tasks to earn points.
               </p>
             </div>
@@ -37,8 +37,8 @@ const HowItWorksSection = () => {
               <div className="bg-indigo-100 w-16 h-16 rounded-xl flex items-center justify-center mx-auto mb-5">
                 <Users className="h-7 w-7 text-indigo-600" />
               </div>
-              <h3 className="text-xl font-semibold mb-3">Join Communities</h3>
-              <p className="text-gray-600">
+              <h3 className="text-xl font-semibold mb-3 text-center">Join Communities</h3>
+              <p className="text-gray-600 text-center">
                 Get handpicked for exclusive brand communities and special opportunities.
               </p>
             </div>
@@ -48,8 +48,8 @@ const HowItWorksSection = () => {
               <div className="bg-indigo-100 w-16 h-16 rounded-xl flex items-center justify-center mx-auto mb-5">
                 <Gift className="h-7 w-7 text-indigo-600" />
               </div>
-              <h3 className="text-xl font-semibold mb-3">Redeem Rewards</h3>
-              <p className="text-gray-600">
+              <h3 className="text-xl font-semibold mb-3 text-center">Redeem Rewards</h3>
+              <p className="text-gray-600 text-center">
                 Convert points into gift cards, cash, or exclusive products.
               </p>
             </div>
