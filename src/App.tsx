@@ -1,6 +1,6 @@
 
 import React, { useEffect } from "react";
-import { createBrowserRouter, RouterProvider } from "react-router-dom";
+import { BrowserRouter, Routes, Route } from "react-router-dom";
 import "./App.css";
 
 // Pages
@@ -31,159 +31,12 @@ import CreateReview from "./pages/CreateReview";
 import ReviewFeed from "./pages/ReviewFeed";
 import PrivacyPolicy from "./pages/PrivacyPolicy";
 import TermsOfService from "./pages/TermsOfService";
-import SetAvatar from "./pages/SetAvatar"; // Add this import
+import SetAvatar from "./pages/SetAvatar";
 
 // Contexts
 import { AuthProvider } from "./contexts/AuthContext";
 import { PointsProvider } from "./contexts/PointsContext";
 import { Toaster } from "sonner";
-
-const router = createBrowserRouter([
-  {
-    path: "/",
-    element: <Index />,
-  },
-  {
-    path: "/login",
-    element: <Login />,
-  },
-  {
-    path: "/register",
-    element: <Register />,
-  },
-  {
-    path: "/dashboard",
-    element: <ProtectedRoute />,
-    children: [{
-      path: "",
-      element: <Dashboard />
-    }]
-  },
-  {
-    path: "/reviews",
-    element: <Reviews />,
-  },
-  {
-    path: "/review/:id",
-    element: <ReviewDetail />,
-  },
-  {
-    path: "/edit-review/:id",
-    element: <ProtectedRoute />,
-    children: [{
-      path: "",
-      element: <EditReview />
-    }]
-  },
-  {
-    path: "/submit-review",
-    element: <ProtectedRoute />,
-    children: [{
-      path: "",
-      element: <SubmitReview />
-    }]
-  },
-  {
-    path: "/create-review",
-    element: <ProtectedRoute />,
-    children: [{
-      path: "",
-      element: <CreateReview />
-    }]
-  },
-  {
-    path: "/rewards",
-    element: <Rewards />,
-  },
-  {
-    path: "/reward/:id",
-    element: <RewardDetail />,
-  },
-  {
-    path: "/missions",
-    element: <Missions />,
-  },
-  {
-    path: "/mission/:id",
-    element: <MissionDetail />,
-  },
-  {
-    path: "/mission/:id/review",
-    element: <ProtectedRoute />,
-    children: [{
-      path: "",
-      element: <MissionReviewSubmission />
-    }]
-  },
-  {
-    path: "/mission/:id/receipt",
-    element: <ProtectedRoute />,
-    children: [{
-      path: "",
-      element: <MissionReceiptSubmission />
-    }]
-  },
-  {
-    path: "/admin",
-    element: <ProtectedRoute />,
-    children: [{
-      path: "",
-      element: <AdminPanel />
-    }]
-  },
-  {
-    path: "/settings",
-    element: <ProtectedRoute />,
-    children: [{
-      path: "",
-      element: <Settings />
-    }]
-  },
-  {
-    path: "/user/:username",
-    element: <UserProfile />,
-  },
-  {
-    path: "/rankings",
-    element: <UserRankings />,
-  },
-  {
-    path: "/edit-profile",
-    element: <ProtectedRoute />,
-    children: [{
-      path: "",
-      element: <EditProfile />
-    }]
-  },
-  {
-    path: "/user/:username/followers",
-    element: <FollowersList />,
-  },
-  {
-    path: "/user/:username/following",
-    element: <FollowingList />,
-  },
-  {
-    path: "/review-feed",
-    element: <ReviewFeed />,
-  },
-  {
-    path: "/privacy-policy",
-    element: <PrivacyPolicy />,
-  },
-  {
-    path: "/terms-of-service",
-    element: <TermsOfService />,
-  },
-  {
-    path: "/set-avatar",
-    element: <SetAvatar />,
-  },
-  {
-    path: "*",
-    element: <NotFound />,
-  },
-]);
 
 function App() {
   useEffect(() => {
@@ -191,14 +44,42 @@ function App() {
   }, []);
 
   return (
-    <>
+    <BrowserRouter>
       <AuthProvider>
         <PointsProvider>
-          <RouterProvider router={router} />
+          <Routes>
+            <Route path="/" element={<Index />} />
+            <Route path="/login" element={<Login />} />
+            <Route path="/register" element={<Register />} />
+            <Route path="/dashboard" element={<ProtectedRoute><Dashboard /></ProtectedRoute>} />
+            <Route path="/reviews" element={<Reviews />} />
+            <Route path="/review/:id" element={<ReviewDetail />} />
+            <Route path="/edit-review/:id" element={<ProtectedRoute><EditReview /></ProtectedRoute>} />
+            <Route path="/submit-review" element={<ProtectedRoute><SubmitReview /></ProtectedRoute>} />
+            <Route path="/create-review" element={<ProtectedRoute><CreateReview /></ProtectedRoute>} />
+            <Route path="/rewards" element={<Rewards />} />
+            <Route path="/reward/:id" element={<RewardDetail />} />
+            <Route path="/missions" element={<Missions />} />
+            <Route path="/mission/:id" element={<MissionDetail />} />
+            <Route path="/mission/:id/review" element={<ProtectedRoute><MissionReviewSubmission /></ProtectedRoute>} />
+            <Route path="/mission/:id/receipt" element={<ProtectedRoute><MissionReceiptSubmission /></ProtectedRoute>} />
+            <Route path="/admin" element={<ProtectedRoute><AdminPanel /></ProtectedRoute>} />
+            <Route path="/settings" element={<ProtectedRoute><Settings /></ProtectedRoute>} />
+            <Route path="/user/:username" element={<UserProfile />} />
+            <Route path="/rankings" element={<UserRankings />} />
+            <Route path="/edit-profile" element={<ProtectedRoute><EditProfile /></ProtectedRoute>} />
+            <Route path="/user/:username/followers" element={<FollowersList />} />
+            <Route path="/user/:username/following" element={<FollowingList />} />
+            <Route path="/review-feed" element={<ReviewFeed />} />
+            <Route path="/privacy-policy" element={<PrivacyPolicy />} />
+            <Route path="/terms-of-service" element={<TermsOfService />} />
+            <Route path="/set-avatar" element={<SetAvatar />} />
+            <Route path="*" element={<NotFound />} />
+          </Routes>
         </PointsProvider>
       </AuthProvider>
       <Toaster position="top-right" />
-    </>
+    </BrowserRouter>
   );
 }
 
