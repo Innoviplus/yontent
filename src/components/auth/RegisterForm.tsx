@@ -202,7 +202,7 @@ const RegisterForm = () => {
           <button
             type="submit"
             disabled={isLoading}
-            className="w-full btn-primary flex justify-center items-center"
+            className="w-full bg-brand-teal hover:bg-brand-darkTeal text-white font-medium py-2.5 px-4 rounded-md transition-colors focus:outline-none focus:ring-2 focus:ring-brand-teal focus:ring-offset-2"
           >
             {isLoading ? (
               <div className="h-5 w-5 border-2 border-white border-t-transparent rounded-full animate-spin" />
