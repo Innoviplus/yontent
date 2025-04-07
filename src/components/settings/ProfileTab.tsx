@@ -64,7 +64,7 @@ export const ProfileTab: React.FC<ProfileTabProps> = ({
 
   return (
     <Card>
-      <CardHeader>
+      <CardHeader className="text-left">
         <CardTitle>Profile Information</CardTitle>
         <CardDescription>Update your profile information and personal details</CardDescription>
       </CardHeader>
@@ -120,7 +120,7 @@ export const ProfileTab: React.FC<ProfileTabProps> = ({
         <Separator className="my-8" />
         
         {/* Social Media Profiles Section */}
-        <div className="mt-8">
+        <div className="mt-8 text-left">
           <h3 className="text-lg font-medium mb-4">Social Media Profiles</h3>
           <Form {...profileForm}>
             <div className="space-y-6">
@@ -197,7 +197,7 @@ export const ProfileTab: React.FC<ProfileTabProps> = ({
               <Button 
                 type="button" 
                 onClick={handleSubmit}
-                className="w-full md:w-auto" 
+                className="w-full md:w-auto bg-brand-teal hover:bg-brand-darkTeal text-white" 
                 disabled={isUpdating}
               >
                 {isUpdating ? (

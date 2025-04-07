@@ -53,10 +53,10 @@ const AppRoutes = () => {
       <Route path="/admin" element={<ProtectedRoute><AdminPanel /></ProtectedRoute>} />
       <Route path="/settings" element={<ProtectedRoute><Settings /></ProtectedRoute>} />
       <Route path="/user/:username" element={<UserProfile />} />
-      <Route path="/rankings" element={<UserRankings />} />
-      <Route path="/edit-profile" element={<ProtectedRoute><EditProfile /></ProtectedRoute>} />
       <Route path="/user/:username/followers" element={<FollowersList />} />
       <Route path="/user/:username/following" element={<FollowingList />} />
+      <Route path="/rankings" element={<UserRankings />} />
+      <Route path="/edit-profile" element={<ProtectedRoute><EditProfile /></ProtectedRoute>} />
       <Route path="/review-feed" element={<ReviewFeed />} />
       <Route path="/privacy-policy" element={<PrivacyPolicy />} />
       <Route path="/terms-of-service" element={<TermsOfService />} />

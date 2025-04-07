@@ -26,11 +26,11 @@ export const AccountTab: React.FC<AccountTabProps> = ({
   return (
     <>
       <Card>
-        <CardHeader>
+        <CardHeader className="text-left">
           <CardTitle>Account Settings</CardTitle>
           <CardDescription>Manage your account settings and security</CardDescription>
         </CardHeader>
-        <CardContent className="space-y-8">
+        <CardContent className="space-y-8 text-left">
           <div className="border-b pb-6">
             <h3 className="text-lg font-medium mb-4">Security</h3>
             <p className="text-muted-foreground mb-4">
@@ -39,7 +39,7 @@ export const AccountTab: React.FC<AccountTabProps> = ({
             {handleResetPassword && (
               <Button 
                 onClick={handleResetPassword} 
-                className="w-auto px-8 bg-brand-teal hover:bg-brand-teal/90"
+                className="w-auto px-8 bg-brand-teal hover:bg-brand-darkTeal"
               >
                 Reset Password
               </Button>
@@ -51,7 +51,10 @@ export const AccountTab: React.FC<AccountTabProps> = ({
             <p className="text-muted-foreground mb-4">
               If you have any questions or need support, please get in touch with our team.
             </p>
-            <Button className="bg-brand-teal hover:bg-brand-teal/90">
+            <Button 
+              className="bg-brand-teal hover:bg-brand-darkTeal"
+              onClick={() => window.open('https://api.whatsapp.com/send?phone=85254278104&text=AccountInquiry', '_blank')}
+            >
               Send Message
             </Button>
           </div>
@@ -59,7 +62,7 @@ export const AccountTab: React.FC<AccountTabProps> = ({
           <div className="pb-6">
             <h3 className="text-lg font-medium mb-4">Account Actions</h3>
             <div className="space-y-4">
-              <Button onClick={handleLogout} className="w-auto px-8 bg-brand-teal hover:bg-brand-teal/90">
+              <Button onClick={handleLogout} className="w-auto px-8 bg-brand-teal hover:bg-brand-darkTeal">
                 Log out
               </Button>
             </div>

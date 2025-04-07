@@ -1,3 +1,4 @@
+
 import { useState, useEffect } from 'react';
 import { useParams, Link } from 'react-router-dom';
 import { ArrowLeft } from 'lucide-react';
@@ -9,34 +10,34 @@ import { Button } from '@/components/ui/button';
 import { useAuth } from '@/contexts/AuthContext';
 
 const FollowersList = () => {
-  const { id } = useParams<{ id: string }>();
+  const { username } = useParams<{ username: string }>();
   const [followers, setFollowers] = useState<any[]>([]);
   const [loading, setLoading] = useState(true);
-  const [username, setUsername] = useState('');
+  const [profileId, setProfileId] = useState<string | null>(null);
   const { user } = useAuth();
 
   useEffect(() => {
     const fetchFollowers = async () => {
-      if (!id) return;
+      if (!username) return;
       
       try {
         setLoading(true);
         
-        // Get the username of the profile
+        // Get the profile ID for the username
         const { data: profileData, error: profileError } = await supabase
           .from('profiles')
-          .select('username')
-          .eq('id', id)
+          .select('id')
+          .eq('username', username)
           .single();
           
         if (profileError) throw profileError;
-        setUsername(profileData.username);
+        setProfileId(profileData.id);
         
         // Get followers - using a direct query instead of a join
         const { data, error } = await supabase
           .from('user_follows')
           .select('follower_id')
-          .eq('following_id', id);
+          .eq('following_id', profileData.id);
           
         if (error) throw error;
         
@@ -73,21 +74,21 @@ const FollowersList = () => {
     };
     
     fetchFollowers();
-  }, [id]);
+  }, [username]);
   
   return (
     <div className="min-h-screen bg-gray-50">
       <Navbar />
       
       <div className="container mx-auto px-4 pt-28 pb-16 max-w-4xl">
-        {/* Back button - Fixed to use /user/:username instead of /profile/:id */}
+        {/* Back button - Using username for navigation */}
         <Link to={`/user/${username}`} className="flex items-center text-brand-teal mb-6 hover:underline">
           <ArrowLeft className="h-4 w-4 mr-2" />
           Back to {username}'s Profile
         </Link>
         
         <div className="bg-white rounded-xl shadow-card p-6">
-          <h1 className="text-2xl font-bold mb-6">Followers of {username}</h1>
+          <h1 className="text-2xl font-bold mb-6 text-left">Followers of {username}</h1>
           
           {loading ? (
             <div className="space-y-4">
@@ -96,7 +97,7 @@ const FollowersList = () => {
               ))}
             </div>
           ) : followers.length === 0 ? (
-            <div className="text-center py-8 text-gray-500">
+            <div className="text-left py-8 text-gray-500">
               No followers yet
             </div>
           ) : (

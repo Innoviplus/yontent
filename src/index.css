@@ -74,9 +74,17 @@
   body {
     @apply bg-background text-foreground;
   }
+  
+  h1, h2, h3, h4, h5, h6, p, span, div {
+    @apply text-left;
+  }
+  
+  .text-center-allowed {
+    @apply text-center;
+  }
 }
 
-/* Quill Editor Styles */
+/* Preserve existing quill editor styles */
 .quill-container {
   display: flex;
   flex-direction: column;
@@ -131,4 +139,9 @@
   outline: 2px solid transparent;
   outline-offset: 2px;
   box-shadow: 0 0 0 2px hsl(var(--background)), 0 0 0 4px hsl(var(--ring));
+}
+
+/* Button styles */
+.btn-brand-green {
+  @apply bg-brand-teal hover:bg-brand-darkTeal text-white font-medium py-2.5 px-4 rounded-md transition-colors focus:outline-none focus:ring-2 focus:ring-brand-teal focus:ring-offset-2;
 }
