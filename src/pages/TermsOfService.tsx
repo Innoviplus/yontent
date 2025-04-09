@@ -37,6 +37,7 @@ const TermsOfService = () => {
           <Skeleton className="h-6 w-full mb-2" />
           <Skeleton className="h-6 w-3/4 mb-6" />
         </div>
+        <Footer />
       </>
     );
   }
@@ -51,6 +52,7 @@ const TermsOfService = () => {
             We're sorry, but we couldn't load the terms of service. Please try again later.
           </p>
         </div>
+        <Footer />
       </>
     );
   }
