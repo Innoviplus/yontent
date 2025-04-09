@@ -26,11 +26,14 @@ interface BirthDateInputProps {
 }
 
 export const BirthDateInput: React.FC<BirthDateInputProps> = ({ control, disabled = false }) => {
-  // Generate years (18 years ago to 100 years ago)
+  // Calculate 18 years ago for maximum allowed year
+  const today = new Date();
+  const eighteenYearsAgo = subYears(today, 18);
+  
+  // Generate years (100 years ago to 18 years ago)
   const currentYear = new Date().getFullYear();
   const minYear = currentYear - 100;
-  // Maximum year is 18 years ago from now
-  const maxYear = currentYear - 18;
+  const maxYear = eighteenYearsAgo.getFullYear();
   const years = generateYearRange(minYear, maxYear);
   
   // Get months list
@@ -51,7 +54,7 @@ export const BirthDateInput: React.FC<BirthDateInputProps> = ({ control, disable
           } = useBirthDateInput({
             onChange: field.onChange,
             initialDate: field.value,
-            maxYear: maxYear // Pass max year to prevent future dates
+            maxYear: maxYear
           });
 
           return (

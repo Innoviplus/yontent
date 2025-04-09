@@ -1,6 +1,7 @@
 
 import { useState, useEffect } from "react";
 import { getDaysInMonth } from "@/utils/dateUtils";
+import { subYears } from "date-fns";
 
 interface UseBirthDateInputProps {
   onChange: (date: Date) => void;
@@ -32,10 +33,14 @@ export const useBirthDateInput = ({ onChange, initialDate, maxYear }: UseBirthDa
   const handleDateChange = (type: 'day' | 'month' | 'year', value: string) => {
     const numValue = parseInt(value, 10);
     
+    // Get 18 years ago date to enforce age restriction
+    const eighteenYearsAgo = subYears(new Date(), 18);
+    const maxAllowedYear = eighteenYearsAgo.getFullYear();
+    
+    // Use provided maxYear or calculate from 18 years ago
+    const effectiveMaxYear = maxYear || maxAllowedYear;
+    
     let newDate: Date;
-    const currentYear = new Date().getFullYear();
-    // Use provided maxYear or default to current year
-    const effectiveMaxYear = maxYear ?? currentYear;
     
     if (!selectedDate) {
       // If no date is selected, create a new date with defaults
@@ -60,15 +65,22 @@ export const useBirthDateInput = ({ onChange, initialDate, maxYear }: UseBirthDa
           newDate.setDate(daysInNewMonth);
         }
         newDate.setMonth(numValue);
-      } else {
+      } else if (type === 'year') {
         newDate.setFullYear(numValue);
       }
     }
     
-    // Make sure the date is not in the future
+    // Ensure the resulting date is not in the future or less than 18 years ago
     const today = new Date();
+    
+    // If date is in the future, set it to today
     if (newDate > today) {
-      newDate = today;
+      newDate = new Date(today);
+    }
+    
+    // If date is less than 18 years ago, set it to 18 years ago
+    if (newDate > eighteenYearsAgo) {
+      newDate = new Date(eighteenYearsAgo);
     }
     
     onChange(newDate);

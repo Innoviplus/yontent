@@ -18,11 +18,16 @@ export const birthDateSchema = z.date().optional()
   .refine(
     (date) => {
       if (!date) return true; // Optional, so null/undefined is valid
-      // Validate the date is not in the future
+      
       const today = new Date();
-      if (date > today) return false;
+      
+      // Validate the date is not in the future
+      if (date > today) {
+        return false;
+      }
+      
       // Validate the person is at least 18
-      const eighteenYearsAgo = subYears(new Date(), 18);
+      const eighteenYearsAgo = subYears(today, 18);
       return date <= eighteenYearsAgo;
     },
     {
