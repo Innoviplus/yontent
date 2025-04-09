@@ -48,7 +48,7 @@ const SubmitReview = () => {
               </div>
             ) : (
               <Form {...form}>
-                <form onSubmit={form.handleSubmit((values) => onSubmit(values, false))} className="space-y-6">
+                <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-6">
                   {/* Image Upload Section */}
                   <ImageUpload
                     imagePreviewUrls={imagePreviewUrls}
@@ -98,7 +98,7 @@ const SubmitReview = () => {
                     
                     <Button 
                       type="submit" 
-                      className="order-1 sm:order-2"
+                      className="order-1 sm:order-2 bg-brand-teal hover:bg-brand-teal/90"
                       disabled={uploading}
                     >
                       {uploading ? (

@@ -150,6 +150,7 @@ export const useSubmitReview = (onSuccess?: () => void) => {
   
   const saveDraft = () => {
     const values = form.getValues();
+    form.setValue('isDraft', true);
     
     // For drafts, allow empty content only if there are images
     if (values.content.length === 0 && selectedImages.length === 0 && existingImages.length === 0) {
@@ -157,7 +158,7 @@ export const useSubmitReview = (onSuccess?: () => void) => {
       return;
     }
     
-    handleSubmit(values, true);
+    handleSubmit(form.getValues());
   };
   
   return {
