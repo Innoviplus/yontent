@@ -29,6 +29,7 @@ export const BirthDateInput: React.FC<BirthDateInputProps> = ({ control, disable
   // Generate years (18 years ago to 100 years ago)
   const currentYear = new Date().getFullYear();
   const minYear = currentYear - 100;
+  // Maximum year is 18 years ago from now
   const maxYear = currentYear - 18;
   const years = generateYearRange(minYear, maxYear);
   
@@ -49,7 +50,8 @@ export const BirthDateInput: React.FC<BirthDateInputProps> = ({ control, disable
             handleDateChange 
           } = useBirthDateInput({
             onChange: field.onChange,
-            initialDate: field.value
+            initialDate: field.value,
+            maxYear: maxYear // Pass max year to prevent future dates
           });
 
           return (
@@ -118,9 +120,7 @@ export const BirthDateInput: React.FC<BirthDateInputProps> = ({ control, disable
               </div>
               
               <FormDescription>
-                {disabled ? 
-                  'Date of birth cannot be changed once set.' : 
-                  'You must be at least 18 years old to use this service.'}
+                You must be at least 18 years old to use this service.
               </FormDescription>
               
               {field.value && !isAtLeast18(new Date(field.value)) && (

@@ -5,9 +5,10 @@ import { getDaysInMonth } from "@/utils/dateUtils";
 interface UseBirthDateInputProps {
   onChange: (date: Date) => void;
   initialDate: Date | null | undefined;
+  maxYear?: number; // Maximum allowed year (for age restrictions)
 }
 
-export const useBirthDateInput = ({ onChange, initialDate }: UseBirthDateInputProps) => {
+export const useBirthDateInput = ({ onChange, initialDate, maxYear }: UseBirthDateInputProps) => {
   // Extract day, month, year from the initial date
   const selectedDate = initialDate ? new Date(initialDate) : null;
   const initialYear = selectedDate ? selectedDate.getFullYear() : null;
@@ -33,14 +34,15 @@ export const useBirthDateInput = ({ onChange, initialDate }: UseBirthDateInputPr
     
     let newDate: Date;
     const currentYear = new Date().getFullYear();
-    const maxYear = currentYear - 18;
+    // Use provided maxYear or default to current year
+    const effectiveMaxYear = maxYear ?? currentYear;
     
     if (!selectedDate) {
       // If no date is selected, create a new date with defaults
       if (type === 'day') {
-        newDate = new Date(maxYear, 0, numValue);
+        newDate = new Date(effectiveMaxYear, 0, numValue);
       } else if (type === 'month') {
-        newDate = new Date(maxYear, numValue, 1);
+        newDate = new Date(effectiveMaxYear, numValue, 1);
       } else {
         newDate = new Date(numValue, 0, 1);
       }
@@ -61,6 +63,12 @@ export const useBirthDateInput = ({ onChange, initialDate }: UseBirthDateInputPr
       } else {
         newDate.setFullYear(numValue);
       }
+    }
+    
+    // Make sure the date is not in the future
+    const today = new Date();
+    if (newDate > today) {
+      newDate = today;
     }
     
     onChange(newDate);

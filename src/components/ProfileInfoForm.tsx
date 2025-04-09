@@ -133,7 +133,7 @@ export const ProfileInfoForm: React.FC<ProfileInfoFormProps> = ({
 
           <BirthDateInput 
             control={profileForm.control} 
-            disabled={false} // Allow editing of birthdate regardless of previous values
+            disabled={false}
           />
         </div>
 
