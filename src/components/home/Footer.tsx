@@ -23,9 +23,6 @@ const Footer = () => {
             <Link to="/rankings" className="text-gray-600 hover:text-brand-slate transition-colors">
               Rankings
             </Link>
-            <Link to="/about" className="text-gray-600 hover:text-brand-slate transition-colors">
-              About Us
-            </Link>
             <Link to="/privacy-policy" className="text-gray-600 hover:text-brand-slate transition-colors">
               Privacy Policy
             </Link>

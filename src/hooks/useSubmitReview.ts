@@ -1,4 +1,3 @@
-
 import { useState, useEffect } from 'react';
 import { useSearchParams, useNavigate } from 'react-router-dom';
 import { toast } from 'sonner';
@@ -6,7 +5,7 @@ import { useAuth } from '@/contexts/AuthContext';
 import { supabase } from '@/integrations/supabase/client';
 import { useReviewForm, ReviewFormValues } from './review/useReviewForm';
 
-export const useSubmitReview = () => {
+export const useSubmitReview = (onSuccess?: () => void) => {
   const { user } = useAuth();
   const navigate = useNavigate();
   const [searchParams] = useSearchParams();
@@ -84,7 +83,7 @@ export const useSubmitReview = () => {
     handleImageSelection(files);
   };
   
-  const onSubmit = async (values: ReviewFormValues, isDraft: boolean = false) => {
+  const handleSubmit = async (data: ReviewFormValues) => {
     if (!user) {
       toast.error('You must be logged in to submit a review');
       return;
@@ -98,7 +97,7 @@ export const useSubmitReview = () => {
     }
     
     // For published reviews, validate that at least one image is selected or exists
-    if (!isDraft && selectedImages.length === 0 && existingImages.length === 0) {
+    if (!data.isDraft && selectedImages.length === 0 && existingImages.length === 0) {
       setImageError("At least one image is required");
       return;
     }
@@ -114,33 +113,33 @@ export const useSubmitReview = () => {
         const { error } = await supabase
           .from('reviews')
           .update({
-            content: values.content,
+            content: data.content,
             images: imagePaths,
-            status: isDraft ? 'DRAFT' : 'PUBLISHED',
+            status: data.isDraft ? 'DRAFT' : 'PUBLISHED',
             updated_at: new Date().toISOString()
           })
           .eq('id', reviewId);
           
         if (error) throw error;
         
-        toast.success(isDraft ? 'Draft updated successfully!' : 'Review updated successfully!');
+        toast.success(data.isDraft ? 'Draft updated successfully!' : 'Review updated successfully!');
       } else {
         // Create new review
         const { error } = await supabase
           .from('reviews')
           .insert({
             user_id: user.id,
-            content: values.content,
+            content: data.content,
             images: imagePaths,
-            status: isDraft ? 'DRAFT' : 'PUBLISHED'
+            status: data.isDraft ? 'DRAFT' : 'PUBLISHED'
           });
           
         if (error) throw error;
         
-        toast.success(isDraft ? 'Draft saved successfully!' : 'Review submitted successfully!');
+        toast.success(data.isDraft ? 'Draft saved successfully!' : 'Review submitted successfully!');
       }
       
-      navigate(isDraft ? '/dashboard' : '/reviews');
+      navigate(data.isDraft ? '/dashboard' : '/reviews');
     } catch (error) {
       console.error('Unexpected error:', error);
       toast.error('An unexpected error occurred');
@@ -158,7 +157,7 @@ export const useSubmitReview = () => {
       return;
     }
     
-    onSubmit(values, true);
+    handleSubmit(values, true);
   };
   
   return {
@@ -171,7 +170,7 @@ export const useSubmitReview = () => {
     existingImages,
     isDraft: !!draftId,
     isEditing: !!reviewId,
-    onSubmit,
+    onSubmit: handleSubmit,
     saveDraft,
     handleImageSelection: handleImageSelectionWithValidation,
     removeImage,

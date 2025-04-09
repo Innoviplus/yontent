@@ -1,3 +1,4 @@
+
 import { useState } from 'react';
 import { Link, useNavigate } from 'react-router-dom';
 import { Eye, EyeOff, Lock } from 'lucide-react';
@@ -129,9 +130,9 @@ const RegisterForm = () => {
                 <div className="space-y-1 leading-none">
                   <FormLabel className="text-sm font-normal">
                     I agree to the{' '}
-                    <Link to="/terms" className="text-brand-teal hover:underline">Terms of Service</Link>
+                    <Link to="/terms-of-service" className="text-brand-teal hover:underline">Terms of Service</Link>
                     {' '}and{' '}
-                    <Link to="/privacy" className="text-brand-teal hover:underline">Privacy Policy</Link>
+                    <Link to="/privacy-policy" className="text-brand-teal hover:underline">Privacy Policy</Link>
                   </FormLabel>
                   <FormMessage />
                 </div>
