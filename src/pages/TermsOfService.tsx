@@ -4,7 +4,6 @@ import { supabase } from '@/integrations/supabase/client';
 import { useQuery } from '@tanstack/react-query';
 import Navbar from '@/components/Navbar';
 import { Skeleton } from '@/components/ui/skeleton';
-import Footer from '@/components/home/Footer';
 
 const TermsOfService = () => {
   const { data: termsOfService, isLoading, error } = useQuery({
@@ -37,7 +36,6 @@ const TermsOfService = () => {
           <Skeleton className="h-6 w-full mb-2" />
           <Skeleton className="h-6 w-3/4 mb-6" />
         </div>
-        <Footer />
       </>
     );
   }
@@ -52,7 +50,6 @@ const TermsOfService = () => {
             We're sorry, but we couldn't load the terms of service. Please try again later.
           </p>
         </div>
-        <Footer />
       </>
     );
   }
@@ -66,7 +63,6 @@ const TermsOfService = () => {
           dangerouslySetInnerHTML={{ __html: termsOfService?.content || '' }}
         />
       </div>
-      <Footer />
     </>
   );
 };
