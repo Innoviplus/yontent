@@ -34,7 +34,8 @@ export const useBirthDateInput = ({ onChange, initialDate, maxYear }: UseBirthDa
     const numValue = parseInt(value, 10);
     
     // Get 18 years ago date to enforce age restriction
-    const eighteenYearsAgo = subYears(new Date(), 18);
+    const today = new Date();
+    const eighteenYearsAgo = subYears(today, 18);
     const maxAllowedYear = eighteenYearsAgo.getFullYear();
     
     // Use provided maxYear or calculate from 18 years ago
@@ -71,15 +72,13 @@ export const useBirthDateInput = ({ onChange, initialDate, maxYear }: UseBirthDa
     }
     
     // Ensure the resulting date is not in the future or less than 18 years ago
-    const today = new Date();
-    
-    // If date is in the future, set it to today
     if (newDate > today) {
+      // If date is in the future, set it to today
       newDate = new Date(today);
     }
     
-    // If date is less than 18 years ago, set it to 18 years ago
     if (newDate > eighteenYearsAgo) {
+      // If date is less than 18 years ago, set it to 18 years ago
       newDate = new Date(eighteenYearsAgo);
     }
     

@@ -145,7 +145,7 @@ const Login = () => {
                 <Button
                   type="submit"
                   disabled={isLoading}
-                  className="w-full"
+                  className="w-full bg-brand-teal hover:bg-brand-darkTeal"
                   variant="default"
                   size="default"
                 >

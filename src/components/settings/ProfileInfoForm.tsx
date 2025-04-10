@@ -1,10 +1,13 @@
+
 import React from 'react';
 import { UseFormReturn } from 'react-hook-form';
-import { FormField, FormItem, FormLabel, FormControl, FormMessage } from '@/components/ui/form';
+import { FormField, FormItem, FormLabel, FormControl, FormMessage, FormDescription } from '@/components/ui/form';
 import { Input } from '@/components/ui/input';
 import { Button } from '@/components/ui/button';
 import { Loader2 } from 'lucide-react';
-import { cn } from '@/lib/utils';
+import { Textarea } from '@/components/ui/textarea';
+import { BirthDateInput } from '@/components/settings/BirthDateInput';
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 
 interface ProfileInfoFormProps {
   profileForm: UseFormReturn<any>;
@@ -26,8 +29,9 @@ export const ProfileInfoForm: React.FC<ProfileInfoFormProps> = ({
           <FormItem className="text-left">
             <FormLabel>Username</FormLabel>
             <FormControl>
-              <Input placeholder="Username" {...field} />
+              <Input placeholder="Username" {...field} disabled className="bg-gray-100 cursor-not-allowed" />
             </FormControl>
+            <FormDescription>Username cannot be changed after account creation</FormDescription>
             <FormMessage />
           </FormItem>
         )}
@@ -40,7 +44,7 @@ export const ProfileInfoForm: React.FC<ProfileInfoFormProps> = ({
           <FormItem className="text-left">
             <FormLabel>First Name</FormLabel>
             <FormControl>
-              <Input placeholder="First Name" {...field} />
+              <Input placeholder="First Name" {...field} value={field.value || ''} />
             </FormControl>
             <FormMessage />
           </FormItem>
@@ -54,7 +58,7 @@ export const ProfileInfoForm: React.FC<ProfileInfoFormProps> = ({
           <FormItem className="text-left">
             <FormLabel>Last Name</FormLabel>
             <FormControl>
-              <Input placeholder="Last Name" {...field} />
+              <Input placeholder="Last Name" {...field} value={field.value || ''} />
             </FormControl>
             <FormMessage />
           </FormItem>
@@ -68,7 +72,12 @@ export const ProfileInfoForm: React.FC<ProfileInfoFormProps> = ({
           <FormItem className="text-left">
             <FormLabel>Bio</FormLabel>
             <FormControl>
-              <Input placeholder="Tell us a little about yourself" {...field} />
+              <Textarea 
+                placeholder="Tell us a little about yourself" 
+                className="min-h-[100px]" 
+                {...field} 
+                value={field.value || ''}
+              />
             </FormControl>
             <FormMessage />
           </FormItem>
@@ -81,9 +90,23 @@ export const ProfileInfoForm: React.FC<ProfileInfoFormProps> = ({
         render={({ field }) => (
           <FormItem className="text-left">
             <FormLabel>Gender</FormLabel>
-            <FormControl>
-              <Input placeholder="Gender" {...field} />
-            </FormControl>
+            <Select
+              onValueChange={field.onChange}
+              defaultValue={field.value}
+              value={field.value || ''}
+            >
+              <FormControl>
+                <SelectTrigger>
+                  <SelectValue placeholder="Select gender" />
+                </SelectTrigger>
+              </FormControl>
+              <SelectContent>
+                <SelectItem value="male">Male</SelectItem>
+                <SelectItem value="female">Female</SelectItem>
+                <SelectItem value="non-binary">Non-binary</SelectItem>
+                <SelectItem value="prefer-not-to-say">Prefer not to say</SelectItem>
+              </SelectContent>
+            </Select>
             <FormMessage />
           </FormItem>
         )}
@@ -92,12 +115,10 @@ export const ProfileInfoForm: React.FC<ProfileInfoFormProps> = ({
       <FormField
         control={profileForm.control}
         name="birthDate"
-        render={({ field }) => (
+        render={() => (
           <FormItem className="text-left">
             <FormLabel>Birth Date</FormLabel>
-            <FormControl>
-              <Input type="date" {...field} />
-            </FormControl>
+            <BirthDateInput control={profileForm.control} disabled={false} />
             <FormMessage />
           </FormItem>
         )}

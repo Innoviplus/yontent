@@ -31,6 +31,7 @@ import ReviewFeed from "@/pages/ReviewFeed";
 import PrivacyPolicy from "@/pages/PrivacyPolicy";
 import TermsOfService from "@/pages/TermsOfService";
 import SetAvatar from "@/pages/SetAvatar";
+import ForgotPassword from "@/pages/ForgotPassword";
 
 const AppRoutes = () => {
   return (
@@ -38,6 +39,7 @@ const AppRoutes = () => {
       <Route path="/" element={<Index />} />
       <Route path="/login" element={<Login />} />
       <Route path="/register" element={<Register />} />
+      <Route path="/forgot-password" element={<ForgotPassword />} />
       <Route path="/dashboard" element={<ProtectedRoute><Dashboard /></ProtectedRoute>} />
       <Route path="/reviews" element={<Reviews />} />
       <Route path="/review/:id" element={<ReviewDetail />} />
