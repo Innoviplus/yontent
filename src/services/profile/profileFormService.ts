@@ -1,45 +1,59 @@
 
 import { ExtendedProfile } from '@/lib/types';
-import { ProfileFormValues } from '@/schemas/profileFormSchema';
-import { formatUrl } from '@/utils/urlUtils';
 import { subYears } from 'date-fns';
-import { toast } from 'sonner';
+import { ProfileFormValues } from '@/schemas/profileFormSchema';
 
-export const validateBirthDate = (birthDate: Date | undefined | null): boolean => {
-  if (!birthDate) return true;
+/**
+ * Format form values for saving to the database
+ */
+export const formatProfileFormValues = (values: ProfileFormValues, currentExtendedProfile: ExtendedProfile): ExtendedProfile => {
+  // Copy existing extended data if available
+  const extendedData: ExtendedProfile = { ...currentExtendedProfile };
   
-  const eighteenYearsAgo = subYears(new Date(), 18);
-  return birthDate <= eighteenYearsAgo;
+  // Update with new values
+  extendedData.firstName = values.firstName;
+  extendedData.lastName = values.lastName;
+  extendedData.bio = values.bio;
+  extendedData.gender = values.gender;
+  extendedData.birthDate = values.birthDate;
+  
+  // Social media URLs - format if provided
+  extendedData.websiteUrl = formatURL(values.websiteUrl);
+  extendedData.facebookUrl = formatURL(values.facebookUrl);
+  extendedData.instagramUrl = formatURL(values.instagramUrl);
+  extendedData.youtubeUrl = formatURL(values.youtubeUrl);
+  extendedData.tiktokUrl = formatURL(values.tiktokUrl);
+  
+  // Phone fields are stored directly in the profile table, not in extended_data
+  extendedData.phoneNumber = values.phoneNumber;
+  extendedData.phoneCountryCode = values.phoneCountryCode;
+  
+  return extendedData;
 };
 
-export const formatProfileFormValues = (
-  values: ProfileFormValues,
-  currentExtendedProfile: ExtendedProfile | null = {}
-): ExtendedProfile => {
-  // Format URL fields to ensure they have proper http/https prefix
-  const formattedValues = {
-    ...values,
-    websiteUrl: formatUrl(values.websiteUrl),
-    facebookUrl: formatUrl(values.facebookUrl),
-    instagramUrl: formatUrl(values.instagramUrl),
-    youtubeUrl: formatUrl(values.youtubeUrl),
-    tiktokUrl: formatUrl(values.tiktokUrl),
-  };
+/**
+ * Format URL by ensuring it has proper protocol
+ */
+const formatURL = (url: string | null | undefined): string | null => {
+  if (!url || url.trim() === '') return null;
   
-  console.log("Formatted values:", formattedValues);
+  // Check if URL already has a protocol
+  if (url.match(/^(https?:\/\/|ftp:\/\/)/i)) {
+    return url;
+  }
   
-  // Merge with new values, preserving existing fields from other tabs
-  return {
-    ...currentExtendedProfile,
-    firstName: formattedValues.firstName,
-    lastName: formattedValues.lastName,
-    bio: formattedValues.bio || null,
-    gender: formattedValues.gender || null,
-    birthDate: formattedValues.birthDate || null,
-    websiteUrl: formattedValues.websiteUrl,
-    facebookUrl: formattedValues.facebookUrl,
-    instagramUrl: formattedValues.instagramUrl,
-    youtubeUrl: formattedValues.youtubeUrl,
-    tiktokUrl: formattedValues.tiktokUrl,
-  };
+  // Add http:// as default protocol
+  return `http://${url}`;
+};
+
+/**
+ * Validate if a birth date meets the minimum age requirement
+ */
+export const validateBirthDate = (birthDate: Date | null | undefined): boolean => {
+  if (!birthDate) return true;
+  
+  const today = new Date();
+  const eighteenYearsAgo = subYears(today, 18);
+  
+  return birthDate <= eighteenYearsAgo;
 };

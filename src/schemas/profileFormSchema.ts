@@ -35,9 +35,17 @@ export const birthDateSchema = z.date().optional()
     }
   );
 
+// Phone number validation schema
+export const phoneNumberSchema = z.string()
+  .trim()
+  .min(1, "Phone number is required")
+  .regex(/^[0-9\s\-\+\(\)]+$/, "Invalid phone number format")
+  .optional();
+
 // Form schema
 export const profileFormSchema = z.object({
   username: z.string().optional(),
+  email: z.string().email().optional(),
   firstName: z.string().min(1, "First name is required").max(50),
   lastName: z.string().min(1, "Last name is required").max(50),
   bio: z.string().max(500).optional(),
@@ -48,6 +56,8 @@ export const profileFormSchema = z.object({
   instagramUrl: urlSchema,
   youtubeUrl: urlSchema,
   tiktokUrl: urlSchema,
+  phoneNumber: phoneNumberSchema,
+  phoneCountryCode: z.string().optional(),
 });
 
 export type ProfileFormValues = z.infer<typeof profileFormSchema>;

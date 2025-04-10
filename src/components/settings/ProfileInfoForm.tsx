@@ -8,6 +8,7 @@ import { Loader2 } from 'lucide-react';
 import { Textarea } from '@/components/ui/textarea';
 import { BirthDateInput } from '@/components/settings/BirthDateInput';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
+import { PhoneInput } from '@/components/settings/PhoneInput';
 
 interface ProfileInfoFormProps {
   profileForm: UseFormReturn<any>;
@@ -32,6 +33,21 @@ export const ProfileInfoForm: React.FC<ProfileInfoFormProps> = ({
               <Input placeholder="Username" {...field} disabled className="bg-gray-100 cursor-not-allowed" />
             </FormControl>
             <FormDescription>Username cannot be changed after account creation</FormDescription>
+            <FormMessage />
+          </FormItem>
+        )}
+      />
+      
+      <FormField
+        control={profileForm.control}
+        name="email"
+        render={({ field }) => (
+          <FormItem className="text-left">
+            <FormLabel>Email</FormLabel>
+            <FormControl>
+              <Input placeholder="Email address" {...field} disabled className="bg-gray-100 cursor-not-allowed" />
+            </FormControl>
+            <FormDescription>Email cannot be changed</FormDescription>
             <FormMessage />
           </FormItem>
         )}
@@ -119,6 +135,25 @@ export const ProfileInfoForm: React.FC<ProfileInfoFormProps> = ({
           <FormItem className="text-left">
             <FormLabel>Birth Date</FormLabel>
             <BirthDateInput control={profileForm.control} disabled={false} />
+            <FormMessage />
+          </FormItem>
+        )}
+      />
+      
+      <FormField
+        control={profileForm.control}
+        name="phoneNumber"
+        render={({ field }) => (
+          <FormItem className="text-left">
+            <FormLabel>Mobile Number</FormLabel>
+            <FormControl>
+              <PhoneInput 
+                value={field.value || ''} 
+                onChange={field.onChange} 
+                countryCode={profileForm.watch('phoneCountryCode') || '+1'} 
+                onCountryCodeChange={(code) => profileForm.setValue('phoneCountryCode', code)}
+              />
+            </FormControl>
             <FormMessage />
           </FormItem>
         )}

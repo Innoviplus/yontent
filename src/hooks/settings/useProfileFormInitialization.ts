@@ -1,48 +1,49 @@
 
 import { useEffect } from 'react';
 import { UseFormReturn } from 'react-hook-form';
-import { ProfileFormValues } from '@/schemas/profileFormSchema';
+import { useAuth } from '@/contexts/AuthContext';
 
 export const useProfileFormInitialization = (
-  profileForm: UseFormReturn<ProfileFormValues>,
+  profileForm: UseFormReturn<any>,
   userProfile: any
 ) => {
+  const { user } = useAuth();
+
   useEffect(() => {
-    if (userProfile?.extended_data) {
-      const extData = userProfile.extended_data;
-      
-      console.log("Loading profile data:", extData);
-      
-      // Special handling for birthDate to ensure it's a proper Date object
-      let birthDate = undefined;
-      if (extData.birthDate) {
-        try {
-          birthDate = new Date(extData.birthDate);
-          console.log("Parsed birthDate:", birthDate);
-          // Check if date is valid
-          if (isNaN(birthDate.getTime())) {
-            console.error("Invalid date value:", extData.birthDate);
-            birthDate = undefined;
-          }
-        } catch (err) {
-          console.error("Error parsing birthDate:", err);
-          birthDate = undefined;
-        }
+    // Only run if form and userProfile are available
+    if (profileForm && userProfile) {
+      try {
+        const extendedData = userProfile.extended_data || {};
+        
+        // Set form values from profile data
+        profileForm.reset({
+          // Basic fields
+          username: userProfile.username || '',
+          email: user?.email || '',  // Initialize email from auth user
+          
+          // Extended fields from JSON
+          firstName: extendedData.firstName || '',
+          lastName: extendedData.lastName || '',
+          bio: extendedData.bio || '',
+          gender: extendedData.gender || '',
+          birthDate: extendedData.birthDate ? new Date(extendedData.birthDate) : undefined,
+          
+          // Social media fields
+          websiteUrl: extendedData.websiteUrl || '',
+          facebookUrl: extendedData.facebookUrl || '',
+          instagramUrl: extendedData.instagramUrl || '',
+          youtubeUrl: extendedData.youtubeUrl || '',
+          tiktokUrl: extendedData.tiktokUrl || '',
+          
+          // Phone fields
+          phoneNumber: userProfile.phone_number || '',
+          phoneCountryCode: userProfile.phone_country_code || '+1',
+        });
+        
+        console.log("Profile form initialized with:", profileForm.getValues());
+      } catch (error) {
+        console.error("Error initializing profile form:", error);
       }
-      
-      profileForm.reset({
-        username: userProfile.username || '',
-        firstName: extData.firstName || '',
-        lastName: extData.lastName || '',
-        bio: extData.bio || '',
-        gender: extData.gender || '',
-        birthDate: birthDate,
-        websiteUrl: extData.websiteUrl || '',
-        facebookUrl: extData.facebookUrl || '',
-        instagramUrl: extData.instagramUrl || '',
-        youtubeUrl: extData.youtubeUrl || '',
-        tiktokUrl: extData.tiktokUrl || '',
-      }, { keepDirty: false }); // Mark form as pristine after reset
     }
-  }, [userProfile, profileForm]);
+  }, [profileForm, userProfile, user]);
 };

@@ -45,6 +45,7 @@ export interface ExtendedProfile {
   youtubeUrl?: string;
   tiktokUrl?: string;
   phoneNumber?: string;
+  phoneCountryCode?: string;
   country?: string;
   [key: string]: any; // Add index signature to make it compatible with Json type
 }
