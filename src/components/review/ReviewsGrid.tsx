@@ -1,7 +1,7 @@
 
 import { Review } from '@/lib/types';
 import ReviewCard from '@/components/ReviewCard';
-import { trackReviewView } from '@/services/reviewService';
+import { trackReviewView } from '@/services/review/trackViews';
 
 interface ReviewsGridProps {
   reviews: Review[];

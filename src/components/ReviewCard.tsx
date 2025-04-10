@@ -4,7 +4,7 @@ import { useNavigate } from 'react-router-dom';
 import { User, Camera, Eye, Heart } from 'lucide-react';
 import { Review } from '@/lib/types';
 import { cn } from '@/lib/utils';
-import { trackReviewView } from '@/services/reviewService';
+import { trackReviewView } from '@/services/review/trackViews';
 import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
 
 interface ReviewCardProps {

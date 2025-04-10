@@ -1,4 +1,3 @@
-
 import { useState, useEffect } from 'react';
 import { Review } from '@/lib/types';
 import { supabase } from '@/integrations/supabase/client';
@@ -24,6 +23,7 @@ export const useReviews = () => {
           user_id,
           content,
           images,
+          videos,
           views_count,
           likes_count,
           created_at,
@@ -63,6 +63,7 @@ export const useReviews = () => {
         userId: review.user_id,
         content: review.content,
         images: review.images || [],
+        videos: review.videos || [],
         viewsCount: review.views_count,
         likesCount: review.likes_count,
         createdAt: new Date(review.created_at),

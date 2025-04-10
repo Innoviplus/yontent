@@ -1,10 +1,10 @@
-
 import { useState, useEffect } from 'react';
 import { useSearchParams, useNavigate } from 'react-router-dom';
 import { toast } from 'sonner';
 import { useAuth } from '@/contexts/AuthContext';
 import { supabase } from '@/integrations/supabase/client';
 import { useReviewForm, ReviewFormValues } from './review/useReviewForm';
+import { uploadReviewImage, uploadReviewVideo } from '@/services/review/uploadMedia';
 
 export const useSubmitReview = (onSuccess?: () => void) => {
   const { user } = useAuth();
