@@ -22,6 +22,7 @@ export const sampleReviews: Review[] = [
     rating: 5,
     content: 'These headphones have amazing sound quality and the noise cancellation is top-notch. Battery life is exceptional - I can go days without charging. The comfort level is also great for long listening sessions.',
     images: ['/placeholder.svg'],
+    videos: [],
     createdAt: new Date('2023-09-15'),
     user: {
       id: '1',
@@ -38,6 +39,7 @@ export const sampleReviews: Review[] = [
     rating: 4,
     content: 'Great fitness tracking capabilities and the screen is beautiful. Battery life could be better but overall very satisfied with the purchase.',
     images: ['/placeholder.svg', '/placeholder.svg'],
+    videos: [],
     createdAt: new Date('2023-10-05'),
     user: {
       id: '1',

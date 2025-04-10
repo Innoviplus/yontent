@@ -1,17 +1,21 @@
+
 import { Link } from 'react-router-dom';
 import { ChevronRight } from 'lucide-react';
 import ReviewCard from '@/components/ReviewCard';
 import { Review } from '@/lib/types';
 import { useEffect, useState } from 'react';
 import { supabase } from '@/integrations/supabase/client';
+
 interface FeaturedReviewsSectionProps {
   loading?: boolean;
 }
+
 const FeaturedReviewsSection = ({
   loading: initialLoading
 }: FeaturedReviewsSectionProps) => {
   const [reviews, setReviews] = useState<Review[]>([]);
   const [loading, setLoading] = useState<boolean>(initialLoading || true);
+
   useEffect(() => {
     const fetchReviews = async () => {
       try {
@@ -23,6 +27,7 @@ const FeaturedReviewsSection = ({
             user_id,
             content,
             images,
+            videos,
             views_count,
             likes_count,
             created_at,
@@ -37,15 +42,18 @@ const FeaturedReviewsSection = ({
         .order('created_at', {
           ascending: false
         }).limit(5);
+        
         if (error) {
           console.error('Error fetching reviews:', error);
           return;
         }
+        
         const transformedReviews: Review[] = data.map(review => ({
           id: review.id,
           userId: review.user_id,
           content: review.content,
           images: review.images || [],
+          videos: review.videos || [],
           viewsCount: review.views_count,
           likesCount: review.likes_count,
           createdAt: new Date(review.created_at),
@@ -60,6 +68,7 @@ const FeaturedReviewsSection = ({
             avatar: review.profiles?.avatar
           }
         }));
+        
         setReviews(transformedReviews);
       } catch (error) {
         console.error('Unexpected error:', error);
@@ -67,6 +76,7 @@ const FeaturedReviewsSection = ({
         setLoading(false);
       }
     };
+    
     fetchReviews();
   }, []);
 
@@ -74,7 +84,9 @@ const FeaturedReviewsSection = ({
   if (!loading && reviews.length === 0) {
     return null;
   }
-  return <section className="py-16 md:py-24 bg-gray-50">
+  
+  return (
+    <section className="py-16 md:py-24 bg-gray-50">
       <div className="container mx-auto px-4 sm:px-6">
         <div className="flex justify-between items-center mb-10">
           <div>
@@ -89,14 +101,22 @@ const FeaturedReviewsSection = ({
           </Link>
         </div>
         
-        {loading ? <div className="flex justify-center items-center py-12">
+        {loading ? 
+          <div className="flex justify-center items-center py-12">
             <div className="animate-spin rounded-full h-12 w-12 border-t-2 border-b-2 border-brand-teal"></div>
-          </div> : <div className="flex overflow-x-auto pb-4 space-x-6">
-            {reviews.map(review => <div key={review.id} className="min-w-[280px] w-[280px] flex-shrink-0">
+          </div> 
+        : 
+          <div className="flex overflow-x-auto pb-4 space-x-6">
+            {reviews.map(review => 
+              <div key={review.id} className="min-w-[280px] w-[280px] flex-shrink-0">
                 <ReviewCard review={review} />
-              </div>)}
-          </div>}
+              </div>
+            )}
+          </div>
+        }
       </div>
-    </section>;
+    </section>
+  );
 };
+
 export default FeaturedReviewsSection;

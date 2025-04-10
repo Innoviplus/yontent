@@ -41,31 +41,33 @@ export const useFetchReview = (id: string | undefined) => {
         return;
       }
       
-      const transformedReview: Review = {
-        id: data.id,
-        userId: data.user_id,
-        productName: "Review",
-        rating: 5,
-        content: data.content,
-        images: data.images || [],
-        videos: data.videos || [],
-        viewsCount: data.views_count,
-        likesCount: data.likes_count,
-        createdAt: new Date(data.created_at),
-        user: data.profiles ? {
-          id: data.profiles.id || data.user_id,
-          username: data.profiles.username || 'Anonymous',
-          email: '',
-          points: 0,
-          createdAt: new Date(),
-          avatar: data.profiles.avatar
-        } : undefined
-      };
-      
-      setReview(transformedReview);
-      
-      // Track the view
-      trackReviewView(id);
+      if (data) {
+        const transformedReview: Review = {
+          id: data.id,
+          userId: data.user_id,
+          productName: "Review",
+          rating: 5,
+          content: data.content,
+          images: data.images || [],
+          videos: data.videos || [],
+          viewsCount: data.views_count,
+          likesCount: data.likes_count,
+          createdAt: new Date(data.created_at),
+          user: data.profiles ? {
+            id: data.profiles.id || data.user_id,
+            username: data.profiles.username || 'Anonymous',
+            email: '',
+            points: 0,
+            createdAt: new Date(),
+            avatar: data.profiles.avatar
+          } : undefined
+        };
+        
+        setReview(transformedReview);
+        
+        // Track the view
+        trackReviewView(id);
+      }
     } catch (error) {
       console.error('Unexpected error:', error);
       toast.error('An unexpected error occurred');

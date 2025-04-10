@@ -60,6 +60,7 @@ const ReviewImages = ({ images, videos = [] }: ReviewImagesProps) => {
             src={videos[0]} 
             controls 
             className="w-full h-full object-contain"
+            key={videos[0]} // Add key to force re-render when video changes
           />
         ) : (
           <img 
@@ -109,13 +110,11 @@ const ReviewImages = ({ images, videos = [] }: ReviewImagesProps) => {
               }}
               className={`relative flex-shrink-0 w-16 h-16 rounded overflow-hidden ${showVideo ? 'ring-2 ring-brand-teal' : ''}`}
             >
-              <video 
-                src={videos[0]} 
-                className="w-full h-full object-cover"
-                muted 
-              />
               <div className="absolute inset-0 bg-black/30 flex items-center justify-center">
                 <Play className="h-8 w-8 text-white" />
+              </div>
+              <div className="w-full h-full bg-gray-300 flex items-center justify-center">
+                <span className="text-xs text-white bg-black/50 px-1 py-0.5 rounded">Video</span>
               </div>
             </button>
           )}

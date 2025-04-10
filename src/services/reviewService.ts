@@ -37,28 +37,32 @@ export const fetchReviews = async (sortBy: string, userId?: string): Promise<Rev
       throw new Error('Failed to load reviews');
     }
     
-    const transformedReviews: Review[] = data.map(review => ({
-      id: review.id,
-      userId: review.user_id,
-      productName: "Review",
-      rating: 5,
-      content: review.content,
-      images: review.images || [],
-      videos: review.videos || [],
-      viewsCount: review.views_count || 0, // Ensure it's never undefined
-      likesCount: review.likes_count || 0, // Ensure it's never undefined
-      createdAt: new Date(review.created_at),
-      user: review.profiles ? {
-        id: review.profiles.id || review.user_id,
-        username: review.profiles.username || 'Anonymous',
-        email: '',
-        points: 0,
-        createdAt: new Date(),
-        avatar: review.profiles.avatar
-      } : undefined
-    }));
+    if (data) {
+      const transformedReviews: Review[] = data.map(review => ({
+        id: review.id,
+        userId: review.user_id,
+        productName: "Review",
+        rating: 5,
+        content: review.content,
+        images: review.images || [],
+        videos: review.videos || [],
+        viewsCount: review.views_count || 0, // Ensure it's never undefined
+        likesCount: review.likes_count || 0, // Ensure it's never undefined
+        createdAt: new Date(review.created_at),
+        user: review.profiles ? {
+          id: review.profiles.id || review.user_id,
+          username: review.profiles.username || 'Anonymous',
+          email: '',
+          points: 0,
+          createdAt: new Date(),
+          avatar: review.profiles.avatar
+        } : undefined
+      }));
+      
+      return transformedReviews;
+    }
     
-    return transformedReviews;
+    return [];
   } catch (error) {
     console.error('Unexpected error:', error);
     throw new Error('An unexpected error occurred');
@@ -94,13 +98,13 @@ export const submitReview = async ({
   userId, 
   content, 
   images,
-  videos, // Added videos parameter
+  videos, 
   isDraft = false 
 }: { 
   userId: string; 
   content: string; 
   images: File[];
-  videos?: File | null; // Added videos parameter
+  videos?: File | null; 
   isDraft?: boolean;
 }) => {
   try {
