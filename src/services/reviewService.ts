@@ -12,6 +12,7 @@ export const fetchReviews = async (sortBy: string, userId?: string): Promise<Rev
         user_id,
         content,
         images,
+        videos,
         views_count,
         likes_count,
         created_at,
@@ -43,6 +44,7 @@ export const fetchReviews = async (sortBy: string, userId?: string): Promise<Rev
       rating: 5,
       content: review.content,
       images: review.images || [],
+      videos: review.videos || [],
       viewsCount: review.views_count || 0, // Ensure it's never undefined
       likesCount: review.likes_count || 0, // Ensure it's never undefined
       createdAt: new Date(review.created_at),
@@ -92,11 +94,13 @@ export const submitReview = async ({
   userId, 
   content, 
   images,
+  videos, // Added videos parameter
   isDraft = false 
 }: { 
   userId: string; 
   content: string; 
   images: File[];
+  videos?: File | null; // Added videos parameter
   isDraft?: boolean;
 }) => {
   try {
@@ -133,6 +137,38 @@ export const submitReview = async ({
       }
     }
     
+    // Upload video if provided
+    const videoUrls: string[] = [];
+    
+    if (videos) {
+      const fileExt = videos.name.split('.').pop();
+      const fileName = `${userId}/${Math.random().toString(36).substring(2, 15)}.${fileExt}`;
+      
+      // Upload the video to the review-videos bucket
+      const { error: uploadError } = await supabase
+        .storage
+        .from('review-videos')
+        .upload(fileName, videos, {
+          cacheControl: '3600',
+          upsert: false
+        });
+        
+      if (uploadError) {
+        console.error('Error uploading video:', uploadError);
+        throw new Error(`Failed to upload video: ${uploadError.message}`);
+      }
+      
+      // Get the public URL of the uploaded video
+      const { data: publicURL } = supabase
+        .storage
+        .from('review-videos')
+        .getPublicUrl(fileName);
+        
+      if (publicURL) {
+        videoUrls.push(publicURL.publicUrl);
+      }
+    }
+    
     // Insert review
     const { error: insertError } = await supabase
       .from('reviews')
@@ -140,7 +176,7 @@ export const submitReview = async ({
         user_id: userId,
         content,
         images: imageUrls,
-        // Initialize with 0 views count, not random value
+        videos: videoUrls,
         views_count: 0,
         likes_count: 0,
         status: isDraft ? 'DRAFT' : 'PUBLISHED'

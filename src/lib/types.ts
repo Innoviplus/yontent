@@ -15,6 +15,7 @@ export interface Review {
   rating?: number;       // Made optional
   content: string;
   images: string[];
+  videos: string[];      // Added videos array
   createdAt: Date;
   user?: User;
   viewsCount?: number;

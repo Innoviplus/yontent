@@ -67,8 +67,8 @@ const ReviewDetail = () => {
             {/* Main content - left side (2/3 width on desktop) */}
             <div className="md:col-span-2 space-y-6">
               <div className="bg-white rounded-xl overflow-hidden shadow-subtle">
-                {/* Review images */}
-                <ReviewImages images={review.images} />
+                {/* Review images and videos */}
+                <ReviewImages images={review.images} videos={review.videos} />
                 
                 <div className="p-6 md:p-8">
                   {/* User and date info */}

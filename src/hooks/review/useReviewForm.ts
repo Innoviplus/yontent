@@ -19,6 +19,12 @@ export const useReviewForm = () => {
   const [imagePreviewUrls, setImagePreviewUrls] = useState<string[]>([]);
   const [imageError, setImageError] = useState<string | null>(null);
   const [existingImages, setExistingImages] = useState<string[]>([]);
+  
+  // Added video states
+  const [selectedVideo, setSelectedVideo] = useState<File | null>(null);
+  const [videoPreviewUrl, setVideoPreviewUrl] = useState<string>('');
+  const [videoError, setVideoError] = useState<string | null>(null);
+  const [existingVideo, setExistingVideo] = useState<string>('');
 
   const form = useForm<ReviewFormValues>({
     resolver: zodResolver(reviewFormSchema),
@@ -51,10 +57,44 @@ export const useReviewForm = () => {
     setImageError(null);
   };
 
+  // Handle video selection
+  const handleVideoSelection = (files: FileList | null) => {
+    if (!files || files.length === 0) return;
+    
+    // Only allow one video
+    const videoFile = files[0];
+    
+    // Create a preview URL
+    const videoUrl = URL.createObjectURL(videoFile);
+    
+    setSelectedVideo(videoFile);
+    setVideoPreviewUrl(videoUrl);
+    setVideoError(null);
+  };
+
   // Remove image
   const removeImage = (index: number) => {
-    setSelectedImages(prev => prev.filter((_, i) => i !== index));
-    setImagePreviewUrls(prev => prev.filter((_, i) => i !== index));
+    // Release the object URL to avoid memory leaks
+    URL.revokeObjectURL(imagePreviewUrls[index]);
+    
+    // Update state
+    const newPreviews = [...imagePreviewUrls];
+    newPreviews.splice(index, 1);
+    setImagePreviewUrls(newPreviews);
+    
+    const newFiles = [...selectedImages];
+    newFiles.splice(index, 1);
+    setSelectedImages(newFiles);
+  };
+  
+  // Remove video
+  const removeVideo = () => {
+    if (videoPreviewUrl) {
+      URL.revokeObjectURL(videoPreviewUrl);
+    }
+    
+    setSelectedVideo(null);
+    setVideoPreviewUrl('');
   };
 
   // Upload images function
@@ -94,6 +134,41 @@ export const useReviewForm = () => {
     
     return imagePaths;
   };
+  
+  // Upload video function
+  const uploadVideo = async (userId: string): Promise<string[]> => {
+    const videoPaths: string[] = existingVideo ? [existingVideo] : [];
+    
+    // Upload new video if any
+    if (selectedVideo) {
+      const fileExt = selectedVideo.name.split('.').pop();
+      const fileName = `${userId}/${Math.random().toString(36).substring(2, 15)}.${fileExt}`;
+      
+      const { error: uploadError } = await supabase
+        .storage
+        .from('review-videos')
+        .upload(fileName, selectedVideo, {
+          cacheControl: '3600',
+          upsert: false
+        });
+        
+      if (uploadError) {
+        console.error('Error uploading video:', uploadError);
+        throw new Error(`Failed to upload video: ${uploadError.message}`);
+      }
+      
+      const { data: publicURL } = supabase
+        .storage
+        .from('review-videos')
+        .getPublicUrl(fileName);
+        
+      if (publicURL) {
+        videoPaths.push(publicURL.publicUrl);
+      }
+    }
+    
+    return videoPaths;
+  };
 
   return {
     form,
@@ -108,6 +183,17 @@ export const useReviewForm = () => {
     handleImageSelection,
     removeImage,
     setImageError,
-    uploadImages
+    uploadImages,
+    // Video related returns
+    selectedVideo,
+    videoPreviewUrl,
+    videoError,
+    existingVideo,
+    setExistingVideo,
+    setVideoPreviewUrl,
+    handleVideoSelection,
+    removeVideo,
+    setVideoError,
+    uploadVideo
   };
 };

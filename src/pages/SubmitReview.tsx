@@ -6,6 +6,7 @@ import Navbar from '@/components/Navbar';
 import { useSubmitReview } from '@/hooks/useSubmitReview';
 import { Skeleton } from '@/components/ui/skeleton';
 import ImageUpload from '@/components/review/ImageUpload';
+import VideoUpload from '@/components/review/VideoUpload';
 import RichTextEditor from '@/components/RichTextEditor';
 
 const SubmitReview = () => {
@@ -22,7 +23,13 @@ const SubmitReview = () => {
     handleImageSelection,
     removeImage,
     reorderImages,
-    setImageError
+    setImageError,
+    // Video related props
+    videoPreviewUrl,
+    videoError,
+    handleVideoSelection,
+    removeVideo,
+    setVideoError
   } = useSubmitReview();
 
   return (
@@ -57,6 +64,16 @@ const SubmitReview = () => {
                     onReorderImages={reorderImages}
                     error={imageError}
                     uploading={uploading}
+                  />
+                  
+                  {/* Video Upload Section */}
+                  <VideoUpload
+                    videoPreviewUrls={videoPreviewUrl}
+                    onFileSelect={handleVideoSelection}
+                    onRemoveVideo={removeVideo}
+                    error={videoError}
+                    uploading={uploading}
+                    maxDuration={45}
                   />
                   
                   {/* Review Content */}

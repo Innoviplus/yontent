@@ -356,6 +356,7 @@ export type Database = {
           status: string
           updated_at: string
           user_id: string
+          videos: string[] | null
           views_count: number
         }
         Insert: {
@@ -369,6 +370,7 @@ export type Database = {
           status?: string
           updated_at?: string
           user_id: string
+          videos?: string[] | null
           views_count?: number
         }
         Update: {
@@ -382,6 +384,7 @@ export type Database = {
           status?: string
           updated_at?: string
           user_id?: string
+          videos?: string[] | null
           views_count?: number
         }
         Relationships: [

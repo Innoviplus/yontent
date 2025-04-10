@@ -1,3 +1,4 @@
+
 import { useState, useEffect } from 'react';
 import { useSearchParams, useNavigate } from 'react-router-dom';
 import { toast } from 'sonner';
@@ -28,7 +29,18 @@ export const useSubmitReview = (onSuccess?: () => void) => {
     handleImageSelection,
     removeImage,
     setImageError,
-    uploadImages
+    uploadImages,
+    // Video related properties
+    selectedVideo,
+    videoPreviewUrl,
+    videoError,
+    existingVideo,
+    setExistingVideo,
+    setVideoPreviewUrl,
+    handleVideoSelection,
+    removeVideo,
+    setVideoError,
+    uploadVideo
   } = useReviewForm();
   
   // Fetch the existing review if we're editing
@@ -55,6 +67,12 @@ export const useSubmitReview = (onSuccess?: () => void) => {
           setExistingImages(data.images);
           setImagePreviewUrls(data.images);
         }
+        
+        // Set existing video
+        if (data.videos && data.videos.length > 0) {
+          setExistingVideo(data.videos[0]);
+          setVideoPreviewUrl(data.videos[0]);
+        }
       } catch (error) {
         console.error('Error fetching review:', error);
         toast.error('Failed to load review data');
@@ -64,7 +82,7 @@ export const useSubmitReview = (onSuccess?: () => void) => {
     };
     
     fetchReview();
-  }, [reviewId, user, form, setExistingImages, setImagePreviewUrls]);
+  }, [reviewId, user, form, setExistingImages, setImagePreviewUrls, setExistingVideo, setVideoPreviewUrl]);
   
   // Handle image reordering
   const reorderImages = (newOrder: string[]) => {
@@ -106,6 +124,7 @@ export const useSubmitReview = (onSuccess?: () => void) => {
       setUploading(true);
       
       const imagePaths = await uploadImages(user.id);
+      const videoPaths = await uploadVideo(user.id);
       
       // Update or create the review
       if (reviewId) {
@@ -115,6 +134,7 @@ export const useSubmitReview = (onSuccess?: () => void) => {
           .update({
             content: data.content,
             images: imagePaths,
+            videos: videoPaths,
             status: data.isDraft ? 'DRAFT' : 'PUBLISHED',
             updated_at: new Date().toISOString()
           })
@@ -131,6 +151,7 @@ export const useSubmitReview = (onSuccess?: () => void) => {
             user_id: user.id,
             content: data.content,
             images: imagePaths,
+            videos: videoPaths,
             status: data.isDraft ? 'DRAFT' : 'PUBLISHED'
           });
           
@@ -152,9 +173,10 @@ export const useSubmitReview = (onSuccess?: () => void) => {
     const values = form.getValues();
     form.setValue('isDraft', true);
     
-    // For drafts, allow empty content only if there are images
-    if (values.content.length === 0 && selectedImages.length === 0 && existingImages.length === 0) {
-      toast.error('Please add some content or images to save as draft');
+    // For drafts, allow empty content only if there are images or videos
+    if (values.content.length === 0 && selectedImages.length === 0 && existingImages.length === 0 
+        && !selectedVideo && !existingVideo) {
+      toast.error('Please add some content, images, or video to save as draft');
       return;
     }
     
@@ -176,6 +198,12 @@ export const useSubmitReview = (onSuccess?: () => void) => {
     handleImageSelection: handleImageSelectionWithValidation,
     removeImage,
     reorderImages,
-    setImageError
+    setImageError,
+    // Video related returns
+    videoPreviewUrl: videoPreviewUrl ? [videoPreviewUrl] : [],
+    videoError,
+    handleVideoSelection,
+    removeVideo: () => removeVideo(),
+    setVideoError
   };
 };
