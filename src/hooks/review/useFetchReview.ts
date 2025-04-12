@@ -65,6 +65,9 @@ export const useFetchReview = (id: string | undefined) => {
         
         setReview(transformedReview);
         
+        // Log the review data for debugging
+        console.log('Fetched review data:', transformedReview);
+        
         // Track the view
         trackReviewView(id);
       }
