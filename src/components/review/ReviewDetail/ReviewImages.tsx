@@ -1,7 +1,9 @@
 
-import { useState, useRef, useEffect } from 'react';
-import { Play, Maximize, Volume2 } from 'lucide-react';
+import { useState, useEffect } from 'react';
 import { cn } from '@/lib/utils';
+import VideoPlayer from './components/VideoPlayer';
+import ImageDisplay from './components/ImageDisplay';
+import ThumbnailsRow from './components/ThumbnailsRow';
 
 interface ReviewImagesProps {
   images: string[];
@@ -11,29 +13,14 @@ interface ReviewImagesProps {
 const ReviewImages = ({ images, videos = [] }: ReviewImagesProps) => {
   const [currentImageIndex, setCurrentImageIndex] = useState(0);
   const [showVideo, setShowVideo] = useState(false);
-  const videoRef = useRef<HTMLVideoElement>(null);
-  const [isPlaying, setIsPlaying] = useState(false);
-  const [videoVolume, setVideoVolume] = useState(1);
   
   const hasMedia = images.length > 0 || videos.length > 0;
   const mediaCount = images.length + videos.length;
   
-  // Reset video state when component unmounts or when showVideo changes
+  // Reset to first image when images array changes
   useEffect(() => {
-    return () => {
-      if (videoRef.current) {
-        videoRef.current.pause();
-        setIsPlaying(false);
-      }
-    };
-  }, [showVideo]);
-
-  // Update video volume when videoVolume state changes
-  useEffect(() => {
-    if (videoRef.current) {
-      videoRef.current.volume = videoVolume;
-    }
-  }, [videoVolume]);
+    setCurrentImageIndex(0);
+  }, [images]);
 
   // If no images, display a placeholder
   if (!hasMedia) {
@@ -44,95 +31,13 @@ const ReviewImages = ({ images, videos = [] }: ReviewImagesProps) => {
     );
   }
   
-  const togglePlayPause = () => {
-    if (!videoRef.current) return;
-    
-    if (isPlaying) {
-      videoRef.current.pause();
-    } else {
-      videoRef.current.play().catch(err => {
-        console.error("Error playing video:", err);
-      });
-    }
-    
-    setIsPlaying(!isPlaying);
+  const handleImageSelect = (index: number) => {
+    setShowVideo(false);
+    setCurrentImageIndex(index);
   };
-
-  // Video player component with better controls
-  const VideoPlayer = () => {
-    if (!videos.length) return null;
-    
-    return (
-      <div className="relative w-full h-full">
-        <video 
-          ref={videoRef}
-          src={videos[0]} 
-          className="w-full h-full object-contain"
-          playsInline
-          onClick={togglePlayPause}
-          onPlay={() => setIsPlaying(true)}
-          onPause={() => setIsPlaying(false)}
-          onEnded={() => setIsPlaying(false)}
-          controlsList="nodownload"
-        />
-        
-        {/* Custom control overlay */}
-        <div className="absolute bottom-0 left-0 right-0 bg-gradient-to-t from-black/70 to-transparent p-4">
-          <div className="flex items-center justify-between">
-            {/* Play/Pause button */}
-            <button 
-              onClick={togglePlayPause}
-              className="text-white p-2 rounded-full hover:bg-white/20 transition-colors"
-              aria-label={isPlaying ? "Pause" : "Play"}
-              type="button"
-            >
-              {isPlaying ? (
-                <div className="w-4 h-4 relative">
-                  <div className="absolute bg-white w-1 h-4 rounded-sm"></div>
-                  <div className="absolute bg-white w-1 h-4 rounded-sm ml-3"></div>
-                </div>
-              ) : (
-                <Play className="h-4 w-4 fill-white" />
-              )}
-            </button>
-            
-            {/* Volume control */}
-            <div className="hidden sm:flex items-center">
-              <Volume2 className="h-4 w-4 text-white mr-2" />
-              <input 
-                type="range" 
-                min="0" 
-                max="1" 
-                step="0.1" 
-                value={videoVolume}
-                className="w-16 h-1 cursor-pointer"
-                onChange={(e) => {
-                  const newVolume = parseFloat(e.target.value);
-                  setVideoVolume(newVolume);
-                  if (videoRef.current) {
-                    videoRef.current.volume = newVolume;
-                  }
-                }}
-              />
-            </div>
-            
-            {/* Fullscreen button */}
-            <button 
-              onClick={() => {
-                if (videoRef.current) {
-                  videoRef.current.requestFullscreen();
-                }
-              }}
-              className="text-white p-2 rounded-full hover:bg-white/20 transition-colors"
-              aria-label="Fullscreen"
-              type="button"
-            >
-              <Maximize className="h-4 w-4" />
-            </button>
-          </div>
-        </div>
-      </div>
-    );
+  
+  const handleVideoSelect = () => {
+    setShowVideo(true);
   };
 
   return (
@@ -140,73 +45,33 @@ const ReviewImages = ({ images, videos = [] }: ReviewImagesProps) => {
       {/* Main Image or Video */}
       <div className="relative h-[300px] md:h-[400px] bg-gray-100">
         {showVideo && videos.length > 0 ? (
-          <VideoPlayer />
+          <VideoPlayer videoUrl={videos[0]} />
         ) : (
-          <img 
-            src={images[currentImageIndex]} 
-            alt={`Review image ${currentImageIndex + 1}`}
-            className="w-full h-full object-contain"
+          <ImageDisplay 
+            imageSrc={images[currentImageIndex]} 
+            imageIndex={currentImageIndex}
+            totalImages={images.length}
           />
         )}
         
-        {/* Media Counter */}
-        {mediaCount > 1 && (
+        {/* Media Counter for Video */}
+        {showVideo && mediaCount > 1 && (
           <div className="absolute bottom-4 right-4 bg-black/60 text-white text-xs py-1 px-2 rounded-full z-10">
-            {showVideo ? 'Video' : `${currentImageIndex + 1} / ${images.length}`}
+            Video
           </div>
         )}
       </div>
       
       {/* Thumbnail Row */}
       {mediaCount > 1 && (
-        <div className="flex overflow-x-auto gap-2 p-2 bg-gray-50 border-t border-gray-200">
-          {/* Video Thumbnail */}
-          {videos.length > 0 && (
-            <button 
-              onClick={() => {
-                setShowVideo(true);
-                if (videoRef.current) {
-                  videoRef.current.currentTime = 0;
-                  setIsPlaying(false);
-                }
-              }}
-              className={cn(
-                "relative flex-shrink-0 w-16 h-16 rounded overflow-hidden",
-                showVideo ? "ring-2 ring-brand-teal" : ""
-              )}
-              type="button"
-            >
-              <div className="absolute inset-0 bg-black/30 flex items-center justify-center">
-                <Play className="h-8 w-8 text-white" />
-              </div>
-              <div className="w-full h-full bg-gray-300 flex items-center justify-center">
-                <span className="text-xs text-white bg-black/50 px-1 py-0.5 rounded">Video</span>
-              </div>
-            </button>
-          )}
-          
-          {/* Image Thumbnails */}
-          {images.map((image, index) => (
-            <button
-              key={index}
-              onClick={() => {
-                setShowVideo(false);
-                setCurrentImageIndex(index);
-              }}
-              className={cn(
-                "flex-shrink-0 w-16 h-16 rounded overflow-hidden",
-                !showVideo && index === currentImageIndex ? "ring-2 ring-brand-teal" : ""
-              )}
-              type="button"
-            >
-              <img 
-                src={image} 
-                alt={`Thumbnail ${index + 1}`}
-                className="w-full h-full object-cover"
-              />
-            </button>
-          ))}
-        </div>
+        <ThumbnailsRow
+          images={images}
+          videos={videos}
+          currentImageIndex={currentImageIndex}
+          showVideo={showVideo}
+          onVideoSelect={handleVideoSelect}
+          onImageSelect={handleImageSelect}
+        />
       )}
     </div>
   );
