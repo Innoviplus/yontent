@@ -166,8 +166,8 @@ const ReviewImages = ({ images, videos = [] }: ReviewImagesProps) => {
           />
         )}
         
-        {/* Navigation Arrows - Only show if there are multiple media items */}
-        {mediaCount > 1 && (
+        {/* Navigation Arrows - Only show if there are multiple media items AND we're not showing a video */}
+        {mediaCount > 1 && !showVideo && (
           <div className="absolute top-0 left-0 right-0 bottom-0 flex items-center justify-between px-4">
             <button 
               onClick={() => navigateMedia('prev')} 
