@@ -1,7 +1,6 @@
 
 import { useState, useRef, useEffect } from 'react';
-import { ChevronLeft, ChevronRight, Play, Maximize, Volume2 } from 'lucide-react';
-import { AspectRatio } from '@/components/ui/aspect-ratio';
+import { Play, Maximize, Volume2 } from 'lucide-react';
 import { cn } from '@/lib/utils';
 
 interface ReviewImagesProps {
@@ -14,6 +13,7 @@ const ReviewImages = ({ images, videos = [] }: ReviewImagesProps) => {
   const [showVideo, setShowVideo] = useState(false);
   const videoRef = useRef<HTMLVideoElement>(null);
   const [isPlaying, setIsPlaying] = useState(false);
+  const [videoVolume, setVideoVolume] = useState(1);
   
   const hasMedia = images.length > 0 || videos.length > 0;
   const mediaCount = images.length + videos.length;
@@ -28,6 +28,13 @@ const ReviewImages = ({ images, videos = [] }: ReviewImagesProps) => {
     };
   }, [showVideo]);
 
+  // Update video volume when videoVolume state changes
+  useEffect(() => {
+    if (videoRef.current) {
+      videoRef.current.volume = videoVolume;
+    }
+  }, [videoVolume]);
+
   // If no images, display a placeholder
   if (!hasMedia) {
     return (
@@ -37,34 +44,6 @@ const ReviewImages = ({ images, videos = [] }: ReviewImagesProps) => {
     );
   }
   
-  const navigateMedia = (direction: 'prev' | 'next') => {
-    if (direction === 'prev') {
-      if (showVideo) {
-        // If showing video, go to last image
-        setShowVideo(false);
-        setCurrentImageIndex(images.length - 1);
-      } else if (currentImageIndex > 0) {
-        // Go to previous image
-        setCurrentImageIndex(prev => prev - 1);
-      } else if (videos.length > 0) {
-        // If at first image and video exists, go to video
-        setShowVideo(true);
-      }
-    } else {
-      if (showVideo) {
-        // If showing video, go to first image
-        setShowVideo(false);
-        setCurrentImageIndex(0);
-      } else if (currentImageIndex < images.length - 1) {
-        // Go to next image
-        setCurrentImageIndex(prev => prev + 1);
-      } else if (videos.length > 0) {
-        // If at last image and video exists, go to video
-        setShowVideo(true);
-      }
-    }
-  };
-
   const togglePlayPause = () => {
     if (!videoRef.current) return;
     
@@ -105,6 +84,7 @@ const ReviewImages = ({ images, videos = [] }: ReviewImagesProps) => {
               onClick={togglePlayPause}
               className="text-white p-2 rounded-full hover:bg-white/20 transition-colors"
               aria-label={isPlaying ? "Pause" : "Play"}
+              type="button"
             >
               {isPlaying ? (
                 <div className="w-4 h-4 relative">
@@ -124,11 +104,13 @@ const ReviewImages = ({ images, videos = [] }: ReviewImagesProps) => {
                 min="0" 
                 max="1" 
                 step="0.1" 
-                defaultValue="1"
+                value={videoVolume}
                 className="w-16 h-1 cursor-pointer"
                 onChange={(e) => {
+                  const newVolume = parseFloat(e.target.value);
+                  setVideoVolume(newVolume);
                   if (videoRef.current) {
-                    videoRef.current.volume = parseFloat(e.target.value);
+                    videoRef.current.volume = newVolume;
                   }
                 }}
               />
@@ -143,6 +125,7 @@ const ReviewImages = ({ images, videos = [] }: ReviewImagesProps) => {
               }}
               className="text-white p-2 rounded-full hover:bg-white/20 transition-colors"
               aria-label="Fullscreen"
+              type="button"
             >
               <Maximize className="h-4 w-4" />
             </button>
@@ -164,27 +147,6 @@ const ReviewImages = ({ images, videos = [] }: ReviewImagesProps) => {
             alt={`Review image ${currentImageIndex + 1}`}
             className="w-full h-full object-contain"
           />
-        )}
-        
-        {/* Navigation Arrows - Only show if there are multiple media items AND we're not showing a video */}
-        {mediaCount > 1 && !showVideo && (
-          <div className="absolute top-0 left-0 right-0 bottom-0 flex items-center justify-between px-4">
-            <button 
-              onClick={() => navigateMedia('prev')} 
-              className="bg-white/80 hover:bg-white rounded-full p-2 shadow-md z-10"
-              aria-label="Previous image"
-            >
-              <ChevronLeft className="h-5 w-5" />
-            </button>
-            
-            <button 
-              onClick={() => navigateMedia('next')} 
-              className="bg-white/80 hover:bg-white rounded-full p-2 shadow-md z-10"
-              aria-label="Next image"
-            >
-              <ChevronRight className="h-5 w-5" />
-            </button>
-          </div>
         )}
         
         {/* Media Counter */}
@@ -212,6 +174,7 @@ const ReviewImages = ({ images, videos = [] }: ReviewImagesProps) => {
                 "relative flex-shrink-0 w-16 h-16 rounded overflow-hidden",
                 showVideo ? "ring-2 ring-brand-teal" : ""
               )}
+              type="button"
             >
               <div className="absolute inset-0 bg-black/30 flex items-center justify-center">
                 <Play className="h-8 w-8 text-white" />
@@ -234,6 +197,7 @@ const ReviewImages = ({ images, videos = [] }: ReviewImagesProps) => {
                 "flex-shrink-0 w-16 h-16 rounded overflow-hidden",
                 !showVideo && index === currentImageIndex ? "ring-2 ring-brand-teal" : ""
               )}
+              type="button"
             >
               <img 
                 src={image} 
