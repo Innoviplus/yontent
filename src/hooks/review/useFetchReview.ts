@@ -3,7 +3,7 @@ import { useState, useEffect } from 'react';
 import { Review } from '@/lib/types';
 import { supabase } from '@/integrations/supabase/client';
 import { toast } from 'sonner';
-import { trackReviewView } from '@/services/reviewService';
+import { trackReviewView } from '@/services/review';
 
 export const useFetchReview = (id: string | undefined) => {
   const [review, setReview] = useState<Review | null>(null);

@@ -1,7 +1,7 @@
 
 import { useState } from 'react';
 import { useQuery } from '@tanstack/react-query';
-import { fetchReviews } from '@/services/reviewService';
+import { fetchReviews } from '@/services/review';
 
 export type SortOption = 'recent' | 'popular' | 'trending';
 
