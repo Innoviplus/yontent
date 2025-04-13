@@ -20,6 +20,7 @@ const ReviewImages = ({ images, videos = [] }: ReviewImagesProps) => {
   // Reset to first image when images array changes
   useEffect(() => {
     setCurrentImageIndex(0);
+    setShowVideo(false);
   }, [images]);
 
   // If no images, display a placeholder

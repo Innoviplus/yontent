@@ -12,6 +12,7 @@ const VideoPlayer = ({ videoUrl, onPlay, onPause }: VideoPlayerProps) => {
   const videoRef = useRef<HTMLVideoElement>(null);
   const [isPlaying, setIsPlaying] = useState(false);
   const [videoVolume, setVideoVolume] = useState(1);
+  const [thumbnailLoaded, setThumbnailLoaded] = useState(false);
   
   // Update video volume when videoVolume state changes
   useEffect(() => {
@@ -19,6 +20,23 @@ const VideoPlayer = ({ videoUrl, onPlay, onPause }: VideoPlayerProps) => {
       videoRef.current.volume = videoVolume;
     }
   }, [videoVolume]);
+  
+  // Load video metadata to get thumbnail
+  useEffect(() => {
+    if (videoRef.current) {
+      const handleMetadataLoaded = () => {
+        setThumbnailLoaded(true);
+      };
+      
+      videoRef.current.addEventListener('loadedmetadata', handleMetadataLoaded);
+      
+      return () => {
+        if (videoRef.current) {
+          videoRef.current.removeEventListener('loadedmetadata', handleMetadataLoaded);
+        }
+      };
+    }
+  }, []);
   
   const togglePlayPause = () => {
     if (!videoRef.current) return;
@@ -43,12 +61,24 @@ const VideoPlayer = ({ videoUrl, onPlay, onPause }: VideoPlayerProps) => {
         src={videoUrl} 
         className="w-full h-full object-contain"
         playsInline
+        preload="metadata"
+        poster={thumbnailLoaded ? undefined : undefined}
         onClick={togglePlayPause}
         onPlay={() => setIsPlaying(true)}
         onPause={() => setIsPlaying(false)}
         onEnded={() => setIsPlaying(false)}
         controlsList="nodownload"
       />
+      
+      {/* Play overlay for thumbnail */}
+      {!isPlaying && (
+        <div className="absolute inset-0 bg-black/20 flex items-center justify-center cursor-pointer"
+             onClick={togglePlayPause}>
+          <div className="bg-black/50 rounded-full p-4">
+            <Play fill="white" className="h-8 w-8 text-white" />
+          </div>
+        </div>
+      )}
       
       {/* Custom control overlay */}
       <div className="absolute bottom-0 left-0 right-0 bg-gradient-to-t from-black/70 to-transparent p-4">
