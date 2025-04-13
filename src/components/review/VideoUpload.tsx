@@ -26,6 +26,7 @@ const VideoUpload = ({
   const [validating, setValidating] = useState(false);
   const [validationProgress, setValidationProgress] = useState(0);
   const [validationError, setValidationError] = useState<string | null>(null);
+  const [thumbnailUrl, setThumbnailUrl] = useState<string | null>(null);
 
   const handleFileChange = async (e: React.ChangeEvent<HTMLInputElement>) => {
     if (!e.target.files || e.target.files.length === 0) return;
@@ -53,7 +54,7 @@ const VideoUpload = ({
       video.preload = 'metadata';
       
       video.onloadedmetadata = () => {
-        setValidationProgress(100);
+        setValidationProgress(50);
         
         if (video.duration > maxDuration) {
           setValidationError(`Video must be ${maxDuration} seconds or less. Selected video is ${Math.round(video.duration)} seconds.`);
@@ -61,10 +62,38 @@ const VideoUpload = ({
           return;
         }
         
-        // Video validation passed
-        setValidationError(null);
-        setValidating(false);
-        onFileSelect(e.target.files);
+        // Generate thumbnail from video
+        video.currentTime = 0.1; // Set to slightly after start for better thumbnail
+        
+        video.onseeked = () => {
+          try {
+            // Create canvas and draw video frame
+            const canvas = document.createElement('canvas');
+            canvas.width = video.videoWidth;
+            canvas.height = video.videoHeight;
+            const ctx = canvas.getContext('2d');
+            
+            if (ctx) {
+              ctx.drawImage(video, 0, 0, canvas.width, canvas.height);
+              const thumbnailDataUrl = canvas.toDataURL('image/jpeg');
+              setThumbnailUrl(thumbnailDataUrl);
+            }
+            
+            // Video validation passed
+            setValidationProgress(100);
+            setValidationError(null);
+            setValidating(false);
+            onFileSelect(e.target.files);
+            
+          } catch (err) {
+            console.error('Error generating thumbnail:', err);
+            setValidationError('Could not generate video preview');
+            setValidating(false);
+          }
+        };
+        
+        // Trigger seeking to generate thumbnail
+        video.currentTime = 0.1;
       };
       
       video.onerror = () => {
@@ -74,7 +103,7 @@ const VideoUpload = ({
       
       // Set the video source to the file
       video.src = URL.createObjectURL(file);
-      setValidationProgress(50);
+      setValidationProgress(30);
     } catch (error) {
       console.error('Video validation error:', error);
       setValidationError('Error validating video');
@@ -147,6 +176,8 @@ const VideoUpload = ({
             <video 
               src={videoPreviewUrls[0]} 
               controls 
+              poster={thumbnailUrl || undefined}
+              preload="metadata"
               className="w-full h-auto rounded-lg border border-gray-200"
             />
             <div className="absolute top-2 right-2 flex space-x-2">

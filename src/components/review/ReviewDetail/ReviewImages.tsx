@@ -15,6 +15,7 @@ interface ReviewImagesProps {
 const ReviewImages = ({ images, videos = [] }: ReviewImagesProps) => {
   const [currentImageIndex, setCurrentImageIndex] = useState(0);
   const [showVideo, setShowVideo] = useState(videos.length > 0);
+  const [videoThumbnail, setVideoThumbnail] = useState<string | null>(null);
   const isMobile = useIsMobile();
   
   const hasMedia = images.length > 0 || videos.length > 0;
@@ -25,6 +26,43 @@ const ReviewImages = ({ images, videos = [] }: ReviewImagesProps) => {
     setCurrentImageIndex(0);
     setShowVideo(videos.length > 0);
   }, [images, videos]);
+  
+  // Generate a thumbnail for the video if it exists
+  useEffect(() => {
+    if (videos.length > 0) {
+      const videoEl = document.createElement('video');
+      videoEl.crossOrigin = 'anonymous';
+      videoEl.src = videos[0];
+      videoEl.preload = 'metadata';
+      
+      // When the video metadata is loaded, seek to a frame and create a thumbnail
+      videoEl.onloadedmetadata = () => {
+        // Set to a slight offset from the beginning for better thumbnails
+        videoEl.currentTime = 0.5;
+        
+        videoEl.onseeked = () => {
+          try {
+            // Create a canvas and draw the video frame
+            const canvas = document.createElement('canvas');
+            canvas.width = videoEl.videoWidth;
+            canvas.height = videoEl.videoHeight;
+            const ctx = canvas.getContext('2d');
+            
+            if (ctx) {
+              ctx.drawImage(videoEl, 0, 0, canvas.width, canvas.height);
+              setVideoThumbnail(canvas.toDataURL('image/jpeg'));
+            }
+          } catch (err) {
+            console.error('Error generating video thumbnail:', err);
+          }
+        };
+      };
+      
+      videoEl.onerror = () => {
+        console.error('Error loading video for thumbnail generation');
+      };
+    }
+  }, [videos]);
 
   // If no images, display a placeholder
   if (!hasMedia) {
@@ -64,6 +102,7 @@ const ReviewImages = ({ images, videos = [] }: ReviewImagesProps) => {
         <ThumbnailsRow
           images={images}
           videos={videos}
+          videoThumbnail={videoThumbnail}
           currentImageIndex={currentImageIndex}
           showVideo={showVideo}
           onVideoSelect={handleVideoSelect}

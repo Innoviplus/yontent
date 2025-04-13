@@ -17,7 +17,7 @@ export const submitReview = async ({
   isDraft?: boolean;
 }) => {
   try {
-    // Upload images
+    // Upload and compress images
     const imageUrls: string[] = [];
     
     for (const image of images) {
@@ -25,7 +25,7 @@ export const submitReview = async ({
       imageUrls.push(imageUrl);
     }
     
-    // Upload video if provided
+    // Upload and compress video if provided
     const videoUrls: string[] = [];
     
     if (videos) {

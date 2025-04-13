@@ -6,6 +6,7 @@ import { cn } from '@/lib/utils';
 interface ThumbnailsRowProps {
   images: string[];
   videos: string[];
+  videoThumbnail: string | null;
   currentImageIndex: number;
   showVideo: boolean;
   onVideoSelect: () => void;
@@ -15,6 +16,7 @@ interface ThumbnailsRowProps {
 const ThumbnailsRow = ({
   images,
   videos,
+  videoThumbnail,
   currentImageIndex,
   showVideo,
   onVideoSelect,
@@ -35,15 +37,23 @@ const ThumbnailsRow = ({
           <div className="absolute inset-0 flex items-center justify-center z-10">
             <Play className="h-6 w-6 text-white fill-white" />
           </div>
-          {/* Video thumbnail preview - using the video itself */}
+          {/* Video thumbnail preview */}
           <div className="w-full h-full bg-gray-200">
-            <video 
-              src={videos[0]} 
-              className="w-full h-full object-cover" 
-              preload="metadata"
-              muted
-              playsInline
-            />
+            {videoThumbnail ? (
+              <img 
+                src={videoThumbnail} 
+                alt="Video thumbnail" 
+                className="w-full h-full object-cover"
+              />
+            ) : (
+              <video 
+                src={videos[0]} 
+                className="w-full h-full object-cover" 
+                preload="metadata"
+                muted
+                playsInline
+              />
+            )}
           </div>
         </button>
       )}

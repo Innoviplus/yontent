@@ -1,231 +1,182 @@
 
-import { useRef, useState, useEffect } from 'react';
-import { Play, Pause, Maximize, Volume2, RotateCcw, RotateCw } from 'lucide-react';
-import { Slider } from '@/components/ui/slider';
-import { useIsMobile } from '@/hooks/use-mobile';
+import { useState, useRef, useEffect } from 'react';
+import { Play, Pause, Volume2, VolumeX, Maximize } from 'lucide-react';
 
 interface VideoPlayerProps {
   videoUrl: string;
-  onPlay?: () => void;
-  onPause?: () => void;
 }
 
-const VideoPlayer = ({ videoUrl, onPlay, onPause }: VideoPlayerProps) => {
-  const videoRef = useRef<HTMLVideoElement>(null);
+const VideoPlayer = ({ videoUrl }: VideoPlayerProps) => {
   const [isPlaying, setIsPlaying] = useState(false);
+  const [isMuted, setIsMuted] = useState(false);
   const [currentTime, setCurrentTime] = useState(0);
   const [duration, setDuration] = useState(0);
-  const [videoVolume, setVideoVolume] = useState(1);
-  const [isSeeking, setIsSeeking] = useState(false);
-  const [loaded, setLoaded] = useState(false);
-  const isMobile = useIsMobile();
-  
-  // Update video volume when videoVolume state changes
-  useEffect(() => {
-    if (videoRef.current) {
-      videoRef.current.volume = videoVolume;
-    }
-  }, [videoVolume]);
-  
-  // Set up event listeners for video
+  const [isControlsVisible, setIsControlsVisible] = useState(true);
+  const [isBuffering, setIsBuffering] = useState(false);
+  const videoRef = useRef<HTMLVideoElement>(null);
+  const controlsTimeoutRef = useRef<NodeJS.Timeout | null>(null);
+
+  // Initialize video and add event listeners
   useEffect(() => {
     const video = videoRef.current;
     if (!video) return;
+
+    const onPlay = () => setIsPlaying(true);
+    const onPause = () => setIsPlaying(false);
+    const onTimeUpdate = () => setCurrentTime(video.currentTime);
+    const onLoadedMetadata = () => setDuration(video.duration);
+    const onWaiting = () => setIsBuffering(true);
+    const onPlaying = () => setIsBuffering(false);
     
-    const handleTimeUpdate = () => {
-      if (!isSeeking && video.currentTime) {
-        setCurrentTime(video.currentTime);
-      }
-    };
-    
-    const handleDurationChange = () => {
-      setDuration(video.duration);
-    };
-    
-    const handleLoadedData = () => {
-      setLoaded(true);
-      setDuration(video.duration);
-    };
-    
-    const handleEnded = () => {
-      setIsPlaying(false);
-    };
-    
-    video.addEventListener('timeupdate', handleTimeUpdate);
-    video.addEventListener('durationchange', handleDurationChange);
-    video.addEventListener('loadeddata', handleLoadedData);
-    video.addEventListener('ended', handleEnded);
+    video.addEventListener('play', onPlay);
+    video.addEventListener('pause', onPause);
+    video.addEventListener('timeupdate', onTimeUpdate);
+    video.addEventListener('loadedmetadata', onLoadedMetadata);
+    video.addEventListener('waiting', onWaiting);
+    video.addEventListener('playing', onPlaying);
     
     return () => {
-      video.removeEventListener('timeupdate', handleTimeUpdate);
-      video.removeEventListener('durationchange', handleDurationChange);
-      video.removeEventListener('loadeddata', handleLoadedData);
-      video.removeEventListener('ended', handleEnded);
+      video.removeEventListener('play', onPlay);
+      video.removeEventListener('pause', onPause);
+      video.removeEventListener('timeupdate', onTimeUpdate);
+      video.removeEventListener('loadedmetadata', onLoadedMetadata);
+      video.removeEventListener('waiting', onWaiting);
+      video.removeEventListener('playing', onPlaying);
     };
-  }, [isSeeking]);
-  
-  const togglePlayPause = () => {
-    if (!videoRef.current) return;
+  }, [videoUrl]);
+
+  // Show/hide controls based on user interaction
+  const showControls = () => {
+    setIsControlsVisible(true);
     
-    if (isPlaying) {
-      videoRef.current.pause();
-      if (onPause) onPause();
-    } else {
-      videoRef.current.play().catch(err => {
-        console.error("Error playing video:", err);
-      });
-      if (onPlay) onPlay();
+    if (controlsTimeoutRef.current) {
+      clearTimeout(controlsTimeoutRef.current);
     }
     
-    setIsPlaying(!isPlaying);
+    controlsTimeoutRef.current = setTimeout(() => {
+      if (isPlaying) {
+        setIsControlsVisible(false);
+      }
+    }, 3000);
   };
-  
-  const handleSeek = (value: number[]) => {
-    if (!videoRef.current) return;
+
+  const togglePlayPause = () => {
+    const video = videoRef.current;
+    if (!video) return;
     
-    const newTime = value[0];
-    setCurrentTime(newTime);
-    videoRef.current.currentTime = newTime;
+    if (video.paused) {
+      video.play();
+    } else {
+      video.pause();
+    }
   };
-  
-  const skip = (amount: number) => {
-    if (!videoRef.current) return;
+
+  const toggleMute = () => {
+    const video = videoRef.current;
+    if (!video) return;
     
-    const newTime = Math.max(0, Math.min(duration, currentTime + amount));
-    videoRef.current.currentTime = newTime;
+    video.muted = !video.muted;
+    setIsMuted(video.muted);
+  };
+
+  const handleSeek = (e: React.ChangeEvent<HTMLInputElement>) => {
+    const video = videoRef.current;
+    if (!video) return;
+    
+    const newTime = parseFloat(e.target.value);
+    video.currentTime = newTime;
     setCurrentTime(newTime);
   };
-  
-  const formatTime = (timeInSeconds: number) => {
-    const minutes = Math.floor(timeInSeconds / 60);
-    const seconds = Math.floor(timeInSeconds % 60);
+
+  const enterFullscreen = () => {
+    const video = videoRef.current;
+    if (!video) return;
+    
+    if (video.requestFullscreen) {
+      video.requestFullscreen();
+    } 
+  };
+
+  // Format time in MM:SS
+  const formatTime = (time: number) => {
+    const minutes = Math.floor(time / 60);
+    const seconds = Math.floor(time % 60);
     return `${minutes}:${seconds < 10 ? '0' : ''}${seconds}`;
   };
-  
-  const handleFullScreen = () => {
-    const videoContainer = videoRef.current?.parentElement;
-    if (!videoContainer) return;
-    
-    if (document.fullscreenElement) {
-      document.exitFullscreen().catch(err => {
-        console.error("Error exiting fullscreen:", err);
-      });
-    } else {
-      videoContainer.requestFullscreen().catch(err => {
-        console.error("Error entering fullscreen:", err);
-      });
-    }
-  };
-  
+
   return (
-    <div className="relative w-full h-full flex items-center justify-center">
-      {/* Video element with poster */}
-      <video 
+    <div 
+      className="relative w-full h-full"
+      onMouseMove={showControls}
+      onTouchStart={showControls}
+    >
+      <video
         ref={videoRef}
-        src={videoUrl} 
-        className="w-full h-full object-contain"
+        src={videoUrl}
+        className="w-full h-full object-contain bg-black"
         playsInline
         preload="metadata"
-        poster={videoUrl + '#t=0.1'} // Use the video itself as a poster at 0.1 seconds
         onClick={togglePlayPause}
-        onPlay={() => setIsPlaying(true)}
-        onPause={() => setIsPlaying(false)}
-        controlsList="nodownload"
       />
       
-      {/* Play overlay for thumbnail */}
-      {!isPlaying && (
-        <div className="absolute inset-0 bg-black/20 flex items-center justify-center cursor-pointer"
-             onClick={togglePlayPause}>
-          <div className="bg-black/50 rounded-full p-4">
-            <Play fill="white" className="h-8 w-8 text-white" />
+      {/* Video controls overlay */}
+      {isControlsVisible && (
+        <div className="absolute bottom-0 left-0 right-0 bg-gradient-to-t from-black/70 to-transparent p-3 transition-opacity">
+          {/* Timeline slider */}
+          <div className="flex items-center w-full mb-2">
+            <span className="text-white text-xs mr-2">{formatTime(currentTime)}</span>
+            <input
+              type="range"
+              className="w-full h-1 rounded-full bg-gray-200 appearance-none cursor-pointer accent-white"
+              min="0"
+              max={duration || 100}
+              step="0.1"
+              value={currentTime}
+              onChange={handleSeek}
+            />
+            <span className="text-white text-xs ml-2">{formatTime(duration)}</span>
           </div>
-        </div>
-      )}
-      
-      {/* Custom control overlay */}
-      <div className="absolute bottom-0 left-0 right-0 bg-gradient-to-t from-black/70 to-transparent py-2 px-4">
-        {/* Timeline control */}
-        <div className="w-full mb-2 flex items-center gap-2">
-          <span className="text-white text-xs">{formatTime(currentTime)}</span>
-          <Slider
-            value={[currentTime]}
-            min={0}
-            max={duration || 100}
-            step={0.1}
-            onValueChange={handleSeek}
-            onValueCommit={() => setIsSeeking(false)}
-            className="flex-1"
-          />
-          <span className="text-white text-xs">{formatTime(duration)}</span>
-        </div>
-        
-        <div className="flex items-center justify-between">
-          <div className="flex items-center gap-2">
-            {/* Skip backward button */}
+          
+          {/* Control buttons */}
+          <div className="flex items-center justify-between">
             <button 
-              onClick={() => skip(-10)}
-              className="text-white p-1.5 rounded-full hover:bg-white/20 transition-colors hidden md:block"
-              aria-label="Skip backward 10 seconds"
-              type="button"
-            >
-              <RotateCcw className="h-3.5 w-3.5" />
-            </button>
-            
-            {/* Play/Pause button */}
-            <button 
+              className="text-white p-1"
               onClick={togglePlayPause}
-              className="text-white p-2 rounded-full hover:bg-white/20 transition-colors"
-              aria-label={isPlaying ? "Pause" : "Play"}
               type="button"
             >
-              {isPlaying ? (
-                <Pause className="h-4 w-4" />
+              {isBuffering ? (
+                <div className="w-6 h-6 border-2 border-white border-t-transparent rounded-full animate-spin" />
+              ) : isPlaying ? (
+                <Pause className="w-6 h-6" />
               ) : (
-                <Play className="h-4 w-4 fill-white" />
+                <Play className="w-6 h-6" />
               )}
             </button>
             
-            {/* Skip forward button */}
-            <button 
-              onClick={() => skip(10)}
-              className="text-white p-1.5 rounded-full hover:bg-white/20 transition-colors hidden md:block"
-              aria-label="Skip forward 10 seconds"
-              type="button"
-            >
-              <RotateCw className="h-3.5 w-3.5" />
-            </button>
-          </div>
-          
-          <div className="flex items-center gap-2">
-            {/* Volume control */}
-            <div className="hidden md:flex items-center gap-2">
-              <Volume2 className="h-4 w-4 text-white" />
-              <Slider 
-                value={[videoVolume * 100]}
-                min={0}
-                max={100}
-                step={5}
-                className="w-24"
-                onValueChange={(value) => {
-                  const newVolume = value[0] / 100;
-                  setVideoVolume(newVolume);
-                }}
-              />
+            <div className="flex items-center">
+              <button 
+                className="text-white p-1"
+                onClick={toggleMute}
+                type="button"
+              >
+                {isMuted ? (
+                  <VolumeX className="w-5 h-5" />
+                ) : (
+                  <Volume2 className="w-5 h-5" />
+                )}
+              </button>
+              
+              <button 
+                className="text-white p-1"
+                onClick={enterFullscreen}
+                type="button"
+              >
+                <Maximize className="w-5 h-5" />
+              </button>
             </div>
-            
-            {/* Fullscreen button */}
-            <button 
-              onClick={handleFullScreen}
-              className="text-white p-2 rounded-full hover:bg-white/20 transition-colors"
-              aria-label="Fullscreen"
-              type="button"
-            >
-              <Maximize className="h-4 w-4" />
-            </button>
           </div>
         </div>
-      </div>
+      )}
     </div>
   );
 };
