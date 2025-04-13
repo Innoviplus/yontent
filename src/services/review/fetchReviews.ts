@@ -1,10 +1,21 @@
 
 import { supabase } from '@/integrations/supabase/client';
 import { Review } from '@/lib/types';
-import { toast } from 'sonner';
+
+// Cache for review data
+const reviewsCache = new Map<string, { data: Review[], timestamp: number }>();
+const CACHE_EXPIRY = 5 * 60 * 1000; // 5 minutes
 
 export const fetchReviews = async (sortBy: string, userId?: string): Promise<Review[]> => {
   try {
+    const cacheKey = `${sortBy}-${userId || 'no-user'}`;
+    const cachedResult = reviewsCache.get(cacheKey);
+    
+    // Return cached data if it exists and hasn't expired
+    if (cachedResult && (Date.now() - cachedResult.timestamp) < CACHE_EXPIRY) {
+      return cachedResult.data;
+    }
+    
     let query = supabase
       .from('reviews')
       .select(`
@@ -22,9 +33,14 @@ export const fetchReviews = async (sortBy: string, userId?: string): Promise<Rev
           avatar
         )
       `)
-      .eq('status', 'PUBLISHED'); // Only fetch PUBLISHED reviews
+      .eq('status', 'PUBLISHED');
 
     if (sortBy === 'recent') {
+      query = query.order('created_at', { ascending: false });
+    } else if (sortBy === 'popular') {
+      query = query.order('views_count', { ascending: false });
+    } else if (sortBy === 'trending') {
+      // Trending is a combination of recent and popularity
       query = query.order('created_at', { ascending: false });
     } else if (sortBy === 'relevant' && userId) {
       query = query.order('created_at', { ascending: false });
@@ -46,8 +62,8 @@ export const fetchReviews = async (sortBy: string, userId?: string): Promise<Rev
         content: review.content,
         images: review.images || [],
         videos: review.videos || [],
-        viewsCount: review.views_count || 0, // Ensure it's never undefined
-        likesCount: review.likes_count || 0, // Ensure it's never undefined
+        viewsCount: review.views_count || 0,
+        likesCount: review.likes_count || 0,
         createdAt: new Date(review.created_at),
         user: review.profiles ? {
           id: review.profiles.id || review.user_id,
@@ -58,6 +74,12 @@ export const fetchReviews = async (sortBy: string, userId?: string): Promise<Rev
           avatar: review.profiles.avatar
         } : undefined
       }));
+      
+      // Cache the results
+      reviewsCache.set(cacheKey, { 
+        data: transformedReviews, 
+        timestamp: Date.now() 
+      });
       
       return transformedReviews;
     }

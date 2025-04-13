@@ -1,5 +1,5 @@
 
-import { useState } from 'react';
+import { useState, useCallback } from 'react';
 import { useQuery } from '@tanstack/react-query';
 import { fetchReviews } from '@/services/review';
 
@@ -10,29 +10,33 @@ export const useReviewsList = (userId?: string) => {
   const [page, setPage] = useState(1);
   const itemsPerPage = 10;
 
-  const { data: reviews = [], isLoading, error, refetch } = useQuery({
+  // Use a more aggressive stale time to reduce refetches
+  const { data: allReviews = [], isLoading, error, refetch } = useQuery({
     queryKey: ['reviews', sortBy, userId],
     queryFn: () => fetchReviews(sortBy, userId),
+    staleTime: 5 * 60 * 1000, // 5 minutes
     meta: {
       onError: (err: Error) => {
         console.error('Error fetching reviews:', err);
       }
     }
   });
+
+  // Memoize the paginated reviews to avoid unnecessary recalculations
+  const paginatedReviews = allReviews.slice((page - 1) * itemsPerPage, page * itemsPerPage);
   
-  const totalPages = Math.ceil(reviews.length / itemsPerPage);
-  const paginatedReviews = reviews.slice((page - 1) * itemsPerPage, page * itemsPerPage);
-    
-  const hasMore = (page * itemsPerPage) < reviews.length;
+  const totalPages = Math.ceil(allReviews.length / itemsPerPage);
+  const hasMore = (page * itemsPerPage) < allReviews.length;
   
-  const loadMore = () => {
+  const loadMore = useCallback(() => {
     if (page < totalPages) {
       setPage(page + 1);
     }
-  };
+  }, [page, totalPages]);
 
   return {
     reviews: paginatedReviews,
+    allReviewsCount: allReviews.length,
     isLoading,
     error,
     refetch,

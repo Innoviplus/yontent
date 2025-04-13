@@ -1,7 +1,7 @@
 
 import { useState } from 'react';
 import { useNavigate } from 'react-router-dom';
-import { User, Camera, Eye, Heart } from 'lucide-react';
+import { User, Camera, Eye, Heart, Play } from 'lucide-react';
 import { Review } from '@/lib/types';
 import { cn } from '@/lib/utils';
 import { trackReviewView } from '@/services/review/trackViews';
@@ -16,6 +16,7 @@ interface ReviewCardProps {
 const ReviewCard = ({ review, className }: ReviewCardProps) => {
   const navigate = useNavigate();
   const isMobile = useIsMobile();
+  const hasVideo = review.videos && review.videos.length > 0;
 
   const handleCardClick = () => {
     trackReviewView(review.id);
@@ -39,19 +40,34 @@ const ReviewCard = ({ review, className }: ReviewCardProps) => {
     <div 
       onClick={handleCardClick}
       className={cn(
-        "bg-white rounded-xl overflow-hidden shadow-card card-hover transition-all cursor-pointer",
-        "hover:shadow-lg transform hover:-translate-y-1 transition-all duration-200",
+        "bg-white rounded-lg overflow-hidden shadow-sm h-full card-hover",
+        "hover:shadow-md transform hover:-translate-y-1 transition-all duration-200",
         className
       )}
     >
-      {/* Review images - Show only first image */}
-      {review.images.length > 0 && (
-        <div className={`relative overflow-hidden bg-gray-100 ${isMobile ? 'h-60' : 'h-80'}`}>
-          <img 
-            src={review.images[0]} 
-            alt="Review image" 
-            className="w-full h-full object-cover transition-opacity duration-300"
-          />
+      {/* Review images - Show only first image or video thumbnail */}
+      {(review.images.length > 0 || hasVideo) && (
+        <div className="relative overflow-hidden bg-gray-100 h-36">
+          {hasVideo ? (
+            <>
+              <img 
+                src={review.images[0] || review.videos[0]} 
+                alt="Video thumbnail" 
+                className="w-full h-full object-cover"
+              />
+              <div className="absolute inset-0 flex items-center justify-center">
+                <div className="bg-black/50 rounded-full p-1.5 backdrop-blur-sm">
+                  <Play className="h-6 w-6 text-white" fill="white" />
+                </div>
+              </div>
+            </>
+          ) : (
+            <img 
+              src={review.images[0]} 
+              alt="Review image" 
+              className="w-full h-full object-cover"
+            />
+          )}
           
           {/* Image count badge - only show if there are multiple images or videos */}
           {(review.images.length > 1 || (review.videos && review.videos.length > 0)) && (
@@ -63,39 +79,36 @@ const ReviewCard = ({ review, className }: ReviewCardProps) => {
         </div>
       )}
       
-      <div className="p-3">
+      <div className="p-2">
+        {/* User info at the top */}
+        <div onClick={handleUserClick} className="flex items-center mb-1.5 cursor-pointer">
+          <Avatar className="h-5 w-5 mr-1.5">
+            <AvatarImage src={review.user?.avatar || ''} alt={review.user?.username || 'User'} />
+            <AvatarFallback>
+              <User className="h-2.5 w-2.5" />
+            </AvatarFallback>
+          </Avatar>
+          <span className="text-xs text-gray-500 truncate max-w-[100px]">
+            {review.user?.username || 'Anonymous'}
+          </span>
+        </div>
+        
         {/* Content - max 2 lines with truncation, with HTML tags stripped */}
-        <div className="text-gray-600 text-sm mb-3">
-          <p className={`line-clamp-${isMobile ? '2' : '3'}`}>
+        <div className="text-gray-600 text-xs mb-1.5">
+          <p className="line-clamp-2">
             {stripHtml(review.content)}
           </p>
         </div>
         
-        {/* User Info and Stats */}
-        <div className="flex items-center justify-between">
-          {/* Author with Avatar */}
-          <div onClick={handleUserClick} className="flex items-center cursor-pointer hover:underline">
-            <Avatar className="h-6 w-6 mr-2">
-              <AvatarImage src={review.user?.avatar || ''} alt={review.user?.username || 'User'} />
-              <AvatarFallback>
-                <User className="h-3 w-3" />
-              </AvatarFallback>
-            </Avatar>
-            <span className="text-xs text-gray-500 truncate max-w-[100px]">
-              {review.user?.username || 'Anonymous'}
-            </span>
+        {/* Stats: Views and Likes */}
+        <div className="flex items-center justify-end gap-2">
+          <div className="flex items-center text-xs text-gray-500">
+            <Eye className="h-3 w-3 mr-0.5" />
+            <span>{review.viewsCount || 0}</span>
           </div>
-          
-          {/* Stats: Views and Likes */}
-          <div className="flex items-center gap-3">
-            <div className="flex items-center text-xs text-gray-500">
-              <Eye className="h-4 w-4 mr-1" />
-              <span>{review.viewsCount || 0}</span>
-            </div>
-            <div className="flex items-center text-xs text-gray-500">
-              <Heart className="h-4 w-4 mr-1 text-red-500" />
-              <span>{review.likesCount || 0}</span>
-            </div>
+          <div className="flex items-center text-xs text-gray-500">
+            <Heart className="h-3 w-3 mr-0.5 text-red-500" />
+            <span>{review.likesCount || 0}</span>
           </div>
         </div>
       </div>

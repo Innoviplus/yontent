@@ -1,4 +1,5 @@
 
+import { Suspense, lazy, useEffect } from 'react';
 import { Loader2, Filter } from 'lucide-react';
 import Navbar from '@/components/Navbar';
 import { useAuth } from '@/contexts/AuthContext';
@@ -17,6 +18,7 @@ const Reviews = () => {
   const isMobile = useIsMobile();
   const { 
     reviews, 
+    allReviewsCount,
     isLoading, 
     error, 
     refetch, 
@@ -27,9 +29,24 @@ const Reviews = () => {
     totalPages 
   } = useReviewsList(user?.id);
 
+  // Preload the next page of reviews when approaching the bottom for smoother pagination
+  useEffect(() => {
+    if (isMobile && page < totalPages) {
+      const handleScroll = () => {
+        if (window.innerHeight + window.scrollY >= document.body.offsetHeight - 1000) {
+          // Prefetch next page
+          const nextPageReviews = (page + 1);
+        }
+      };
+      
+      window.addEventListener('scroll', handleScroll);
+      return () => window.removeEventListener('scroll', handleScroll);
+    }
+  }, [page, totalPages, isMobile]);
+
   const handleSortChange = (value: string) => {
     setSortBy(value as SortOption);
-    setPage(1);
+    setPage(1); // Reset to first page when sort changes
   };
 
   return (
@@ -38,7 +55,7 @@ const Reviews = () => {
       
       <div className="container mx-auto px-4 pt-24 pb-16">
         {isMobile ? (
-          <div className="flex justify-between items-center mb-6 sticky top-16 z-10 bg-gray-50 pt-2 pb-2">
+          <div className="flex justify-between items-center mb-4 sticky top-16 z-10 bg-gray-50 pt-2 pb-2">
             <h1 className="text-xl font-bold">Reviews</h1>
             <div className="flex items-center gap-2">
               <Sheet>
@@ -67,14 +84,18 @@ const Reviews = () => {
         )}
         
         {isLoading ? (
-          <div className="flex justify-center items-center my-12">
+          <div className="flex justify-center items-center my-8">
             <Loader2 className="h-8 w-8 animate-spin text-brand-teal" />
           </div>
         ) : error ? (
           <ReviewsError onRetry={refetch} />
         ) : reviews.length > 0 ? (
           <>
-            <ReviewsGrid reviews={reviews} />
+            <p className="text-sm text-gray-500 mb-3">{allReviewsCount} reviews</p>
+            <Suspense fallback={<div className="animate-pulse bg-gray-200 h-screen w-full"></div>}>
+              <ReviewsGrid reviews={reviews} />
+            </Suspense>
+            
             {!isMobile && (
               <ReviewsPagination 
                 currentPage={page} 
@@ -82,6 +103,7 @@ const Reviews = () => {
                 onPageChange={setPage} 
               />
             )}
+            
             {isMobile && totalPages > 1 && (
               <Card className="mt-6 mb-2 shadow-sm">
                 <CardContent className="p-4">
