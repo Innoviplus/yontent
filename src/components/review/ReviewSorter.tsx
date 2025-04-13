@@ -1,35 +1,26 @@
 
-import { 
-  Select, 
-  SelectContent, 
-  SelectItem, 
-  SelectTrigger, 
-  SelectValue 
-} from '@/components/ui/select';
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
+import { useIsMobile } from '@/hooks/use-mobile';
 
 interface ReviewSorterProps {
   sortBy: string;
   onSortChange: (value: string) => void;
 }
 
-const sortOptions = [
-  { value: 'recent', label: 'Most Recent' },
-  { value: 'relevant', label: 'Most Relevant' }
-];
-
 const ReviewSorter = ({ sortBy, onSortChange }: ReviewSorterProps) => {
+  const isMobile = useIsMobile();
+  
   return (
-    <div className="w-full sm:w-48">
+    <div className={`flex items-center gap-2 ${isMobile ? 'w-full' : ''}`}>
+      <span className={`text-gray-500 ${isMobile ? 'text-sm' : ''}`}>Sort by:</span>
       <Select value={sortBy} onValueChange={onSortChange}>
-        <SelectTrigger>
-          <SelectValue placeholder="Sort by" />
+        <SelectTrigger className={`w-[140px] ${isMobile ? 'flex-1' : ''}`}>
+          <SelectValue placeholder="Select" />
         </SelectTrigger>
         <SelectContent>
-          {sortOptions.map(option => (
-            <SelectItem key={option.value} value={option.value}>
-              {option.label}
-            </SelectItem>
-          ))}
+          <SelectItem value="recent">Most Recent</SelectItem>
+          <SelectItem value="popular">Most Popular</SelectItem>
+          <SelectItem value="trending">Trending</SelectItem>
         </SelectContent>
       </Select>
     </div>

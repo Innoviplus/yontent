@@ -1,5 +1,5 @@
 
-import { Loader2 } from 'lucide-react';
+import { Loader2, Filter } from 'lucide-react';
 import Navbar from '@/components/Navbar';
 import { useAuth } from '@/contexts/AuthContext';
 import { useReviewsList, SortOption } from '@/hooks/review/useReviewsList';
@@ -8,9 +8,13 @@ import EmptyReviews from '@/components/review/EmptyReviews';
 import ReviewsError from '@/components/review/ReviewsError';
 import ReviewsGrid from '@/components/review/ReviewsGrid';
 import ReviewsPagination from '@/components/review/ReviewsPagination';
+import { Sheet, SheetContent, SheetTrigger } from '@/components/ui/sheet';
+import { useIsMobile } from '@/hooks/use-mobile';
+import { Card, CardContent } from '@/components/ui/card';
 
 const Reviews = () => {
   const { user } = useAuth();
+  const isMobile = useIsMobile();
   const { 
     reviews, 
     isLoading, 
@@ -32,11 +36,35 @@ const Reviews = () => {
     <div className="min-h-screen bg-gray-50">
       <Navbar />
       
-      <div className="container mx-auto px-4 pt-28 pb-16">
-        <div className="flex flex-col md:flex-row justify-between items-start md:items-center mb-8 gap-4">
-          <h1 className="text-2xl font-bold">Reviews</h1>
-          <ReviewSorter sortBy={sortBy} onSortChange={handleSortChange} />
-        </div>
+      <div className="container mx-auto px-4 pt-24 pb-16">
+        {isMobile ? (
+          <div className="flex justify-between items-center mb-6 sticky top-16 z-10 bg-gray-50 pt-2 pb-2">
+            <h1 className="text-xl font-bold">Reviews</h1>
+            <div className="flex items-center gap-2">
+              <Sheet>
+                <SheetTrigger asChild>
+                  <button className="flex items-center justify-center p-2 bg-white rounded-lg shadow-sm">
+                    <Filter className="h-5 w-5 text-gray-500" />
+                  </button>
+                </SheetTrigger>
+                <SheetContent side="bottom" className="rounded-t-xl">
+                  <div className="pt-4">
+                    <h3 className="text-lg font-medium mb-4">Sort Reviews</h3>
+                    <ReviewSorter sortBy={sortBy} onSortChange={handleSortChange} />
+                  </div>
+                </SheetContent>
+              </Sheet>
+              <div className="text-sm font-medium text-gray-500 bg-white px-3 py-2 rounded-lg shadow-sm">
+                {sortBy === 'recent' ? 'Recent' : sortBy === 'popular' ? 'Popular' : 'Trending'}
+              </div>
+            </div>
+          </div>
+        ) : (
+          <div className="flex flex-col md:flex-row justify-between items-start md:items-center mb-8 gap-4">
+            <h1 className="text-2xl font-bold">Reviews</h1>
+            <ReviewSorter sortBy={sortBy} onSortChange={handleSortChange} />
+          </div>
+        )}
         
         {isLoading ? (
           <div className="flex justify-center items-center my-12">
@@ -47,11 +75,24 @@ const Reviews = () => {
         ) : reviews.length > 0 ? (
           <>
             <ReviewsGrid reviews={reviews} />
-            <ReviewsPagination 
-              currentPage={page} 
-              totalPages={totalPages} 
-              onPageChange={setPage} 
-            />
+            {!isMobile && (
+              <ReviewsPagination 
+                currentPage={page} 
+                totalPages={totalPages} 
+                onPageChange={setPage} 
+              />
+            )}
+            {isMobile && totalPages > 1 && (
+              <Card className="mt-6 mb-2 shadow-sm">
+                <CardContent className="p-4">
+                  <ReviewsPagination 
+                    currentPage={page} 
+                    totalPages={totalPages} 
+                    onPageChange={setPage} 
+                  />
+                </CardContent>
+              </Card>
+            )}
           </>
         ) : (
           <EmptyReviews isLoggedIn={!!user} />

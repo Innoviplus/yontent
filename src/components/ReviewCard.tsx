@@ -6,6 +6,7 @@ import { Review } from '@/lib/types';
 import { cn } from '@/lib/utils';
 import { trackReviewView } from '@/services/review/trackViews';
 import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
+import { useIsMobile } from '@/hooks/use-mobile';
 
 interface ReviewCardProps {
   review: Review;
@@ -14,6 +15,7 @@ interface ReviewCardProps {
 
 const ReviewCard = ({ review, className }: ReviewCardProps) => {
   const navigate = useNavigate();
+  const isMobile = useIsMobile();
 
   const handleCardClick = () => {
     trackReviewView(review.id);
@@ -44,59 +46,53 @@ const ReviewCard = ({ review, className }: ReviewCardProps) => {
     >
       {/* Review images - Show only first image */}
       {review.images.length > 0 && (
-        <div className="relative h-80 overflow-hidden bg-gray-100">
+        <div className={`relative overflow-hidden bg-gray-100 ${isMobile ? 'h-60' : 'h-80'}`}>
           <img 
             src={review.images[0]} 
             alt="Review image" 
             className="w-full h-full object-cover transition-opacity duration-300"
           />
           
-          {/* Image count badge - only show if there are multiple images */}
-          {review.images.length > 1 && (
+          {/* Image count badge - only show if there are multiple images or videos */}
+          {(review.images.length > 1 || (review.videos && review.videos.length > 0)) && (
             <div className="absolute top-2 right-2 bg-black/50 text-white text-xs px-2 py-1 rounded-full backdrop-blur-sm flex items-center gap-1">
               <Camera className="h-3 w-3" />
-              <span>{review.images.length}</span>
+              <span>{review.images.length + (review.videos?.length || 0)}</span>
             </div>
           )}
         </div>
       )}
       
-      <div className="p-4">
+      <div className="p-3">
         {/* Content - max 2 lines with truncation, with HTML tags stripped */}
-        <div className="text-gray-600 text-sm mb-4">
-          <p className="line-clamp-2">
+        <div className="text-gray-600 text-sm mb-3">
+          <p className={`line-clamp-${isMobile ? '2' : '3'}`}>
             {stripHtml(review.content)}
           </p>
         </div>
         
         {/* User Info and Stats */}
-        <div className="space-y-2">
+        <div className="flex items-center justify-between">
           {/* Author with Avatar */}
-          <div className="flex items-center">
-            <div onClick={handleUserClick} className="flex items-center cursor-pointer hover:underline">
-              {review.user?.avatar ? (
-                <Avatar className="h-6 w-6 mr-2">
-                  <AvatarImage src={review.user.avatar} alt={review.user?.username || 'User'} />
-                  <AvatarFallback>
-                    <User className="h-3 w-3" />
-                  </AvatarFallback>
-                </Avatar>
-              ) : (
-                <div className="h-6 w-6 rounded-full bg-gray-200 flex items-center justify-center mr-2">
-                  <User className="h-3 w-3" />
-                </div>
-              )}
-              <span className="text-sm text-gray-500">{review.user?.username || 'Anonymous'}</span>
-            </div>
+          <div onClick={handleUserClick} className="flex items-center cursor-pointer hover:underline">
+            <Avatar className="h-6 w-6 mr-2">
+              <AvatarImage src={review.user?.avatar || ''} alt={review.user?.username || 'User'} />
+              <AvatarFallback>
+                <User className="h-3 w-3" />
+              </AvatarFallback>
+            </Avatar>
+            <span className="text-xs text-gray-500 truncate max-w-[100px]">
+              {review.user?.username || 'Anonymous'}
+            </span>
           </div>
           
           {/* Stats: Views and Likes */}
           <div className="flex items-center gap-3">
-            <div className="flex items-center text-sm text-gray-500">
+            <div className="flex items-center text-xs text-gray-500">
               <Eye className="h-4 w-4 mr-1" />
               <span>{review.viewsCount || 0}</span>
             </div>
-            <div className="flex items-center text-sm text-gray-500">
+            <div className="flex items-center text-xs text-gray-500">
               <Heart className="h-4 w-4 mr-1 text-red-500" />
               <span>{review.likesCount || 0}</span>
             </div>
