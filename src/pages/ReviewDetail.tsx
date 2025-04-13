@@ -14,10 +14,12 @@ import ReviewAuthorProfile from '@/components/review/ReviewDetail/ReviewAuthorPr
 import RelatedReviews from '@/components/review/ReviewDetail/RelatedReviews';
 import ReviewComments from '@/components/review/ReviewDetail/ReviewComments';
 import { useAuth } from '@/contexts/AuthContext';
+import { useIsMobile } from '@/hooks/use-mobile';
 
 const ReviewDetail = () => {
   const { id } = useParams<{ id: string }>();
   const { user } = useAuth();
+  const isMobile = useIsMobile();
   const {
     review,
     loading,
@@ -35,9 +37,9 @@ const ReviewDetail = () => {
     <div className="min-h-screen bg-gray-50">
       <Navbar />
       
-      <div className="container mx-auto px-4 pt-28 pb-16 max-w-5xl">
+      <div className={`container mx-auto px-4 ${isMobile ? 'pt-16' : 'pt-28'} pb-16 max-w-5xl`}>
         {/* Back button */}
-        <Link to="/reviews" className="flex items-center text-brand-teal mb-6 hover:underline">
+        <Link to="/reviews" className={`flex items-center text-brand-teal ${isMobile ? 'mb-3' : 'mb-6'} hover:underline`}>
           <ArrowLeft className="h-4 w-4 mr-2" />
           Back to Reviews
         </Link>
@@ -70,9 +72,9 @@ const ReviewDetail = () => {
                 {/* Review images and videos */}
                 <ReviewImages images={review.images} videos={review.videos} />
                 
-                <div className="p-6 md:p-8">
+                <div className="p-4 md:p-8">
                   {/* User and date info */}
-                  <div className="mb-6">
+                  <div className="mb-4">
                     <ReviewUserInfo 
                       user={review.user} 
                       createdAt={review.createdAt} 
@@ -81,7 +83,7 @@ const ReviewDetail = () => {
                   </div>
                   
                   {/* Stats and action buttons on the same row */}
-                  <div className="flex items-center justify-between mb-6">
+                  <div className="flex items-center justify-between mb-4">
                     <ReviewStats viewsCount={review.viewsCount || 0} />
                     
                     {/* Action buttons with isAuthor prop */}

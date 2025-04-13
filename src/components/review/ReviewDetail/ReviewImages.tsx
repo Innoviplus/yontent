@@ -4,6 +4,8 @@ import { cn } from '@/lib/utils';
 import VideoPlayer from './components/VideoPlayer';
 import ImageDisplay from './components/ImageDisplay';
 import ThumbnailsRow from './components/ThumbnailsRow';
+import { AspectRatio } from '@/components/ui/aspect-ratio';
+import { useIsMobile } from '@/hooks/use-mobile';
 
 interface ReviewImagesProps {
   images: string[];
@@ -12,7 +14,8 @@ interface ReviewImagesProps {
 
 const ReviewImages = ({ images, videos = [] }: ReviewImagesProps) => {
   const [currentImageIndex, setCurrentImageIndex] = useState(0);
-  const [showVideo, setShowVideo] = useState(false);
+  const [showVideo, setShowVideo] = useState(videos.length > 0);
+  const isMobile = useIsMobile();
   
   const hasMedia = images.length > 0 || videos.length > 0;
   const mediaCount = images.length + videos.length;
@@ -20,8 +23,8 @@ const ReviewImages = ({ images, videos = [] }: ReviewImagesProps) => {
   // Reset to first image when images array changes
   useEffect(() => {
     setCurrentImageIndex(0);
-    setShowVideo(false);
-  }, [images]);
+    setShowVideo(videos.length > 0);
+  }, [images, videos]);
 
   // If no images, display a placeholder
   if (!hasMedia) {
@@ -43,8 +46,8 @@ const ReviewImages = ({ images, videos = [] }: ReviewImagesProps) => {
 
   return (
     <div className="relative overflow-hidden">
-      {/* Main Image or Video */}
-      <div className="relative h-[300px] md:h-[400px] bg-gray-100">
+      {/* Main Image or Video - using AspectRatio component for proper sizing */}
+      <AspectRatio ratio={isMobile ? 4/5 : 16/9} className="bg-gray-100">
         {showVideo && videos.length > 0 ? (
           <VideoPlayer videoUrl={videos[0]} />
         ) : (
@@ -54,14 +57,7 @@ const ReviewImages = ({ images, videos = [] }: ReviewImagesProps) => {
             totalImages={images.length}
           />
         )}
-        
-        {/* Media Counter for Video */}
-        {showVideo && mediaCount > 1 && (
-          <div className="absolute bottom-4 right-4 bg-black/60 text-white text-xs py-1 px-2 rounded-full z-10">
-            Video
-          </div>
-        )}
-      </div>
+      </AspectRatio>
       
       {/* Thumbnail Row */}
       {mediaCount > 1 && (

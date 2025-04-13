@@ -32,17 +32,19 @@ const ThumbnailsRow = ({
           )}
           type="button"
         >
-          <div className="absolute inset-0 bg-black/30 flex items-center justify-center">
-            <Play className="h-8 w-8 text-white" />
+          <div className="absolute inset-0 flex items-center justify-center z-10">
+            <Play className="h-6 w-6 text-white fill-white" />
           </div>
-          {/* Video thumbnail preview */}
-          {videos[0] && (
+          {/* Video thumbnail preview - using the video itself */}
+          <div className="w-full h-full bg-gray-200">
             <video 
               src={videos[0]} 
               className="w-full h-full object-cover" 
               preload="metadata"
+              muted
+              playsInline
             />
-          )}
+          </div>
         </button>
       )}
       
