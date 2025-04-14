@@ -1,10 +1,8 @@
 
-import { useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { User, Camera, Eye, Heart, Play } from 'lucide-react';
 import { Review } from '@/lib/types';
 import { cn } from '@/lib/utils';
-import { trackReviewView } from '@/services/review/trackViews';
 import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
 import { useIsMobile } from '@/hooks/use-mobile';
 
@@ -19,15 +17,7 @@ const ReviewCard = ({ review, className }: ReviewCardProps) => {
   const hasVideo = review.videos && review.videos.length > 0;
 
   const handleCardClick = () => {
-    trackReviewView(review.id);
     navigate(`/review/${review.id}`);
-  };
-  
-  const handleUserClick = (e: React.MouseEvent) => {
-    e.stopPropagation();
-    if (review.user?.username) {
-      navigate(`/user/${review.user.username}`);
-    }
   };
 
   // Function to strip HTML tags from content
@@ -40,20 +30,20 @@ const ReviewCard = ({ review, className }: ReviewCardProps) => {
     <div 
       onClick={handleCardClick}
       className={cn(
-        "bg-white rounded-lg overflow-hidden shadow-sm h-full card-hover",
+        "bg-white rounded-lg overflow-hidden shadow-sm w-full card-hover",
         "hover:shadow-md transform hover:-translate-y-1 transition-all duration-200",
         className
       )}
     >
       {/* Review images - Show only first image or video thumbnail */}
       {(review.images.length > 0 || hasVideo) && (
-        <div className="relative overflow-hidden bg-gray-100 h-36">
+        <div className="relative overflow-hidden bg-gray-100">
           {hasVideo ? (
             <>
               <img 
                 src={review.images[0] || review.videos[0]} 
                 alt="Video thumbnail" 
-                className="w-full h-full object-cover"
+                className="w-full h-auto object-cover"
               />
               <div className="absolute inset-0 flex items-center justify-center">
                 <div className="bg-black/50 rounded-full p-1.5 backdrop-blur-sm">
@@ -65,7 +55,7 @@ const ReviewCard = ({ review, className }: ReviewCardProps) => {
             <img 
               src={review.images[0]} 
               alt="Review image" 
-              className="w-full h-full object-cover"
+              className="w-full h-auto object-cover"
             />
           )}
           
@@ -80,8 +70,8 @@ const ReviewCard = ({ review, className }: ReviewCardProps) => {
       )}
       
       <div className="p-2">
-        {/* User info at the top */}
-        <div onClick={handleUserClick} className="flex items-center mb-1.5 cursor-pointer">
+        {/* User info at the top - No longer clickable */}
+        <div className="flex items-center mb-1.5">
           <Avatar className="h-5 w-5 mr-1.5">
             <AvatarImage src={review.user?.avatar || ''} alt={review.user?.username || 'User'} />
             <AvatarFallback>
@@ -100,8 +90,8 @@ const ReviewCard = ({ review, className }: ReviewCardProps) => {
           </p>
         </div>
         
-        {/* Stats: Views and Likes */}
-        <div className="flex items-center justify-end gap-2">
+        {/* Stats: Views aligned left, Likes aligned right */}
+        <div className="flex items-center justify-between">
           <div className="flex items-center text-xs text-gray-500">
             <Eye className="h-3 w-3 mr-0.5" />
             <span>{review.viewsCount || 0}</span>

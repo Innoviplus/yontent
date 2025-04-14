@@ -2,7 +2,7 @@
 import { useEffect } from 'react';
 import { Loader2 } from 'lucide-react';
 import Navbar from '@/components/Navbar';
-import ReviewCard from '@/components/ReviewCard';
+import ReviewsGrid from '@/components/review/ReviewsGrid';
 import FeedHeader from '@/components/review/FeedHeader';
 import EmptyFeed from '@/components/review/EmptyFeed';
 import ReviewsError from '@/components/review/ReviewsError';
@@ -41,7 +41,7 @@ const ReviewFeed = () => {
     <div className="min-h-screen bg-gray-50">
       <Navbar />
       
-      <div className="container mx-auto px-4 pt-28 pb-16">
+      <div className="container mx-auto px-4 pt-20 pb-16">
         <FeedHeader 
           sortBy={sortBy as 'recent' | 'views' | 'relevant'}
           onSortChange={(sort) => setSortBy(sort as SortOption)}
@@ -49,20 +49,14 @@ const ReviewFeed = () => {
         />
         
         {loading && reviews.length === 0 ? (
-          <div className="flex justify-center items-center my-12">
+          <div className="flex justify-center items-center my-8">
             <Loader2 className="h-8 w-8 animate-spin text-brand-teal" />
           </div>
         ) : error ? (
           <ReviewsError onRetry={refetch} />
         ) : reviews.length > 0 ? (
           <>
-            <div className="grid gap-6 grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 xl:grid-cols-5 masonry-grid">
-              {reviews.map((review) => (
-                <div key={review.id} className="mb-6">
-                  <ReviewCard review={review} />
-                </div>
-              ))}
-            </div>
+            <ReviewsGrid reviews={reviews} />
             
             {loading && (
               <div className="flex justify-center items-center mt-8">

@@ -1,25 +1,25 @@
 
-import { Play } from 'lucide-react';
 import { Review } from '@/lib/types';
 import ReviewCard from '@/components/ReviewCard';
 import { trackReviewView } from '@/services/review/trackViews';
-import { useIsMobile } from '@/hooks/use-mobile';
 
 interface ReviewsGridProps {
   reviews: Review[];
 }
 
 const ReviewsGrid = ({ reviews }: ReviewsGridProps) => {
-  const isMobile = useIsMobile();
-  
   const handleReviewClick = (reviewId: string) => {
     trackReviewView(reviewId);
   };
 
   return (
-    <div className="grid grid-cols-2 gap-2 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 xl:grid-cols-5 sm:gap-4">
+    <div className="masonry-grid columns-2 sm:columns-2 md:columns-3 lg:columns-4 xl:columns-5 gap-3">
       {reviews.map((review) => (
-        <div key={review.id} onClick={() => handleReviewClick(review.id)} className="mb-4">
+        <div 
+          key={review.id} 
+          onClick={() => handleReviewClick(review.id)} 
+          className="mb-3 break-inside-avoid"
+        >
           <ReviewCard review={review} />
         </div>
       ))}
