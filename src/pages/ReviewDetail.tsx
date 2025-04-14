@@ -37,17 +37,17 @@ const ReviewDetail = () => {
     <div className="min-h-screen bg-gray-50">
       <Navbar />
       
-      <div className={`container mx-auto px-2 sm:px-4 ${isMobile ? 'pt-16 pb-8' : 'pt-28 pb-16'} max-w-5xl`}>
+      <div className={`container mx-auto px-4 ${isMobile ? 'pt-16' : 'pt-28'} pb-16 max-w-5xl`}>
         {/* Back button */}
-        <Link to="/reviews" className={`flex items-center text-brand-teal ${isMobile ? 'mb-2' : 'mb-6'} hover:underline`}>
+        <Link to="/reviews" className={`flex items-center text-brand-teal ${isMobile ? 'mb-3' : 'mb-6'} hover:underline`}>
           <ArrowLeft className="h-4 w-4 mr-2" />
           Back to Reviews
         </Link>
         
         {loading ? (
-          <div className="space-y-4">
+          <div className="space-y-6">
             {/* Loading skeletons */}
-            <div className="grid grid-cols-1 md:grid-cols-3 gap-4 md:gap-6">
+            <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
               <div className="md:col-span-2">
                 <Skeleton className="h-80 w-full rounded-xl" />
                 <Skeleton className="h-8 w-1/3 mt-4" />
@@ -65,16 +65,16 @@ const ReviewDetail = () => {
             </div>
           </div>
         ) : review ? (
-          <div className="grid grid-cols-1 md:grid-cols-3 gap-4 md:gap-6">
+          <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
             {/* Main content - left side (2/3 width on desktop) */}
-            <div className="md:col-span-2 space-y-4 md:space-y-6">
+            <div className="md:col-span-2 space-y-6">
               <div className="bg-white rounded-xl overflow-hidden shadow-subtle">
                 {/* Review images and videos */}
                 <ReviewImages images={review.images} videos={review.videos} />
                 
-                <div className="p-3 md:p-6">
+                <div className="p-4 md:p-8">
                   {/* User and date info */}
-                  <div className="mb-3">
+                  <div className="mb-4">
                     <ReviewUserInfo 
                       user={review.user} 
                       createdAt={review.createdAt} 
@@ -83,7 +83,7 @@ const ReviewDetail = () => {
                   </div>
                   
                   {/* Stats and action buttons on the same row */}
-                  <div className="flex items-center justify-between mb-3">
+                  <div className="flex items-center justify-between mb-4">
                     <ReviewStats viewsCount={review.viewsCount || 0} />
                     
                     {/* Action buttons with isAuthor prop */}
@@ -112,7 +112,7 @@ const ReviewDetail = () => {
             </div>
             
             {/* Sidebar - right side (1/3 width on desktop) */}
-            <div className="space-y-4 md:space-y-6">
+            <div className="space-y-6">
               {/* Related Reviews - moved to top right */}
               <RelatedReviews 
                 reviewId={review.id} 

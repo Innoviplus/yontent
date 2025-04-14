@@ -67,12 +67,8 @@ const ReviewImages = ({ images, videos = [] }: ReviewImagesProps) => {
   // If no images, display a placeholder
   if (!hasMedia) {
     return (
-      <div className="bg-gray-100 flex items-center justify-center">
-        <AspectRatio ratio={isMobile ? 4/5 : 16/9}>
-          <div className="flex items-center justify-center h-full">
-            <p className="text-gray-400">No images available</p>
-          </div>
-        </AspectRatio>
+      <div className="h-[300px] md:h-[400px] bg-gray-100 flex items-center justify-center">
+        <p className="text-gray-400">No images available</p>
       </div>
     );
   }
@@ -87,23 +83,21 @@ const ReviewImages = ({ images, videos = [] }: ReviewImagesProps) => {
   };
 
   return (
-    <div className="relative overflow-hidden flex flex-col">
-      {/* Main Image or Video Display Area */}
-      <div className="bg-gray-100">
-        <AspectRatio ratio={isMobile ? 4/5 : 16/9}>
-          {showVideo && videos.length > 0 ? (
-            <VideoPlayer videoUrl={videos[0]} />
-          ) : (
-            <ImageDisplay 
-              imageSrc={images[currentImageIndex]} 
-              imageIndex={currentImageIndex}
-              totalImages={images.length}
-            />
-          )}
-        </AspectRatio>
-      </div>
+    <div className="relative overflow-hidden">
+      {/* Main Image or Video - using AspectRatio component for proper sizing */}
+      <AspectRatio ratio={isMobile ? 4/5 : 16/9} className="bg-gray-100">
+        {showVideo && videos.length > 0 ? (
+          <VideoPlayer videoUrl={videos[0]} />
+        ) : (
+          <ImageDisplay 
+            imageSrc={images[currentImageIndex]} 
+            imageIndex={currentImageIndex}
+            totalImages={images.length}
+          />
+        )}
+      </AspectRatio>
       
-      {/* Thumbnail Row - Now placed at the bottom */}
+      {/* Thumbnail Row */}
       {mediaCount > 1 && (
         <ThumbnailsRow
           images={images}

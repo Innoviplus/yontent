@@ -1,5 +1,5 @@
 
-import { Suspense, lazy, useEffect, useMemo } from 'react';
+import { Suspense, lazy, useEffect } from 'react';
 import { Loader2, Filter } from 'lucide-react';
 import Navbar from '@/components/Navbar';
 import { useAuth } from '@/contexts/AuthContext';
@@ -32,42 +32,10 @@ const Reviews = () => {
   // Preload the next page of reviews when approaching the bottom for smoother pagination
   useEffect(() => {
     if (isMobile && page < totalPages) {
-      // Prefetch next page data with low priority
-      const prefetchNextPage = () => {
-        const nextPage = page + 1;
-        if (nextPage <= totalPages) {
-          const imgElements = document.querySelectorAll('img[loading="lazy"]');
-          
-          // Start preloading images after current page is loaded
-          if (imgElements.length > 0) {
-            imgElements.forEach(img => {
-              // Use Intersection Observer to load images as they approach viewport
-              const observer = new IntersectionObserver(
-                (entries) => {
-                  entries.forEach(entry => {
-                    if (entry.isIntersecting) {
-                      const img = entry.target as HTMLImageElement;
-                      if (img.dataset.src) {
-                        img.src = img.dataset.src;
-                        img.removeAttribute('data-src');
-                      }
-                      observer.unobserve(img);
-                    }
-                  });
-                },
-                { rootMargin: '200px' }
-              );
-              
-              observer.observe(img);
-            });
-          }
-        }
-      };
-      
-      // Call prefetch when user scrolls near bottom
       const handleScroll = () => {
         if (window.innerHeight + window.scrollY >= document.body.offsetHeight - 1000) {
-          prefetchNextPage();
+          // Prefetch next page
+          const nextPageReviews = (page + 1);
         }
       };
       
@@ -85,9 +53,9 @@ const Reviews = () => {
     <div className="min-h-screen bg-gray-50">
       <Navbar />
       
-      <div className="container mx-auto px-2 sm:px-4 pt-16 md:pt-24 pb-8">
+      <div className="container mx-auto px-4 pt-24 pb-16">
         {isMobile ? (
-          <div className="flex justify-between items-center mb-3 sticky top-16 z-10 bg-gray-50 pt-2 pb-2">
+          <div className="flex justify-between items-center mb-4 sticky top-16 z-10 bg-gray-50 pt-2 pb-2">
             <h1 className="text-xl font-bold">Reviews</h1>
             <div className="flex items-center gap-2">
               <Sheet>
@@ -115,8 +83,8 @@ const Reviews = () => {
           </div>
         )}
         
-        {isLoading && reviews.length === 0 ? (
-          <div className="flex justify-center items-center my-6">
+        {isLoading ? (
+          <div className="flex justify-center items-center my-8">
             <Loader2 className="h-8 w-8 animate-spin text-brand-teal" />
           </div>
         ) : error ? (
@@ -124,7 +92,7 @@ const Reviews = () => {
         ) : reviews.length > 0 ? (
           <>
             <p className="text-sm text-gray-500 mb-3">{allReviewsCount} reviews</p>
-            <Suspense fallback={<div className="animate-pulse bg-gray-200 h-[100px] w-full"></div>}>
+            <Suspense fallback={<div className="animate-pulse bg-gray-200 h-screen w-full"></div>}>
               <ReviewsGrid reviews={reviews} />
             </Suspense>
             

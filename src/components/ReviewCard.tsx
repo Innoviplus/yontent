@@ -1,5 +1,5 @@
 
-import { useState, useEffect } from 'react';
+import { useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { User, Camera, Eye, Heart, Play } from 'lucide-react';
 import { Review } from '@/lib/types';
@@ -17,37 +17,6 @@ const ReviewCard = ({ review, className }: ReviewCardProps) => {
   const navigate = useNavigate();
   const isMobile = useIsMobile();
   const hasVideo = review.videos && review.videos.length > 0;
-  const [videoThumbnail, setVideoThumbnail] = useState<string | null>(null);
-  
-  // Generate video thumbnail if needed
-  useEffect(() => {
-    if (hasVideo && review.videos[0]) {
-      const videoEl = document.createElement('video');
-      videoEl.crossOrigin = 'anonymous';
-      videoEl.src = review.videos[0];
-      videoEl.preload = 'metadata';
-      
-      videoEl.onloadedmetadata = () => {
-        videoEl.currentTime = 0.5;
-        
-        videoEl.onseeked = () => {
-          try {
-            const canvas = document.createElement('canvas');
-            canvas.width = videoEl.videoWidth;
-            canvas.height = videoEl.videoHeight;
-            const ctx = canvas.getContext('2d');
-            
-            if (ctx) {
-              ctx.drawImage(videoEl, 0, 0, canvas.width, canvas.height);
-              setVideoThumbnail(canvas.toDataURL('image/jpeg', 0.7));
-            }
-          } catch (err) {
-            console.error('Error generating video thumbnail:', err);
-          }
-        };
-      };
-    }
-  }, [hasVideo, review.videos]);
 
   const handleCardClick = () => {
     trackReviewView(review.id);
@@ -78,18 +47,17 @@ const ReviewCard = ({ review, className }: ReviewCardProps) => {
     >
       {/* Review images - Show only first image or video thumbnail */}
       {(review.images.length > 0 || hasVideo) && (
-        <div className="relative overflow-hidden bg-gray-100 aspect-square">
+        <div className="relative overflow-hidden bg-gray-100 h-36">
           {hasVideo ? (
             <>
               <img 
-                src={videoThumbnail || review.images[0] || review.videos[0]} 
+                src={review.images[0] || review.videos[0]} 
                 alt="Video thumbnail" 
                 className="w-full h-full object-cover"
-                loading="lazy"
               />
               <div className="absolute inset-0 flex items-center justify-center">
                 <div className="bg-black/50 rounded-full p-1.5 backdrop-blur-sm">
-                  <Play className="h-5 w-5 text-white" fill="white" />
+                  <Play className="h-6 w-6 text-white" fill="white" />
                 </div>
               </div>
             </>
@@ -98,7 +66,6 @@ const ReviewCard = ({ review, className }: ReviewCardProps) => {
               src={review.images[0]} 
               alt="Review image" 
               className="w-full h-full object-cover"
-              loading="lazy"
             />
           )}
           
@@ -128,7 +95,7 @@ const ReviewCard = ({ review, className }: ReviewCardProps) => {
         
         {/* Content - max 2 lines with truncation, with HTML tags stripped */}
         <div className="text-gray-600 text-xs mb-1.5">
-          <p className="line-clamp-2 min-h-[2em]">
+          <p className="line-clamp-2">
             {stripHtml(review.content)}
           </p>
         </div>
