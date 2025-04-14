@@ -23,19 +23,20 @@ const ThumbnailsRow = ({
   onImageSelect
 }: ThumbnailsRowProps) => {
   return (
-    <div className="flex overflow-x-auto gap-2 p-2 bg-gray-50 border-t border-gray-200">
+    <div className="flex overflow-x-auto gap-2 p-2 bg-gray-50 border-t border-gray-200 no-scrollbar">
       {/* Video Thumbnail */}
       {videos.length > 0 && (
         <button 
           onClick={onVideoSelect}
           className={cn(
-            "relative flex-shrink-0 w-16 h-16 rounded overflow-hidden",
+            "relative flex-shrink-0 w-14 h-14 rounded overflow-hidden",
             showVideo ? "ring-2 ring-brand-teal" : ""
           )}
           type="button"
+          aria-label="Play video"
         >
-          <div className="absolute inset-0 flex items-center justify-center z-10">
-            <Play className="h-6 w-6 text-white fill-white" />
+          <div className="absolute inset-0 flex items-center justify-center z-10 bg-black/30">
+            <Play className="h-5 w-5 text-white fill-white" />
           </div>
           {/* Video thumbnail preview */}
           <div className="w-full h-full bg-gray-200">
@@ -44,6 +45,7 @@ const ThumbnailsRow = ({
                 src={videoThumbnail} 
                 alt="Video thumbnail" 
                 className="w-full h-full object-cover"
+                loading="eager"
               />
             ) : (
               <video 
@@ -64,15 +66,17 @@ const ThumbnailsRow = ({
           key={index}
           onClick={() => onImageSelect(index)}
           className={cn(
-            "flex-shrink-0 w-16 h-16 rounded overflow-hidden",
+            "flex-shrink-0 w-14 h-14 rounded overflow-hidden",
             !showVideo && index === currentImageIndex ? "ring-2 ring-brand-teal" : ""
           )}
           type="button"
+          aria-label={`Thumbnail ${index + 1}`}
         >
           <img 
             src={image} 
             alt={`Thumbnail ${index + 1}`}
             className="w-full h-full object-cover"
+            loading={index < 3 ? "eager" : "lazy"}
           />
         </button>
       ))}

@@ -94,7 +94,7 @@ const VideoPlayer = ({ videoUrl }: VideoPlayerProps) => {
     
     if (video.requestFullscreen) {
       video.requestFullscreen();
-    } 
+    }
   };
 
   // Format time in MM:SS
@@ -106,22 +106,43 @@ const VideoPlayer = ({ videoUrl }: VideoPlayerProps) => {
 
   return (
     <div 
-      className="relative w-full h-full"
+      className="relative w-full h-full flex flex-col"
       onMouseMove={showControls}
       onTouchStart={showControls}
     >
-      <video
-        ref={videoRef}
-        src={videoUrl}
-        className="w-full h-full object-contain bg-black"
-        playsInline
-        preload="metadata"
-        onClick={togglePlayPause}
-      />
+      <div className="flex-grow relative">
+        <video
+          ref={videoRef}
+          src={videoUrl}
+          className="w-full h-full object-contain bg-black"
+          playsInline
+          preload="metadata"
+          onClick={togglePlayPause}
+        />
+        
+        {/* Play/Pause center overlay */}
+        {isControlsVisible && (
+          <div className="absolute inset-0 flex items-center justify-center">
+            <button 
+              className="bg-black/30 rounded-full p-3 backdrop-blur-sm"
+              onClick={togglePlayPause}
+              type="button"
+            >
+              {isBuffering ? (
+                <div className="w-8 h-8 border-2 border-white border-t-transparent rounded-full animate-spin" />
+              ) : isPlaying ? (
+                <Pause className="w-8 h-8 text-white" />
+              ) : (
+                <Play className="w-8 h-8 text-white" />
+              )}
+            </button>
+          </div>
+        )}
+      </div>
       
-      {/* Video controls overlay */}
+      {/* Video controls below the video */}
       {isControlsVisible && (
-        <div className="absolute bottom-0 left-0 right-0 bg-gradient-to-t from-black/70 to-transparent p-3 transition-opacity">
+        <div className="bg-black/70 p-3 transition-opacity">
           {/* Timeline slider */}
           <div className="flex items-center w-full mb-2">
             <span className="text-white text-xs mr-2">{formatTime(currentTime)}</span>

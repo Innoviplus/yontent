@@ -67,8 +67,12 @@ const ReviewImages = ({ images, videos = [] }: ReviewImagesProps) => {
   // If no images, display a placeholder
   if (!hasMedia) {
     return (
-      <div className="h-[300px] md:h-[400px] bg-gray-100 flex items-center justify-center">
-        <p className="text-gray-400">No images available</p>
+      <div className="bg-gray-100 flex items-center justify-center">
+        <AspectRatio ratio={isMobile ? 4/5 : 16/9}>
+          <div className="flex items-center justify-center h-full">
+            <p className="text-gray-400">No images available</p>
+          </div>
+        </AspectRatio>
       </div>
     );
   }
