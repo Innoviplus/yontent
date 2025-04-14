@@ -67,7 +67,7 @@ const ReviewImages = ({ images, videos = [] }: ReviewImagesProps) => {
   // If no images, display a placeholder
   if (!hasMedia) {
     return (
-      <div className="h-[300px] md:h-[400px] bg-gray-100 flex items-center justify-center">
+      <div className="h-[400px] md:h-[500px] bg-gray-100 flex items-center justify-center">
         <p className="text-gray-400">No images available</p>
       </div>
     );
@@ -84,8 +84,8 @@ const ReviewImages = ({ images, videos = [] }: ReviewImagesProps) => {
 
   return (
     <div className="relative overflow-hidden">
-      {/* Main Image or Video - using AspectRatio component for proper sizing */}
-      <AspectRatio ratio={isMobile ? 4/5 : 16/9} className="bg-gray-100">
+      {/* Main Image or Video - with increased height */}
+      <AspectRatio ratio={isMobile ? 4/5 : 16/10} className="bg-gray-100">
         {showVideo && videos.length > 0 ? (
           <VideoPlayer videoUrl={videos[0]} />
         ) : (

@@ -1,6 +1,5 @@
 
-import { useParams, Link } from 'react-router-dom';
-import { ArrowLeft } from 'lucide-react';
+import { useParams } from 'react-router-dom';
 import Navbar from '@/components/Navbar';
 import { Skeleton } from '@/components/ui/skeleton';
 import { useReviewDetail } from '@/hooks/useReviewDetail';
@@ -37,19 +36,13 @@ const ReviewDetail = () => {
     <div className="min-h-screen bg-gray-50">
       <Navbar />
       
-      <div className={`container mx-auto px-4 ${isMobile ? 'pt-16' : 'pt-28'} pb-16 max-w-5xl`}>
-        {/* Back button */}
-        <Link to="/reviews" className={`flex items-center text-brand-teal ${isMobile ? 'mb-3' : 'mb-6'} hover:underline`}>
-          <ArrowLeft className="h-4 w-4 mr-2" />
-          Back to Reviews
-        </Link>
-        
+      <div className="container mx-auto px-4 pt-16 pb-16 max-w-6xl">
         {loading ? (
           <div className="space-y-6">
             {/* Loading skeletons */}
             <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
               <div className="md:col-span-2">
-                <Skeleton className="h-80 w-full rounded-xl" />
+                <Skeleton className="h-96 w-full rounded-xl" />
                 <Skeleton className="h-8 w-1/3 mt-4" />
                 <Skeleton className="h-6 w-1/4 mt-2" />
                 <div className="space-y-2 mt-4">
@@ -65,14 +58,14 @@ const ReviewDetail = () => {
             </div>
           </div>
         ) : review ? (
-          <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
-            {/* Main content - left side (2/3 width on desktop) */}
-            <div className="md:col-span-2 space-y-6">
+          <div className="grid grid-cols-1 md:grid-cols-7 gap-6">
+            {/* Main content - left side (5/7 width on desktop) */}
+            <div className="md:col-span-5 space-y-6">
               <div className="bg-white rounded-xl overflow-hidden shadow-subtle">
-                {/* Review images and videos */}
+                {/* Review images and videos with increased height */}
                 <ReviewImages images={review.images} videos={review.videos} />
                 
-                <div className="p-4 md:p-8">
+                <div className="p-4 md:p-6">
                   {/* User and date info */}
                   <div className="mb-4">
                     <ReviewUserInfo 
@@ -104,16 +97,16 @@ const ReviewDetail = () => {
               
               {/* Comments section */}
               {id && <ReviewComments reviewId={id} />}
-              
-              {/* Author profile section */}
+            </div>
+            
+            {/* Sidebar - right side (2/7 width on desktop) */}
+            <div className="md:col-span-2 space-y-6">
+              {/* Author profile section - moved above related reviews */}
               {review.user && (
                 <ReviewAuthorProfile userId={review.userId} />
               )}
-            </div>
-            
-            {/* Sidebar - right side (1/3 width on desktop) */}
-            <div className="space-y-6">
-              {/* Related Reviews - moved to top right */}
+              
+              {/* Related Reviews */}
               <RelatedReviews 
                 reviewId={review.id} 
                 relatedReviews={relatedReviews} 

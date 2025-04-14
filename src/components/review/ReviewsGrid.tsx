@@ -13,12 +13,12 @@ const ReviewsGrid = ({ reviews }: ReviewsGridProps) => {
   };
 
   return (
-    <div className="masonry-grid columns-2 sm:columns-2 md:columns-3 lg:columns-4 xl:columns-5 gap-3">
+    <div className="grid grid-cols-2 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 xl:grid-cols-5 gap-3">
       {reviews.map((review) => (
         <div 
           key={review.id} 
           onClick={() => handleReviewClick(review.id)} 
-          className="mb-3 break-inside-avoid"
+          className="mb-3"
         >
           <ReviewCard review={review} />
         </div>

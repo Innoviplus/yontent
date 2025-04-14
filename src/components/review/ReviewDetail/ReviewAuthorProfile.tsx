@@ -4,10 +4,9 @@ import { Link } from 'react-router-dom';
 import { User as UserType } from '@/lib/types';
 import { supabase } from '@/integrations/supabase/client';
 import { Card, CardContent } from '@/components/ui/card';
-import { Button } from '@/components/ui/button';
-import { Skeleton } from '@/components/ui/skeleton';
 import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
-import UserStatsCard, { UserStats } from '@/components/user/UserStatsCard';
+import { User } from 'lucide-react';
+import { formatNumber } from '@/lib/formatUtils';
 import { useAuth } from '@/contexts/AuthContext';
 
 interface ReviewAuthorProfileProps {
@@ -17,14 +16,12 @@ interface ReviewAuthorProfileProps {
 const ReviewAuthorProfile = ({ userId }: ReviewAuthorProfileProps) => {
   const [author, setAuthor] = useState<UserType | null>(null);
   const [loading, setLoading] = useState(true);
-  const [stats, setStats] = useState<UserStats>({
+  const [stats, setStats] = useState({
     reviewsCount: 0,
     followersCount: 0,
-    followingCount: 0,
-    pointsCount: 0
+    followingCount: 0
   });
   const { user } = useAuth();
-  const isCurrentUser = user?.id === userId;
 
   useEffect(() => {
     const fetchAuthorProfile = async () => {
@@ -32,7 +29,7 @@ const ReviewAuthorProfile = ({ userId }: ReviewAuthorProfileProps) => {
         // Fetch user profile with an explicit query for avatar
         const { data: profileData, error: profileError } = await supabase
           .from('profiles')
-          .select('id, username, points, followers_count, following_count, created_at')
+          .select('id, username, followers_count, following_count, created_at')
           .eq('id', userId)
           .single();
           
@@ -48,7 +45,7 @@ const ReviewAuthorProfile = ({ userId }: ReviewAuthorProfileProps) => {
           username: profileData.username || 'Anonymous',
           email: '', // Add the required email property even though it's not in profile data
           avatar: avatarUrl,
-          points: profileData.points || 0,
+          points: 0,
           createdAt: new Date(profileData.created_at),
         };
         
@@ -66,8 +63,7 @@ const ReviewAuthorProfile = ({ userId }: ReviewAuthorProfileProps) => {
         setStats({
           reviewsCount: reviewsCount || 0,
           followersCount: profileData.followers_count || 0,
-          followingCount: profileData.following_count || 0,
-          pointsCount: profileData.points || 0
+          followingCount: profileData.following_count || 0
         });
       } catch (error) {
         console.error('Error fetching author profile:', error);
@@ -84,10 +80,10 @@ const ReviewAuthorProfile = ({ userId }: ReviewAuthorProfileProps) => {
       <Card>
         <CardContent className="p-6">
           <div className="flex items-center space-x-4">
-            <Skeleton className="h-16 w-16 rounded-full" />
+            <div className="h-16 w-16 rounded-full bg-gray-200 animate-pulse" />
             <div className="space-y-2">
-              <Skeleton className="h-4 w-48" />
-              <Skeleton className="h-4 w-36" />
+              <div className="h-4 w-48 bg-gray-200 rounded animate-pulse" />
+              <div className="h-4 w-36 bg-gray-200 rounded animate-pulse" />
             </div>
           </div>
         </CardContent>
@@ -100,22 +96,43 @@ const ReviewAuthorProfile = ({ userId }: ReviewAuthorProfileProps) => {
   return (
     <Card>
       <CardContent className="p-6">
-        <div className="flex flex-col sm:flex-row items-start gap-4">
-          <Avatar className="h-16 w-16">
-            <AvatarImage src={author.avatar} alt={author.username} />
-            <AvatarFallback className="bg-brand-teal/10 text-brand-teal">
-              {author.username?.[0]?.toUpperCase() || 'U'}
-            </AvatarFallback>
-          </Avatar>
+        <div className="flex items-center gap-4 mb-4">
+          <Link to={`/user/${author.username}`} className="flex-shrink-0">
+            <Avatar className="h-16 w-16">
+              <AvatarImage src={author.avatar} alt={author.username} />
+              <AvatarFallback className="bg-brand-teal/10 text-brand-teal">
+                {author.username?.[0]?.toUpperCase() || 'U'}
+              </AvatarFallback>
+            </Avatar>
+          </Link>
           
-          <div className="flex-1">
-            <h3 className="text-lg font-semibold mb-2">{author.username}</h3>
-            <UserStatsCard user={author} stats={stats} variant="compact" isCurrentUser={isCurrentUser} />
+          <div>
+            <Link to={`/user/${author.username}`}>
+              <h3 className="text-lg font-semibold hover:text-brand-teal transition-colors">{author.username}</h3>
+            </Link>
+          </div>
+        </div>
+        
+        {/* Stats grid with only reviews, followers, following */}
+        <div className="grid grid-cols-3 gap-2 mt-2">
+          <div className="bg-gray-50 rounded-lg p-3 text-center">
+            <div className="text-lg font-semibold text-brand-slate">{formatNumber(stats.reviewsCount)}</div>
+            <div className="text-xs text-gray-500">posts</div>
           </div>
           
-          <Button asChild variant="outline" size="sm" className="self-start">
-            <Link to={`/user/${author.username}`}>View Profile</Link>
-          </Button>
+          <Link to={`/user/${author.username}/followers`} className="bg-gray-50 rounded-lg p-3 text-center hover:bg-gray-100 transition-colors">
+            <div className="text-lg font-semibold text-brand-slate hover:text-brand-teal transition-colors">
+              {formatNumber(stats.followersCount)}
+            </div>
+            <div className="text-xs text-gray-500">followers</div>
+          </Link>
+          
+          <Link to={`/user/${author.username}/following`} className="bg-gray-50 rounded-lg p-3 text-center hover:bg-gray-100 transition-colors">
+            <div className="text-lg font-semibold text-brand-slate hover:text-brand-teal transition-colors">
+              {formatNumber(stats.followingCount)}
+            </div>
+            <div className="text-xs text-gray-500">following</div>
+          </Link>
         </div>
       </CardContent>
     </Card>
