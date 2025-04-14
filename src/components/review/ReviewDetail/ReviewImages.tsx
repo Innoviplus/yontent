@@ -87,21 +87,23 @@ const ReviewImages = ({ images, videos = [] }: ReviewImagesProps) => {
   };
 
   return (
-    <div className="relative overflow-hidden">
-      {/* Main Image or Video - using AspectRatio component for proper sizing */}
-      <AspectRatio ratio={isMobile ? 4/5 : 16/9} className="bg-gray-100">
-        {showVideo && videos.length > 0 ? (
-          <VideoPlayer videoUrl={videos[0]} />
-        ) : (
-          <ImageDisplay 
-            imageSrc={images[currentImageIndex]} 
-            imageIndex={currentImageIndex}
-            totalImages={images.length}
-          />
-        )}
-      </AspectRatio>
+    <div className="relative overflow-hidden flex flex-col">
+      {/* Main Image or Video Display Area */}
+      <div className="bg-gray-100">
+        <AspectRatio ratio={isMobile ? 4/5 : 16/9}>
+          {showVideo && videos.length > 0 ? (
+            <VideoPlayer videoUrl={videos[0]} />
+          ) : (
+            <ImageDisplay 
+              imageSrc={images[currentImageIndex]} 
+              imageIndex={currentImageIndex}
+              totalImages={images.length}
+            />
+          )}
+        </AspectRatio>
+      </div>
       
-      {/* Thumbnail Row */}
+      {/* Thumbnail Row - Now placed at the bottom */}
       {mediaCount > 1 && (
         <ThumbnailsRow
           images={images}

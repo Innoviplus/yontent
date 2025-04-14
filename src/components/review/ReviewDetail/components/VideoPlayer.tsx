@@ -93,7 +93,9 @@ const VideoPlayer = ({ videoUrl }: VideoPlayerProps) => {
     if (!video) return;
     
     if (video.requestFullscreen) {
-      video.requestFullscreen();
+      video.requestFullscreen().catch(err => {
+        console.error('Error entering fullscreen:', err);
+      });
     }
   };
 
@@ -110,6 +112,7 @@ const VideoPlayer = ({ videoUrl }: VideoPlayerProps) => {
       onMouseMove={showControls}
       onTouchStart={showControls}
     >
+      {/* Video display */}
       <div className="flex-grow relative">
         <video
           ref={videoRef}
@@ -140,7 +143,7 @@ const VideoPlayer = ({ videoUrl }: VideoPlayerProps) => {
         )}
       </div>
       
-      {/* Video controls below the video */}
+      {/* Video controls positioned BELOW the video */}
       {isControlsVisible && (
         <div className="bg-black/70 p-3 transition-opacity">
           {/* Timeline slider */}
