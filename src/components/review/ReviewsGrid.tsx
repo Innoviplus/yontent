@@ -2,12 +2,14 @@
 import { Review } from '@/lib/types';
 import ReviewCard from '@/components/ReviewCard';
 import { trackReviewView } from '@/services/review/trackViews';
+import { memo } from 'react';
 
 interface ReviewsGridProps {
   reviews: Review[];
 }
 
-const ReviewsGrid = ({ reviews }: ReviewsGridProps) => {
+// Memoize the component to prevent unnecessary re-renders
+const ReviewsGrid = memo(({ reviews }: ReviewsGridProps) => {
   const handleReviewClick = (reviewId: string) => {
     trackReviewView(reviewId);
   };
@@ -25,6 +27,8 @@ const ReviewsGrid = ({ reviews }: ReviewsGridProps) => {
       ))}
     </div>
   );
-};
+});
+
+ReviewsGrid.displayName = 'ReviewsGrid';
 
 export default ReviewsGrid;

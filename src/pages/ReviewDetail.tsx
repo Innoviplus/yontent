@@ -36,7 +36,7 @@ const ReviewDetail = () => {
     <div className="min-h-screen bg-gray-50">
       <Navbar />
       
-      <div className="container mx-auto px-4 pt-16 pb-16 max-w-6xl">
+      <div className="container mx-auto px-2 sm:px-4 pt-12 pb-16 max-w-7xl">
         {loading ? (
           <div className="space-y-6">
             {/* Loading skeletons */}
@@ -58,9 +58,9 @@ const ReviewDetail = () => {
             </div>
           </div>
         ) : review ? (
-          <div className="grid grid-cols-1 md:grid-cols-7 gap-6">
+          <div className="grid grid-cols-1 md:grid-cols-7 gap-4 md:gap-6">
             {/* Main content - left side (5/7 width on desktop) */}
-            <div className="md:col-span-5 space-y-6">
+            <div className="md:col-span-5 space-y-4 md:space-y-6">
               <div className="bg-white rounded-xl overflow-hidden shadow-subtle">
                 {/* Review images and videos with increased height */}
                 <ReviewImages images={review.images} videos={review.videos} />
@@ -100,7 +100,7 @@ const ReviewDetail = () => {
             </div>
             
             {/* Sidebar - right side (2/7 width on desktop) */}
-            <div className="md:col-span-2 space-y-6">
+            <div className="md:col-span-2 space-y-4 md:space-y-6">
               {/* Author profile section - moved above related reviews */}
               {review.user && (
                 <ReviewAuthorProfile userId={review.userId} />

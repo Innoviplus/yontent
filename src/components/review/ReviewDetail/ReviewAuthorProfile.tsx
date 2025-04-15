@@ -1,5 +1,5 @@
 
-import { useState, useEffect } from 'react';
+import { useState, useEffect, memo } from 'react';
 import { Link } from 'react-router-dom';
 import { User as UserType } from '@/lib/types';
 import { supabase } from '@/integrations/supabase/client';
@@ -13,7 +13,7 @@ interface ReviewAuthorProfileProps {
   userId: string;
 }
 
-const ReviewAuthorProfile = ({ userId }: ReviewAuthorProfileProps) => {
+const ReviewAuthorProfile = memo(({ userId }: ReviewAuthorProfileProps) => {
   const [author, setAuthor] = useState<UserType | null>(null);
   const [loading, setLoading] = useState(true);
   const [stats, setStats] = useState({
@@ -26,25 +26,23 @@ const ReviewAuthorProfile = ({ userId }: ReviewAuthorProfileProps) => {
   useEffect(() => {
     const fetchAuthorProfile = async () => {
       try {
-        // Fetch user profile with an explicit query for avatar
+        // Fetch user profile
         const { data: profileData, error: profileError } = await supabase
           .from('profiles')
-          .select('id, username, followers_count, following_count, created_at')
+          .select('id, username, avatar, followers_count, following_count, created_at')
           .eq('id', userId)
           .single();
           
         if (profileError) throw profileError;
         
-        // Fetch avatar separately
-        const { data: authUser } = await supabase.auth.getUser(userId);
-        const avatarUrl = authUser?.user?.user_metadata?.avatar_url;
+        console.log('Author profile data:', profileData);
         
         // Transform to User type
         const userProfile: UserType = {
           id: profileData.id,
           username: profileData.username || 'Anonymous',
-          email: '', // Add the required email property even though it's not in profile data
-          avatar: avatarUrl,
+          email: '', // Add the required email property
+          avatar: profileData.avatar,
           points: 0,
           createdAt: new Date(profileData.created_at),
         };
@@ -115,10 +113,12 @@ const ReviewAuthorProfile = ({ userId }: ReviewAuthorProfileProps) => {
         
         {/* Stats grid with only reviews, followers, following */}
         <div className="grid grid-cols-3 gap-2 mt-2">
-          <div className="bg-gray-50 rounded-lg p-3 text-center">
-            <div className="text-lg font-semibold text-brand-slate">{formatNumber(stats.reviewsCount)}</div>
+          <Link to={`/user/${author.username}`} className="bg-gray-50 rounded-lg p-3 text-center hover:bg-gray-100 transition-colors">
+            <div className="text-lg font-semibold text-brand-slate hover:text-brand-teal transition-colors">
+              {formatNumber(stats.reviewsCount)}
+            </div>
             <div className="text-xs text-gray-500">posts</div>
-          </div>
+          </Link>
           
           <Link to={`/user/${author.username}/followers`} className="bg-gray-50 rounded-lg p-3 text-center hover:bg-gray-100 transition-colors">
             <div className="text-lg font-semibold text-brand-slate hover:text-brand-teal transition-colors">
@@ -137,6 +137,8 @@ const ReviewAuthorProfile = ({ userId }: ReviewAuthorProfileProps) => {
       </CardContent>
     </Card>
   );
-};
+});
+
+ReviewAuthorProfile.displayName = 'ReviewAuthorProfile';
 
 export default ReviewAuthorProfile;

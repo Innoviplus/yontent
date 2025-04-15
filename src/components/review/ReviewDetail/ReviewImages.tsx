@@ -85,7 +85,7 @@ const ReviewImages = ({ images, videos = [] }: ReviewImagesProps) => {
   return (
     <div className="relative overflow-hidden">
       {/* Main Image or Video - with increased height */}
-      <AspectRatio ratio={isMobile ? 4/5 : 16/10} className="bg-gray-100">
+      <AspectRatio ratio={isMobile ? 4/5 : 16/9} className="bg-gray-100">
         {showVideo && videos.length > 0 ? (
           <VideoPlayer videoUrl={videos[0]} />
         ) : (

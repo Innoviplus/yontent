@@ -5,13 +5,15 @@ import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { User, Eye, Heart } from 'lucide-react';
 import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
 import { formatNumber } from '@/lib/formatUtils';
+import { memo } from 'react';
 
 interface RelatedReviewsProps {
   reviewId: string;
   relatedReviews: Review[];
 }
 
-const RelatedReviews = ({ reviewId, relatedReviews }: RelatedReviewsProps) => {
+// Memoize the component to prevent unnecessary re-renders
+const RelatedReviews = memo(({ reviewId, relatedReviews }: RelatedReviewsProps) => {
   if (!relatedReviews || relatedReviews.length === 0) {
     return null;
   }
@@ -43,6 +45,7 @@ const RelatedReviews = ({ reviewId, relatedReviews }: RelatedReviewsProps) => {
                       src={review.images[0]} 
                       alt="Review image" 
                       className="w-full h-full object-cover"
+                      loading="lazy" // Add lazy loading
                     />
                   </div>
                 ) : (
@@ -88,6 +91,8 @@ const RelatedReviews = ({ reviewId, relatedReviews }: RelatedReviewsProps) => {
       </CardContent>
     </Card>
   );
-};
+});
+
+RelatedReviews.displayName = 'RelatedReviews';
 
 export default RelatedReviews;

@@ -4,7 +4,7 @@ import { Review } from '@/lib/types';
 
 // Cache for review data
 const reviewsCache = new Map<string, { data: Review[], timestamp: number }>();
-const CACHE_EXPIRY = 5 * 60 * 1000; // 5 minutes
+const CACHE_EXPIRY = 2 * 60 * 1000; // 2 minutes cache expiry for more frequent updates
 
 export const fetchReviews = async (sortBy: string, userId?: string): Promise<Review[]> => {
   try {
@@ -15,6 +15,11 @@ export const fetchReviews = async (sortBy: string, userId?: string): Promise<Rev
     if (cachedResult && (Date.now() - cachedResult.timestamp) < CACHE_EXPIRY) {
       return cachedResult.data;
     }
+    
+    console.log('Cache miss, fetching fresh reviews data');
+    
+    // Limit the amount of data we're retrieving
+    const FETCH_LIMIT = 50; // Fetch fewer items for better performance
     
     let query = supabase
       .from('reviews')
@@ -33,7 +38,8 @@ export const fetchReviews = async (sortBy: string, userId?: string): Promise<Rev
           avatar
         )
       `)
-      .eq('status', 'PUBLISHED');
+      .eq('status', 'PUBLISHED')
+      .limit(FETCH_LIMIT);
 
     if (sortBy === 'recent') {
       query = query.order('created_at', { ascending: false });
@@ -41,7 +47,7 @@ export const fetchReviews = async (sortBy: string, userId?: string): Promise<Rev
       query = query.order('views_count', { ascending: false });
     } else if (sortBy === 'trending') {
       // Trending is a combination of recent and popularity
-      query = query.order('created_at', { ascending: false });
+      query = query.order('likes_count', { ascending: false });
     } else if (sortBy === 'relevant' && userId) {
       query = query.order('created_at', { ascending: false });
     }
