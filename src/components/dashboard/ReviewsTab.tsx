@@ -13,7 +13,7 @@ const ReviewsTab = ({ reviews }: ReviewsTabProps) => {
   return (
     <>
       <div className="flex justify-between items-center mb-4">
-        <h2 className="text-xl font-semibold">Your Reviews</h2>
+        <h2 className="text-xl font-semibold">My Reviews</h2>
         <Button asChild className="bg-brand-teal hover:bg-brand-teal/90 text-white py-1.5 px-4 text-sm">
           <Link to="/submit-review">
             Add Review

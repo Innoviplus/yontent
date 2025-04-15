@@ -80,6 +80,12 @@ const ImageUpload: React.FC<ImageUploadProps> = ({
     }
   };
 
+  const handleRemoveImage = (index: number, e: React.MouseEvent) => {
+    e.preventDefault();
+    e.stopPropagation();
+    onRemoveImage(index);
+  };
+
   return (
     <div className="mb-6">
       <div className="flex items-center justify-between mb-2">
@@ -102,7 +108,7 @@ const ImageUpload: React.FC<ImageUploadProps> = ({
             <button
               type="button"
               className="absolute top-0 right-0 bg-red-500 text-white p-1 rounded-bl-md opacity-80 hover:opacity-100 transition-opacity"
-              onClick={() => onRemoveImage(index)}
+              onClick={(e) => handleRemoveImage(index, e)}
               disabled={uploading}
               aria-label="Remove image"
             >

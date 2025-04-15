@@ -46,8 +46,8 @@ const AppRoutes = () => {
       <Route path="/edit-review/:id" element={<ProtectedRoute><EditReview /></ProtectedRoute>} />
       <Route path="/submit-review" element={<ProtectedRoute><SubmitReview /></ProtectedRoute>} />
       <Route path="/create-review" element={<ProtectedRoute><CreateReview /></ProtectedRoute>} />
-      <Route path="/rewards" element={<Rewards />} />
-      <Route path="/rewards/:id" element={<RewardDetail />} />
+      <Route path="/rewards" element={<ProtectedRoute><Rewards /></ProtectedRoute>} />
+      <Route path="/rewards/:id" element={<ProtectedRoute><RewardDetail /></ProtectedRoute>} />
       <Route path="/missions" element={<Missions />} />
       <Route path="/mission/:id" element={<MissionDetail />} />
       <Route path="/mission/:id/review" element={<ProtectedRoute><MissionReviewSubmission /></ProtectedRoute>} />
