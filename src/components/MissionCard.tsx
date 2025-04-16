@@ -55,7 +55,7 @@ const MissionCard = ({ mission, className }: MissionCardProps) => {
             </div>
           )}
           <div>
-            <div className="text-sm font-medium text-gray-500">
+            <div className="text-sm font-medium text-gray-500 line-clamp-1">
               {mission.merchantName || 'Brand Mission'}
             </div>
             <div className="flex items-center text-brand-teal font-semibold">
@@ -69,7 +69,7 @@ const MissionCard = ({ mission, className }: MissionCardProps) => {
           </div>
         </div>
         
-        <h3 className="text-lg font-semibold text-brand-slate mb-2">{mission.title}</h3>
+        <h3 className="text-lg font-semibold text-brand-slate mb-2 line-clamp-2">{mission.title}</h3>
         
         <div className="text-gray-600 mb-4 text-sm flex-1">
           <HTMLContent content={mission.description} />

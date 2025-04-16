@@ -1,3 +1,4 @@
+
 import { useState, useEffect } from 'react';
 import { Mission } from '@/lib/types';
 import MissionCard from '@/components/MissionCard';
@@ -127,12 +128,17 @@ const Missions = () => {
       
       <main className="container mx-auto px-4 pt-24 pb-16">
         <div className="bg-white rounded-xl shadow-subtle p-6 mb-8">
-          <h1 className="text-3xl font-bold text-gray-900 mb-2">Missions</h1>
-          <p className="text-lg text-gray-600 mb-6">
-            Complete missions to earn points and unlock rewards.
-          </p>
+          <div className={`flex ${isMobile ? 'flex-col gap-2' : 'items-center justify-between'} mb-4`}>
+            <div className="flex items-center gap-3">
+              <h1 className="text-2xl font-bold text-gray-900">Missions</h1>
+            </div>
+            
+            <p className="text-lg text-gray-600 mb-4">
+              Complete missions to earn points and unlock rewards.
+            </p>
+          </div>
           
-          <div className={`flex ${isMobile ? 'flex-col space-y-4' : 'justify-between items-center'} mb-4`}>
+          <div className={`flex ${isMobile ? 'flex-col space-y-4' : 'justify-between items-center'}`}>
             <p className="text-gray-500 text-sm">
               {isLoading ? 'Loading missions...' : `${activeMissionsCount} active missions available`}
             </p>

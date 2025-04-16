@@ -17,7 +17,7 @@ const MissionBanner = ({ mission }: MissionBannerProps) => {
         className="w-full relative bg-cover bg-center"
         style={{ 
           backgroundImage: `linear-gradient(rgba(0, 0, 0, 0.5), rgba(0, 0, 0, 0.7)), url(${mission.bannerImage || '/placeholder.svg'})`,
-          height: isMobile ? '200px' : '306px' // Fixed height instead of aspect ratio
+          height: isMobile ? '200px' : '306px'
         }}
       >
         <div className="container mx-auto px-4 h-full flex flex-col justify-end pb-8">
@@ -41,7 +41,7 @@ const MissionBanner = ({ mission }: MissionBannerProps) => {
             </div>
           </div>
           
-          <h1 className="text-2xl md:text-4xl font-bold text-white">{mission.title}</h1>
+          <h1 className="text-2xl md:text-4xl font-bold text-white line-clamp-2">{mission.title}</h1>
         </div>
       </div>
     </div>
