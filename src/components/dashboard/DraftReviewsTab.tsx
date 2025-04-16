@@ -1,4 +1,3 @@
-
 import { Link } from 'react-router-dom';
 import { Review } from '@/lib/types';
 import { Edit, Trash2 } from 'lucide-react';
@@ -78,9 +77,9 @@ const DraftReviewsTab = ({ drafts }: DraftReviewsTabProps) => {
   
   if (drafts.length === 0) {
     return (
-      <div className="text-center py-14 bg-white rounded-lg shadow-sm">
-        <h3 className="text-lg font-medium text-gray-900 mb-4">No draft reviews</h3>
-        <p className="text-gray-500 mb-8">You haven't saved any reviews as drafts yet.</p>
+      <div className="text-center py-14 bg-white rounded-lg shadow-sm px-6">
+        <h3 className="text-lg font-medium text-gray-900 mb-4 pl-4">No draft reviews</h3>
+        <p className="text-gray-500 mb-8 pl-4">You haven't saved any reviews as drafts yet.</p>
         <Button asChild className="bg-brand-teal hover:bg-brand-teal/90">
           <Link to="/submit-review">Create a Review</Link>
         </Button>
