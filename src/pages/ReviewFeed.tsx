@@ -1,6 +1,6 @@
 
 import { useEffect } from 'react';
-import { Loader2 } from 'lucide-react';
+import { Loader2, Star } from 'lucide-react';
 import Navbar from '@/components/Navbar';
 import ReviewsGrid from '@/components/review/ReviewsGrid';
 import FeedHeader from '@/components/review/FeedHeader';
@@ -42,6 +42,11 @@ const ReviewFeed = () => {
       <Navbar />
       
       <div className="container mx-auto px-4 pt-20 pb-16">
+        <div className="flex items-center gap-3 mb-6">
+          <Star className="h-6 w-6 text-brand-teal" />
+          <h1 className="text-2xl font-bold text-gray-900">Review Feed</h1>
+        </div>
+        
         <FeedHeader 
           sortBy={sortBy as 'recent' | 'views' | 'relevant'}
           onSortChange={(sort) => setSortBy(sort as SortOption)}

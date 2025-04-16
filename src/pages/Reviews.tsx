@@ -1,6 +1,6 @@
 
 import { Suspense, lazy, useEffect } from 'react';
-import { Loader2, Filter } from 'lucide-react';
+import { Loader2, Filter, Star } from 'lucide-react';
 import Navbar from '@/components/Navbar';
 import { useAuth } from '@/contexts/AuthContext';
 import { useReviewsList, SortOption } from '@/hooks/review/useReviewsList';
@@ -56,7 +56,10 @@ const Reviews = () => {
       <div className="container mx-auto px-4 pt-24 pb-16">
         {isMobile ? (
           <div className="flex justify-between items-center mb-4 sticky top-16 z-10 bg-gray-50 pt-2 pb-2">
-            <h1 className="text-xl font-bold">Reviews</h1>
+            <div className="flex items-center gap-2">
+              <Star className="h-5 w-5 text-brand-teal" />
+              <h1 className="text-xl font-bold">Reviews</h1>
+            </div>
             <div className="flex items-center gap-2">
               <Sheet>
                 <SheetTrigger asChild>
@@ -78,7 +81,10 @@ const Reviews = () => {
           </div>
         ) : (
           <div className="flex flex-col md:flex-row justify-between items-start md:items-center mb-8 gap-4">
-            <h1 className="text-2xl font-bold">Reviews</h1>
+            <div className="flex items-center gap-3">
+              <Star className="h-6 w-6 text-brand-teal" />
+              <h1 className="text-2xl font-bold">Reviews</h1>
+            </div>
             <ReviewSorter sortBy={sortBy} onSortChange={handleSortChange} />
           </div>
         )}
