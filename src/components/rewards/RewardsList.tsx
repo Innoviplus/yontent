@@ -4,10 +4,12 @@ import { toast } from 'sonner';
 import RewardCard from './RewardCard';
 import { RedemptionItem } from '@/types/redemption';
 import { getRedemptionItems } from '@/services/redemption/getRedemptionItems';
+import { useIsMobile } from '@/hooks/use-mobile';
 
 const RewardsList = () => {
   const [rewards, setRewards] = useState<RedemptionItem[]>([]);
   const [isLoading, setIsLoading] = useState(true);
+  const isMobile = useIsMobile();
 
   useEffect(() => {
     const fetchRewards = async () => {
@@ -43,7 +45,7 @@ const RewardsList = () => {
   }
 
   return (
-    <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6">
+    <div className={`grid grid-cols-1 ${isMobile ? 'gap-4' : 'sm:grid-cols-2 lg:grid-cols-3 gap-6'}`}>
       {rewards.map((reward) => (
         <RewardCard key={reward.id} reward={reward} />
       ))}

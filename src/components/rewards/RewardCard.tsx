@@ -21,8 +21,8 @@ const RewardCard: React.FC<RewardCardProps> = ({ reward }) => {
       onClick={handleCardClick}
       className="bg-white shadow-sm rounded-lg hover:shadow-md transition cursor-pointer"
     >
-      <div className="p-4">
-        <div className="flex gap-4">
+      <div className="p-5">
+        <div className="flex gap-4 items-center">
           {/* Logo image */}
           <div className="w-16 h-16 rounded-lg overflow-hidden flex-shrink-0 bg-gray-100">
             {reward.image_url ? (
@@ -44,7 +44,7 @@ const RewardCard: React.FC<RewardCardProps> = ({ reward }) => {
           
           {/* Title and points moved to right side */}
           <div className="flex flex-col flex-1">
-            <h3 className="font-medium text-gray-900 mb-2">{reward.name}</h3>
+            <h3 className="font-medium text-gray-900 mb-2 line-clamp-2">{reward.name}</h3>
             <div className="flex items-center gap-1 text-brand-teal">
               <img 
                 src="/lovable-uploads/b28ed926-e3d1-4215-9e39-e7b91a7ad3f8.png" 
@@ -57,7 +57,7 @@ const RewardCard: React.FC<RewardCardProps> = ({ reward }) => {
         </div>
         
         {/* Description */}
-        <p className="mt-3 text-sm text-gray-600 line-clamp-2">{reward.description}</p>
+        <p className="mt-4 text-sm text-gray-600 line-clamp-2">{reward.description}</p>
       </div>
     </div>
   );
