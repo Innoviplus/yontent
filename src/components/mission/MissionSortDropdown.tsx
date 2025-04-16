@@ -7,15 +7,17 @@ import {
 } from '@/components/ui/dropdown-menu';
 import { Button } from '@/components/ui/button';
 import { ChevronDown } from 'lucide-react';
+import { cn } from '@/lib/utils';
 
 type SortOption = 'recent' | 'expiringSoon' | 'highestReward';
 
 interface MissionSortDropdownProps {
   sortBy: SortOption;
   onSortChange: (sort: SortOption) => void;
+  className?: string;
 }
 
-const MissionSortDropdown = ({ sortBy, onSortChange }: MissionSortDropdownProps) => {
+const MissionSortDropdown = ({ sortBy, onSortChange, className }: MissionSortDropdownProps) => {
   const getSortLabel = (option: SortOption): string => {
     switch (option) {
       case 'recent':
@@ -32,7 +34,10 @@ const MissionSortDropdown = ({ sortBy, onSortChange }: MissionSortDropdownProps)
   return (
     <DropdownMenu>
       <DropdownMenuTrigger asChild>
-        <Button variant="outline" className="gap-2">
+        <Button 
+          variant="outline" 
+          className={cn("gap-2", className)}
+        >
           {getSortLabel(sortBy)}
           <ChevronDown className="h-4 w-4" />
         </Button>

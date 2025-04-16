@@ -1,4 +1,3 @@
-
 import { useState, useEffect } from 'react';
 import { Mission } from '@/lib/types';
 import MissionCard from '@/components/MissionCard';
@@ -7,6 +6,7 @@ import Navbar from '@/components/Navbar';
 import { RefreshCw } from 'lucide-react';
 import { supabase } from '@/integrations/supabase/client';
 import { toast } from 'sonner';
+import { useIsMobile } from '@/hooks/use-mobile';
 
 type SortOption = 'recent' | 'expiringSoon' | 'highestReward';
 
@@ -15,6 +15,7 @@ const Missions = () => {
   const [sortBy, setSortBy] = useState<SortOption>('recent');
   const [isLoading, setIsLoading] = useState(true);
   const [activeMissionsCount, setActiveMissionsCount] = useState(0);
+  const isMobile = useIsMobile();
 
   const fetchMissions = async () => {
     setIsLoading(true);
@@ -131,8 +132,8 @@ const Missions = () => {
             Complete missions to earn points and unlock rewards.
           </p>
           
-          <div className="flex justify-between items-center mb-4">
-            <p className="text-gray-500">
+          <div className={`flex ${isMobile ? 'flex-col space-y-4' : 'justify-between items-center'} mb-4`}>
+            <p className="text-gray-500 text-sm">
               {isLoading ? 'Loading missions...' : `${activeMissionsCount} active missions available`}
             </p>
             
@@ -140,6 +141,7 @@ const Missions = () => {
               <MissionSortDropdown 
                 sortBy={sortBy} 
                 onSortChange={setSortBy}
+                className={isMobile ? 'w-full' : ''}
               />
               
               <button 
