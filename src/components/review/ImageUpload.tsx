@@ -107,10 +107,10 @@ const ImageUpload: React.FC<ImageUploadProps> = ({
             <img src={url} alt={`Preview ${index}`} className="w-full h-full object-cover" />
             <button
               type="button"
-              className="absolute top-0 right-0 bg-red-500 text-white p-1 rounded-bl-md opacity-80 hover:opacity-100 transition-opacity"
               onClick={(e) => handleRemoveImage(index, e)}
               disabled={uploading}
               aria-label="Remove image"
+              className="absolute top-0 right-0 bg-red-500 text-white p-1 rounded-bl-md opacity-80 hover:opacity-100 transition-opacity z-10"
             >
               <X className="h-3 w-3" />
             </button>
