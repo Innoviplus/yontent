@@ -39,9 +39,7 @@ const HeroSection = () => {
           {/* Subheading */}
           <p className="text-xl md:text-2xl text-gray-600 mb-8 animate-fade-up text-center max-w-2xl mx-auto" style={{
           animationDelay: '200ms'
-        }}>
-            Record and organize your product reviews automatically. Focus on what matters - connecting with brands.
-          </p>
+        }}>Share your product experiences, and earn points for every completed mission</p>
           
           {/* CTA Buttons */}
           <div className="flex flex-col sm:flex-row gap-4 justify-center mb-12 animate-fade-up" style={{
