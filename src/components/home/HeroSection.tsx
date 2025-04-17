@@ -30,7 +30,7 @@ Brand Love</span>
           </div>
           
           {/* Main heading */}
-          <h1 className="sm:text-5xl md:text-6xl font-bold text-gray-900 tracking-tight mb-6 animate-fade-up text-center text-4xl">
+          <h1 className="text-4xl sm:text-5xl md:text-6xl font-bold text-gray-900 tracking-tight mb-6 animate-fade-up text-center">
             Share reviews.
             <span className="bg-gradient-to-r from-brand-teal to-brand-slate bg-clip-text text-transparent block mt-2">
               Earn rewards.
