@@ -16,7 +16,7 @@ const HeroSection = () => {
         <div className="max-w-3xl mx-auto text-center">
           <div className="inline-flex items-center gap-2 px-4 py-1.5 bg-white rounded-full shadow-subtle mb-6 animate-fade-in">
             <Star className="h-4 w-4 text-brand-teal" />
-            <span className="text-sm font-medium text-gray-700">Share reviews. Complete missions. Earn rewards.</span>
+            <span className="text-sm font-medium text-gray-700 text-center">Share reviews. Complete missions. Earn rewards.</span>
           </div>
           
           <h1 style={{
