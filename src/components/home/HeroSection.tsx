@@ -40,7 +40,7 @@ Brand Love</span>
           {/* Subheading */}
           <p style={{
           animationDelay: '200ms'
-        }} className="text-xl md:text-2xl text-gray-600 mb-8 animate-fade-up max-w-2xl mx-auto text-center">Join our community of reviewers, share your experiences, and earn points for every completed mission</p>
+        }} className="text-xl text-gray-600 mb-8 animate-fade-up max-w-2xl mx-auto text-center md:text-sm">Join our community of reviewers, share your experiences, and earn points for every completed mission</p>
           
           {/* CTA Buttons */}
           <div className="flex flex-col sm:flex-row gap-4 justify-center mb-12 animate-fade-up" style={{
