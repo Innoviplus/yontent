@@ -42,6 +42,11 @@ const MobileMenu = ({ isOpen }: MobileMenuProps) => {
             </button>
             {userProfile && (
               <div className="flex items-center gap-2 px-3 py-1.5 bg-brand-teal/10 text-brand-teal rounded-md">
+                <img 
+                  src="/lovable-uploads/15750ea6-ed41-4d3d-83e2-299853617c30.png" 
+                  alt="Points" 
+                  className="h-4 w-4" 
+                />
                 <span className="font-medium">{userProfile.points}</span>
                 <span className="text-sm">points</span>
               </div>
@@ -69,3 +74,4 @@ const MobileMenu = ({ isOpen }: MobileMenuProps) => {
 };
 
 export default MobileMenu;
+
