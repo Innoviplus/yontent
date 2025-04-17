@@ -24,7 +24,8 @@ const HeroSection = () => {
           {/* Badge */}
           <div className="inline-flex items-center gap-2 px-4 py-2 bg-white rounded-full shadow-md mb-8 animate-fade-in">
             <Star className="h-4 w-4 text-brand-teal" />
-            <span className="text-sm font-medium text-gray-700">Share reviews. Complete missions. Earn rewards.</span>
+            <span className="text-sm font-medium text-gray-700 text-left">Get Recognised for Your
+Brand Love</span>
             <Sparkles className="h-4 w-4 text-brand-teal ml-1" />
           </div>
           
