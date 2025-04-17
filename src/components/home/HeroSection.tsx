@@ -1,11 +1,11 @@
+
 import { Link } from 'react-router-dom';
 import { Star, Award, Sparkles, ArrowRight } from 'lucide-react';
 import { useAuth } from '@/contexts/AuthContext';
 import { Button } from '@/components/ui/button';
+
 const HeroSection = () => {
-  const {
-    user
-  } = useAuth();
+  const { user } = useAuth();
   return <section className="w-full min-h-[85vh] relative flex items-center justify-center pt-20 pb-16 overflow-hidden">
       {/* Background with gradient and pattern */}
       <div className="absolute inset-0 bg-gradient-to-br from-brand-teal/5 via-white to-brand-slate/5">
@@ -60,11 +60,11 @@ Brand Love</span>
           </div>
           
           {/* Social proof */}
-          <div className="py-3 px-4 bg-brand-slate/5 rounded-2xl inline-flex items-center gap-2 animate-fade-up mx-auto" style={{
-          animationDelay: '400ms'
-        }}>
-            <Award className="h-5 w-5 text-brand-slate" />
-            <span className="text-sm font-medium text-brand-slate">Over 10,000 members already earning rewards</span>
+          <div className="flex justify-center">
+            <div className="py-3 px-4 bg-brand-slate/5 rounded-2xl inline-flex items-center gap-2 animate-fade-up">
+              <Award className="h-5 w-5 text-brand-slate" />
+              <span className="text-sm font-medium text-brand-slate">Over 10,000 members already earning rewards</span>
+            </div>
           </div>
         </div>
       </div>
