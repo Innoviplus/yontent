@@ -52,7 +52,7 @@ const HeroSection = () => {
           animationDelay: '400ms'
         }}>
             <Award className="h-5 w-5 text-brand-slate" />
-            <span className="text-sm font-medium text-brand-slate">Over 10,000 members already earning rewards</span>
+            <span className="text-sm font-medium text-brand-slate text-center">Over 10,000 members already earning rewards</span>
           </div>
         </div>
       </div>
