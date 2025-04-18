@@ -1,3 +1,4 @@
+
 // Move the existing form logic from RegisterForm.tsx to this new component
 import { useState } from 'react';
 import { Eye, EyeOff } from 'lucide-react';
@@ -7,7 +8,7 @@ import { Form, FormControl, FormField, FormItem, FormLabel, FormMessage } from '
 import { zodResolver } from '@hookform/resolvers/zod';
 import { useForm } from 'react-hook-form';
 import * as z from 'zod';
-import { useNavigate } from 'react-router-dom';
+import { useNavigate, Link } from 'react-router-dom';
 import { toast } from 'sonner';
 import { Button } from '@/components/ui/button';
 import PasswordStrengthIndicator from './PasswordStrengthIndicator';

@@ -10,6 +10,7 @@ import { InputOTP, InputOTPGroup, InputOTPSlot } from '@/components/ui/input-otp
 import { zodResolver } from '@hookform/resolvers/zod';
 import { useForm } from 'react-hook-form';
 import * as z from 'zod';
+import { supabase } from '@/integrations/supabase/client';
 
 const phoneSignUpSchema = z.object({
   phone: z.string().min(10, 'Phone number must be at least 10 digits'),
@@ -96,8 +97,8 @@ const PhoneSignUpForm = () => {
                     maxLength={6}
                     render={({ slots }) => (
                       <InputOTPGroup className="gap-2">
-                        {slots.map((slot, index) => (
-                          <InputOTPSlot key={index} {...slot} />
+                        {slots.map((slot, i) => (
+                          <InputOTPSlot key={i} {...slot} index={i} />
                         ))}
                       </InputOTPGroup>
                     )}
