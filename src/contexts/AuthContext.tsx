@@ -1,4 +1,3 @@
-
 import { createContext, useContext, useEffect, useState, ReactNode } from 'react';
 import { Session, User } from '@supabase/supabase-js';
 import { supabase } from '@/integrations/supabase/client';
@@ -15,9 +14,9 @@ interface AuthContextType {
   loading: boolean;
   userProfile: any | null;
   refreshUserProfile: () => Promise<void>;
+  signUpWithPhone: (phone: string, username: string) => Promise<{ error: any }>;
 }
 
-// Create the context with a meaningful default value
 const AuthContext = createContext<AuthContextType>({
   session: null,
   user: null,
@@ -26,7 +25,8 @@ const AuthContext = createContext<AuthContextType>({
   signOut: async () => { throw new Error('AuthProvider not initialized') },
   loading: true,
   userProfile: null,
-  refreshUserProfile: async () => { throw new Error('AuthProvider not initialized') }
+  refreshUserProfile: async () => { throw new Error('AuthProvider not initialized') },
+  signUpWithPhone: async () => ({ error: new Error('AuthProvider not initialized') })
 });
 
 export function AuthProvider({ children }: { children: ReactNode }) {
@@ -36,7 +36,6 @@ export function AuthProvider({ children }: { children: ReactNode }) {
   const [userProfile, setUserProfile] = useState<any | null>(null);
   const { toast } = useToast();
 
-  // Method to refresh user profile data
   const refreshUserProfile = async () => {
     if (user) {
       try {
@@ -51,14 +50,12 @@ export function AuthProvider({ children }: { children: ReactNode }) {
   useEffect(() => {
     console.log("AuthProvider: Setting up auth state listener");
     
-    // Set up auth state change listener FIRST to prevent missing auth events
     const { data: { subscription } } = supabase.auth.onAuthStateChange(
       async (_event, newSession) => {
         console.log("Auth state changed:", _event, newSession?.user?.id);
         setSession(newSession);
         setUser(newSession?.user ?? null);
         
-        // Defer profile fetch with setTimeout to avoid Supabase SDK deadlocks
         if (newSession?.user) {
           setTimeout(async () => {
             try {
@@ -76,7 +73,6 @@ export function AuthProvider({ children }: { children: ReactNode }) {
       }
     );
 
-    // THEN check for existing session
     supabase.auth.getSession().then(({ data: { session: currentSession } }) => {
       console.log("Initial session check:", currentSession ? `Found session for ${currentSession.user.email}` : "No session");
       setSession(currentSession);
@@ -103,7 +99,6 @@ export function AuthProvider({ children }: { children: ReactNode }) {
     };
   }, []);
 
-  // Enhanced sign-in with error handling
   const signIn = async (email: string, password: string) => {
     const result = await authService.signIn(email, password);
     if (result.error) {
@@ -116,7 +111,6 @@ export function AuthProvider({ children }: { children: ReactNode }) {
     return result;
   };
 
-  // Enhanced sign-up with error handling
   const signUp = async (email: string, password: string, username: string) => {
     const result = await authService.signUp(email, password, username);
     if (result.error) {
@@ -129,7 +123,27 @@ export function AuthProvider({ children }: { children: ReactNode }) {
     return result;
   };
 
-  // Create context value object
+  const signUpWithPhone = async (phone: string, username: string) => {
+    try {
+      const { data, error } = await supabase.auth.signInWithOtp({
+        phone,
+        options: {
+          data: {
+            username,
+          }
+        }
+      });
+
+      if (error) {
+        return { error };
+      }
+
+      return { error: null };
+    } catch (error: any) {
+      return { error };
+    }
+  };
+
   const contextValue = {
     session,
     user,
@@ -139,6 +153,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
     loading,
     userProfile,
     refreshUserProfile,
+    signUpWithPhone,
   };
 
   return (
