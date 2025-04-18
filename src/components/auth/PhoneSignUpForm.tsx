@@ -20,7 +20,7 @@ const phoneSignUpSchema = z.object({
 type PhoneSignUpFormValues = z.infer<typeof phoneSignUpSchema>;
 
 const otpSchema = z.object({
-  otp: z.string().length(6, 'OTP must be 6 digits'),
+  otp: z.string().min(6, 'OTP must be 6 digits').max(6, 'OTP must be 6 digits'),
 });
 
 const PhoneSignUpForm = () => {
