@@ -11,14 +11,14 @@ const RegisterForm = () => {
     <div className="space-y-6">
       <Tabs defaultValue="phone" className="w-full">
         <TabsList className="grid w-full grid-cols-2">
-          <TabsTrigger value="email">Email</TabsTrigger>
           <TabsTrigger value="phone">Phone</TabsTrigger>
+          <TabsTrigger value="email">Email</TabsTrigger>
         </TabsList>
-        <TabsContent value="email">
-          <EmailSignUpForm />
-        </TabsContent>
         <TabsContent value="phone">
           <PhoneSignUpForm />
+        </TabsContent>
+        <TabsContent value="email">
+          <EmailSignUpForm />
         </TabsContent>
       </Tabs>
 

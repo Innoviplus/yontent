@@ -1,5 +1,5 @@
 
-import { useState } from 'react';
+import { useState, useRef, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { useAuth } from '@/contexts/AuthContext';
 import { toast } from 'sonner';
@@ -13,7 +13,6 @@ import {
   SelectTrigger,
   SelectValue,
 } from '@/components/ui/select';
-import { InputOTP, InputOTPGroup, InputOTPSlot } from '@/components/ui/input-otp';
 import { zodResolver } from '@hookform/resolvers/zod';
 import { useForm } from 'react-hook-form';
 import * as z from 'zod';
@@ -36,6 +35,10 @@ const PhoneSignUpForm = () => {
   const [phoneNumber, setPhoneNumber] = useState('');
   const { signUpWithPhone } = useAuth();
   const navigate = useNavigate();
+  
+  // For the OTP input
+  const [otpValues, setOtpValues] = useState<string[]>(Array(6).fill(''));
+  const inputRefs = useRef<(HTMLInputElement | null)[]>(Array(6).fill(null));
 
   const form = useForm<PhoneSignUpFormValues>({
     resolver: zodResolver(phoneSignUpSchema),
@@ -71,11 +74,18 @@ const PhoneSignUpForm = () => {
     }
   };
 
-  const verifyOTP = async (values: { otp: string }) => {
+  const verifyOTP = async () => {
     try {
+      const otpValue = otpValues.join('');
+      
+      if (otpValue.length !== 6) {
+        toast.error('Please enter a valid 6-digit OTP');
+        return;
+      }
+
       const { error } = await supabase.auth.verifyOtp({
         phone: phoneNumber,
-        token: values.otp,
+        token: otpValue,
         type: 'sms',
       });
 
@@ -91,45 +101,118 @@ const PhoneSignUpForm = () => {
     }
   };
 
+  const handleOtpChange = (index: number, value: string) => {
+    // Only allow digits
+    if (value && !/^\d*$/.test(value)) {
+      return;
+    }
+
+    const newOtpValues = [...otpValues];
+    
+    // If pasting a full OTP code
+    if (value.length > 1) {
+      const digits = value.split('').filter(v => /^\d$/.test(v)).slice(0, 6);
+      const newFullOtp = [...digits, ...Array(6 - digits.length).fill('')];
+      setOtpValues(newFullOtp);
+      
+      // Focus last filled input or the next empty one
+      const focusIndex = Math.min(digits.length, 5);
+      inputRefs.current[focusIndex]?.focus();
+      return;
+    }
+
+    // Handle regular single digit input
+    newOtpValues[index] = value;
+    setOtpValues(newOtpValues);
+    
+    // Auto-focus next input if current one is filled
+    if (value && index < 5) {
+      inputRefs.current[index + 1]?.focus();
+    }
+  };
+
+  const handleKeyDown = (index: number, e: React.KeyboardEvent<HTMLInputElement>) => {
+    // Handle backspace to go to previous input
+    if (e.key === 'Backspace') {
+      if (!otpValues[index] && index > 0) {
+        inputRefs.current[index - 1]?.focus();
+      }
+    }
+    
+    // Handle left/right arrow keys for navigation
+    if (e.key === 'ArrowLeft' && index > 0) {
+      inputRefs.current[index - 1]?.focus();
+    }
+    
+    if (e.key === 'ArrowRight' && index < 5) {
+      inputRefs.current[index + 1]?.focus();
+    }
+  };
+
+  const handlePaste = (e: React.ClipboardEvent) => {
+    e.preventDefault();
+    const pastedData = e.clipboardData.getData('text').trim();
+    const digits = pastedData.split('').filter(char => /^\d$/.test(char)).slice(0, 6);
+    
+    if (digits.length > 0) {
+      const newOtp = [...digits, ...Array(6 - digits.length).fill('')];
+      setOtpValues(newOtp);
+      
+      // Focus the next empty input or the last one
+      const focusIndex = Math.min(digits.length, 5);
+      inputRefs.current[focusIndex]?.focus();
+    }
+  };
+
+  useEffect(() => {
+    if (showOTP) {
+      // Focus the first input when OTP form is displayed
+      setTimeout(() => inputRefs.current[0]?.focus(), 100);
+    }
+  }, [showOTP]);
+
   if (showOTP) {
     return (
-      <Form {...otpForm}>
-        <form onSubmit={otpForm.handleSubmit(verifyOTP)} className="space-y-6">
-          <FormField
-            control={otpForm.control}
-            name="otp"
-            render={({ field }) => (
-              <FormItem>
-                <FormLabel>Enter verification code</FormLabel>
-                <FormControl>
-                  <div className="flex flex-col items-center space-y-2">
-                    <InputOTP 
-                      maxLength={6}
-                      value={field.value}
-                      onChange={(value) => field.onChange(value)}
-                      autoFocus
-                      render={({ slots }) => (
-                        <InputOTPGroup>
-                          {slots.map((slot, index) => (
-                            <InputOTPSlot key={index} index={index} />
-                          ))}
-                        </InputOTPGroup>
-                      )}
-                    />
-                    <div className="text-xs text-gray-500 mt-1">
-                      Enter the 6-digit code sent to your phone
-                    </div>
-                  </div>
-                </FormControl>
-                <FormMessage />
-              </FormItem>
-            )}
-          />
-          <Button type="submit" className="w-full" disabled={otpForm.formState.isSubmitting}>
-            {otpForm.formState.isSubmitting ? 'Verifying...' : 'Verify OTP'}
-          </Button>
-        </form>
-      </Form>
+      <div className="space-y-6">
+        <div>
+          <FormLabel>Enter verification code</FormLabel>
+          <div className="mt-1 text-xs text-gray-500">
+            Enter the 6-digit code sent to your phone
+          </div>
+          
+          <div className="flex justify-center gap-2 mt-4">
+            {[0, 1, 2, 3, 4, 5].map((index) => (
+              <Input
+                key={index}
+                ref={(el) => (inputRefs.current[index] = el)}
+                type="text"
+                inputMode="numeric"
+                autoComplete="one-time-code"
+                maxLength={1}
+                className="w-12 h-12 text-center text-lg font-semibold"
+                value={otpValues[index]}
+                onChange={(e) => handleOtpChange(index, e.target.value)}
+                onKeyDown={(e) => handleKeyDown(index, e)}
+                onPaste={index === 0 ? handlePaste : undefined}
+              />
+            ))}
+          </div>
+          
+          {otpValues.join('').length < 6 && (
+            <div className="mt-2 text-center text-sm text-gray-500">
+              {6 - otpValues.filter(Boolean).length} digits remaining
+            </div>
+          )}
+        </div>
+        
+        <Button 
+          onClick={verifyOTP} 
+          className="w-full" 
+          disabled={otpValues.filter(Boolean).length !== 6}
+        >
+          Verify OTP
+        </Button>
+      </div>
     );
   }
 
