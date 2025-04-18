@@ -6,6 +6,13 @@ import { toast } from 'sonner';
 import { Button } from '@/components/ui/button';
 import { Form, FormControl, FormField, FormItem, FormLabel, FormMessage } from '@/components/ui/form';
 import { Input } from '@/components/ui/input';
+import { 
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from '@/components/ui/select';
 import { InputOTP, InputOTPGroup, InputOTPSlot } from '@/components/ui/input-otp';
 import { zodResolver } from '@hookform/resolvers/zod';
 import { useForm } from 'react-hook-form';
@@ -13,7 +20,8 @@ import * as z from 'zod';
 import { supabase } from '@/integrations/supabase/client';
 
 const phoneSignUpSchema = z.object({
-  phone: z.string().min(10, 'Phone number must be at least 10 digits'),
+  countryCode: z.string().min(1, 'Country code is required'),
+  phone: z.string().min(8, 'Phone number must be at least 8 digits'),
   username: z.string().min(3, 'Username must be at least 3 characters'),
 });
 
@@ -32,6 +40,7 @@ const PhoneSignUpForm = () => {
   const form = useForm<PhoneSignUpFormValues>({
     resolver: zodResolver(phoneSignUpSchema),
     defaultValues: {
+      countryCode: '+852', // Default to Hong Kong
       phone: '',
       username: '',
     },
@@ -46,7 +55,7 @@ const PhoneSignUpForm = () => {
 
   const handleSignUp = async (values: PhoneSignUpFormValues) => {
     try {
-      const formattedPhone = values.phone.startsWith('+') ? values.phone : `+${values.phone}`;
+      const formattedPhone = `${values.countryCode}${values.phone}`;
       const { error } = await signUpWithPhone(formattedPhone, values.username);
       
       if (error) {
@@ -98,13 +107,15 @@ const PhoneSignUpForm = () => {
                       maxLength={6}
                       value={field.value}
                       onChange={(value) => field.onChange(value)}
-                    >
-                      <InputOTPGroup>
-                        {Array.from({ length: 6 }).map((_, i) => (
-                          <InputOTPSlot key={i} index={i} />
-                        ))}
-                      </InputOTPGroup>
-                    </InputOTP>
+                      autoFocus
+                      render={({ slots }) => (
+                        <InputOTPGroup>
+                          {slots.map((slot, index) => (
+                            <InputOTPSlot key={index} index={index} />
+                          ))}
+                        </InputOTPGroup>
+                      )}
+                    />
                     <div className="text-xs text-gray-500 mt-1">
                       Enter the 6-digit code sent to your phone
                     </div>
@@ -138,19 +149,49 @@ const PhoneSignUpForm = () => {
             </FormItem>
           )}
         />
-        <FormField
-          control={form.control}
-          name="phone"
-          render={({ field }) => (
-            <FormItem>
-              <FormLabel>Phone Number</FormLabel>
-              <FormControl>
-                <Input {...field} placeholder="+1234567890" type="tel" />
-              </FormControl>
-              <FormMessage />
-            </FormItem>
-          )}
-        />
+
+        <div className="grid gap-2">
+          <FormLabel>Phone Number</FormLabel>
+          <div className="flex gap-2">
+            <FormField
+              control={form.control}
+              name="countryCode"
+              render={({ field }) => (
+                <FormItem className="w-32">
+                  <Select
+                    value={field.value}
+                    onValueChange={field.onChange}
+                  >
+                    <FormControl>
+                      <SelectTrigger>
+                        <SelectValue placeholder="Code" />
+                      </SelectTrigger>
+                    </FormControl>
+                    <SelectContent>
+                      <SelectItem value="+852">+852 (Hong Kong)</SelectItem>
+                      <SelectItem value="+65">+65 (Singapore)</SelectItem>
+                    </SelectContent>
+                  </Select>
+                  <FormMessage />
+                </FormItem>
+              )}
+            />
+            
+            <FormField
+              control={form.control}
+              name="phone"
+              render={({ field }) => (
+                <FormItem className="flex-1">
+                  <FormControl>
+                    <Input {...field} placeholder="Phone number" type="tel" />
+                  </FormControl>
+                  <FormMessage />
+                </FormItem>
+              )}
+            />
+          </div>
+        </div>
+        
         <Button type="submit" className="w-full" disabled={form.formState.isSubmitting}>
           {form.formState.isSubmitting ? 'Sending OTP...' : 'Continue'}
         </Button>
