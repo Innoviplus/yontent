@@ -93,18 +93,17 @@ const PhoneSignUpForm = () => {
               <FormItem>
                 <FormLabel>Enter verification code</FormLabel>
                 <FormControl>
-                  <InputOTP
-                    maxLength={6}
-                    value={field.value}
+                  <InputOTP 
+                    maxLength={6} 
+                    value={field.value} 
                     onChange={field.onChange}
-                    render={({ slots }) => (
-                      <InputOTPGroup className="gap-2">
-                        {slots.map((slot, i) => (
-                          <InputOTPSlot key={i} {...slot} index={i} />
-                        ))}
-                      </InputOTPGroup>
-                    )}
-                  />
+                  >
+                    <InputOTPGroup>
+                      {Array.from({ length: 6 }).map((_, i) => (
+                        <InputOTPSlot key={i} index={i} />
+                      ))}
+                    </InputOTPGroup>
+                  </InputOTP>
                 </FormControl>
                 <FormMessage />
               </FormItem>
