@@ -25,7 +25,7 @@ const InputOTPGroup = React.forwardRef<
   React.ElementRef<"div">,
   React.ComponentPropsWithoutRef<"div">
 >(({ className, ...props }, ref) => (
-  <div ref={ref} className={cn("flex items-center", className)} {...props} />
+  <div ref={ref} className={cn("flex items-center gap-2", className)} {...props} />
 ))
 InputOTPGroup.displayName = "InputOTPGroup"
 
@@ -34,15 +34,17 @@ const InputOTPSlot = React.forwardRef<
   React.ComponentPropsWithoutRef<"div"> & { index: number }
 >(({ index, className, ...props }, ref) => {
   const inputOTPContext = React.useContext(OTPInputContext)
-  // Add safety check to ensure slots exist and the index is valid
-  const slot = inputOTPContext?.slots?.[index] || { char: '', hasFakeCaret: false, isActive: false }
+  const slot = inputOTPContext?.slots && inputOTPContext.slots[index] ? 
+              inputOTPContext.slots[index] : 
+              { char: '', hasFakeCaret: false, isActive: false }
+  
   const { char, hasFakeCaret, isActive } = slot
 
   return (
     <div
       ref={ref}
       className={cn(
-        "relative flex h-10 w-10 items-center justify-center border-y border-r border-input text-sm transition-all first:rounded-l-md first:border-l last:rounded-r-md",
+        "relative flex h-12 w-12 items-center justify-center border-y border-r border-input bg-background text-sm transition-all first:rounded-l-md first:border-l last:rounded-r-md focus-within:z-10 focus-within:ring-2 focus-within:ring-ring focus-within:ring-offset-background",
         isActive && "z-10 ring-2 ring-ring ring-offset-background",
         className
       )}

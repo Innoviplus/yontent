@@ -93,17 +93,22 @@ const PhoneSignUpForm = () => {
               <FormItem>
                 <FormLabel>Enter verification code</FormLabel>
                 <FormControl>
-                  <InputOTP 
-                    maxLength={6} 
-                    value={field.value} 
-                    onChange={field.onChange}
-                  >
-                    <InputOTPGroup>
-                      {Array.from({ length: 6 }).map((_, i) => (
-                        <InputOTPSlot key={i} index={i} />
-                      ))}
-                    </InputOTPGroup>
-                  </InputOTP>
+                  <div className="flex flex-col items-center space-y-2">
+                    <InputOTP 
+                      maxLength={6}
+                      value={field.value}
+                      onChange={(value) => field.onChange(value)}
+                    >
+                      <InputOTPGroup>
+                        {Array.from({ length: 6 }).map((_, i) => (
+                          <InputOTPSlot key={i} index={i} />
+                        ))}
+                      </InputOTPGroup>
+                    </InputOTP>
+                    <div className="text-xs text-gray-500 mt-1">
+                      Enter the 6-digit code sent to your phone
+                    </div>
+                  </div>
                 </FormControl>
                 <FormMessage />
               </FormItem>
