@@ -95,6 +95,8 @@ const PhoneSignUpForm = () => {
                 <FormControl>
                   <InputOTP
                     maxLength={6}
+                    value={field.value}
+                    onChange={field.onChange}
                     render={({ slots }) => (
                       <InputOTPGroup className="gap-2">
                         {slots.map((slot, i) => (
@@ -102,7 +104,6 @@ const PhoneSignUpForm = () => {
                         ))}
                       </InputOTPGroup>
                     )}
-                    onChange={(value) => field.onChange(value)}
                   />
                 </FormControl>
                 <FormMessage />
