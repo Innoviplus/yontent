@@ -1,4 +1,5 @@
 
+import { useState } from 'react';
 import { useForm } from 'react-hook-form';
 import { zodResolver } from '@hookform/resolvers/zod';
 import { toast } from 'sonner';
@@ -7,7 +8,6 @@ import { profileFormSchema, ProfileFormValues } from '@/schemas/profileFormSchem
 import { useProfileFormInitialization } from './useProfileFormInitialization';
 import { formatProfileFormValues, validateBirthDate } from '@/services/profile/profileFormService';
 import { updateProfileData } from '@/services/profile/profileUpdateService';
-import { supabase } from '@/integrations/supabase/client';
 
 export const useProfileForm = (
   user: any, 
@@ -65,9 +65,6 @@ export const useProfileForm = (
       const success = await updateProfileData(user.id, extendedData);
       
       if (success) {
-        // Check if this is the first profile update and add welcome points if it is
-        await checkFirstProfileUpdateAndAwardPoints(user.id);
-        
         // Update local state
         setExtendedProfile(extendedData);
         
@@ -83,75 +80,6 @@ export const useProfileForm = (
       toast.error("Update Failed: " + error.message);
     } finally {
       setIsUpdating(false);
-    }
-  };
-
-  // Check if this is the first profile update and award welcome points
-  const checkFirstProfileUpdateAndAwardPoints = async (userId: string) => {
-    try {
-      // Check if user has already received welcome points
-      const { data: transactions, error } = await supabase
-        .from('point_transactions')
-        .select('*')
-        .eq('user_id', userId)
-        .eq('type', 'WELCOME');
-      
-      if (error) {
-        console.error('Error checking welcome points:', error);
-        return;
-      }
-      
-      // If no welcome points transaction exists, add welcome points
-      if (transactions.length === 0) {
-        console.log('Awarding welcome points for first profile update');
-        
-        // First, get current points
-        const { data: profileData, error: profileError } = await supabase
-          .from('profiles')
-          .select('points')
-          .eq('id', userId)
-          .single();
-          
-        if (profileError) {
-          console.error('Error fetching current points:', profileError);
-          return;
-        }
-        
-        const currentPoints = profileData.points || 0;
-        const newPoints = currentPoints + 10;
-        
-        // Update points in profile table
-        const { error: updateError } = await supabase
-          .from('profiles')
-          .update({ points: newPoints })
-          .eq('id', userId);
-          
-        if (updateError) {
-          console.error('Error updating points:', updateError);
-          return;
-        }
-        
-        // Add transaction record
-        const { error: transactionError } = await supabase
-          .from('point_transactions')
-          .insert([
-            {
-              user_id: userId,
-              amount: 10,
-              type: 'WELCOME',
-              description: 'Welcome bonus for completing profile'
-            }
-          ]);
-          
-        if (transactionError) {
-          console.error('Error recording welcome points transaction:', transactionError);
-          return;
-        }
-        
-        toast.success('You received 10 welcome points for completing your profile!');
-      }
-    } catch (error) {
-      console.error('Error in welcome points logic:', error);
     }
   };
 
