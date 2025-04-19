@@ -58,18 +58,6 @@ const SignUpFormFields = ({
 
       <FormField
         control={form.control}
-        name="password"
-        render={() => (
-          <PasswordInput
-            form={form}
-            showPassword={showPassword}
-            onTogglePassword={onTogglePassword}
-          />
-        )}
-      />
-
-      <FormField
-        control={form.control}
         name="phone"
         render={({ field }) => (
           <FormItem>
@@ -83,6 +71,18 @@ const SignUpFormFields = ({
             </FormControl>
             <FormMessage />
           </FormItem>
+        )}
+      />
+
+      <FormField
+        control={form.control}
+        name="password"
+        render={() => (
+          <PasswordInput
+            form={form}
+            showPassword={showPassword}
+            onTogglePassword={onTogglePassword}
+          />
         )}
       />
       
