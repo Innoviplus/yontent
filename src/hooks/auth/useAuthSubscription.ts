@@ -29,49 +29,47 @@ export function useAuthSubscription({
         setUser(newSession?.user ?? null);
         
         if (newSession?.user) {
-          setTimeout(async () => {
-            try {
-              const data = await fetchUserProfile(newSession.user.id, newSession.user.email);
-              console.log("Profile data fetched on auth change:", data);
+          try {
+            const data = await fetchUserProfile(newSession.user.id, newSession.user.email);
+            console.log("Profile data fetched on auth change:", data);
+            
+            if (data && newSession.user && (!data.phone_number || !data.email)) {
+              console.log("Updating missing profile data...");
+              const userData = newSession.user.user_metadata || {};
               
-              if (data && newSession.user && (!data.phone_number || !data.email)) {
-                console.log("Updating missing profile data...");
-                const userData = newSession.user.user_metadata || {};
-                
-                const updateData: any = {};
-                if (!data.email && newSession.user.email) {
-                  updateData.email = newSession.user.email;
-                }
-                
-                if (!data.phone_number && userData.phone_number) {
-                  updateData.phone_number = userData.phone_number;
-                  updateData.phone_country_code = userData.phone_country_code || '+';
-                }
-                
-                if (Object.keys(updateData).length > 0) {
-                  const { error: updateError } = await supabase
-                    .from('profiles')
-                    .update(updateData)
-                    .eq('id', newSession.user.id);
-                    
-                  if (updateError) {
-                    console.error("Error updating profile with missing data:", updateError);
-                  } else {
-                    const updatedData = await fetchUserProfile(newSession.user.id, newSession.user.email);
-                    setUserProfile(updatedData);
-                  }
+              const updateData: any = {};
+              if (!data.email && newSession.user.email) {
+                updateData.email = newSession.user.email;
+              }
+              
+              if (!data.phone_number && userData.phone_number) {
+                updateData.phone_number = userData.phone_number;
+                updateData.phone_country_code = userData.phone_country_code || '+';
+              }
+              
+              if (Object.keys(updateData).length > 0) {
+                const { error: updateError } = await supabase
+                  .from('profiles')
+                  .update(updateData)
+                  .eq('id', newSession.user.id);
+                  
+                if (updateError) {
+                  console.error("Error updating profile with missing data:", updateError);
                 } else {
-                  setUserProfile(data);
+                  const updatedData = await fetchUserProfile(newSession.user.id, newSession.user.email);
+                  setUserProfile(updatedData);
                 }
               } else {
                 setUserProfile(data);
               }
-            } catch (err) {
-              console.error("Error fetching profile on auth change:", err);
-            } finally {
-              setLoading(false);
+            } else {
+              setUserProfile(data);
             }
-          }, 500);
+          } catch (err) {
+            console.error("Error fetching profile on auth change:", err);
+          } finally {
+            setLoading(false);
+          }
         } else {
           setUserProfile(null);
           setLoading(false);

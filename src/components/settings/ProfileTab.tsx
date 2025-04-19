@@ -1,5 +1,4 @@
-
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import { useAuth } from '@/contexts/AuthContext';
 import { useSettings } from '@/hooks/useSettings';
 import { profileFormSchema, ProfileFormValues } from '@/schemas/profileFormSchema';
@@ -16,13 +15,18 @@ import { SocialMediaSection } from './SocialMediaSection';
 import { AvatarSection } from '@/components/settings/AvatarSection';
 
 const ProfileTab = () => {
-  const { user, userProfile } = useAuth();
+  const { user, userProfile, refreshUserProfile } = useAuth();
   const { extendedProfile, isUpdating, profileForm, onProfileSubmit, handleAvatarUpload, avatarUrl, uploading } = useSettings();
   const [formSuccess, setFormSuccess] = useState(false);
   const [isLoading, setIsLoading] = useState(false);
   
-  // Update form values when profile data changes
-  useState(() => {
+  useEffect(() => {
+    if (user && !isLoading) {
+      refreshUserProfile();
+    }
+  }, [user]);
+  
+  useEffect(() => {
     if (userProfile && !isLoading) {
       profileForm.setValue('username', userProfile.username || '');
       profileForm.setValue('email', userProfile.email || user?.email || '');
@@ -45,7 +49,7 @@ const ProfileTab = () => {
         profileForm.setValue('tiktokUrl', extendedProfile.tiktokUrl || '');
       }
     }
-  });
+  }, [userProfile, extendedProfile]);
   
   const onSubmit = async (values: ProfileFormValues) => {
     if (!user) return;
@@ -55,6 +59,9 @@ const ProfileTab = () => {
     
     try {
       await onProfileSubmit(values);
+      
+      await refreshUserProfile();
+      
       setFormSuccess(true);
       toast.success('Profile updated successfully');
     } catch (error) {
@@ -75,7 +82,6 @@ const ProfileTab = () => {
 
   return (
     <div className="space-y-6">
-      {/* Avatar Upload Section */}
       <Card>
         <CardHeader>
           <CardTitle>Profile Picture</CardTitle>
@@ -85,7 +91,7 @@ const ProfileTab = () => {
         </CardHeader>
         <CardContent className="flex justify-center">
           <AvatarSection
-            avatarUrl={avatarUrl}
+            avatarUrl={avatarUrl || userProfile?.avatar}
             username={userProfile?.username}
             uploading={uploading}
             handleAvatarUpload={handleAvatarUpload}

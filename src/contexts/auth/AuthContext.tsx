@@ -6,6 +6,7 @@ import { useEmailAuth } from './emailAuth';
 import { AuthContextType } from './types';
 import { signOut } from '@/services/auth/sessionAuth';
 import { useAuthSubscription } from '@/hooks/auth/useAuthSubscription';
+import { fetchUserProfile } from '@/services/profile/profileService';
 
 const AuthContext = createContext<AuthContextType>({
   session: null,
@@ -52,10 +53,13 @@ export function AuthProvider({ children }: { children: ReactNode }) {
         const profileData = await fetchUserProfile(user.id, user.email);
         console.log("Refreshed profile data:", profileData);
         setUserProfile(profileData);
+        return profileData;
       } catch (error) {
         console.error("Failed to refresh user profile:", error);
+        return null;
       }
     }
+    return null;
   };
 
   const contextValue = {
