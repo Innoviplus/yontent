@@ -77,8 +77,33 @@ export function usePhoneAuth(setUserProfile: (profile: any) => void) {
   };
 
   const signInWithPhone = async (phone: string, password: string) => {
-    console.log("AuthContext: signInWithPhone called with phone:", phone);
-    return authService.signInWithPhone(phone, password);
+    try {
+      console.log("AuthContext: signInWithPhone called with phone:", phone);
+      
+      // First send OTP for verification before proceeding with login
+      const { error: otpError } = await authService.sendOtp(phone);
+      
+      if (otpError) {
+        console.error("Error sending OTP during sign in:", otpError);
+        toast.error(otpError.message || "Failed to send verification code");
+        return { error: otpError };
+      }
+      
+      // Store login credentials for verification step
+      pendingPhoneRegistrations.set(phone, { 
+        isSignIn: true, 
+        phone,
+        password
+      });
+      
+      toast.success("Verification Code Sent");
+      return { error: null, phoneNumber: phone, requiresOtp: true };
+      
+    } catch (error: any) {
+      console.error("Exception during phone sign in:", error);
+      toast.error(error.message || "An unexpected error occurred");
+      return { error };
+    }
   };
 
   const verifyPhoneOtp = async (phone: string, token: string) => {
@@ -98,73 +123,91 @@ export function usePhoneAuth(setUserProfile: (profile: any) => void) {
         return { error: { message: "Registration data not found" } };
       }
       
-      // Now we can create the user after OTP verification
-      const { data, error } = await supabase.auth.signUp({
-        email: userData.email,
-        password: userData.password,
-        options: {
-          data: userData
+      // Check if this is a sign-in or sign-up
+      if (userData.isSignIn) {
+        // This is a sign-in flow
+        console.log("Processing sign-in after OTP verification");
+        const result = await authService.signInWithPhone(phone, userData.password);
+        pendingPhoneRegistrations.delete(phone);
+        
+        if (result.error) {
+          toast.error(result.error.message || "Login failed");
+          return result;
         }
-      });
-
-      if (error) {
-        console.error("Error during signup after OTP verification:", error);
-        toast.error(error.message);
-        return { error };
-      }
-
-      pendingPhoneRegistrations.delete(phone);
-      
-      // Wait for a moment before refreshing profile to ensure database trigger has completed
-      setTimeout(async () => {
-        if (data.user) {
-          try {
-            // Check if profile was created properly
-            const { data: profile, error: profileError } = await supabase
-              .from('profiles')
-              .select('*')
-              .eq('id', data.user!.id)
-              .single();
-            
-            if (profileError) {
-              console.error("Error checking profile:", profileError);
-              return;
-            }
-            
-            // Set user profile to trigger UI updates
-            setUserProfile(profile);
-            
-            // Log a welcome points transaction manually since we're bypassing the trigger
-            const { error: transactionError } = await supabase
-              .from('point_transactions')
-              .insert({
-                user_id: data.user.id,
-                amount: 10,
-                type: 'WELCOME',
-                description: 'Welcome Bonus'
-              });
-              
-            if (transactionError) {
-              console.error("Failed to add welcome points transaction:", transactionError);
-            }
-            
-            // Update the profile points directly
-            const { error: pointsError } = await supabase
-              .from('profiles')
-              .update({ points: 10 })
-              .eq('id', data.user.id);
-              
-            if (pointsError) {
-              console.error("Failed to update profile points:", pointsError);
-            }
-          } catch (e) {
-            console.error("Error in profile update:", e);
+        
+        toast.success("Login successful");
+        return result;
+      } else {
+        // This is a sign-up flow
+        console.log("Processing sign-up after OTP verification");
+        // Now we can create the user after OTP verification
+        const { data, error } = await supabase.auth.signUp({
+          email: userData.email,
+          password: userData.password,
+          options: {
+            data: userData
           }
-        }
-      }, 1000);
+        });
 
-      toast.success("Registration Successful");
-      return { error: null };
+        if (error) {
+          console.error("Error during signup after OTP verification:", error);
+          toast.error(error.message);
+          return { error };
+        }
+
+        pendingPhoneRegistrations.delete(phone);
+        
+        // Wait for a moment before refreshing profile to ensure database trigger has completed
+        setTimeout(async () => {
+          if (data.user) {
+            try {
+              // Check if profile was created properly
+              const { data: profile, error: profileError } = await supabase
+                .from('profiles')
+                .select('*')
+                .eq('id', data.user!.id)
+                .single();
+              
+              if (profileError) {
+                console.error("Error checking profile:", profileError);
+                return;
+              }
+              
+              // Set user profile to trigger UI updates
+              setUserProfile(profile);
+              
+              // Log a welcome points transaction manually since we're bypassing the trigger
+              const { error: transactionError } = await supabase
+                .from('point_transactions')
+                .insert({
+                  user_id: data.user.id,
+                  amount: 10,
+                  type: 'WELCOME',
+                  description: 'Welcome Bonus'
+                });
+                
+              if (transactionError) {
+                console.error("Failed to add welcome points transaction:", transactionError);
+              }
+              
+              // Update the profile points directly
+              const { error: pointsError } = await supabase
+                .from('profiles')
+                .update({ points: 10 })
+                .eq('id', data.user.id);
+                
+              if (pointsError) {
+                console.error("Failed to update profile points:", pointsError);
+              }
+            } catch (e) {
+              console.error("Error in profile update:", e);
+            }
+          }
+        }, 1000);
+
+        toast.success("Registration Successful");
+        return { error: null };
+      }
     } catch (error: any) {
       console.error("Exception during OTP verification:", error);
       toast.error(error.message || "An unexpected error occurred");

@@ -41,19 +41,13 @@ export const signInWithPhone = async (phone: string, password: string) => {
     
     // If we have a profile with an email, attempt to sign in with the user's email
     if (profiles.email) {
-      console.log("Signing in with associated email:", profiles.email);
-      const { data, error } = await supabase.auth.signInWithPassword({
-        email: profiles.email,
+      console.log("Found associated email for login:", profiles.email);
+      // We'll complete the login after OTP verification
+      return { 
+        profileData: profiles,
         password,
-      });
-      
-      if (error) {
-        console.error("Auth error with email:", error);
-        return { error };
-      }
-      
-      sonnerToast.success('Welcome back!');
-      return { session: data.session, user: data.user, error: null };
+        error: null
+      };
     } else {
       // This should not happen with our current implementation
       console.error("No email found for this phone number");
@@ -61,6 +55,29 @@ export const signInWithPhone = async (phone: string, password: string) => {
     }
   } catch (error: any) {
     console.error("Sign in with phone error:", error);
+    return { error };
+  }
+};
+
+// Complete phone sign-in after OTP verification
+export const completePhoneSignIn = async (email: string, password: string) => {
+  try {
+    console.log("Completing sign in with email after OTP verification:", email);
+    
+    const { data, error } = await supabase.auth.signInWithPassword({
+      email,
+      password,
+    });
+    
+    if (error) {
+      console.error("Auth error with email:", error);
+      return { error };
+    }
+    
+    sonnerToast.success('Welcome back!');
+    return { session: data.session, user: data.user, error: null };
+  } catch (error: any) {
+    console.error("Complete sign in error:", error);
     return { error };
   }
 };
@@ -140,6 +157,8 @@ export const getCurrentUser = async () => {
 
 export const sendOtp = async (phone: string) => {
   try {
+    console.log("Sending OTP to phone number:", phone);
+    
     const { data, error } = await supabase.auth.signInWithOtp({
       phone,
     });
@@ -149,6 +168,7 @@ export const sendOtp = async (phone: string) => {
       return { error };
     }
     
+    console.log("OTP sent successfully");
     return { data, error: null };
   } catch (error: any) {
     console.error("Exception sending OTP:", error);
@@ -157,11 +177,14 @@ export const sendOtp = async (phone: string) => {
 };
 
 export const resendOtp = async (phone: string) => {
+  console.log("Resending OTP to phone number:", phone);
   return sendOtp(phone);
 };
 
 export const verifyOtp = async (phone: string, token: string) => {
   try {
+    console.log("Verifying OTP for phone number:", phone);
+    
     const { data, error } = await supabase.auth.verifyOtp({
       phone,
       token,
@@ -173,6 +196,7 @@ export const verifyOtp = async (phone: string, token: string) => {
       return { error };
     }
     
+    console.log("OTP verified successfully");
     sonnerToast.success('Phone number verified successfully!');
     return { data, error: null };
   } catch (error: any) {

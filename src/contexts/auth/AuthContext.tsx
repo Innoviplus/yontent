@@ -41,7 +41,9 @@ export function AuthProvider({ children }: { children: ReactNode }) {
   const refreshUserProfile = async () => {
     if (user) {
       try {
+        console.log("Refreshing user profile for:", user.id);
         const profileData = await fetchUserProfile(user.id, user.email);
+        console.log("Refreshed profile data:", profileData);
         setUserProfile(profileData);
       } catch (error) {
         console.error("Failed to refresh user profile:", error);
@@ -51,6 +53,9 @@ export function AuthProvider({ children }: { children: ReactNode }) {
 
   useEffect(() => {
     console.log("AuthProvider: Setting up auth state listener");
+    
+    // Fix: Set loading to true initially to prevent premature access
+    setLoading(true);
     
     const { data: { subscription } } = supabase.auth.onAuthStateChange(
       async (_event, newSession) => {
@@ -67,16 +72,18 @@ export function AuthProvider({ children }: { children: ReactNode }) {
               setUserProfile(data);
             } catch (err) {
               console.error("Error fetching profile on auth change:", err);
+            } finally {
+              setLoading(false);
             }
           }, 500);
         } else {
           setUserProfile(null);
+          setLoading(false);
         }
-        
-        setLoading(false);
       }
     );
 
+    // Check for existing session
     supabase.auth.getSession().then(({ data: { session: currentSession } }) => {
       console.log("Initial session check:", currentSession ? `Found session for ${currentSession.user.email}` : "No session");
       setSession(currentSession);

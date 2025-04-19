@@ -2,7 +2,7 @@
 import { useState, useEffect } from 'react';
 import { Link, useNavigate, useLocation } from 'react-router-dom';
 import { Eye, EyeOff, Star } from 'lucide-react';
-import { useAuth } from '@/contexts/AuthContext';
+import { useAuth } from '@/contexts/auth';
 import Navbar from '@/components/Navbar';
 import { Input } from '@/components/ui/input';
 import { Form, FormControl, FormField, FormItem, FormLabel, FormMessage } from '@/components/ui/form';
@@ -13,6 +13,7 @@ import { toast } from 'sonner';
 import { Button } from '@/components/ui/button';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import PhoneNumberInput from '@/components/auth/PhoneNumberInput';
+import OTPVerification from '@/components/auth/OTPVerification';
 
 const emailLoginSchema = z.object({
   email: z.string().email('Please enter a valid email address'),
@@ -31,11 +32,17 @@ const Login = () => {
   const [showPassword, setShowPassword] = useState(false);
   const [userCountry, setUserCountry] = useState('HK');
   const [loginMethod, setLoginMethod] = useState<'email' | 'phone'>('email');
+  const [showOtpVerification, setShowOtpVerification] = useState(false);
+  const [phoneNumber, setPhoneNumber] = useState('');
+  
   const {
     signIn,
     signInWithPhone,
+    verifyPhoneOtp,
+    resendOtp,
     user
   } = useAuth();
+  
   const navigate = useNavigate();
   const location = useLocation();
 
@@ -89,7 +96,9 @@ const Login = () => {
     try {
       const { error } = await signIn(values.email, values.password);
       if (error) {
-        toast.error(error.message || "Invalid email or password");
+        toast.error("Login Failed", {
+          description: error.message
+        });
         return;
       }
       toast.success("Login successful!");
@@ -109,23 +118,112 @@ const Login = () => {
       
       // Ensure the phone number is properly formatted
       const phoneNumber = values.phone;
+      setPhoneNumber(phoneNumber);
       
-      const { error } = await signInWithPhone(phoneNumber, values.password);
+      const { error, requiresOtp } = await signInWithPhone(phoneNumber, values.password);
       if (error) {
-        toast.error(error.message || "Invalid phone number or password");
+        toast.error("Login Failed", {
+          description: error.message || "Invalid phone number or password"
+        });
         return;
       }
       
-      toast.success("Login successful!");
-      console.log("Login successful, redirecting to:", from);
+      if (requiresOtp) {
+        // Show OTP verification screen
+        setShowOtpVerification(true);
+      } else {
+        // This should not happen with our implementation, but just in case
+        toast.success("Login successful!");
+        navigate(from, {
+          replace: true
+        });
+      }
+    } catch (error: any) {
+      console.error("Login error:", error);
+      toast.error("Login Failed", {
+        description: error.message || "An error occurred during login"
+      });
+    }
+  };
+  
+  const handleVerifyOtp = async (otp: string) => {
+    try {
+      const { error } = await verifyPhoneOtp(phoneNumber, otp);
+      
+      if (error) {
+        toast.error("Verification Failed", {
+          description: error.message || "Invalid verification code"
+        });
+        return;
+      }
+      
+      // OTP verified, user should be logged in automatically
       navigate(from, {
         replace: true
       });
     } catch (error: any) {
-      console.error("Login error:", error);
-      toast.error(error.message || "An error occurred during login. Please try again.");
+      console.error("OTP verification error:", error);
+      toast.error("Verification Failed", {
+        description: error.message || "Failed to verify code"
+      });
     }
   };
+  
+  const handleResendOtp = async () => {
+    try {
+      const { error } = await resendOtp(phoneNumber);
+      
+      if (error) {
+        toast.error("Failed to resend code", {
+          description: error.message
+        });
+        return;
+      }
+      
+      toast.success("Verification code resent");
+    } catch (error: any) {
+      console.error("Error resending OTP:", error);
+      toast.error("Failed to resend code");
+    }
+  };
+  
+  // Show OTP verification screen if needed
+  if (showOtpVerification) {
+    return (
+      <div className="min-h-screen bg-gray-50">
+        <Navbar />
+        
+        <div className="pt-24 pb-16">
+          <div className="container mx-auto px-4 sm:px-6 max-w-md">
+            <div className="bg-white rounded-xl shadow-card p-8 animate-scale-in">
+              <div className="text-center mb-8">
+                <div className="mx-auto w-12 h-12 bg-brand-teal/10 flex items-center justify-center rounded-full mb-4">
+                  <Star className="h-6 w-6 text-brand-teal" />
+                </div>
+                <h1 className="heading-3 mb-2">Verify Your Phone</h1>
+                <p className="text-gray-600 text-sm">Enter the verification code sent to {phoneNumber}</p>
+              </div>
+              
+              <OTPVerification 
+                onVerify={handleVerifyOtp}
+                onResend={handleResendOtp}
+                onCancel={() => setShowOtpVerification(false)}
+              />
+              
+              <div className="mt-6 text-center">
+                <button 
+                  onClick={() => setShowOtpVerification(false)}
+                  className="text-sm text-gray-500 hover:text-gray-700"
+                >
+                  Back to login
+                </button>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+    );
+  }
   
   return (
     <div className="min-h-screen bg-gray-50">
