@@ -69,7 +69,6 @@ const OTPVerification = ({
     try {
       setIsVerifying(true);
       await onVerify(otpValues.join(''));
-      // Redirecting to dashboard is now handled by the calling component
     } catch (error) {
       console.error("Error verifying OTP:", error);
     } finally {
