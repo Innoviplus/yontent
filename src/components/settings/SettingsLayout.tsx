@@ -1,7 +1,7 @@
 
 import { useRef } from "react";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
-import { ProfileTab } from "./ProfileTab";
+import ProfileTab from "./ProfileTab";
 import { AccountTab } from "./AccountTab";
 import { User } from "lucide-react";
 
@@ -38,16 +38,7 @@ export function SettingsLayout({
           </TabsList>
           
           <TabsContent value="profile" className="mt-0">
-            <ProfileTab
-              userProfile={userProfile}
-              avatarUrl={avatarUrl}
-              uploading={uploading}
-              handleAvatarUpload={handleAvatarUpload}
-              profileForm={profileForm}
-              onProfileSubmit={onProfileSubmit}
-              isUpdating={isUpdating}
-              extendedProfile={extendedProfile}
-            />
+            <ProfileTab />
           </TabsContent>
           
           <TabsContent value="account" className="mt-0">

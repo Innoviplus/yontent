@@ -12,56 +12,38 @@ import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/com
 import { Button } from '@/components/ui/button';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { toast } from 'sonner';
-import BirthDatePicker from './BirthDatePicker';
+import { BirthDatePicker } from './BirthDatePicker';
 import { Loader2 } from 'lucide-react';
-import SocialMediaSection from './SocialMediaSection';
+import { SocialMediaSection } from './SocialMediaSection';
 
 const ProfileTab = () => {
   const { user, userProfile } = useAuth();
-  const { extendedProfile, isLoading, isUpdating, setIsUpdating, updateProfile } = useSettings();
+  const { extendedProfile, isUpdating, profileForm, onProfileSubmit } = useSettings();
   const [formSuccess, setFormSuccess] = useState(false);
-  
-  const form = useForm<ProfileFormValues>({
-    resolver: zodResolver(profileFormSchema),
-    defaultValues: {
-      username: userProfile?.username || '',
-      email: userProfile?.email || user?.email || '',
-      firstName: extendedProfile?.firstName || '',
-      lastName: extendedProfile?.lastName || '',
-      bio: extendedProfile?.bio || '',
-      gender: extendedProfile?.gender || '',
-      birthDate: extendedProfile?.birthDate ? new Date(extendedProfile.birthDate) : undefined,
-      websiteUrl: extendedProfile?.websiteUrl || '',
-      facebookUrl: extendedProfile?.facebookUrl || '',
-      instagramUrl: extendedProfile?.instagramUrl || '',
-      youtubeUrl: extendedProfile?.youtubeUrl || '',
-      tiktokUrl: extendedProfile?.tiktokUrl || '',
-      phoneNumber: userProfile?.phone_number || '',
-    },
-  });
+  const [isLoading, setIsLoading] = useState(false);
   
   // Update form values when profile data changes
   useState(() => {
     if (userProfile && !isLoading) {
-      form.setValue('username', userProfile.username || '');
-      form.setValue('email', userProfile.email || user?.email || '');
-      form.setValue('phoneNumber', userProfile.phone_number || '');
+      profileForm.setValue('username', userProfile.username || '');
+      profileForm.setValue('email', userProfile.email || user?.email || '');
+      profileForm.setValue('phoneNumber', userProfile.phone_number || '');
       
       if (extendedProfile) {
-        form.setValue('firstName', extendedProfile.firstName || '');
-        form.setValue('lastName', extendedProfile.lastName || '');
-        form.setValue('bio', extendedProfile.bio || '');
-        form.setValue('gender', extendedProfile.gender || '');
+        profileForm.setValue('firstName', extendedProfile.firstName || '');
+        profileForm.setValue('lastName', extendedProfile.lastName || '');
+        profileForm.setValue('bio', extendedProfile.bio || '');
+        profileForm.setValue('gender', extendedProfile.gender || '');
         
         if (extendedProfile.birthDate) {
-          form.setValue('birthDate', new Date(extendedProfile.birthDate));
+          profileForm.setValue('birthDate', new Date(extendedProfile.birthDate));
         }
         
-        form.setValue('websiteUrl', extendedProfile.websiteUrl || '');
-        form.setValue('facebookUrl', extendedProfile.facebookUrl || '');
-        form.setValue('instagramUrl', extendedProfile.instagramUrl || '');
-        form.setValue('youtubeUrl', extendedProfile.youtubeUrl || '');
-        form.setValue('tiktokUrl', extendedProfile.tiktokUrl || '');
+        profileForm.setValue('websiteUrl', extendedProfile.websiteUrl || '');
+        profileForm.setValue('facebookUrl', extendedProfile.facebookUrl || '');
+        profileForm.setValue('instagramUrl', extendedProfile.instagramUrl || '');
+        profileForm.setValue('youtubeUrl', extendedProfile.youtubeUrl || '');
+        profileForm.setValue('tiktokUrl', extendedProfile.tiktokUrl || '');
       }
     }
   });
@@ -69,21 +51,18 @@ const ProfileTab = () => {
   const onSubmit = async (values: ProfileFormValues) => {
     if (!user) return;
     
-    setIsUpdating(true);
+    setIsLoading(true);
     setFormSuccess(false);
     
     try {
-      const success = await updateProfile(values);
-      
-      if (success) {
-        setFormSuccess(true);
-        toast.success('Profile updated successfully');
-      }
+      await onProfileSubmit(values);
+      setFormSuccess(true);
+      toast.success('Profile updated successfully');
     } catch (error) {
       console.error("Error updating profile:", error);
       toast.error('Failed to update profile');
     } finally {
-      setIsUpdating(false);
+      setIsLoading(false);
     }
   };
   
@@ -97,8 +76,8 @@ const ProfileTab = () => {
 
   return (
     <div className="space-y-6">
-      <Form {...form}>
-        <form onSubmit={form.handleSubmit(onSubmit)}>
+      <Form {...profileForm}>
+        <form onSubmit={profileForm.handleSubmit(onSubmit)}>
           <div className="space-y-6">
             <Card>
               <CardHeader>
@@ -110,7 +89,7 @@ const ProfileTab = () => {
               <CardContent className="grid gap-6">
                 <div className="grid gap-4 grid-cols-1 md:grid-cols-2">
                   <FormField
-                    control={form.control}
+                    control={profileForm.control}
                     name="firstName"
                     render={({ field }) => (
                       <FormItem>
@@ -124,7 +103,7 @@ const ProfileTab = () => {
                   />
                   
                   <FormField
-                    control={form.control}
+                    control={profileForm.control}
                     name="lastName"
                     render={({ field }) => (
                       <FormItem>
@@ -140,7 +119,7 @@ const ProfileTab = () => {
                 
                 <div className="grid gap-4 grid-cols-1 md:grid-cols-2">
                   <FormField
-                    control={form.control}
+                    control={profileForm.control}
                     name="email"
                     render={({ field }) => (
                       <FormItem>
@@ -154,7 +133,7 @@ const ProfileTab = () => {
                   />
                   
                   <FormField
-                    control={form.control}
+                    control={profileForm.control}
                     name="phoneNumber"
                     render={({ field }) => (
                       <FormItem>
@@ -177,7 +156,7 @@ const ProfileTab = () => {
                 </div>
                 
                 <FormField
-                  control={form.control}
+                  control={profileForm.control}
                   name="username"
                   render={({ field }) => (
                     <FormItem>
@@ -194,7 +173,7 @@ const ProfileTab = () => {
                 />
                 
                 <FormField
-                  control={form.control}
+                  control={profileForm.control}
                   name="bio"
                   render={({ field }) => (
                     <FormItem>
@@ -216,7 +195,7 @@ const ProfileTab = () => {
                 
                 <div className="grid gap-4 grid-cols-1 md:grid-cols-2">
                   <FormField
-                    control={form.control}
+                    control={profileForm.control}
                     name="gender"
                     render={({ field }) => (
                       <FormItem>
@@ -243,7 +222,7 @@ const ProfileTab = () => {
                   />
                   
                   <FormField
-                    control={form.control}
+                    control={profileForm.control}
                     name="birthDate"
                     render={({ field }) => (
                       <FormItem className="flex flex-col">
@@ -260,15 +239,19 @@ const ProfileTab = () => {
               </CardContent>
             </Card>
             
-            <SocialMediaSection form={form} />
+            <SocialMediaSection 
+              profileForm={profileForm} 
+              onSubmit={onSubmit} 
+              isUpdating={isUpdating || isLoading} 
+            />
             
             <div className="flex justify-end">
               <Button 
                 type="submit" 
                 className="w-full md:w-auto"
-                disabled={isUpdating || !form.formState.isDirty}
+                disabled={isUpdating || isLoading || !profileForm.formState.isDirty}
               >
-                {isUpdating ? (
+                {isUpdating || isLoading ? (
                   <>
                     <Loader2 className="mr-2 h-4 w-4 animate-spin" />
                     Saving...

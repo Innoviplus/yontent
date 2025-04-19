@@ -1,3 +1,4 @@
+
 import React, { useEffect } from 'react';
 import { Calendar } from '@/components/ui/calendar';
 import { Popover, PopoverContent, PopoverTrigger } from '@/components/ui/popover';
@@ -7,14 +8,14 @@ import { format } from 'date-fns';
 import { CalendarIcon } from 'lucide-react';
 
 interface BirthDatePickerProps {
-  value?: Date | null;
-  onChange: (date: Date | undefined) => void;
+  date?: Date | null;
+  setDate: (date: Date | undefined) => void;
   disabled?: boolean;
 }
 
 export const BirthDatePicker: React.FC<BirthDatePickerProps> = ({ 
-  value, 
-  onChange,
+  date, 
+  setDate,
   disabled = false 
 }) => {
   // Calculate date ranges
@@ -26,15 +27,15 @@ export const BirthDatePicker: React.FC<BirthDatePickerProps> = ({
 
   // State to keep track of the current display month in the calendar
   const [displayMonth, setDisplayMonth] = React.useState<Date | undefined>(
-    value ? new Date(value) : undefined
+    date ? new Date(date) : undefined
   );
 
-  // Update displayMonth when value changes
+  // Update displayMonth when date changes
   useEffect(() => {
-    if (value) {
-      setDisplayMonth(new Date(value));
+    if (date) {
+      setDisplayMonth(new Date(date));
     }
-  }, [value]);
+  }, [date]);
 
   // Custom month/year change handler to ensure the onChange is called
   const handleMonthChange = (date: Date) => {
@@ -42,15 +43,15 @@ export const BirthDatePicker: React.FC<BirthDatePickerProps> = ({
     setDisplayMonth(date);
     
     // If there's already a selected date, update it with the new month/year
-    if (value) {
-      const newDate = new Date(value);
+    if (date) {
+      const newDate = date ? new Date(date) : new Date();
       newDate.setFullYear(date.getFullYear(), date.getMonth());
       console.log("Updating selected date to:", newDate);
-      onChange(newDate);
+      setDate(newDate);
     } else {
       // If no date is selected, select this one
       console.log("No previous date, selecting new date:", date);
-      onChange(date);
+      setDate(date);
     }
   };
 
@@ -61,19 +62,19 @@ export const BirthDatePicker: React.FC<BirthDatePickerProps> = ({
           variant="outline"
           className={cn(
             "w-full justify-start text-left font-normal",
-            !value && "text-muted-foreground"
+            !date && "text-muted-foreground"
           )}
           disabled={disabled}
         >
           <CalendarIcon className="mr-2 h-4 w-4" />
-          {value ? format(value, "PPP") : <span>Pick a date</span>}
+          {date ? format(date, "PPP") : <span>Pick a date</span>}
         </Button>
       </PopoverTrigger>
       <PopoverContent className="w-auto p-0" align="start">
         <Calendar
           mode="single"
-          selected={value || undefined}
-          onSelect={onChange}
+          selected={date || undefined}
+          onSelect={setDate}
           disabled={disabled || { 
             from: new Date(0), 
             to: from,
@@ -84,7 +85,7 @@ export const BirthDatePicker: React.FC<BirthDatePickerProps> = ({
           fromYear={from.getFullYear()}
           toYear={to.getFullYear()}
           onMonthChange={handleMonthChange}
-          defaultMonth={displayMonth || value || undefined}
+          defaultMonth={displayMonth || date || undefined}
           month={displayMonth}
           onMonthSelect={(newMonth) => {
             if (displayMonth) {
