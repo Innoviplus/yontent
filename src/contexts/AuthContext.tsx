@@ -15,8 +15,10 @@ interface AuthContextType {
   loading: boolean;
   userProfile: any | null;
   refreshUserProfile: () => Promise<void>;
-  signUpWithPhone: (phone: string, username: string, email: string, password?: string) => Promise<{ error: any }>;
+  signUpWithPhone: (phone: string, username: string, email: string, password?: string) => Promise<{ error: any, phoneNumber?: string }>;
   signInWithPhone: (phone: string, password: string) => Promise<{ error: any }>;
+  verifyPhoneOtp: (phone: string, token: string) => Promise<{ error: any }>;
+  resendOtp: (phone: string) => Promise<{ error: any }>;
 }
 
 const AuthContext = createContext<AuthContextType>({
@@ -29,7 +31,9 @@ const AuthContext = createContext<AuthContextType>({
   userProfile: null,
   refreshUserProfile: async () => { throw new Error('AuthProvider not initialized') },
   signUpWithPhone: async () => ({ error: new Error('AuthProvider not initialized') }),
-  signInWithPhone: async () => ({ error: new Error('AuthProvider not initialized') })
+  signInWithPhone: async () => ({ error: new Error('AuthProvider not initialized') }),
+  verifyPhoneOtp: async () => ({ error: new Error('AuthProvider not initialized') }),
+  resendOtp: async () => ({ error: new Error('AuthProvider not initialized') }),
 });
 
 export function AuthProvider({ children }: { children: ReactNode }) {
@@ -139,41 +143,141 @@ export function AuthProvider({ children }: { children: ReactNode }) {
     return result;
   };
 
+  // We'll store registration data in the context temp storage instead of creating the user immediately
+  const pendingPhoneRegistrations = new Map();
+
   const signUpWithPhone = async (phone: string, username: string, email: string, password?: string) => {
     try {
       console.log("AuthContext: signUpWithPhone called with:", {phone, username, email, hasPassword: !!password});
       
-      // Create the base user data object
-      const userData: {
-        username: string;
-        email: string;
-        phone_number: string;
-        phone_country_code: string;
-        password?: string;  // Make password optional in the type
-      } = {
+      // Check if username already exists
+      const { data: existingUsernames, error: usernameCheckError } = await supabase
+        .from('profiles')
+        .select('id')
+        .eq('username', username);
+        
+      if (usernameCheckError) {
+        console.error('Error checking existing username:', usernameCheckError);
+      } else if (existingUsernames && existingUsernames.length > 0) {
+        toast({
+          title: "Registration Failed",
+          description: "This username is already taken. Please choose a different one.",
+          variant: "destructive",
+        });
+        return { error: { message: "Username already taken" } };
+      }
+      
+      // Check if email already exists
+      const { data: existingEmails, error: emailCheckError } = await supabase
+        .from('profiles')
+        .select('id')
+        .eq('email', email);
+        
+      if (emailCheckError) {
+        console.error('Error checking existing email:', emailCheckError);
+      } else if (existingEmails && existingEmails.length > 0) {
+        toast({
+          title: "Registration Failed",
+          description: "This email is already registered. Please use a different email.",
+          variant: "destructive",
+        });
+        return { error: { message: "Email already registered" } };
+      }
+      
+      // Check if phone already exists
+      const { data: existingPhones, error: phoneCheckError } = await supabase
+        .from('profiles')
+        .select('id')
+        .eq('phone_number', phone.replace(/\D/g, ''));
+        
+      if (phoneCheckError) {
+        console.error('Error checking existing phone:', phoneCheckError);
+      } else if (existingPhones && existingPhones.length > 0) {
+        toast({
+          title: "Registration Failed",
+          description: "This phone number is already registered. Please use a different number.",
+          variant: "destructive",
+        });
+        return { error: { message: "Phone number already registered" } };
+      }
+      
+      // Store registration data but don't create user yet
+      pendingPhoneRegistrations.set(phone, {
         username,
         email,
-        phone_number: phone.replace(/\D/g, ''), // Remove all non-digits from phone number for storage
-        phone_country_code: '+' // Store the country code
-      };
-
-      // Only add password to the object if it was provided
-      if (password) {
-        userData.password = password;
+        password: password || '',
+        phone_number: phone.replace(/\D/g, ''),
+        phone_country_code: '+'
+      });
+      
+      // Send OTP
+      const { error: otpError } = await authService.sendOtp(phone);
+      
+      if (otpError) {
+        console.error("Error sending OTP:", otpError);
+        toast({
+          title: "Registration Failed",
+          description: otpError.message || "Failed to send verification code",
+          variant: "destructive",
+        });
+        return { error: otpError };
       }
 
-      // Since we're using email as the primary authentication method,
-      // we'll actually sign up with email and password but still store the phone
+      toast({
+        title: "Verification Code Sent",
+        description: "Please enter the code sent to your phone number",
+      });
+      
+      return { error: null, phoneNumber: phone };
+    } catch (error: any) {
+      console.error("Exception during phone signup:", error);
+      toast({
+        title: "Registration Failed",
+        description: error.message || "An unexpected error occurred",
+        variant: "destructive",
+      });
+      return { error };
+    }
+  };
+
+  const verifyPhoneOtp = async (phone: string, token: string) => {
+    try {
+      // Verify the OTP first
+      const { error: verifyError } = await authService.verifyOtp(phone, token);
+      
+      if (verifyError) {
+        toast({
+          title: "Verification Failed",
+          description: verifyError.message || "Invalid verification code",
+          variant: "destructive",
+        });
+        return { error: verifyError };
+      }
+      
+      // If verification successful, get the registration data
+      const userData = pendingPhoneRegistrations.get(phone);
+      
+      if (!userData) {
+        console.error("No pending registration found for this phone number");
+        toast({
+          title: "Registration Failed",
+          description: "Registration data not found. Please try signing up again.",
+          variant: "destructive",
+        });
+        return { error: { message: "Registration data not found" } };
+      }
+      
+      // Now create the user
       const { data, error } = await supabase.auth.signUp({
-        email,
-        password: password || '', // Need to provide a password here
+        email: userData.email,
+        password: userData.password,
         options: {
           data: userData
         }
       });
 
       if (error) {
-        console.error("Error during phone signup:", error);
+        console.error("Error during signup after OTP verification:", error);
         toast({
           title: "Registration Failed",
           description: error.message,
@@ -182,6 +286,9 @@ export function AuthProvider({ children }: { children: ReactNode }) {
         return { error };
       }
 
+      // Remove the pending registration
+      pendingPhoneRegistrations.delete(phone);
+      
       // Let's make sure the profile is properly updated with the email
       if (data.user) {
         console.log("User created successfully, updating profile if needed");
@@ -202,11 +309,11 @@ export function AuthProvider({ children }: { children: ReactNode }) {
             }
             
             // If email is missing or different, update it
-            if (!profile.email || profile.email !== email) {
-              console.log("Updating profile email from", profile.email, "to", email);
+            if (!profile.email || profile.email !== userData.email) {
+              console.log("Updating profile email from", profile.email, "to", userData.email);
               const { error: updateError } = await supabase
                 .from('profiles')
-                .update({ email })
+                .update({ email: userData.email })
                 .eq('id', data.user!.id);
                 
               if (updateError) {
@@ -228,9 +335,38 @@ export function AuthProvider({ children }: { children: ReactNode }) {
       
       return { error: null };
     } catch (error: any) {
-      console.error("Exception during phone signup:", error);
+      console.error("Exception during OTP verification:", error);
       toast({
-        title: "Registration Failed",
+        title: "Verification Failed",
+        description: error.message || "An unexpected error occurred",
+        variant: "destructive",
+      });
+      return { error };
+    }
+  };
+  
+  const resendOtp = async (phone: string) => {
+    try {
+      const { error } = await authService.resendOtp(phone);
+      
+      if (error) {
+        toast({
+          title: "Failed to Resend Code",
+          description: error.message,
+          variant: "destructive",
+        });
+        return { error };
+      }
+      
+      toast({
+        title: "Verification Code Sent",
+        description: "A new verification code has been sent to your phone",
+      });
+      
+      return { error: null };
+    } catch (error: any) {
+      toast({
+        title: "Failed to Resend Code",
         description: error.message || "An unexpected error occurred",
         variant: "destructive",
       });
@@ -249,6 +385,8 @@ export function AuthProvider({ children }: { children: ReactNode }) {
     refreshUserProfile,
     signUpWithPhone,
     signInWithPhone,
+    verifyPhoneOtp,
+    resendOtp,
   };
 
   return (

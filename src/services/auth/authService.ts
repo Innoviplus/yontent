@@ -67,15 +67,28 @@ export const signInWithPhone = async (phone: string, password: string) => {
 
 export const signUp = async (email: string, password: string, username: string) => {
   try {
-    const { data: existingUsers, error: emailCheckError } = await supabase
+    // Check if the email already exists
+    const { data: existingEmails, error: emailCheckError } = await supabase
       .from('profiles')
       .select('id')
       .eq('email', email);
       
     if (emailCheckError) {
       console.error('Error checking existing email:', emailCheckError);
-    } else if (existingUsers && existingUsers.length > 0) {
+    } else if (existingEmails && existingEmails.length > 0) {
       return { error: { message: "Email already registered" } };
+    }
+    
+    // Check if the username already exists
+    const { data: existingUsernames, error: usernameCheckError } = await supabase
+      .from('profiles')
+      .select('id')
+      .eq('username', username);
+      
+    if (usernameCheckError) {
+      console.error('Error checking existing username:', usernameCheckError);
+    } else if (existingUsernames && existingUsernames.length > 0) {
+      return { error: { message: "Username already taken" } };
     }
     
     const { data, error } = await supabase.auth.signUp({
@@ -123,4 +136,47 @@ export const getCurrentSession = async () => {
 export const getCurrentUser = async () => {
   const { data } = await supabase.auth.getUser();
   return data.user;
+};
+
+export const sendOtp = async (phone: string) => {
+  try {
+    const { data, error } = await supabase.auth.signInWithOtp({
+      phone,
+    });
+    
+    if (error) {
+      console.error("Error sending OTP:", error);
+      return { error };
+    }
+    
+    return { data, error: null };
+  } catch (error: any) {
+    console.error("Exception sending OTP:", error);
+    return { error };
+  }
+};
+
+export const resendOtp = async (phone: string) => {
+  return sendOtp(phone);
+};
+
+export const verifyOtp = async (phone: string, token: string) => {
+  try {
+    const { data, error } = await supabase.auth.verifyOtp({
+      phone,
+      token,
+      type: 'sms',
+    });
+    
+    if (error) {
+      console.error("Error verifying OTP:", error);
+      return { error };
+    }
+    
+    sonnerToast.success('Phone number verified successfully!');
+    return { data, error: null };
+  } catch (error: any) {
+    console.error("Exception verifying OTP:", error);
+    return { error };
+  }
 };

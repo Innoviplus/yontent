@@ -5,7 +5,8 @@ import { toast } from 'sonner';
 import { Input } from '@/components/ui/input';
 import { Button } from '@/components/ui/button';
 import { FormLabel } from '@/components/ui/form';
-import { supabase } from '@/integrations/supabase/client';
+import { useAuth } from '@/contexts/AuthContext';
+import { Loader2 } from 'lucide-react';
 
 interface OTPVerificationProps {
   phoneNumber: string;
@@ -13,12 +14,30 @@ interface OTPVerificationProps {
 
 const OTPVerification = ({ phoneNumber }: OTPVerificationProps) => {
   const [otpValues, setOtpValues] = useState<string[]>(Array(6).fill(''));
+  const [isVerifying, setIsVerifying] = useState(false);
+  const [resendDisabled, setResendDisabled] = useState(true);
+  const [timer, setTimer] = useState(45);
   const inputRefs = useRef<(HTMLInputElement | null)[]>([]);
   const navigate = useNavigate();
+  const { verifyPhoneOtp, resendOtp } = useAuth();
 
   useEffect(() => {
     // Focus first input when component mounts
     setTimeout(() => inputRefs.current[0]?.focus(), 100);
+    
+    // Start the countdown timer
+    const countdown = setInterval(() => {
+      setTimer(prev => {
+        if (prev <= 1) {
+          clearInterval(countdown);
+          setResendDisabled(false);
+          return 0;
+        }
+        return prev - 1;
+      });
+    }, 1000);
+    
+    return () => clearInterval(countdown);
   }, []);
 
   const verifyOTP = async () => {
@@ -29,15 +48,14 @@ const OTPVerification = ({ phoneNumber }: OTPVerificationProps) => {
         toast.error('Please enter a valid 6-digit OTP');
         return;
       }
+      
+      setIsVerifying(true);
 
-      const { error } = await supabase.auth.verifyOtp({
-        phone: phoneNumber,
-        token: otpValue,
-        type: 'sms',
-      });
+      const { error } = await verifyPhoneOtp(phoneNumber, otpValue);
 
       if (error) {
-        toast.error(error.message);
+        toast.error(error.message || 'Failed to verify OTP');
+        setIsVerifying(false);
         return;
       }
 
@@ -45,6 +63,39 @@ const OTPVerification = ({ phoneNumber }: OTPVerificationProps) => {
       navigate('/dashboard');
     } catch (error: any) {
       toast.error(error.message || 'Failed to verify OTP');
+      setIsVerifying(false);
+    }
+  };
+  
+  const handleResendOtp = async () => {
+    try {
+      setResendDisabled(true);
+      
+      const { error } = await resendOtp(phoneNumber);
+      
+      if (error) {
+        setResendDisabled(false);
+        return;
+      }
+      
+      // Reset timer
+      setTimer(45);
+      
+      // Start timer again
+      const countdown = setInterval(() => {
+        setTimer(prev => {
+          if (prev <= 1) {
+            clearInterval(countdown);
+            setResendDisabled(false);
+            return 0;
+          }
+          return prev - 1;
+        });
+      }, 1000);
+      
+    } catch (error: any) {
+      setResendDisabled(false);
+      toast.error(error.message || 'Failed to resend OTP');
     }
   };
 
@@ -121,6 +172,7 @@ const OTPVerification = ({ phoneNumber }: OTPVerificationProps) => {
               onChange={(e) => handleOtpChange(index, e.target.value)}
               onKeyDown={(e) => handleKeyDown(index, e)}
               onPaste={index === 0 ? handlePaste : undefined}
+              disabled={isVerifying}
             />
           ))}
         </div>
@@ -130,14 +182,36 @@ const OTPVerification = ({ phoneNumber }: OTPVerificationProps) => {
             {6 - otpValues.filter(Boolean).length} digits remaining
           </div>
         )}
+        
+        <div className="mt-4 text-center">
+          <div className="text-sm text-gray-500 mb-2">
+            {resendDisabled 
+              ? `Resend code in ${timer} seconds` 
+              : "Didn't receive the code?"}
+          </div>
+          <Button 
+            variant="ghost" 
+            size="sm"
+            onClick={handleResendOtp}
+            disabled={resendDisabled}
+            className="text-brand-teal hover:text-brand-darkTeal"
+          >
+            Resend Code
+          </Button>
+        </div>
       </div>
       
       <Button 
         onClick={verifyOTP} 
         className="w-full" 
-        disabled={otpValues.filter(Boolean).length !== 6}
+        disabled={otpValues.filter(Boolean).length !== 6 || isVerifying}
       >
-        Verify OTP
+        {isVerifying ? (
+          <>
+            <Loader2 className="mr-2 h-4 w-4 animate-spin" /> 
+            Verifying...
+          </>
+        ) : 'Verify OTP'}
       </Button>
     </div>
   );

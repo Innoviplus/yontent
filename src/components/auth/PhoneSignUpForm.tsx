@@ -28,6 +28,7 @@ const PhoneSignUpForm = () => {
   const [showOTP, setShowOTP] = useState(false);
   const [phoneNumber, setPhoneNumber] = useState('');
   const [showPassword, setShowPassword] = useState(false);
+  const [isSubmitting, setIsSubmitting] = useState(false);
   const { signUpWithPhone } = useAuth();
   const [userCountry, setUserCountry] = useState('HK');
 
@@ -57,9 +58,10 @@ const PhoneSignUpForm = () => {
 
   const handleSignUp = async (values: PhoneSignUpFormValues) => {
     try {
+      setIsSubmitting(true);
       console.log("Signing up with phone:", values.phone, "email:", values.email);
       
-      const { error } = await signUpWithPhone(
+      const { error, phoneNumber: returnedPhone } = await signUpWithPhone(
         values.phone,
         values.username,
         values.email,
@@ -67,15 +69,16 @@ const PhoneSignUpForm = () => {
       );
       
       if (error) {
-        toast.error(error.message);
+        toast.error(error.message || "An error occurred during sign up");
+        setIsSubmitting(false);
         return;
       }
       
-      setPhoneNumber(values.phone);
+      setPhoneNumber(returnedPhone || values.phone);
       setShowOTP(true);
-      toast.success('OTP sent to your phone number');
     } catch (error: any) {
       toast.error(error.message || 'An error occurred during sign up');
+      setIsSubmitting(false);
     }
   };
 
@@ -167,8 +170,8 @@ const PhoneSignUpForm = () => {
           )}
         />
         
-        <Button type="submit" className="w-full" disabled={form.formState.isSubmitting}>
-          {form.formState.isSubmitting ? 'Sending OTP...' : 'Continue'}
+        <Button type="submit" className="w-full" disabled={isSubmitting}>
+          {isSubmitting ? 'Processing...' : 'Continue'}
         </Button>
       </form>
     </Form>

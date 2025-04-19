@@ -2,8 +2,6 @@
 import { useState } from 'react';
 import { useAuth } from '@/contexts/AuthContext';
 import { useSettings } from '@/hooks/useSettings';
-import { useForm } from 'react-hook-form';
-import { zodResolver } from '@hookform/resolvers/zod';
 import { profileFormSchema, ProfileFormValues } from '@/schemas/profileFormSchema';
 import { Form, FormControl, FormDescription, FormField, FormItem, FormLabel, FormMessage } from '@/components/ui/form';
 import { Input } from '@/components/ui/input';
@@ -15,10 +13,11 @@ import { toast } from 'sonner';
 import { BirthDatePicker } from './BirthDatePicker';
 import { Loader2 } from 'lucide-react';
 import { SocialMediaSection } from './SocialMediaSection';
+import { AvatarSection } from '@/components/settings/AvatarSection';
 
 const ProfileTab = () => {
   const { user, userProfile } = useAuth();
-  const { extendedProfile, isUpdating, profileForm, onProfileSubmit } = useSettings();
+  const { extendedProfile, isUpdating, profileForm, onProfileSubmit, handleAvatarUpload, avatarUrl, uploading } = useSettings();
   const [formSuccess, setFormSuccess] = useState(false);
   const [isLoading, setIsLoading] = useState(false);
   
@@ -76,6 +75,24 @@ const ProfileTab = () => {
 
   return (
     <div className="space-y-6">
+      {/* Avatar Upload Section */}
+      <Card>
+        <CardHeader>
+          <CardTitle>Profile Picture</CardTitle>
+          <CardDescription>
+            Add a profile picture to personalize your account
+          </CardDescription>
+        </CardHeader>
+        <CardContent className="flex justify-center">
+          <AvatarSection
+            avatarUrl={avatarUrl}
+            username={userProfile?.username}
+            uploading={uploading}
+            handleAvatarUpload={handleAvatarUpload}
+          />
+        </CardContent>
+      </Card>
+
       <Form {...profileForm}>
         <form onSubmit={profileForm.handleSubmit(onSubmit)}>
           <div className="space-y-6">
@@ -125,8 +142,17 @@ const ProfileTab = () => {
                       <FormItem>
                         <FormLabel>Email</FormLabel>
                         <FormControl>
-                          <Input type="email" placeholder="john.doe@example.com" {...field} />
+                          <Input 
+                            type="email" 
+                            placeholder="john.doe@example.com" 
+                            {...field} 
+                            disabled={true}
+                            className="bg-gray-100 cursor-not-allowed"
+                          />
                         </FormControl>
+                        <FormDescription className="text-xs">
+                          Email cannot be changed after registration
+                        </FormDescription>
                         <FormMessage />
                       </FormItem>
                     )}
@@ -162,10 +188,15 @@ const ProfileTab = () => {
                     <FormItem>
                       <FormLabel>Username</FormLabel>
                       <FormControl>
-                        <Input placeholder="johnsmith" {...field} />
+                        <Input 
+                          placeholder="johnsmith" 
+                          {...field} 
+                          disabled={true}
+                          className="bg-gray-100 cursor-not-allowed"
+                        />
                       </FormControl>
-                      <FormDescription>
-                        This is your public display name.
+                      <FormDescription className="text-xs">
+                        Username cannot be changed after registration
                       </FormDescription>
                       <FormMessage />
                     </FormItem>
