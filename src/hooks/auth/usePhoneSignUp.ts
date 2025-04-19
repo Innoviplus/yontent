@@ -4,9 +4,10 @@ import { toast } from 'sonner';
 import { sendOtp } from '@/services/auth/otpAuth';
 import { validateUsername, validateEmail, validatePhone } from './validation/phoneSignUpValidation';
 import type { PendingRegistration } from './types/phoneSignUpTypes';
+import { useRegistration } from '@/contexts/auth/RegistrationContext';
 
 export function usePhoneSignUp() {
-  const pendingRegistrations = new Map<string, PendingRegistration>();
+  const { setPendingRegistration } = useRegistration();
 
   const signUpWithPhone = async (phone: string, username: string, email: string, password?: string) => {
     try {
@@ -28,7 +29,7 @@ export function usePhoneSignUp() {
       const normalizedPhone = phone.replace(/\D/g, '');
       const countryCode = phone.match(/^\+\d+/)?.[0] || '+';
       
-      pendingRegistrations.set(phone, {
+      const registrationData: PendingRegistration = {
         username,
         email,
         password: password || '',
@@ -40,7 +41,9 @@ export function usePhoneSignUp() {
           phone_number: normalizedPhone,
           phone_country_code: countryCode
         }
-      });
+      };
+      
+      setPendingRegistration(phone, registrationData);
       
       // Send OTP
       const { error: otpError } = await sendOtp(phone);
@@ -61,7 +64,6 @@ export function usePhoneSignUp() {
   };
 
   return {
-    signUpWithPhone,
-    pendingRegistrations
+    signUpWithPhone
   };
 }

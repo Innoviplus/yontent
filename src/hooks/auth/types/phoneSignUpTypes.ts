@@ -5,6 +5,12 @@ export interface PendingRegistration {
   password: string;
   phone_number: string;
   phone_country_code: string;
+  metadata?: {
+    username: string;
+    email: string;
+    phone_number: string;
+    phone_country_code: string;
+  };
 }
 
 export interface ValidationResult {

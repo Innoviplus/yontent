@@ -4,7 +4,7 @@ import { usePhoneSignIn } from '@/hooks/auth/usePhoneSignIn';
 import { useOTPVerification } from '@/hooks/auth/useOTPVerification';
 
 export function usePhoneAuth(setUserProfile: (profile: any) => void) {
-  const { signUpWithPhone, pendingRegistrations } = usePhoneSignUp();
+  const { signUpWithPhone } = usePhoneSignUp();
   const { signInWithPhone, completeSignIn } = usePhoneSignIn();
   const { verifyPhoneOtp, resendVerificationCode } = useOTPVerification(setUserProfile);
 
@@ -12,7 +12,6 @@ export function usePhoneAuth(setUserProfile: (profile: any) => void) {
     signUpWithPhone,
     signInWithPhone,
     verifyPhoneOtp,
-    resendOtp: resendVerificationCode,
-    pendingRegistrations
+    resendOtp: resendVerificationCode
   };
 }

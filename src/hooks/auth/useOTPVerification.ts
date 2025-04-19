@@ -2,14 +2,17 @@
 import { toast } from 'sonner';
 import { sendOtp, verifyOtp, resendOtp } from '@/services/auth/otpAuth';
 import { supabase } from '@/integrations/supabase/client';
+import { useRegistration } from '@/contexts/auth/RegistrationContext';
 
 export function useOTPVerification(setUserProfile: (profile: any) => void) {
+  const { getPendingRegistration, clearPendingRegistration } = useRegistration();
+
   const verifyPhoneOtp = async (phone: string, token: string) => {
     try {
       console.log("Verifying OTP for phone number:", phone);
       
       // Get the stored registration data
-      const pendingRegistration = window.pendingRegistrations?.get(phone);
+      const pendingRegistration = getPendingRegistration(phone);
       
       const { data, error: verifyError } = await verifyOtp(phone, token);
       
@@ -44,6 +47,9 @@ export function useOTPVerification(setUserProfile: (profile: any) => void) {
         if (profileData) {
           setUserProfile(profileData);
         }
+        
+        // Clear the pending registration after successful verification
+        clearPendingRegistration(phone);
       }
       
       toast.success("Phone verified successfully");
