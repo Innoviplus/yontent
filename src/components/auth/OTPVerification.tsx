@@ -1,4 +1,3 @@
-
 import { useRef, useEffect, useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { toast } from 'sonner';
@@ -10,9 +9,12 @@ import { Loader2 } from 'lucide-react';
 
 interface OTPVerificationProps {
   phoneNumber: string;
+  onVerify: (otp: string) => Promise<void>;
+  onResend: () => Promise<void>;
+  onCancel: () => void;
 }
 
-const OTPVerification = ({ phoneNumber }: OTPVerificationProps) => {
+const OTPVerification = ({ phoneNumber, onVerify, onResend, onCancel }: OTPVerificationProps) => {
   const [otpValues, setOtpValues] = useState<string[]>(Array(6).fill(''));
   const [isVerifying, setIsVerifying] = useState(false);
   const [resendDisabled, setResendDisabled] = useState(true);
