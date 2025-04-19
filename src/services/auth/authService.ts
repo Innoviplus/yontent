@@ -180,3 +180,23 @@ export const verifyOtp = async (phone: string, token: string) => {
     return { error };
   }
 };
+
+// New function to manually update points in case trigger doesn't work
+export const updateUserPoints = async (userId: string, points: number) => {
+  try {
+    const { error } = await supabase
+      .from('profiles')
+      .update({ points })
+      .eq('id', userId);
+      
+    if (error) {
+      console.error("Error updating user points:", error);
+      return { error };
+    }
+    
+    return { error: null };
+  } catch (error: any) {
+    console.error("Exception updating user points:", error);
+    return { error };
+  }
+};

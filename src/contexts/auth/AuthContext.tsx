@@ -59,14 +59,16 @@ export function AuthProvider({ children }: { children: ReactNode }) {
         setUser(newSession?.user ?? null);
         
         if (newSession?.user) {
+          // Use setTimeout to allow database triggers to complete
           setTimeout(async () => {
             try {
               const data = await fetchUserProfile(newSession.user.id, newSession.user.email);
+              console.log("Profile data fetched on auth change:", data);
               setUserProfile(data);
             } catch (err) {
               console.error("Error fetching profile on auth change:", err);
             }
-          }, 0);
+          }, 500);
         } else {
           setUserProfile(null);
         }
@@ -83,6 +85,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
       if (currentSession?.user) {
         fetchUserProfile(currentSession.user.id, currentSession.user.email)
           .then(data => {
+            console.log("Initial profile data:", data);
             setUserProfile(data);
           })
           .catch(err => {

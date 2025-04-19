@@ -27,7 +27,7 @@ export const usePoints = () => {
 export const PointsProvider = ({ children }: { children: ReactNode }) => {
   const [userPoints, setUserPoints] = useState<number>(0);
   const [isLoading, setIsLoading] = useState<boolean>(true);
-  const { user } = useAuth(); // Using the useAuth hook instead of direct context
+  const { user, userProfile } = useAuth(); // Using the useAuth hook instead of direct context
 
   const fetchUserPoints = async () => {
     if (!user) {
@@ -60,6 +60,7 @@ export const PointsProvider = ({ children }: { children: ReactNode }) => {
     }
   };
 
+  // Fetch points when user is available or userProfile changes
   useEffect(() => {
     if (user) {
       console.log("PointsProvider: User available, fetching points");
@@ -69,7 +70,7 @@ export const PointsProvider = ({ children }: { children: ReactNode }) => {
       setUserPoints(0);
       setIsLoading(false);
     }
-  }, [user]);
+  }, [user, userProfile]); // Add userProfile as a dependency to refresh points when profile changes
 
   const refreshPoints = async () => {
     try {
