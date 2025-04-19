@@ -1,6 +1,6 @@
 
 -- Update the handle_new_user function to properly capture phone number and email
--- but not add welcome points initially
+-- and explicitly set points to 0
 CREATE OR REPLACE FUNCTION public.handle_new_user()
 RETURNS trigger
 LANGUAGE plpgsql
@@ -24,7 +24,7 @@ BEGIN
     NEW.email,
     NEW.raw_user_meta_data->>'phone_number',
     COALESCE(NEW.raw_user_meta_data->>'phone_country_code', '+'),
-    0,  -- Start with 0 points, welcome bonus will be added on first profile update
+    0,  -- Explicitly set points to 0
     NOW(),
     NOW()
   );
