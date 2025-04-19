@@ -16,6 +16,7 @@ interface AuthContextType {
   userProfile: any | null;
   refreshUserProfile: () => Promise<void>;
   signUpWithPhone: (phone: string, username: string, email: string, password?: string) => Promise<{ error: any }>;
+  signInWithPhone: (phone: string, password: string) => Promise<{ error: any }>;
 }
 
 const AuthContext = createContext<AuthContextType>({
@@ -27,7 +28,8 @@ const AuthContext = createContext<AuthContextType>({
   loading: true,
   userProfile: null,
   refreshUserProfile: async () => { throw new Error('AuthProvider not initialized') },
-  signUpWithPhone: async () => ({ error: new Error('AuthProvider not initialized') })
+  signUpWithPhone: async () => ({ error: new Error('AuthProvider not initialized') }),
+  signInWithPhone: async () => ({ error: new Error('AuthProvider not initialized') })
 });
 
 export function AuthProvider({ children }: { children: ReactNode }) {
@@ -112,6 +114,18 @@ export function AuthProvider({ children }: { children: ReactNode }) {
     return result;
   };
 
+  const signInWithPhone = async (phone: string, password: string) => {
+    const result = await authService.signInWithPhone(phone, password);
+    if (result.error) {
+      toast({
+        title: "Login Failed",
+        description: result.error.message,
+        variant: "destructive",
+      });
+    }
+    return result;
+  };
+
   const signUp = async (email: string, password: string, username: string) => {
     const result = await authService.signUp(email, password, username);
     if (result.error) {
@@ -172,6 +186,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
     userProfile,
     refreshUserProfile,
     signUpWithPhone,
+    signInWithPhone,
   };
 
   return (

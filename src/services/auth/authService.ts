@@ -1,3 +1,4 @@
+
 import { supabase } from '@/integrations/supabase/client';
 import { toast as sonnerToast } from 'sonner';
 
@@ -5,6 +6,24 @@ export const signIn = async (email: string, password: string) => {
   try {
     const { data, error } = await supabase.auth.signInWithPassword({
       email,
+      password,
+    });
+    
+    if (error) {
+      return { error };
+    }
+    
+    sonnerToast.success('Welcome back!');
+    return { session: data.session, user: data.user, error: null };
+  } catch (error: any) {
+    return { error };
+  }
+};
+
+export const signInWithPhone = async (phone: string, password: string) => {
+  try {
+    const { data, error } = await supabase.auth.signInWithPassword({
+      phone,
       password,
     });
     
