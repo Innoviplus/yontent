@@ -1,26 +1,19 @@
-import { useState, useRef, useEffect } from 'react';
+import { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { useAuth } from '@/contexts/AuthContext';
 import { toast } from 'sonner';
 import { Button } from '@/components/ui/button';
 import { Form, FormControl, FormField, FormItem, FormLabel, FormMessage } from '@/components/ui/form';
 import { Input } from '@/components/ui/input';
-import { 
-  Select,
-  SelectContent,
-  SelectItem,
-  SelectTrigger,
-  SelectValue,
-} from '@/components/ui/select';
 import { zodResolver } from '@hookform/resolvers/zod';
 import { useForm } from 'react-hook-form';
 import * as z from 'zod';
 import { supabase } from '@/integrations/supabase/client';
+import PhoneNumberInput from './PhoneNumberInput';
 
 // Expanded schema to include email
 const phoneSignUpSchema = z.object({
-  countryCode: z.string().min(1, 'Country code is required'),
-  phone: z.string().min(8, 'Phone number must be at least 8 digits'),
+  phone: z.string().min(1, 'Phone number is required'),
   username: z.string().min(3, 'Username must be at least 3 characters'),
   email: z.string().email('Please enter a valid email address')
 });
@@ -31,13 +24,6 @@ const otpSchema = z.object({
   otp: z.string().min(6, 'OTP must be 6 digits').max(6, 'OTP must be 6 digits'),
 });
 
-// Predefined country codes with more comprehensive list
-const countryCodes = [
-  { code: '+65', country: 'Singapore' },
-  { code: '+852', country: 'Hong Kong' },
-  // Add more countries as needed
-];
-
 const PhoneSignUpForm = () => {
   const [showOTP, setShowOTP] = useState(false);
   const [phoneNumber, setPhoneNumber] = useState('');
@@ -45,17 +31,31 @@ const PhoneSignUpForm = () => {
   const navigate = useNavigate();
   
   const [otpValues, setOtpValues] = useState<string[]>(Array(6).fill(''));
-  const inputRefs = useRef<(HTMLInputElement | null)[]>(Array(6).fill(null));
+  const [userCountry, setUserCountry] = useState('HK');
 
   const form = useForm<PhoneSignUpFormValues>({
     resolver: zodResolver(phoneSignUpSchema),
     defaultValues: {
-      countryCode: '', // Empty initially to force selection
       phone: '',
       username: '',
       email: ''
     },
   });
+
+  // IP-based country code detection
+  useEffect(() => {
+    const detectCountry = async () => {
+      try {
+        const response = await fetch('https://ipapi.co/json/');
+        const data = await response.json();
+        setUserCountry(data.country_code || 'HK');
+      } catch (error) {
+        console.error('Failed to detect country', error);
+      }
+    };
+
+    detectCountry();
+  }, []);
 
   const otpForm = useForm<{ otp: string }>({
     resolver: zodResolver(otpSchema),
@@ -64,32 +64,11 @@ const PhoneSignUpForm = () => {
     },
   });
 
-  // IP-based country code detection (simplified, requires actual IP geolocation service)
-  useEffect(() => {
-    const detectCountryCode = async () => {
-      try {
-        const response = await fetch('https://ipapi.co/json/');
-        const data = await response.json();
-        const detectedCountryCode = data.country_code === 'SG' ? '+65' : 
-                                     data.country_code === 'HK' ? '+852' : '';
-        
-        if (detectedCountryCode) {
-          form.setValue('countryCode', detectedCountryCode);
-        }
-      } catch (error) {
-        console.error('Failed to detect country code', error);
-      }
-    };
-
-    detectCountryCode();
-  }, []);
-
   const handleSignUp = async (values: PhoneSignUpFormValues) => {
     try {
-      const formattedPhone = `${values.countryCode}${values.phone}`;
       const { error } = await signUpWithPhone(
-        formattedPhone, 
-        values.username, 
+        values.phone,
+        values.username,
         values.email
       );
       
@@ -98,7 +77,7 @@ const PhoneSignUpForm = () => {
         return;
       }
       
-      setPhoneNumber(formattedPhone);
+      setPhoneNumber(values.phone);
       setShowOTP(true);
       toast.success('OTP sent to your phone number');
     } catch (error: any) {
@@ -283,50 +262,23 @@ const PhoneSignUpForm = () => {
           )}
         />
 
-        <div className="grid gap-2">
-          <FormLabel>Phone Number</FormLabel>
-          <div className="flex gap-2">
-            <FormField
-              control={form.control}
-              name="countryCode"
-              render={({ field }) => (
-                <FormItem className="w-32">
-                  <Select
-                    value={field.value}
-                    onValueChange={field.onChange}
-                  >
-                    <FormControl>
-                      <SelectTrigger>
-                        <SelectValue placeholder="Country" />
-                      </SelectTrigger>
-                    </FormControl>
-                    <SelectContent>
-                      {countryCodes.map((country) => (
-                        <SelectItem key={country.code} value={country.code}>
-                          {country.code} {country.country}
-                        </SelectItem>
-                      ))}
-                    </SelectContent>
-                  </Select>
-                  <FormMessage />
-                </FormItem>
-              )}
-            />
-            
-            <FormField
-              control={form.control}
-              name="phone"
-              render={({ field }) => (
-                <FormItem className="flex-1">
-                  <FormControl>
-                    <Input {...field} placeholder="Phone number" type="tel" />
-                  </FormControl>
-                  <FormMessage />
-                </FormItem>
-              )}
-            />
-          </div>
-        </div>
+        <FormField
+          control={form.control}
+          name="phone"
+          render={({ field }) => (
+            <FormItem>
+              <FormLabel>Phone Number</FormLabel>
+              <FormControl>
+                <PhoneNumberInput
+                  value={field.value}
+                  onChange={field.onChange}
+                  defaultCountry={userCountry}
+                />
+              </FormControl>
+              <FormMessage />
+            </FormItem>
+          )}
+        />
         
         <Button type="submit" className="w-full" disabled={form.formState.isSubmitting}>
           {form.formState.isSubmitting ? 'Sending OTP...' : 'Continue'}
