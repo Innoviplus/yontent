@@ -1,3 +1,4 @@
+
 import { useState, useEffect } from 'react';
 import { useAuth } from '@/contexts/AuthContext';
 import { useSettings } from '@/hooks/useSettings';
@@ -20,14 +21,28 @@ const ProfileTab = () => {
   const [formSuccess, setFormSuccess] = useState(false);
   const [isLoading, setIsLoading] = useState(false);
   
+  // Add refresh on mount and when user changes
   useEffect(() => {
-    if (user && !isLoading) {
-      refreshUserProfile();
+    if (user) {
+      console.log("ProfileTab: Refreshing user profile for user:", user.id);
+      setIsLoading(true);
+      refreshUserProfile()
+        .then(() => {
+          console.log("ProfileTab: Profile refreshed successfully");
+          setIsLoading(false);
+        })
+        .catch(err => {
+          console.error("ProfileTab: Error refreshing profile:", err);
+          setIsLoading(false);
+        });
     }
-  }, [user]);
+  }, [user, refreshUserProfile]);
   
+  // Update form with profile data when it changes
   useEffect(() => {
     if (userProfile && !isLoading) {
+      console.log("Setting form values from userProfile:", userProfile);
+      
       profileForm.setValue('username', userProfile.username || '');
       profileForm.setValue('email', userProfile.email || user?.email || '');
       profileForm.setValue('phoneNumber', userProfile.phone_number || '');
@@ -49,7 +64,7 @@ const ProfileTab = () => {
         profileForm.setValue('tiktokUrl', extendedProfile.tiktokUrl || '');
       }
     }
-  }, [userProfile, extendedProfile]);
+  }, [userProfile, extendedProfile, profileForm, user, isLoading]);
   
   const onSubmit = async (values: ProfileFormValues) => {
     if (!user) return;

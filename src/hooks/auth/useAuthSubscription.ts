@@ -48,6 +48,7 @@ export function useAuthSubscription({
               }
               
               if (Object.keys(updateData).length > 0) {
+                console.log("Updating profile with metadata:", updateData);
                 const { error: updateError } = await supabase
                   .from('profiles')
                   .update(updateData)
@@ -57,6 +58,7 @@ export function useAuthSubscription({
                   console.error("Error updating profile with missing data:", updateError);
                 } else {
                   const updatedData = await fetchUserProfile(newSession.user.id, newSession.user.email);
+                  console.log("Updated profile data:", updatedData);
                   setUserProfile(updatedData);
                 }
               } else {

@@ -65,6 +65,7 @@ export function useOTPVerification(setUserProfile: (profile: any) => void) {
               .single();
               
             if (profileData) {
+              console.log("Setting user profile after OTP verification:", profileData);
               setUserProfile(profileData);
             }
           } catch (err) {

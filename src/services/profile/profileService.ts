@@ -3,6 +3,8 @@ import { supabase } from '@/integrations/supabase/client';
 
 export async function fetchUserProfile(userId: string, userEmail?: string | null) {
   try {
+    console.log("Fetching user profile for:", userId);
+    
     const { data, error } = await supabase
       .from('profiles')
       .select('*')
@@ -18,6 +20,8 @@ export async function fetchUserProfile(userId: string, userEmail?: string | null
     
     // Update user email in profile if needed
     if (userEmail && (!data.email || data.email !== userEmail)) {
+      console.log("Updating profile with email from auth:", userEmail);
+      
       const { error: updateError } = await supabase
         .from('profiles')
         .update({ 

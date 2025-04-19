@@ -9,7 +9,7 @@ interface ProtectedRouteProps {
 }
 
 const ProtectedRoute = ({ children }: ProtectedRouteProps) => {
-  const { user, loading, session } = useAuth();
+  const { user, loading, session, userProfile, refreshUserProfile } = useAuth();
   const location = useLocation();
   
   useEffect(() => {
@@ -19,9 +19,16 @@ const ProtectedRoute = ({ children }: ProtectedRouteProps) => {
       isLoading: loading,
       hasUser: !!user,
       hasSession: !!session,
+      hasProfile: !!userProfile,
       sessionExpiry: session?.expires_at ? new Date(session.expires_at * 1000).toISOString() : 'N/A'
     });
-  }, [location.pathname, loading, user, session]);
+    
+    // Refresh profile if user exists but profile is missing
+    if (user && !userProfile && !loading && refreshUserProfile) {
+      console.log("Protected route: Refreshing missing user profile");
+      refreshUserProfile();
+    }
+  }, [location.pathname, loading, user, session, userProfile, refreshUserProfile]);
   
   if (loading) {
     return (
