@@ -1,7 +1,6 @@
 
 import { toast } from 'sonner';
 import { signInWithPhone as phoneSignIn, completePhoneSignIn } from '@/services/auth/phoneAuth';
-import { sendOtp } from '@/services/auth/otpAuth';
 
 export function usePhoneSignIn() {
   const signInWithPhone = async (phone: string, password: string) => {

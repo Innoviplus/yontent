@@ -1,6 +1,6 @@
 
 import { toast } from 'sonner';
-import { sendOtp, verifyOtp, resendOtp } from '@/services/auth/otpAuth';
+import { verifyOtp, resendOtp } from '@/services/auth/otpAuth';
 import { supabase } from '@/integrations/supabase/client';
 import { useRegistration } from '@/contexts/auth/RegistrationContext';
 
@@ -14,46 +14,56 @@ export function useOTPVerification(setUserProfile: (profile: any) => void) {
       // Get the stored registration data
       const pendingRegistration = getPendingRegistration(phone);
       
-      const { data, error: verifyError } = await verifyOtp(phone, token);
+      if (!pendingRegistration) {
+        toast.error("Registration data not found");
+        return { error: { message: "Registration data not found" } };
+      }
+      
+      // First verify the OTP
+      const { error: verifyError } = await verifyOtp(phone, token);
       
       if (verifyError) {
         toast.error(verifyError.message || "Invalid verification code");
         return { error: verifyError };
       }
       
-      // After OTP verification, update the user's profile with all data
-      if (data?.user && pendingRegistration) {
-        const { error: updateError } = await supabase
-          .from('profiles')
-          .update({
+      // After OTP verification, create user with email provider
+      const { data: authData, error: signUpError } = await supabase.auth.signUp({
+        email: pendingRegistration.email,
+        password: pendingRegistration.password || Math.random().toString(36).slice(-8),
+        options: {
+          data: {
             username: pendingRegistration.username,
-            email: pendingRegistration.email,
             phone_number: pendingRegistration.phone_number,
-            phone_country_code: pendingRegistration.phone_country_code
-          })
-          .eq('id', data.user.id);
-        
-        if (updateError) {
-          console.error("Error updating profile:", updateError);
+            phone_country_code: pendingRegistration.phone_country_code,
+            email: pendingRegistration.email
+          }
         }
-        
-        // Fetch the updated profile
+      });
+      
+      if (signUpError) {
+        toast.error(signUpError.message || "Failed to create account");
+        return { error: signUpError };
+      }
+      
+      // If user was created successfully, clear the pending registration
+      clearPendingRegistration(phone);
+      
+      // Sign in the user with their email/password
+      if (authData.user) {
         const { data: profileData } = await supabase
           .from('profiles')
           .select('*')
-          .eq('id', data.user.id)
+          .eq('id', authData.user.id)
           .single();
           
         if (profileData) {
           setUserProfile(profileData);
         }
-        
-        // Clear the pending registration after successful verification
-        clearPendingRegistration(phone);
       }
       
-      toast.success("Phone verified successfully");
-      return { data, error: null };
+      toast.success("Phone verified and account created successfully");
+      return { data: authData, error: null };
     } catch (error: any) {
       console.error("Exception during OTP verification:", error);
       toast.error(error.message || "An unexpected error occurred");

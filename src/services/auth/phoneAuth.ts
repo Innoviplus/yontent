@@ -9,6 +9,7 @@ export const signInWithPhone = async (phone: string, password: string) => {
     // First normalize the phone number to remove any non-digit characters for comparison
     const normalizedPhone = phone.replace(/\D/g, '');
     
+    // Find the user by phone number
     const { data: profiles, error: profileError } = await supabase
       .from('profiles')
       .select('email, phone_number')
