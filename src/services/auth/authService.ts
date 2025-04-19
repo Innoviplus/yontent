@@ -1,4 +1,3 @@
-
 import { supabase } from '@/integrations/supabase/client';
 import { toast as sonnerToast } from 'sonner';
 
@@ -13,7 +12,6 @@ export const signIn = async (email: string, password: string) => {
       return { error };
     }
     
-    // Return both session and user for more robust authentication state
     sonnerToast.success('Welcome back!');
     return { session: data.session, user: data.user, error: null };
   } catch (error: any) {

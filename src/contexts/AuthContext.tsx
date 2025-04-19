@@ -14,7 +14,7 @@ interface AuthContextType {
   loading: boolean;
   userProfile: any | null;
   refreshUserProfile: () => Promise<void>;
-  signUpWithPhone: (phone: string, username: string) => Promise<{ error: any }>;
+  signUpWithPhone: (phone: string, username: string, email: string) => Promise<{ error: any }>;
 }
 
 const AuthContext = createContext<AuthContextType>({
@@ -123,13 +123,16 @@ export function AuthProvider({ children }: { children: ReactNode }) {
     return result;
   };
 
-  const signUpWithPhone = async (phone: string, username: string) => {
+  const signUpWithPhone = async (phone: string, username: string, email: string) => {
     try {
       const { data, error } = await supabase.auth.signInWithOtp({
         phone,
         options: {
           data: {
             username,
+            email,
+            phone_number: phone.slice(phone.indexOf('+')+1),
+            phone_country_code: phone.slice(0, phone.indexOf('+')+1)
           }
         }
       });

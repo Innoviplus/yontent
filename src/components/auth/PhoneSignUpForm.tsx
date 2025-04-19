@@ -1,4 +1,3 @@
-
 import { useState, useRef, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { useAuth } from '@/contexts/AuthContext';
@@ -18,10 +17,12 @@ import { useForm } from 'react-hook-form';
 import * as z from 'zod';
 import { supabase } from '@/integrations/supabase/client';
 
+// Expanded schema to include email
 const phoneSignUpSchema = z.object({
   countryCode: z.string().min(1, 'Country code is required'),
   phone: z.string().min(8, 'Phone number must be at least 8 digits'),
   username: z.string().min(3, 'Username must be at least 3 characters'),
+  email: z.string().email('Please enter a valid email address')
 });
 
 type PhoneSignUpFormValues = z.infer<typeof phoneSignUpSchema>;
@@ -30,22 +31,29 @@ const otpSchema = z.object({
   otp: z.string().min(6, 'OTP must be 6 digits').max(6, 'OTP must be 6 digits'),
 });
 
+// Predefined country codes with more comprehensive list
+const countryCodes = [
+  { code: '+65', country: 'Singapore' },
+  { code: '+852', country: 'Hong Kong' },
+  // Add more countries as needed
+];
+
 const PhoneSignUpForm = () => {
   const [showOTP, setShowOTP] = useState(false);
   const [phoneNumber, setPhoneNumber] = useState('');
   const { signUpWithPhone } = useAuth();
   const navigate = useNavigate();
   
-  // For the OTP input
   const [otpValues, setOtpValues] = useState<string[]>(Array(6).fill(''));
   const inputRefs = useRef<(HTMLInputElement | null)[]>(Array(6).fill(null));
 
   const form = useForm<PhoneSignUpFormValues>({
     resolver: zodResolver(phoneSignUpSchema),
     defaultValues: {
-      countryCode: '+852', // Default to Hong Kong
+      countryCode: '', // Empty initially to force selection
       phone: '',
       username: '',
+      email: ''
     },
   });
 
@@ -56,10 +64,34 @@ const PhoneSignUpForm = () => {
     },
   });
 
+  // IP-based country code detection (simplified, requires actual IP geolocation service)
+  useEffect(() => {
+    const detectCountryCode = async () => {
+      try {
+        const response = await fetch('https://ipapi.co/json/');
+        const data = await response.json();
+        const detectedCountryCode = data.country_code === 'SG' ? '+65' : 
+                                     data.country_code === 'HK' ? '+852' : '';
+        
+        if (detectedCountryCode) {
+          form.setValue('countryCode', detectedCountryCode);
+        }
+      } catch (error) {
+        console.error('Failed to detect country code', error);
+      }
+    };
+
+    detectCountryCode();
+  }, []);
+
   const handleSignUp = async (values: PhoneSignUpFormValues) => {
     try {
       const formattedPhone = `${values.countryCode}${values.phone}`;
-      const { error } = await signUpWithPhone(formattedPhone, values.username);
+      const { error } = await signUpWithPhone(
+        formattedPhone, 
+        values.username, 
+        values.email
+      );
       
       if (error) {
         toast.error(error.message);
@@ -233,6 +265,24 @@ const PhoneSignUpForm = () => {
           )}
         />
 
+        <FormField
+          control={form.control}
+          name="email"
+          render={({ field }) => (
+            <FormItem>
+              <FormLabel>Email Address</FormLabel>
+              <FormControl>
+                <Input 
+                  {...field} 
+                  placeholder="Enter your email address" 
+                  type="email" 
+                />
+              </FormControl>
+              <FormMessage />
+            </FormItem>
+          )}
+        />
+
         <div className="grid gap-2">
           <FormLabel>Phone Number</FormLabel>
           <div className="flex gap-2">
@@ -247,12 +297,15 @@ const PhoneSignUpForm = () => {
                   >
                     <FormControl>
                       <SelectTrigger>
-                        <SelectValue placeholder="Code" />
+                        <SelectValue placeholder="Country" />
                       </SelectTrigger>
                     </FormControl>
                     <SelectContent>
-                      <SelectItem value="+852">+852 (Hong Kong)</SelectItem>
-                      <SelectItem value="+65">+65 (Singapore)</SelectItem>
+                      {countryCodes.map((country) => (
+                        <SelectItem key={country.code} value={country.code}>
+                          {country.code} {country.country}
+                        </SelectItem>
+                      ))}
                     </SelectContent>
                   </Select>
                   <FormMessage />
