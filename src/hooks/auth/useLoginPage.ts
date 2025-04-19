@@ -58,16 +58,18 @@ export const useLoginPage = () => {
       const { phone, password } = values;
       setPhoneNumber(phone);
       
-      const { error, requiresOtp } = await signInWithPhone(phone, password);
+      const result = await signInWithPhone(phone, password);
       
-      if (error) {
+      if (result.error) {
         toast.error("Login Failed", {
-          description: error.message || "Invalid phone number or password"
+          description: result.error.message || "Invalid phone number or password"
         });
         return;
       }
       
-      if (requiresOtp) {
+      // Check if the result contains a requiresOtp property
+      // TypeScript fix: Checking if 'requiresOtp' exists in the result using type assertion
+      if ('requiresOtp' in result && result.requiresOtp) {
         setShowOtpVerification(true);
       } else {
         // If no OTP required, we've already been redirected
