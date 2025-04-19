@@ -1,48 +1,23 @@
 
 import { useState, useEffect } from 'react';
-import { useNavigate } from 'react-router-dom';
-import { useAuth } from '@/contexts/AuthContext';
-import { toast } from 'sonner';
-import { Button } from '@/components/ui/button';
-import { Form, FormControl, FormField, FormItem, FormLabel, FormMessage } from '@/components/ui/form';
-import { Input } from '@/components/ui/input';
-import { zodResolver } from '@hookform/resolvers/zod';
-import { useForm } from 'react-hook-form';
-import * as z from 'zod';
-import PhoneNumberInput from './PhoneNumberInput';
+import { Form } from '@/components/ui/form';
 import OTPVerification from './otp/OTPVerification';
-import { Eye, EyeOff } from 'lucide-react';
-
-const phoneSignUpSchema = z.object({
-  phone: z.string().min(1, 'Phone number is required'),
-  username: z.string().min(3, 'Username must be at least 3 characters'),
-  email: z.string().email('Please enter a valid email address'),
-  password: z.string()
-    .min(8, 'Password must be at least 8 characters')
-    .regex(/\d/, 'Password must contain at least 1 number')
-    .regex(/[!@#$%^&*(),.?":{}|<>]/, 'Password must contain at least 1 special character'),
-});
-
-type PhoneSignUpFormValues = z.infer<typeof phoneSignUpSchema>;
+import SignUpFormFields from './signup/SignUpFormFields';
+import { usePhoneSignUpForm } from '@/hooks/auth/usePhoneSignUpForm';
 
 const PhoneSignUpForm = () => {
-  const navigate = useNavigate();
-  const [showOTP, setShowOTP] = useState(false);
-  const [phoneNumber, setPhoneNumber] = useState('');
-  const [showPassword, setShowPassword] = useState(false);
-  const [isSubmitting, setIsSubmitting] = useState(false);
-  const { signUpWithPhone, verifyPhoneOtp, resendOtp } = useAuth();
   const [userCountry, setUserCountry] = useState('HK');
-
-  const form = useForm<PhoneSignUpFormValues>({
-    resolver: zodResolver(phoneSignUpSchema),
-    defaultValues: {
-      phone: '',
-      username: '',
-      email: '',
-      password: '',
-    },
-  });
+  const {
+    form,
+    showOTP,
+    phoneNumber,
+    showPassword,
+    isSubmitting,
+    setShowPassword,
+    handleSignUp,
+    handleVerifyOtp,
+    setShowOTP
+  } = usePhoneSignUpForm();
 
   useEffect(() => {
     const detectCountry = async () => {
@@ -58,77 +33,13 @@ const PhoneSignUpForm = () => {
     detectCountry();
   }, []);
 
-  const handleSignUp = async (values: PhoneSignUpFormValues) => {
-    try {
-      setIsSubmitting(true);
-      console.log("Signing up with phone:", values.phone, "email:", values.email);
-      
-      const { error, phoneNumber: returnedPhone } = await signUpWithPhone(
-        values.phone,
-        values.username,
-        values.email,
-        values.password
-      );
-      
-      if (error) {
-        toast.error(error.message || "An error occurred during sign up");
-        setIsSubmitting(false);
-        return;
-      }
-      
-      setPhoneNumber(returnedPhone || values.phone);
-      setShowOTP(true);
-    } catch (error: any) {
-      toast.error(error.message || 'An error occurred during sign up');
-      setIsSubmitting(false);
-    }
-  };
-
-  const handleVerifyOtp = async (otp: string) => {
-    try {
-      console.log("Verifying OTP:", otp, "for phone:", phoneNumber);
-      const { error } = await verifyPhoneOtp(phoneNumber, otp);
-      
-      if (error) {
-        toast.error(error.message || "Failed to verify OTP");
-        return;
-      }
-      
-      toast.success("Phone number verified successfully");
-      
-      // Redirect to dashboard after successful verification
-      navigate('/dashboard');
-    } catch (error: any) {
-      toast.error(error.message || "Failed to verify OTP");
-    }
-  };
-
-  const handleResendOtp = async () => {
-    try {
-      const { error } = await resendOtp(phoneNumber);
-      
-      if (error) {
-        toast.error(error.message || "Failed to resend OTP");
-        return;
-      }
-      
-      toast.success("Verification code resent");
-    } catch (error: any) {
-      toast.error(error.message || "Failed to resend OTP");
-    }
-  };
-
-  const handleCancelOtp = () => {
-    setShowOTP(false);
-  };
-
   if (showOTP) {
     return (
       <OTPVerification 
         phoneNumber={phoneNumber} 
         onVerify={handleVerifyOtp}
-        onResend={handleResendOtp}
-        onCancel={handleCancelOtp}
+        onResend={async () => {}} // We'll implement this later if needed
+        onCancel={() => setShowOTP(false)}
       />
     );
   }
@@ -136,90 +47,13 @@ const PhoneSignUpForm = () => {
   return (
     <Form {...form}>
       <form onSubmit={form.handleSubmit(handleSignUp)} className="space-y-6">
-        <FormField
-          control={form.control}
-          name="username"
-          render={({ field }) => (
-            <FormItem>
-              <FormLabel>Username</FormLabel>
-              <FormControl>
-                <Input {...field} placeholder="Choose a username" />
-              </FormControl>
-              <FormMessage />
-            </FormItem>
-          )}
+        <SignUpFormFields
+          form={form}
+          userCountry={userCountry}
+          showPassword={showPassword}
+          isSubmitting={isSubmitting}
+          onTogglePassword={() => setShowPassword(!showPassword)}
         />
-
-        <FormField
-          control={form.control}
-          name="email"
-          render={({ field }) => (
-            <FormItem>
-              <FormLabel>Email Address</FormLabel>
-              <FormControl>
-                <Input 
-                  {...field} 
-                  placeholder="Enter your email address" 
-                  type="email" 
-                />
-              </FormControl>
-              <FormMessage />
-            </FormItem>
-          )}
-        />
-
-        <FormField
-          control={form.control}
-          name="password"
-          render={({ field }) => (
-            <FormItem>
-              <FormLabel>Password</FormLabel>
-              <FormControl>
-                <div className="relative">
-                  <Input
-                    {...field}
-                    type={showPassword ? "text" : "password"}
-                    placeholder="Choose a password"
-                  />
-                  <button
-                    type="button"
-                    onClick={() => setShowPassword(!showPassword)}
-                    className="absolute right-3 top-1/2 -translate-y-1/2 text-gray-500 hover:text-gray-700"
-                  >
-                    {showPassword ? (
-                      <EyeOff className="h-4 w-4" />
-                    ) : (
-                      <Eye className="h-4 w-4" />
-                    )}
-                  </button>
-                </div>
-              </FormControl>
-              <FormMessage />
-            </FormItem>
-          )}
-        />
-
-        <FormField
-          control={form.control}
-          name="phone"
-          render={({ field }) => (
-            <FormItem>
-              <FormLabel>Phone Number</FormLabel>
-              <FormControl>
-                <PhoneNumberInput
-                  value={field.value}
-                  onChange={field.onChange}
-                  defaultCountry={userCountry}
-                />
-              </FormControl>
-              <FormMessage />
-            </FormItem>
-          )}
-        />
-        
-        <Button type="submit" className="w-full" disabled={isSubmitting}>
-          {isSubmitting ? 'Processing...' : 'Continue'}
-        </Button>
       </form>
     </Form>
   );
