@@ -1,12 +1,11 @@
 
-import { createContext, useContext, useEffect, ReactNode } from 'react';
-import { supabase } from '@/integrations/supabase/client';
-import { fetchUserProfile } from '@/services/profile/profileService';
+import { createContext, useContext, ReactNode } from 'react';
 import { useAuthState } from './useAuthState';
 import { usePhoneAuth } from './phoneAuth';
 import { useEmailAuth } from './emailAuth';
 import { AuthContextType } from './types';
 import { signOut } from '@/services/auth/sessionAuth';
+import { useAuthSubscription } from '@/hooks/auth/useAuthSubscription';
 
 const AuthContext = createContext<AuthContextType>({
   session: null,
@@ -39,6 +38,13 @@ export function AuthProvider({ children }: { children: ReactNode }) {
   const { signIn, signUp } = useEmailAuth();
   const { signUpWithPhone, signInWithPhone, verifyPhoneOtp, resendOtp, completeSignIn } = usePhoneAuth(setUserProfile);
 
+  useAuthSubscription({
+    setSession,
+    setUser,
+    setLoading,
+    setUserProfile
+  });
+
   const refreshUserProfile = async () => {
     if (user) {
       try {
@@ -51,102 +57,6 @@ export function AuthProvider({ children }: { children: ReactNode }) {
       }
     }
   };
-
-  useEffect(() => {
-    console.log("AuthProvider: Setting up auth state listener");
-    
-    // Fix: Set loading to true initially to prevent premature access
-    setLoading(true);
-    
-    const { data: { subscription } } = supabase.auth.onAuthStateChange(
-      async (event, newSession) => {
-        console.log("Auth state changed:", event, newSession?.user?.id);
-        setSession(newSession);
-        setUser(newSession?.user ?? null);
-        
-        if (newSession?.user) {
-          // Use setTimeout to allow database triggers to complete
-          setTimeout(async () => {
-            try {
-              // Remove duplicate welcome bonus logic - the trigger in the database will handle this
-              
-              const data = await fetchUserProfile(newSession.user.id, newSession.user.email);
-              console.log("Profile data fetched on auth change:", data);
-              
-              // Check if the profile has missing phone or email and update if needed
-              if (data && newSession.user && (!data.phone_number || !data.email)) {
-                console.log("Updating missing profile data...");
-                const userData = newSession.user.user_metadata || {};
-                
-                const updateData: any = {};
-                if (!data.email && newSession.user.email) {
-                  updateData.email = newSession.user.email;
-                }
-                
-                if (!data.phone_number && userData.phone_number) {
-                  updateData.phone_number = userData.phone_number;
-                  updateData.phone_country_code = userData.phone_country_code || '+';
-                }
-                
-                if (Object.keys(updateData).length > 0) {
-                  const { error: updateError } = await supabase
-                    .from('profiles')
-                    .update(updateData)
-                    .eq('id', newSession.user.id);
-                    
-                  if (updateError) {
-                    console.error("Error updating profile with missing data:", updateError);
-                  } else {
-                    // Re-fetch the profile after update
-                    const updatedData = await fetchUserProfile(newSession.user.id, newSession.user.email);
-                    setUserProfile(updatedData);
-                  }
-                } else {
-                  setUserProfile(data);
-                }
-              } else {
-                setUserProfile(data);
-              }
-            } catch (err) {
-              console.error("Error fetching profile on auth change:", err);
-            } finally {
-              setLoading(false);
-            }
-          }, 500);
-        } else {
-          setUserProfile(null);
-          setLoading(false);
-        }
-      }
-    );
-
-    // Check for existing session
-    supabase.auth.getSession().then(({ data: { session: currentSession } }) => {
-      console.log("Initial session check:", currentSession ? `Found session for ${currentSession.user.email}` : "No session");
-      setSession(currentSession);
-      setUser(currentSession?.user ?? null);
-      
-      if (currentSession?.user) {
-        fetchUserProfile(currentSession.user.id, currentSession.user.email)
-          .then(data => {
-            console.log("Initial profile data:", data);
-            setUserProfile(data);
-          })
-          .catch(err => {
-            console.error("Error fetching initial profile:", err);
-          })
-          .finally(() => {
-            setLoading(false);
-          });
-      } else {
-        setLoading(false);
-      }
-    });
-
-    return () => {
-      subscription.unsubscribe();
-    };
-  }, []);
 
   const contextValue = {
     session,
