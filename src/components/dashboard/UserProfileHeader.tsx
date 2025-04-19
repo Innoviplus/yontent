@@ -52,7 +52,7 @@ const UserProfileHeader = ({ user }: UserProfileHeaderProps) => {
             <p className="text-gray-600 mt-2 mb-4">{bio}</p>
           ) : (
             <Link to="/settings" className="block text-brand-teal font-medium mt-2 mb-4 hover:underline">
-              Click here to fill in your profile &gt;
+              Update your profile information to receive welcome reward points &gt;
             </Link>
           )}
           
