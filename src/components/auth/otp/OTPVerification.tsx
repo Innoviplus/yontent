@@ -1,5 +1,5 @@
 
-import { useState } from 'react';
+import { useState, useRef, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { Button } from '@/components/ui/button';
 import { FormLabel } from '@/components/ui/form';
@@ -23,6 +23,7 @@ const OTPVerification = ({
 }: OTPVerificationProps) => {
   const [otpValues, setOtpValues] = useState<string[]>(Array(6).fill(''));
   const [isVerifying, setIsVerifying] = useState(false);
+  const inputRefs = useRef<(HTMLInputElement | null)[]>(Array(6).fill(null));
   const navigate = useNavigate();
 
   const handleOtpChange = (index: number, value: string) => {
@@ -30,27 +31,40 @@ const OTPVerification = ({
 
     const newOtpValues = [...otpValues];
     
+    // Handle paste event with multiple digits
     if (value.length > 1) {
       const digits = value.split('').filter(v => /^\d$/.test(v)).slice(0, 6);
       const newFullOtp = [...digits, ...Array(6 - digits.length).fill('')];
       setOtpValues(newFullOtp);
+      
+      // Focus on the appropriate field after paste
+      if (digits.length < 6) {
+        setTimeout(() => {
+          inputRefs.current[digits.length]?.focus();
+        }, 0);
+      }
       return;
     }
 
+    // Handle single digit input
     newOtpValues[index] = value;
     setOtpValues(newOtpValues);
+    
+    // Auto-focus next input field if a value was entered
+    if (value && index < 5) {
+      setTimeout(() => {
+        inputRefs.current[index + 1]?.focus();
+      }, 0);
+    }
   };
 
   const handleKeyDown = (index: number, e: React.KeyboardEvent<HTMLInputElement>) => {
     if (e.key === 'Backspace' && !otpValues[index] && index > 0) {
-      const refs = document.querySelectorAll('input');
-      (refs[index - 1] as HTMLInputElement)?.focus();
+      inputRefs.current[index - 1]?.focus();
     } else if (e.key === 'ArrowLeft' && index > 0) {
-      const refs = document.querySelectorAll('input');
-      (refs[index - 1] as HTMLInputElement)?.focus();
+      inputRefs.current[index - 1]?.focus();
     } else if (e.key === 'ArrowRight' && index < 5) {
-      const refs = document.querySelectorAll('input');
-      (refs[index + 1] as HTMLInputElement)?.focus();
+      inputRefs.current[index + 1]?.focus();
     }
   };
 
@@ -62,6 +76,13 @@ const OTPVerification = ({
     if (digits.length > 0) {
       const newOtp = [...digits, ...Array(6 - digits.length).fill('')];
       setOtpValues(newOtp);
+      
+      // Focus on the appropriate field after paste
+      if (digits.length < 6) {
+        setTimeout(() => {
+          inputRefs.current[digits.length]?.focus();
+        }, 0);
+      }
     }
   };
 
@@ -91,6 +112,7 @@ const OTPVerification = ({
             onChange={handleOtpChange}
             onKeyDown={handleKeyDown}
             onPaste={index === 0 ? handlePaste : undefined}
+            ref={(el) => inputRefs.current[index] = el}
           />
         ))}
       </div>

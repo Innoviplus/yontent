@@ -13,6 +13,7 @@ BEGIN
     email,
     phone_number,
     phone_country_code,
+    points,
     created_at,
     updated_at
   )
@@ -22,9 +23,11 @@ BEGIN
     NEW.email,
     NEW.raw_user_meta_data->>'phone_number',
     COALESCE(NEW.raw_user_meta_data->>'phone_country_code', '+'),
+    10,  -- Start with 10 points as welcome bonus
     NOW(),
     NOW()
   );
   RETURN NEW;
 END;
 $$;
+

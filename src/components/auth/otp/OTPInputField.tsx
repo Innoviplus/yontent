@@ -1,6 +1,6 @@
 
 import { Input } from '@/components/ui/input';
-import { useRef, useEffect } from 'react';
+import { forwardRef, useEffect } from 'react';
 
 interface OTPInputFieldProps {
   index: number;
@@ -11,25 +11,27 @@ interface OTPInputFieldProps {
   onPaste?: (e: React.ClipboardEvent) => void;
 }
 
-const OTPInputField = ({
+const OTPInputField = forwardRef<HTMLInputElement, OTPInputFieldProps>(({
   index,
   value,
   isVerifying,
   onChange,
   onKeyDown,
   onPaste
-}: OTPInputFieldProps) => {
-  const inputRef = useRef<HTMLInputElement>(null);
+}, ref) => {
 
   useEffect(() => {
-    if (index === 0) {
-      setTimeout(() => inputRef.current?.focus(), 100);
+    if (index === 0 && ref && 'current' in (ref as any)) {
+      const inputRef = (ref as any).current;
+      if (inputRef) {
+        setTimeout(() => inputRef.focus(), 100);
+      }
     }
-  }, [index]);
+  }, [index, ref]);
 
   return (
     <Input
-      ref={inputRef}
+      ref={ref}
       type="text"
       inputMode="numeric"
       autoComplete="one-time-code"
@@ -42,6 +44,8 @@ const OTPInputField = ({
       disabled={isVerifying}
     />
   );
-};
+});
+
+OTPInputField.displayName = 'OTPInputField';
 
 export default OTPInputField;
