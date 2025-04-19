@@ -87,11 +87,8 @@ const Login = () => {
   
   const onEmailSubmit = async (values: EmailLoginFormValues) => {
     try {
-      const {
-        error
-      } = await signIn(values.email, values.password);
+      const { error } = await signIn(values.email, values.password);
       if (error) {
-        // Display the specific error message from Supabase
         toast.error(error.message || "Invalid email or password");
         return;
       }
@@ -108,11 +105,9 @@ const Login = () => {
   
   const onPhoneSubmit = async (values: PhoneLoginFormValues) => {
     try {
-      const {
-        error
-      } = await signInWithPhone(values.phone, values.password);
+      console.log("Submitting phone login with:", values.phone);
+      const { error } = await signInWithPhone(values.phone, values.password);
       if (error) {
-        // Display the specific error message from Supabase
         toast.error(error.message || "Invalid phone number or password");
         return;
       }
@@ -151,35 +146,35 @@ const Login = () => {
               <TabsContent value="email">
                 <Form {...emailForm}>
                   <form onSubmit={emailForm.handleSubmit(onEmailSubmit)} className="space-y-5">
-                    <FormField control={emailForm.control} name="email" render={({
-                    field
-                  }) => <FormItem>
-                          <FormLabel>Email Address</FormLabel>
-                          <FormControl>
-                            <Input placeholder="yourname@example.com" type="email" autoComplete="email" {...field} />
-                          </FormControl>
-                          <FormMessage />
-                        </FormItem>} />
+                    <FormField control={emailForm.control} name="email" render={({ field }) => (
+                      <FormItem>
+                        <FormLabel>Email Address</FormLabel>
+                        <FormControl>
+                          <Input placeholder="yourname@example.com" type="email" autoComplete="email" {...field} />
+                        </FormControl>
+                        <FormMessage />
+                      </FormItem>
+                    )} />
                     
-                    <FormField control={emailForm.control} name="password" render={({
-                    field
-                  }) => <FormItem>
-                          <div className="flex justify-between items-center">
-                            <FormLabel>Password</FormLabel>
-                            <Link to="/forgot-password" className="text-xs text-brand-teal hover:text-brand-darkTeal transition-colors">
-                              Forgot password?
-                            </Link>
+                    <FormField control={emailForm.control} name="password" render={({ field }) => (
+                      <FormItem>
+                        <div className="flex justify-between items-center">
+                          <FormLabel>Password</FormLabel>
+                          <Link to="/forgot-password" className="text-xs text-brand-teal hover:text-brand-darkTeal transition-colors">
+                            Forgot password?
+                          </Link>
+                        </div>
+                        <FormControl>
+                          <div className="relative">
+                            <Input placeholder="••••••••" type={showPassword ? "text" : "password"} autoComplete="current-password" {...field} />
+                            <button type="button" onClick={() => setShowPassword(!showPassword)} className="absolute right-3 top-1/2 -translate-y-1/2 text-gray-500 hover:text-gray-700">
+                              {showPassword ? <EyeOff className="h-4 w-4" /> : <Eye className="h-4 w-4" />}
+                            </button>
                           </div>
-                          <FormControl>
-                            <div className="relative">
-                              <Input placeholder="••••••••" type={showPassword ? "text" : "password"} autoComplete="current-password" {...field} />
-                              <button type="button" onClick={() => setShowPassword(!showPassword)} className="absolute right-3 top-1/2 -translate-y-1/2 text-gray-500 hover:text-gray-700">
-                                {showPassword ? <EyeOff className="h-4 w-4" /> : <Eye className="h-4 w-4" />}
-                              </button>
-                            </div>
-                          </FormControl>
-                          <FormMessage />
-                        </FormItem>} />
+                        </FormControl>
+                        <FormMessage />
+                      </FormItem>
+                    )} />
                     
                     <Button type="submit" disabled={isEmailLoading} className="w-full bg-brand-teal hover:bg-brand-darkTeal" variant="default" size="default">
                       {isEmailLoading ? <div className="h-5 w-5 border-2 border-white border-t-transparent rounded-full animate-spin" /> : "Sign In"}
@@ -191,39 +186,39 @@ const Login = () => {
               <TabsContent value="phone">
                 <Form {...phoneForm}>
                   <form onSubmit={phoneForm.handleSubmit(onPhoneSubmit)} className="space-y-5">
-                    <FormField control={phoneForm.control} name="phone" render={({
-                    field
-                  }) => <FormItem>
-                          <FormLabel>Phone Number</FormLabel>
-                          <FormControl>
-                            <PhoneNumberInput
-                              value={field.value}
-                              onChange={field.onChange}
-                              defaultCountry={userCountry}
-                            />
-                          </FormControl>
-                          <FormMessage />
-                        </FormItem>} />
+                    <FormField control={phoneForm.control} name="phone" render={({ field }) => (
+                      <FormItem>
+                        <FormLabel>Phone Number</FormLabel>
+                        <FormControl>
+                          <PhoneNumberInput
+                            value={field.value}
+                            onChange={field.onChange}
+                            defaultCountry={userCountry}
+                          />
+                        </FormControl>
+                        <FormMessage />
+                      </FormItem>
+                    )} />
                     
-                    <FormField control={phoneForm.control} name="password" render={({
-                    field
-                  }) => <FormItem>
-                          <div className="flex justify-between items-center">
-                            <FormLabel>Password</FormLabel>
-                            <Link to="/forgot-password" className="text-xs text-brand-teal hover:text-brand-darkTeal transition-colors">
-                              Forgot password?
-                            </Link>
+                    <FormField control={phoneForm.control} name="password" render={({ field }) => (
+                      <FormItem>
+                        <div className="flex justify-between items-center">
+                          <FormLabel>Password</FormLabel>
+                          <Link to="/forgot-password" className="text-xs text-brand-teal hover:text-brand-darkTeal transition-colors">
+                            Forgot password?
+                          </Link>
+                        </div>
+                        <FormControl>
+                          <div className="relative">
+                            <Input placeholder="••••••••" type={showPassword ? "text" : "password"} autoComplete="current-password" {...field} />
+                            <button type="button" onClick={() => setShowPassword(!showPassword)} className="absolute right-3 top-1/2 -translate-y-1/2 text-gray-500 hover:text-gray-700">
+                              {showPassword ? <EyeOff className="h-4 w-4" /> : <Eye className="h-4 w-4" />}
+                            </button>
                           </div>
-                          <FormControl>
-                            <div className="relative">
-                              <Input placeholder="••••••••" type={showPassword ? "text" : "password"} autoComplete="current-password" {...field} />
-                              <button type="button" onClick={() => setShowPassword(!showPassword)} className="absolute right-3 top-1/2 -translate-y-1/2 text-gray-500 hover:text-gray-700">
-                                {showPassword ? <EyeOff className="h-4 w-4" /> : <Eye className="h-4 w-4" />}
-                              </button>
-                            </div>
-                          </FormControl>
-                          <FormMessage />
-                        </FormItem>} />
+                        </FormControl>
+                        <FormMessage />
+                      </FormItem>
+                    )} />
                     
                     <Button type="submit" disabled={isPhoneLoading} className="w-full bg-brand-teal hover:bg-brand-darkTeal" variant="default" size="default">
                       {isPhoneLoading ? <div className="h-5 w-5 border-2 border-white border-t-transparent rounded-full animate-spin" /> : "Sign In"}

@@ -115,6 +115,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
   };
 
   const signInWithPhone = async (phone: string, password: string) => {
+    console.log("AuthContext: signInWithPhone called with phone:", phone);
     const result = await authService.signInWithPhone(phone, password);
     if (result.error) {
       toast({
@@ -140,6 +141,8 @@ export function AuthProvider({ children }: { children: ReactNode }) {
 
   const signUpWithPhone = async (phone: string, username: string, email: string, password?: string) => {
     try {
+      console.log("AuthContext: signUpWithPhone called with:", {phone, username, email, hasPassword: !!password});
+      
       // Create the base user data object
       const userData: {
         username: string;
@@ -151,7 +154,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
         username,
         email,
         phone_number: phone.replace(/\+/g, ''), // Remove + from phone number for storage
-        phone_country_code: phone.slice(0, phone.indexOf('+')+1)
+        phone_country_code: '+' // Store the country code
       };
 
       // Only add password to the object if it was provided
@@ -159,19 +162,24 @@ export function AuthProvider({ children }: { children: ReactNode }) {
         userData.password = password;
       }
 
-      const { data, error } = await supabase.auth.signInWithOtp({
-        phone,
+      // Since we're using email as the primary authentication method,
+      // we'll actually sign up with email and password but still store the phone
+      const { data, error } = await supabase.auth.signUp({
+        email,
+        password: password || '', // Need to provide a password here
         options: {
           data: userData
         }
       });
 
       if (error) {
+        console.error("Error during phone signup:", error);
         return { error };
       }
 
       return { error: null };
     } catch (error: any) {
+      console.error("Exception during phone signup:", error);
       return { error };
     }
   };

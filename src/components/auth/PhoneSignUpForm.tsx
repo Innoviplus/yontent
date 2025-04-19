@@ -57,6 +57,8 @@ const PhoneSignUpForm = () => {
 
   const handleSignUp = async (values: PhoneSignUpFormValues) => {
     try {
+      console.log("Signing up with phone:", values.phone, "email:", values.email);
+      
       const { error } = await signUpWithPhone(
         values.phone,
         values.username,
