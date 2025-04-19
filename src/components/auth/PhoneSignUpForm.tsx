@@ -1,4 +1,3 @@
-
 import { useState, useEffect } from 'react';
 import { useAuth } from '@/contexts/AuthContext';
 import { toast } from 'sonner';
@@ -9,7 +8,7 @@ import { zodResolver } from '@hookform/resolvers/zod';
 import { useForm } from 'react-hook-form';
 import * as z from 'zod';
 import PhoneNumberInput from './PhoneNumberInput';
-import OTPVerification from './OTPVerification';
+import OTPVerification from './otp/OTPVerification';
 import { Eye, EyeOff } from 'lucide-react';
 
 const phoneSignUpSchema = z.object({
