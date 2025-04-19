@@ -1,3 +1,4 @@
+
 import { supabase } from '@/integrations/supabase/client';
 import { toast } from 'sonner';
 
@@ -5,10 +6,13 @@ export const signInWithPhone = async (phone: string, password: string) => {
   try {
     console.log("Attempting to sign in with phone:", phone);
     
+    // First normalize the phone number to remove any non-digit characters for comparison
+    const normalizedPhone = phone.replace(/\D/g, '');
+    
     const { data: profiles, error: profileError } = await supabase
       .from('profiles')
       .select('email, phone_number')
-      .eq('phone_number', phone.replace(/\D/g, ''))
+      .eq('phone_number', normalizedPhone)
       .single();
     
     if (profileError || !profiles) {
