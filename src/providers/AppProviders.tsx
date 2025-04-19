@@ -1,6 +1,5 @@
-
 import React from "react";
-import { AuthProvider } from "@/contexts/AuthContext";
+import { AuthProvider } from "@/contexts/auth/AuthContext";
 import { PointsProvider } from "@/contexts/PointsContext";
 import { Toaster } from "sonner";
 import { BrowserRouter } from "react-router-dom";

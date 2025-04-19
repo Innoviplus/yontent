@@ -1,0 +1,132 @@
+
+import { createContext, useContext, useEffect, ReactNode } from 'react';
+import { supabase } from '@/integrations/supabase/client';
+import { fetchUserProfile } from '@/services/profile/profileService';
+import { useAuthState } from './useAuthState';
+import { usePhoneAuth } from './phoneAuth';
+import { useEmailAuth } from './emailAuth';
+import { AuthContextType } from './types';
+import * as authService from '@/services/auth/authService';
+
+const AuthContext = createContext<AuthContextType>({
+  session: null,
+  user: null,
+  signIn: async () => ({ error: new Error('AuthProvider not initialized') }),
+  signUp: async () => ({ error: new Error('AuthProvider not initialized') }),
+  signOut: async () => { throw new Error('AuthProvider not initialized') },
+  loading: true,
+  userProfile: null,
+  refreshUserProfile: async () => { throw new Error('AuthProvider not initialized') },
+  signUpWithPhone: async () => ({ error: new Error('AuthProvider not initialized') }),
+  signInWithPhone: async () => ({ error: new Error('AuthProvider not initialized') }),
+  verifyPhoneOtp: async () => ({ error: new Error('AuthProvider not initialized') }),
+  resendOtp: async () => ({ error: new Error('AuthProvider not initialized') }),
+});
+
+export function AuthProvider({ children }: { children: ReactNode }) {
+  const {
+    session,
+    setSession,
+    user,
+    setUser,
+    loading,
+    setLoading,
+    userProfile,
+    setUserProfile
+  } = useAuthState();
+
+  const { signIn, signUp } = useEmailAuth();
+  const { signUpWithPhone, signInWithPhone, verifyPhoneOtp, resendOtp } = usePhoneAuth(setUserProfile);
+
+  const refreshUserProfile = async () => {
+    if (user) {
+      try {
+        const profileData = await fetchUserProfile(user.id, user.email);
+        setUserProfile(profileData);
+      } catch (error) {
+        console.error("Failed to refresh user profile:", error);
+      }
+    }
+  };
+
+  useEffect(() => {
+    console.log("AuthProvider: Setting up auth state listener");
+    
+    const { data: { subscription } } = supabase.auth.onAuthStateChange(
+      async (_event, newSession) => {
+        console.log("Auth state changed:", _event, newSession?.user?.id);
+        setSession(newSession);
+        setUser(newSession?.user ?? null);
+        
+        if (newSession?.user) {
+          setTimeout(async () => {
+            try {
+              const data = await fetchUserProfile(newSession.user.id, newSession.user.email);
+              setUserProfile(data);
+            } catch (err) {
+              console.error("Error fetching profile on auth change:", err);
+            }
+          }, 0);
+        } else {
+          setUserProfile(null);
+        }
+        
+        setLoading(false);
+      }
+    );
+
+    supabase.auth.getSession().then(({ data: { session: currentSession } }) => {
+      console.log("Initial session check:", currentSession ? `Found session for ${currentSession.user.email}` : "No session");
+      setSession(currentSession);
+      setUser(currentSession?.user ?? null);
+      
+      if (currentSession?.user) {
+        fetchUserProfile(currentSession.user.id, currentSession.user.email)
+          .then(data => {
+            setUserProfile(data);
+          })
+          .catch(err => {
+            console.error("Error fetching initial profile:", err);
+          })
+          .finally(() => {
+            setLoading(false);
+          });
+      } else {
+        setLoading(false);
+      }
+    });
+
+    return () => {
+      subscription.unsubscribe();
+    };
+  }, []);
+
+  const contextValue = {
+    session,
+    user,
+    signIn,
+    signUp,
+    signOut: authService.signOut,
+    loading,
+    userProfile,
+    refreshUserProfile,
+    signUpWithPhone,
+    signInWithPhone,
+    verifyPhoneOtp,
+    resendOtp,
+  };
+
+  return (
+    <AuthContext.Provider value={contextValue}>
+      {children}
+    </AuthContext.Provider>
+  );
+}
+
+export function useAuth() {
+  const context = useContext(AuthContext);
+  if (!context) {
+    throw new Error('useAuth must be used within an AuthProvider');
+  }
+  return context;
+}
