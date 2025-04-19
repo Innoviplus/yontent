@@ -1,75 +1,120 @@
 
-import React from 'react';
-import { UseFormReturn } from 'react-hook-form';
-import { ProfileInfoForm } from './ProfileInfoForm';
-import { AvatarSection } from './AvatarSection';
-import { SocialMediaSection } from './SocialMediaSection';
+import { useAuth } from '@/contexts/AuthContext';
+import { useSettings } from '@/hooks/useSettings';
+import { Form } from '@/components/ui/form';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
-import { Separator } from '@/components/ui/separator';
+import { ProfileFormValues } from '@/schemas/profileFormSchema';
+import { AvatarSection } from './AvatarSection';
+import { ProfileInfoForm } from './ProfileInfoForm';
+import { SocialMediaSection } from './SocialMediaSection';
+import { LoadingSpinner } from './LoadingSpinner';
+import { useProfilePageState } from '@/hooks/settings/useProfilePageState';
+import { useProfileRefresh } from '@/hooks/settings/useProfileRefresh';
+import { Button } from '@/components/ui/button';
+import { Loader2 } from 'lucide-react';
 
-interface ProfileTabProps {
-  userProfile: any;
-  avatarUrl: string | null;
-  uploading: boolean;
-  handleAvatarUpload: (event: React.ChangeEvent<HTMLInputElement>) => Promise<void>;
-  profileForm: UseFormReturn<any>;
-  onProfileSubmit: (values: any) => Promise<void>;
-  isUpdating: boolean;
-  extendedProfile: any;
-}
+const ProfileTab = () => {
+  const { user, userProfile, refreshUserProfile } = useAuth();
+  const { extendedProfile, profileForm, onProfileSubmit, handleAvatarUpload, avatarUrl, uploading } = useSettings();
+  
+  const {
+    isLoading,
+    loadingAttempts,
+    initialLoadComplete,
+    setIsLoading,
+    setLoadingAttempts,
+    setInitialLoadComplete,
+    handleProfileSubmit
+  } = useProfilePageState();
 
-export const ProfileTab: React.FC<ProfileTabProps> = ({
-  userProfile,
-  avatarUrl,
-  uploading,
-  handleAvatarUpload,
-  profileForm,
-  onProfileSubmit,
-  isUpdating,
-  extendedProfile
-}) => {
-  // Log the current state for debugging
-  React.useEffect(() => {
-    console.log("ProfileTab loaded with:", {
-      hasUserProfile: !!userProfile,
-      avatarUrl,
-      uploading,
-      profileFormValues: profileForm?.formState?.defaultValues
-    });
-  }, [userProfile, avatarUrl, uploading, profileForm]);
+  // Initialize profile refresh logic
+  useProfileRefresh({
+    user,
+    loadingAttempts,
+    initialLoadComplete,
+    setIsLoading,
+    setInitialLoadComplete,
+    setLoadingAttempts,
+    refreshUserProfile
+  });
+
+  const onSubmit = async (values: ProfileFormValues) => {
+    await handleProfileSubmit(values, onProfileSubmit, profileForm);
+  };
+
+  if (isLoading && !userProfile && !initialLoadComplete) {
+    return <LoadingSpinner />;
+  }
 
   return (
-    <Card>
-      <CardHeader className="text-left">
-        <CardTitle>Profile Information</CardTitle>
-        <CardDescription>Update your profile information and personal details</CardDescription>
-      </CardHeader>
-      <CardContent>
-        <div className="flex flex-col md:flex-row gap-8 mb-8">
-          <AvatarSection 
-            avatarUrl={avatarUrl}
+    <div className="space-y-6">
+      <Card>
+        <CardHeader>
+          <CardTitle>Profile Picture</CardTitle>
+          <CardDescription>
+            Add a profile picture to personalize your account
+          </CardDescription>
+        </CardHeader>
+        <CardContent className="flex justify-center">
+          <AvatarSection
+            avatarUrl={avatarUrl || userProfile?.avatar}
+            username={userProfile?.username}
             uploading={uploading}
             handleAvatarUpload={handleAvatarUpload}
-            username={userProfile?.username}
           />
-          
-          <div className="flex-1">
-            <ProfileInfoForm 
-              profileForm={profileForm}
-              onProfileSubmit={onProfileSubmit}
-              isUpdating={isUpdating}
-            />
-          </div>
-        </div>
+        </CardContent>
+      </Card>
 
-        <Separator className="my-8" />
-        
-        <SocialMediaSection 
-          profileForm={profileForm}
-          onSubmit={onProfileSubmit}
-          isUpdating={isUpdating}
-        />
-      </CardContent>
-    </Card>
+      <Form {...profileForm}>
+        <form onSubmit={profileForm.handleSubmit(onSubmit)} className="space-y-6">
+          <Card>
+            <CardHeader>
+              <CardTitle>Basic Information</CardTitle>
+              <CardDescription>
+                Update your personal details.
+              </CardDescription>
+            </CardHeader>
+            <CardContent className="grid gap-6">
+              <ProfileInfoForm 
+                profileForm={profileForm}
+              />
+            </CardContent>
+          </Card>
+          
+          <Card>
+            <CardHeader>
+              <CardTitle>Social Media Profiles</CardTitle>
+              <CardDescription>
+                Link your social media accounts to your profile
+              </CardDescription>
+            </CardHeader>
+            <CardContent className="grid gap-6">
+              <SocialMediaSection 
+                profileForm={profileForm}
+              />
+            </CardContent>
+          </Card>
+          
+          <div className="flex justify-end">
+            <Button 
+              type="submit"
+              className="bg-brand-teal hover:bg-brand-darkTeal text-white"
+              disabled={isLoading || !profileForm.formState.isDirty}
+            >
+              {isLoading ? (
+                <>
+                  <Loader2 className="mr-2 h-4 w-4 animate-spin" />
+                  Saving...
+                </>
+              ) : (
+                'Save Profile'
+              )}
+            </Button>
+          </div>
+        </form>
+      </Form>
+    </div>
   );
 };
+
+export default ProfileTab;

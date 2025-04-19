@@ -15,8 +15,16 @@ export const updateProfileData = async (userId: string, profileData: ExtendedPro
     // Convert the Date object to ISO string for JSON compatibility
     const jsonSafeProfile = {
       ...profileData,
-      birthDate: profileData.birthDate ? profileData.birthDate.toISOString() : null
+      birthDate: profileData.birthDate ? profileData.birthDate.toISOString() : null,
+      // Ensure social media URLs are properly handled
+      tiktokUrl: profileData.tiktokUrl || null,
+      facebookUrl: profileData.facebookUrl || null,
+      instagramUrl: profileData.instagramUrl || null,
+      youtubeUrl: profileData.youtubeUrl || null,
+      websiteUrl: profileData.websiteUrl || null,
     };
+
+    console.log("Prepared JSON safe profile data:", jsonSafeProfile);
 
     const { error: updateError } = await supabase
       .from('profiles')
@@ -32,7 +40,7 @@ export const updateProfileData = async (userId: string, profileData: ExtendedPro
       throw updateError;
     }
     
-    toast.success("Profile updated successfully!");
+    console.log("Profile updated successfully in Supabase!");
     return true;
   } catch (error: any) {
     console.error("Error updating profile:", error.message);

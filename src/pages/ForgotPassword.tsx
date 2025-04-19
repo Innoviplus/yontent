@@ -10,7 +10,7 @@ import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Form, FormControl, FormField, FormItem, FormLabel, FormMessage } from '@/components/ui/form';
 import Navbar from '@/components/Navbar';
-import { usePasswordReset } from '@/hooks/settings/usePasswordReset';
+import { usePasswordReset } from '@/hooks/auth/usePasswordReset';
 
 const forgotPasswordSchema = z.object({
   email: z.string().email('Please enter a valid email address'),

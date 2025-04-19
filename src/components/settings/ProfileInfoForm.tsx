@@ -3,26 +3,20 @@ import React from 'react';
 import { UseFormReturn } from 'react-hook-form';
 import { FormField, FormItem, FormLabel, FormControl, FormMessage, FormDescription } from '@/components/ui/form';
 import { Input } from '@/components/ui/input';
-import { Button } from '@/components/ui/button';
-import { Loader2 } from 'lucide-react';
 import { Textarea } from '@/components/ui/textarea';
 import { BirthDateInput } from '@/components/settings/BirthDateInput';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
-import { PhoneInput } from '@/components/settings/PhoneInput';
+import { ProfileFormValues } from '@/schemas/profileFormSchema';
 
 interface ProfileInfoFormProps {
   profileForm: UseFormReturn<any>;
-  onProfileSubmit: (values: any) => Promise<void>;
-  isUpdating: boolean;
 }
 
 export const ProfileInfoForm: React.FC<ProfileInfoFormProps> = ({
-  profileForm,
-  onProfileSubmit,
-  isUpdating
+  profileForm
 }) => {
   return (
-    <form onSubmit={profileForm.handleSubmit(onProfileSubmit)} className="space-y-6">
+    <div className="space-y-6">
       <FormField
         control={profileForm.control}
         name="username"
@@ -147,32 +141,18 @@ export const ProfileInfoForm: React.FC<ProfileInfoFormProps> = ({
           <FormItem className="text-left">
             <FormLabel>Mobile Number</FormLabel>
             <FormControl>
-              <PhoneInput 
+              <Input 
                 value={field.value || ''} 
-                onChange={field.onChange} 
-                countryCode={profileForm.watch('phoneCountryCode') || '+1'} 
-                onCountryCodeChange={(code) => profileForm.setValue('phoneCountryCode', code)}
+                onChange={field.onChange}
+                disabled
+                className="bg-gray-100 cursor-not-allowed"
               />
             </FormControl>
+            <FormDescription>Phone number cannot be changed after verification</FormDescription>
             <FormMessage />
           </FormItem>
         )}
       />
-      
-      <Button 
-        type="submit"
-        className="bg-brand-teal hover:bg-brand-darkTeal text-white"
-        disabled={isUpdating || !profileForm.formState.isDirty}
-      >
-        {isUpdating ? (
-          <>
-            <Loader2 className="mr-2 h-4 w-4 animate-spin" />
-            Saving...
-          </>
-        ) : (
-          'Save Profile'
-        )}
-      </Button>
-    </form>
+    </div>
   );
 };
