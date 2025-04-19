@@ -1,3 +1,4 @@
+
 import { createContext, useContext, useEffect, ReactNode } from 'react';
 import { supabase } from '@/integrations/supabase/client';
 import { fetchUserProfile } from '@/services/profile/profileService';
@@ -20,6 +21,7 @@ const AuthContext = createContext<AuthContextType>({
   signInWithPhone: async () => ({ error: new Error('AuthProvider not initialized') }),
   verifyPhoneOtp: async () => ({ error: new Error('AuthProvider not initialized') }),
   resendOtp: async () => ({ error: new Error('AuthProvider not initialized') }),
+  completeSignIn: async () => ({ error: new Error('AuthProvider not initialized') }),
 });
 
 export function AuthProvider({ children }: { children: ReactNode }) {
@@ -35,7 +37,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
   } = useAuthState();
 
   const { signIn, signUp } = useEmailAuth();
-  const { signUpWithPhone, signInWithPhone, verifyPhoneOtp, resendOtp } = usePhoneAuth(setUserProfile);
+  const { signUpWithPhone, signInWithPhone, verifyPhoneOtp, resendOtp, completeSignIn } = usePhoneAuth(setUserProfile);
 
   const refreshUserProfile = async () => {
     if (user) {
@@ -157,6 +159,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
     signInWithPhone,
     verifyPhoneOtp,
     resendOtp,
+    completeSignIn,
   };
 
   return (

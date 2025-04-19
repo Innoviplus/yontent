@@ -67,12 +67,8 @@ export const useLoginPage = () => {
         return;
       }
       
-      // Check if the result contains a requiresOtp property
-      // TypeScript fix: Checking if 'requiresOtp' exists in the result using type assertion
-      if ('requiresOtp' in result && result.requiresOtp) {
-        setShowOtpVerification(true);
-      } else {
-        // If no OTP required, we've already been redirected
+      // Phone login no longer requires OTP, it should have a session now
+      if (result.session) {
         navigate("/dashboard", { replace: true });
       }
     } catch (error: any) {

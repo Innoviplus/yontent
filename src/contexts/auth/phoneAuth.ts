@@ -12,6 +12,7 @@ export function usePhoneAuth(setUserProfile: (profile: any) => void) {
     signUpWithPhone,
     signInWithPhone,
     verifyPhoneOtp,
-    resendOtp: resendVerificationCode
+    resendOtp: resendVerificationCode,
+    completeSignIn
   };
 }

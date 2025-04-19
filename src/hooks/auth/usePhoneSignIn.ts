@@ -16,23 +16,16 @@ export function usePhoneSignIn() {
         return result;
       }
       
-      // Send OTP
-      const { error: otpError } = await sendOtp(phone);
+      // Complete sign in directly without OTP
+      const signInResult = await completePhoneSignIn(result.profileData.email, password);
       
-      if (otpError) {
-        console.error("Error sending OTP during sign in:", otpError);
-        toast.error(otpError.message || "Failed to send verification code");
-        return { error: otpError };
+      if (signInResult.error) {
+        toast.error(signInResult.error.message || "Login failed");
+        return { error: signInResult.error };
       }
       
-      toast.success("Verification Code Sent");
-      return { 
-        error: null, 
-        phoneNumber: phone,
-        requiresOtp: true,
-        profileData: result.profileData,
-        password: result.password
-      };
+      toast.success("Login successful");
+      return signInResult;
     } catch (error: any) {
       console.error("Exception during phone sign in:", error);
       toast.error(error.message || "An unexpected error occurred");

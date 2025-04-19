@@ -4,18 +4,25 @@ import { toast as sonnerToast } from 'sonner';
 
 export const signIn = async (email: string, password: string) => {
   try {
+    // First normalize the email for case-insensitive matching
+    email = email.toLowerCase().trim();
+    
+    console.log("Attempting to sign in with email:", email);
+    
     const { data, error } = await supabase.auth.signInWithPassword({
       email,
       password,
     });
     
     if (error) {
+      console.error("Error signing in with email:", error);
       return { error };
     }
     
     sonnerToast.success('Welcome back!');
     return { session: data.session, user: data.user, error: null };
   } catch (error: any) {
+    console.error("Exception during email sign in:", error);
     return { error };
   }
 };

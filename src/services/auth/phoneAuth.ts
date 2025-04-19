@@ -41,7 +41,12 @@ export const signInWithPhone = async (phone: string, password: string) => {
 
 export const completePhoneSignIn = async (email: string, password: string) => {
   try {
-    console.log("Completing sign in with email after OTP verification:", email);
+    if (!email) {
+      console.error("Missing email for phone sign in completion");
+      return { error: { message: "Email is required for login" } };
+    }
+    
+    console.log("Completing sign in with email after phone verification:", email);
     
     const { data, error } = await supabase.auth.signInWithPassword({
       email,

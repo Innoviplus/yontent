@@ -11,7 +11,8 @@ export interface AuthContextType {
   userProfile: any | null;
   refreshUserProfile: () => Promise<void>;
   signUpWithPhone: (phone: string, username: string, email: string, password?: string) => Promise<{ error: any, phoneNumber?: string }>;
-  signInWithPhone: (phone: string, password: string) => Promise<{ error: any }>;
+  signInWithPhone: (phone: string, password: string) => Promise<{ error: any, session?: Session }>;
   verifyPhoneOtp: (phone: string, token: string) => Promise<{ error: any }>;
   resendOtp: (phone: string) => Promise<{ error: any }>;
+  completeSignIn: (email: string, password: string) => Promise<{ error: any, session?: Session, user?: User }>;
 }
