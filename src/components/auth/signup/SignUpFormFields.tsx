@@ -86,7 +86,11 @@ const SignUpFormFields = ({
         )}
       />
       
-      <Button type="submit" className="w-full" disabled={isSubmitting}>
+      <Button 
+        type="submit" 
+        className="w-full bg-brand-teal hover:bg-brand-darkTeal" 
+        disabled={isSubmitting}
+      >
         {isSubmitting ? 'Processing...' : 'Continue'}
       </Button>
     </>

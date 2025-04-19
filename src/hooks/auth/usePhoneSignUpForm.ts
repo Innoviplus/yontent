@@ -25,6 +25,7 @@ export const usePhoneSignUpForm = () => {
   const [phoneNumber, setPhoneNumber] = useState('');
   const [showPassword, setShowPassword] = useState(false);
   const [isSubmitting, setIsSubmitting] = useState(false);
+  const [formData, setFormData] = useState<PhoneSignUpFormValues | null>(null);
   const { signUpWithPhone, verifyPhoneOtp } = useAuth();
 
   const form = useForm<PhoneSignUpFormValues>({
@@ -40,13 +41,19 @@ export const usePhoneSignUpForm = () => {
   const handleSignUp = async (values: PhoneSignUpFormValues) => {
     try {
       setIsSubmitting(true);
-      console.log("Signing up with phone:", values.phone, "email:", values.email);
+      console.log("Initiating signup process for:", values.phone);
       
-      const { error, phoneNumber: returnedPhone } = await signUpWithPhone(
+      // Store form data for use after OTP verification
+      setFormData(values);
+      setPhoneNumber(values.phone);
+      
+      // Only send OTP at this stage, don't create Supabase record yet
+      const { error } = await signUpWithPhone(
         values.phone,
         values.username,
         values.email,
-        values.password
+        values.password,
+        true // skipRecordCreation flag
       );
       
       if (error) {
@@ -55,8 +62,8 @@ export const usePhoneSignUpForm = () => {
         return;
       }
       
-      setPhoneNumber(returnedPhone || values.phone);
       setShowOTP(true);
+      setIsSubmitting(false);
     } catch (error: any) {
       toast.error(error.message || 'An error occurred during sign up');
       setIsSubmitting(false);
@@ -65,15 +72,20 @@ export const usePhoneSignUpForm = () => {
 
   const handleVerifyOtp = async (otp: string) => {
     try {
-      console.log("Verifying OTP:", otp, "for phone:", phoneNumber);
-      const { error } = await verifyPhoneOtp(phoneNumber, otp);
+      if (!formData) {
+        toast.error("Missing registration data");
+        return;
+      }
+
+      console.log("Verifying OTP and creating user record:", otp);
+      const { error } = await verifyPhoneOtp(phoneNumber, otp, formData);
       
       if (error) {
         toast.error(error.message || "Failed to verify OTP");
         return;
       }
       
-      toast.success("Phone number verified successfully");
+      toast.success("Phone number verified and account created successfully");
       navigate('/dashboard');
     } catch (error: any) {
       toast.error(error.message || "Failed to verify OTP");
