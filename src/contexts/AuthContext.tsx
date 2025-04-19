@@ -182,6 +182,45 @@ export function AuthProvider({ children }: { children: ReactNode }) {
         return { error };
       }
 
+      // Let's make sure the profile is properly updated with the email
+      if (data.user) {
+        console.log("User created successfully, updating profile if needed");
+        
+        // Wait a moment for the trigger to create the profile
+        setTimeout(async () => {
+          try {
+            // Check if the profile has the correct email
+            const { data: profile, error: profileError } = await supabase
+              .from('profiles')
+              .select('email, id')
+              .eq('id', data.user!.id)
+              .single();
+            
+            if (profileError) {
+              console.error("Error checking profile:", profileError);
+              return;
+            }
+            
+            // If email is missing or different, update it
+            if (!profile.email || profile.email !== email) {
+              console.log("Updating profile email from", profile.email, "to", email);
+              const { error: updateError } = await supabase
+                .from('profiles')
+                .update({ email })
+                .eq('id', data.user!.id);
+                
+              if (updateError) {
+                console.error("Failed to update profile email:", updateError);
+              } else {
+                console.log("Profile email updated successfully");
+              }
+            }
+          } catch (e) {
+            console.error("Error in profile update check:", e);
+          }
+        }, 1000);
+      }
+
       toast({
         title: "Registration Successful",
         description: "Your account has been created successfully.",
