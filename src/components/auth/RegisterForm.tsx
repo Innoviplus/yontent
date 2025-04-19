@@ -1,4 +1,6 @@
 
+import { Link } from 'react-router-dom';
+import { Lock } from 'lucide-react';
 import PhoneSignUpForm from './PhoneSignUpForm';
 
 const RegisterForm = () => {
@@ -24,4 +26,3 @@ const RegisterForm = () => {
 };
 
 export default RegisterForm;
-
