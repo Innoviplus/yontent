@@ -10,11 +10,16 @@ import { useForm } from 'react-hook-form';
 import * as z from 'zod';
 import PhoneNumberInput from './PhoneNumberInput';
 import OTPVerification from './OTPVerification';
+import { Eye, EyeOff } from 'lucide-react';
 
 const phoneSignUpSchema = z.object({
   phone: z.string().min(1, 'Phone number is required'),
   username: z.string().min(3, 'Username must be at least 3 characters'),
-  email: z.string().email('Please enter a valid email address')
+  email: z.string().email('Please enter a valid email address'),
+  password: z.string()
+    .min(8, 'Password must be at least 8 characters')
+    .regex(/\d/, 'Password must contain at least 1 number')
+    .regex(/[!@#$%^&*(),.?":{}|<>]/, 'Password must contain at least 1 special character'),
 });
 
 type PhoneSignUpFormValues = z.infer<typeof phoneSignUpSchema>;
@@ -22,6 +27,7 @@ type PhoneSignUpFormValues = z.infer<typeof phoneSignUpSchema>;
 const PhoneSignUpForm = () => {
   const [showOTP, setShowOTP] = useState(false);
   const [phoneNumber, setPhoneNumber] = useState('');
+  const [showPassword, setShowPassword] = useState(false);
   const { signUpWithPhone } = useAuth();
   const [userCountry, setUserCountry] = useState('HK');
 
@@ -30,7 +36,8 @@ const PhoneSignUpForm = () => {
     defaultValues: {
       phone: '',
       username: '',
-      email: ''
+      email: '',
+      password: '',
     },
   });
 
@@ -53,7 +60,8 @@ const PhoneSignUpForm = () => {
       const { error } = await signUpWithPhone(
         values.phone,
         values.username,
-        values.email
+        values.email,
+        values.password
       );
       
       if (error) {
@@ -102,6 +110,37 @@ const PhoneSignUpForm = () => {
                   placeholder="Enter your email address" 
                   type="email" 
                 />
+              </FormControl>
+              <FormMessage />
+            </FormItem>
+          )}
+        />
+
+        <FormField
+          control={form.control}
+          name="password"
+          render={({ field }) => (
+            <FormItem>
+              <FormLabel>Password</FormLabel>
+              <FormControl>
+                <div className="relative">
+                  <Input
+                    {...field}
+                    type={showPassword ? "text" : "password"}
+                    placeholder="Choose a password"
+                  />
+                  <button
+                    type="button"
+                    onClick={() => setShowPassword(!showPassword)}
+                    className="absolute right-3 top-1/2 -translate-y-1/2 text-gray-500 hover:text-gray-700"
+                  >
+                    {showPassword ? (
+                      <EyeOff className="h-4 w-4" />
+                    ) : (
+                      <Eye className="h-4 w-4" />
+                    )}
+                  </button>
+                </div>
               </FormControl>
               <FormMessage />
             </FormItem>

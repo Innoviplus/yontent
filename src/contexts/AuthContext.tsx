@@ -1,3 +1,4 @@
+
 import { createContext, useContext, useEffect, useState, ReactNode } from 'react';
 import { Session, User } from '@supabase/supabase-js';
 import { supabase } from '@/integrations/supabase/client';
@@ -14,7 +15,7 @@ interface AuthContextType {
   loading: boolean;
   userProfile: any | null;
   refreshUserProfile: () => Promise<void>;
-  signUpWithPhone: (phone: string, username: string, email: string) => Promise<{ error: any }>;
+  signUpWithPhone: (phone: string, username: string, email: string, password?: string) => Promise<{ error: any }>;
 }
 
 const AuthContext = createContext<AuthContextType>({
@@ -123,17 +124,24 @@ export function AuthProvider({ children }: { children: ReactNode }) {
     return result;
   };
 
-  const signUpWithPhone = async (phone: string, username: string, email: string) => {
+  const signUpWithPhone = async (phone: string, username: string, email: string, password?: string) => {
     try {
+      const userData = {
+        username,
+        email,
+        phone_number: phone.replace(/\+/g, ''), // Remove + from phone number for storage
+        phone_country_code: phone.slice(0, phone.indexOf('+')+1)
+      };
+
+      // If password is provided, we'll need to create a user with the phone and password
+      if (password) {
+        userData.password = password;
+      }
+
       const { data, error } = await supabase.auth.signInWithOtp({
         phone,
         options: {
-          data: {
-            username,
-            email,
-            phone_number: phone.slice(phone.indexOf('+')+1),
-            phone_country_code: phone.slice(0, phone.indexOf('+')+1)
-          }
+          data: userData
         }
       });
 

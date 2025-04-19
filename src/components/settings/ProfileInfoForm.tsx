@@ -8,7 +8,6 @@ import { Loader2 } from 'lucide-react';
 import { Textarea } from '@/components/ui/textarea';
 import { BirthDateInput } from '@/components/settings/BirthDateInput';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
-import { PhoneInput } from '@/components/settings/PhoneInput';
 
 interface ProfileInfoFormProps {
   profileForm: UseFormReturn<any>;
@@ -147,13 +146,14 @@ export const ProfileInfoForm: React.FC<ProfileInfoFormProps> = ({
           <FormItem className="text-left">
             <FormLabel>Mobile Number</FormLabel>
             <FormControl>
-              <PhoneInput 
+              <Input 
                 value={field.value || ''} 
-                onChange={field.onChange} 
-                countryCode={profileForm.watch('phoneCountryCode') || '+1'} 
-                onCountryCodeChange={(code) => profileForm.setValue('phoneCountryCode', code)}
+                onChange={field.onChange}
+                disabled
+                className="bg-gray-100 cursor-not-allowed"
               />
             </FormControl>
+            <FormDescription>Phone number cannot be changed after verification</FormDescription>
             <FormMessage />
           </FormItem>
         )}

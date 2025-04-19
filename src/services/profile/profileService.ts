@@ -15,27 +15,20 @@ export async function fetchUserProfile(userId: string, userEmail?: string | null
 
   console.log('User profile data:', data);
   
-  // Update user email in extended data if needed
-  if (userEmail && data && data.extended_data) {
-    const userData = data.extended_data;
-    const extendedData = typeof userData === 'object' && !Array.isArray(userData) ? userData : {};
-    
-    if (!extendedData.email) {
-      const updatedExtendedData = {
-        ...extendedData,
+  // Update user email in profile if needed
+  if (userEmail && (!data.email || data.email !== userEmail)) {
+    const { error: updateError } = await supabase
+      .from('profiles')
+      .update({ 
         email: userEmail
-      };
-
-      const { error: updateError } = await supabase
-        .from('profiles')
-        .update({ 
-          extended_data: updatedExtendedData 
-        })
-        .eq('id', userId);
-        
-      if (updateError) {
-        console.error('Error updating user email:', updateError);
-      }
+      })
+      .eq('id', userId);
+      
+    if (updateError) {
+      console.error('Error updating user email:', updateError);
+    } else {
+      // Update the local data with the new email
+      data.email = userEmail;
     }
   }
   

@@ -19,6 +19,7 @@ export const useProfileForm = (
     resolver: zodResolver(profileFormSchema),
     defaultValues: {
       username: userProfile?.username || '',
+      email: userProfile?.email || user?.email || '',
       firstName: '',
       lastName: '',
       bio: '',
@@ -29,6 +30,7 @@ export const useProfileForm = (
       instagramUrl: '',
       youtubeUrl: '',
       tiktokUrl: '',
+      phoneNumber: userProfile?.phone_number || '',
     },
   });
 
