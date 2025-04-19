@@ -23,6 +23,7 @@ const OTPVerification = ({
 }: OTPVerificationProps) => {
   const [otpValues, setOtpValues] = useState<string[]>(Array(6).fill(''));
   const [isVerifying, setIsVerifying] = useState(false);
+  const [isResending, setIsResending] = useState(false);
   const inputRefs = useRef<(HTMLInputElement | null)[]>(Array(6).fill(null));
   const navigate = useNavigate();
 
@@ -97,6 +98,23 @@ const OTPVerification = ({
     }
   };
 
+  const handleResendOTP = async () => {
+    try {
+      setIsResending(true);
+      await onResend();
+      // Clear the current OTP values after resending
+      setOtpValues(Array(6).fill(''));
+      // Focus on the first input after resend
+      setTimeout(() => {
+        inputRefs.current[0]?.focus();
+      }, 0);
+    } catch (error) {
+      console.error("Error resending OTP:", error);
+    } finally {
+      setIsResending(false);
+    }
+  };
+
   return (
     <div className="space-y-6">
       <FormLabel>Enter verification code</FormLabel>
@@ -123,7 +141,7 @@ const OTPVerification = ({
         </div>
       )}
       
-      <OTPResendButton onResend={onResend} />
+      <OTPResendButton onResend={handleResendOTP} />
       
       <Button 
         onClick={verifyOTP} 

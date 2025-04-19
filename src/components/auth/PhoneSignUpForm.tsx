@@ -16,6 +16,7 @@ const PhoneSignUpForm = () => {
     setShowPassword,
     handleSignUp,
     handleVerifyOtp,
+    handleResendOtp,
     setShowOTP
   } = usePhoneSignUpForm();
 
@@ -38,7 +39,7 @@ const PhoneSignUpForm = () => {
       <OTPVerification 
         phoneNumber={phoneNumber} 
         onVerify={handleVerifyOtp}
-        onResend={async () => {}} // We'll implement this later if needed
+        onResend={handleResendOtp}
         onCancel={() => setShowOTP(false)}
       />
     );

@@ -1,6 +1,7 @@
 
 import { useState, useEffect } from 'react';
 import { Button } from '@/components/ui/button';
+import { Loader2 } from 'lucide-react';
 
 interface OTPResendButtonProps {
   onResend: () => Promise<void>;
@@ -10,6 +11,7 @@ interface OTPResendButtonProps {
 const OTPResendButton = ({ onResend, initialTimer = 45 }: OTPResendButtonProps) => {
   const [timer, setTimer] = useState(initialTimer);
   const [resendDisabled, setResendDisabled] = useState(true);
+  const [isResending, setIsResending] = useState(false);
 
   useEffect(() => {
     const countdown = setInterval(() => {
@@ -26,6 +28,20 @@ const OTPResendButton = ({ onResend, initialTimer = 45 }: OTPResendButtonProps) 
     return () => clearInterval(countdown);
   }, []);
 
+  const handleResend = async () => {
+    try {
+      setIsResending(true);
+      await onResend();
+      // Reset timer and disable button after successful resend
+      setTimer(initialTimer);
+      setResendDisabled(true);
+    } catch (error) {
+      console.error("Error resending OTP:", error);
+    } finally {
+      setIsResending(false);
+    }
+  };
+
   return (
     <div className="mt-4 text-center">
       <div className="text-sm text-gray-500 mb-2">
@@ -36,11 +52,16 @@ const OTPResendButton = ({ onResend, initialTimer = 45 }: OTPResendButtonProps) 
       <Button 
         variant="ghost" 
         size="sm"
-        onClick={onResend}
-        disabled={resendDisabled}
+        onClick={handleResend}
+        disabled={resendDisabled || isResending}
         className="text-brand-teal hover:text-brand-darkTeal"
       >
-        Resend Code
+        {isResending ? (
+          <>
+            <Loader2 className="mr-2 h-3 w-3 animate-spin" />
+            Sending...
+          </>
+        ) : 'Resend Code'}
       </Button>
     </div>
   );

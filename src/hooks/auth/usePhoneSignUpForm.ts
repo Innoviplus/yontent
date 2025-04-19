@@ -26,7 +26,7 @@ export const usePhoneSignUpForm = () => {
   const [showPassword, setShowPassword] = useState(false);
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [formData, setFormData] = useState<PhoneSignUpFormValues | null>(null);
-  const { signUpWithPhone, verifyPhoneOtp } = useAuth();
+  const { signUpWithPhone, verifyPhoneOtp, resendOtp } = useAuth();
 
   const form = useForm<PhoneSignUpFormValues>({
     resolver: zodResolver(phoneSignUpSchema),
@@ -93,6 +93,28 @@ export const usePhoneSignUpForm = () => {
     }
   };
 
+  const handleResendOtp = async () => {
+    try {
+      console.log("Resending OTP to:", phoneNumber);
+      
+      if (!phoneNumber) {
+        toast.error("Phone number is missing");
+        return;
+      }
+      
+      const { error } = await resendOtp(phoneNumber);
+      
+      if (error) {
+        toast.error(error.message || "Failed to resend verification code");
+        return;
+      }
+      
+      toast.success("New verification code sent");
+    } catch (error: any) {
+      toast.error(error.message || "Failed to resend verification code");
+    }
+  };
+
   return {
     form,
     showOTP,
@@ -102,6 +124,7 @@ export const usePhoneSignUpForm = () => {
     setShowPassword,
     handleSignUp,
     handleVerifyOtp,
+    handleResendOtp,
     setShowOTP,
   };
 };
