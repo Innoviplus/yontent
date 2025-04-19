@@ -1,4 +1,5 @@
-import { useState, useEffect } from 'react';
+
+import { useState, useEffect, useRef } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { useAuth } from '@/contexts/AuthContext';
 import { toast } from 'sonner';
@@ -32,6 +33,7 @@ const PhoneSignUpForm = () => {
   
   const [otpValues, setOtpValues] = useState<string[]>(Array(6).fill(''));
   const [userCountry, setUserCountry] = useState('HK');
+  const inputRefs = useRef<(HTMLInputElement | null)[]>([]);
 
   const form = useForm<PhoneSignUpFormValues>({
     resolver: zodResolver(phoneSignUpSchema),
