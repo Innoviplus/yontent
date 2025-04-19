@@ -1,4 +1,3 @@
-
 import React from 'react';
 import { Star } from 'lucide-react';
 const RegisterHeader: React.FC = () => {
@@ -7,7 +6,7 @@ const RegisterHeader: React.FC = () => {
         <Star className="h-6 w-6 text-brand-teal" />
       </div>
       <h1 className="heading-3 mb-2 text-center">Create Your Account</h1>
-      <p className="text-gray-600 text-sm text-center">Join Yontent using your email or phone number</p>
+      <p className="text-gray-600 text-sm text-center">Start to write reviews, complete missions, and earn rewards.</p>
     </div>;
 };
 export default RegisterHeader;
