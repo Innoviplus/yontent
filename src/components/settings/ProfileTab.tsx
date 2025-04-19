@@ -1,3 +1,4 @@
+
 import { useState, useEffect } from 'react';
 import { useAuth } from '@/contexts/AuthContext';
 import { useSettings } from '@/hooks/useSettings';
@@ -20,16 +21,18 @@ const ProfileTab = () => {
   const [formSuccess, setFormSuccess] = useState(false);
   const [isLoading, setIsLoading] = useState(false);
   const [loadingAttempts, setLoadingAttempts] = useState(0);
+  const [initialLoadComplete, setInitialLoadComplete] = useState(false);
   
   // Add refresh on mount and when user changes, with a retry limit
   useEffect(() => {
-    if (user && loadingAttempts < 3) {
+    if (user && loadingAttempts < 3 && !initialLoadComplete) {
       console.log("ProfileTab: Refreshing user profile for user:", user.id, "Attempt:", loadingAttempts + 1);
       setIsLoading(true);
       refreshUserProfile()
         .then((profileData) => {
           console.log("ProfileTab: Profile refreshed successfully:", profileData);
           setIsLoading(false);
+          setInitialLoadComplete(true);
           // If we still don't have profile data, increment attempts
           if (!profileData) {
             setLoadingAttempts(prev => prev + 1);
@@ -41,7 +44,7 @@ const ProfileTab = () => {
           setLoadingAttempts(prev => prev + 1);
         });
     }
-  }, [user, refreshUserProfile, loadingAttempts]);
+  }, [user, refreshUserProfile, loadingAttempts, initialLoadComplete]);
   
   // Force-stop loading after 5 seconds to prevent endless spinner
   useEffect(() => {
@@ -51,6 +54,7 @@ const ProfileTab = () => {
       timeout = setTimeout(() => {
         console.log("ProfileTab: Forcing loading state to end after timeout");
         setIsLoading(false);
+        setInitialLoadComplete(true); // Prevent further retry attempts
       }, 5000);
     }
     
@@ -61,7 +65,7 @@ const ProfileTab = () => {
   
   // Update form with profile data when it changes
   useEffect(() => {
-    if (userProfile) {
+    if (userProfile && !isLoading) {
       console.log("Setting form values from userProfile:", userProfile);
       
       profileForm.setValue('username', userProfile.username || '');
@@ -84,8 +88,13 @@ const ProfileTab = () => {
         profileForm.setValue('youtubeUrl', extendedProfile.youtubeUrl || '');
         profileForm.setValue('tiktokUrl', extendedProfile.tiktokUrl || '');
       }
+      
+      // Reset the form's dirty state after loading initial values
+      setTimeout(() => {
+        profileForm.reset(profileForm.getValues(), { keepValues: true, keepDirty: false });
+      }, 100);
     }
-  }, [userProfile, extendedProfile, profileForm, user]);
+  }, [userProfile, extendedProfile, profileForm, user, isLoading]);
   
   const onSubmit = async (values: ProfileFormValues) => {
     if (!user) return;
@@ -100,6 +109,9 @@ const ProfileTab = () => {
       
       setFormSuccess(true);
       toast.success('Profile updated successfully');
+      
+      // Ensure form is marked as pristine after successful submission
+      profileForm.reset(values, { keepValues: true, keepDirty: false });
     } catch (error) {
       console.error("Error updating profile:", error);
       toast.error('Failed to update profile');
@@ -109,7 +121,7 @@ const ProfileTab = () => {
   };
   
   // Show at least a basic form even if profile data is not yet loaded
-  if (isLoading && !userProfile) {
+  if (isLoading && !userProfile && !initialLoadComplete) {
     return (
       <div className="flex justify-center items-center p-8">
         <Loader2 className="h-8 w-8 animate-spin text-brand-teal" />
@@ -279,6 +291,7 @@ const ProfileTab = () => {
                         <Select 
                           onValueChange={field.onChange} 
                           defaultValue={field.value}
+                          value={field.value || ''}
                         >
                           <FormControl>
                             <SelectTrigger>

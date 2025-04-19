@@ -52,7 +52,13 @@ export const useProfileFormInitialization = (
       console.log("Profile form initialized with:", formValues);
       
       // Reset form with these values
-      profileForm.reset(formValues);
+      profileForm.reset(formValues, { keepValues: false, keepDirty: false });
+      
+      // Ensure the form is not marked as dirty after initialization
+      setTimeout(() => {
+        profileForm.reset(formValues, { keepValues: true, keepDirty: false });
+      }, 100);
+      
     } catch (error) {
       console.error("Error initializing profile form:", error);
     }
