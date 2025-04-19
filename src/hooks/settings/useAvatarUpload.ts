@@ -68,7 +68,12 @@ export const useAvatarUpload = () => {
           // Refresh the user profile data to get the updated avatar
           if (refreshUserProfile) {
             console.log("Refreshing user profile after avatar update");
-            await refreshUserProfile();
+            const updatedProfile = await refreshUserProfile();
+            
+            if (updatedProfile && updatedProfile.avatar) {
+              setAvatarUrl(updatedProfile.avatar);
+            }
+            
             toast.success("Avatar updated successfully!");
           }
         } else {

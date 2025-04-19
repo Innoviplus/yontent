@@ -16,7 +16,7 @@ const AuthContext = createContext<AuthContextType>({
   signOut: async () => { throw new Error('AuthProvider not initialized') },
   loading: true,
   userProfile: null,
-  refreshUserProfile: async () => { throw new Error('AuthProvider not initialized') },
+  refreshUserProfile: async () => null,
   signUpWithPhone: async () => ({ error: new Error('AuthProvider not initialized') }),
   signInWithPhone: async () => ({ error: new Error('AuthProvider not initialized') }),
   verifyPhoneOtp: async () => ({ error: new Error('AuthProvider not initialized') }),
@@ -62,7 +62,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
     return null;
   };
 
-  const contextValue = {
+  const contextValue: AuthContextType = {
     session,
     user,
     signIn,

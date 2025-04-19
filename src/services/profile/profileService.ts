@@ -22,7 +22,7 @@ export async function fetchUserProfile(userId: string, userEmail?: string | null
         .from('profiles')
         .update({ 
           email: userEmail,
-          updated_at: new Date()
+          updated_at: new Date().toISOString()
         })
         .eq('id', userId);
         

@@ -9,7 +9,7 @@ export interface AuthContextType {
   signOut: () => Promise<void>;
   loading: boolean;
   userProfile: any | null;
-  refreshUserProfile: () => Promise<void>;
+  refreshUserProfile: () => Promise<any>;
   signUpWithPhone: (phone: string, username: string, email: string, password?: string) => Promise<{ error: any, phoneNumber?: string }>;
   signInWithPhone: (phone: string, password: string) => Promise<{ error: any, session?: Session }>;
   verifyPhoneOtp: (phone: string, token: string) => Promise<{ error: any }>;
