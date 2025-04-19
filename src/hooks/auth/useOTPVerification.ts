@@ -49,17 +49,25 @@ export function useOTPVerification(setUserProfile: (profile: any) => void) {
       // If user was created successfully, clear the pending registration
       clearPendingRegistration(phone);
       
-      // Sign in the user with their email/password
+      // No need to add welcome bonus here - it will be handled by the database trigger
+      
+      // Get the user profile after signup
       if (authData.user) {
-        const { data: profileData } = await supabase
-          .from('profiles')
-          .select('*')
-          .eq('id', authData.user.id)
-          .single();
-          
-        if (profileData) {
-          setUserProfile(profileData);
-        }
+        setTimeout(async () => {
+          try {
+            const { data: profileData } = await supabase
+              .from('profiles')
+              .select('*')
+              .eq('id', authData.user.id)
+              .single();
+              
+            if (profileData) {
+              setUserProfile(profileData);
+            }
+          } catch (err) {
+            console.error("Error fetching profile after OTP verification:", err);
+          }
+        }, 1000); // Give the trigger time to run
       }
       
       toast.success("Phone verified and account created successfully");

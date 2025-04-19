@@ -40,7 +40,7 @@ const OTPInputField = forwardRef<HTMLInputElement, OTPInputFieldProps>(({
       value={value}
       onChange={(e) => onChange(index, e.target.value)}
       onKeyDown={(e) => onKeyDown(index, e)}
-      onPaste={index === 0 ? onPaste : undefined}
+      onPaste={onPaste}
       disabled={isVerifying}
     />
   );

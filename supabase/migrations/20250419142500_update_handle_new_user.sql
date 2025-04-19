@@ -27,6 +27,21 @@ BEGIN
     NOW(),
     NOW()
   );
+
+  -- Add a transaction record for the welcome bonus points (only once per user)
+  INSERT INTO public.point_transactions (
+    user_id,
+    amount,
+    type,
+    description
+  )
+  VALUES (
+    NEW.id,
+    10,
+    'WELCOME',
+    'Welcome Bonus'
+  );
+  
   RETURN NEW;
 END;
 $$;

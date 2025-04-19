@@ -1,3 +1,4 @@
+
 import { createContext, useContext, useEffect, ReactNode } from 'react';
 import { supabase } from '@/integrations/supabase/client';
 import { fetchUserProfile } from '@/services/profile/profileService';
@@ -58,8 +59,8 @@ export function AuthProvider({ children }: { children: ReactNode }) {
     setLoading(true);
     
     const { data: { subscription } } = supabase.auth.onAuthStateChange(
-      async (_event, newSession) => {
-        console.log("Auth state changed:", _event, newSession?.user?.id);
+      async (event, newSession) => {
+        console.log("Auth state changed:", event, newSession?.user?.id);
         setSession(newSession);
         setUser(newSession?.user ?? null);
         
@@ -67,37 +68,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
           // Use setTimeout to allow database triggers to complete
           setTimeout(async () => {
             try {
-              // Log welcome message in TransactionsTab
-              // When a new user signs up, make sure they have a welcome bonus
-              if (_event === 'SIGNED_IN' || _event === 'SIGNED_UP') {
-                try {
-                  // Add welcome bonus if this is a new user
-                  const { data: transactions } = await supabase
-                    .from('point_transactions')
-                    .select('id')
-                    .eq('user_id', newSession.user.id)
-                    .eq('type', 'WELCOME')
-                    .single();
-                    
-                  if (!transactions) {
-                    console.log("Adding welcome bonus for new user");
-                    await supabase.from('point_transactions').insert({
-                      user_id: newSession.user.id,
-                      amount: 10,
-                      type: 'WELCOME',
-                      description: 'Welcome Bonus'
-                    });
-                    
-                    // Update user points
-                    await supabase
-                      .from('profiles')
-                      .update({ points: 10 })
-                      .eq('id', newSession.user.id);
-                  }
-                } catch (err) {
-                  console.error("Error checking or adding welcome bonus:", err);
-                }
-              }
+              // Remove duplicate welcome bonus logic - the trigger in the database will handle this
               
               const data = await fetchUserProfile(newSession.user.id, newSession.user.email);
               console.log("Profile data fetched on auth change:", data);
