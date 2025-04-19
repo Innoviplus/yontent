@@ -1,3 +1,4 @@
+
 import { supabase } from '@/integrations/supabase/client';
 import { toast } from 'sonner';
 
@@ -43,7 +44,7 @@ export const verifyOtp = async (phone: string, token: string) => {
     }
     
     console.log("OTP verified successfully");
-    toast.success('Phone number verified successfully!');
+    // Don't show toast here to avoid duplication
     return { data, error: null };
   } catch (error: any) {
     console.error("Exception verifying OTP:", error);

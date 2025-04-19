@@ -49,9 +49,9 @@ export function useOTPVerification(setUserProfile: (profile: any) => void) {
       // If user was created successfully, clear the pending registration
       clearPendingRegistration(phone);
       
-      // Show success message only once
-      toast.success("Phone verified and account created successfully", {
-        id: 'otp-verification-success' // Unique ID prevents duplicate toasts
+      // Show only one success message with a unique ID
+      toast.success("Account created successfully", {
+        id: 'account-creation-success'
       });
       
       // Get the user profile after signup
