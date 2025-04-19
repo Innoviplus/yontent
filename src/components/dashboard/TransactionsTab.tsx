@@ -1,4 +1,3 @@
-
 import React, { useState } from 'react';
 import { useQuery } from '@tanstack/react-query';
 import { supabase } from '@/integrations/supabase/client';
@@ -11,39 +10,13 @@ const TransactionsTab = () => {
   const { user } = useAuth();
   const [isLoading, setIsLoading] = useState(false);
 
-  // Add a welcome bonus transaction
-  const addWelcomeBonus = async (userId: string) => {
-    const { data: existingBonus } = await supabase
-      .from('point_transactions')
-      .select('id')
-      .eq('user_id', userId)
-      .eq('description', 'Welcome Bonus')
-      .single();
-
-    if (!existingBonus) {
-      await supabase
-        .from('point_transactions')
-        .insert({
-          user_id: userId,
-          amount: 10,
-          type: 'WELCOME',
-          description: 'Welcome Bonus'
-        });
-    }
-  };
-
   // Fetch transactions
   const { data: transactions, error } = useQuery({
     queryKey: ['user-transactions', user?.id],
     queryFn: async () => {
       setIsLoading(true);
       
-      // First ensure welcome bonus exists
-      if (user?.id) {
-        await addWelcomeBonus(user.id);
-      }
-      
-      // Then fetch all transactions
+      // Fetch all transactions including welcome bonus
       const { data, error } = await supabase
         .from('point_transactions')
         .select('*')
@@ -55,21 +28,16 @@ const TransactionsTab = () => {
       if (error) throw error;
       
       // Transform the data to match the PointTransaction interface
-      return (data || []).map(item => {
-        // Create a transaction object with default values for missing properties
-        const transaction: PointTransaction = {
-          id: item.id,
-          userId: item.user_id,
-          amount: item.amount,
-          type: (item.type || 'EARNED') as 'EARNED' | 'REDEEMED' | 'REFUNDED' | 'ADJUSTED' | 'WELCOME',
-          source: 'ADMIN_ADJUSTMENT', // Default value since it doesn't exist in database
-          sourceId: undefined,  // Default to undefined as it's optional
-          description: item.description || '',
-          createdAt: new Date(item.created_at)
-        };
-        
-        return transaction;
-      });
+      return (data || []).map(item => ({
+        id: item.id,
+        userId: item.user_id,
+        amount: item.amount,
+        type: item.type,
+        source: 'ADMIN_ADJUSTMENT', // Default value since it doesn't exist in database
+        sourceId: undefined,  // Default to undefined as it's optional
+        description: item.description || '',
+        createdAt: new Date(item.created_at)
+      }));
     },
     enabled: !!user
   });

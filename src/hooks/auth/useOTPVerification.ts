@@ -49,7 +49,10 @@ export function useOTPVerification(setUserProfile: (profile: any) => void) {
       // If user was created successfully, clear the pending registration
       clearPendingRegistration(phone);
       
-      // No need to add welcome bonus here - it will be handled by the database trigger
+      // Show success message only once
+      toast.success("Phone verified and account created successfully", {
+        id: 'otp-verification-success' // Unique ID prevents duplicate toasts
+      });
       
       // Get the user profile after signup
       if (authData.user) {
@@ -70,7 +73,6 @@ export function useOTPVerification(setUserProfile: (profile: any) => void) {
         }, 1000); // Give the trigger time to run
       }
       
-      toast.success("Phone verified and account created successfully");
       return { data: authData, error: null };
     } catch (error: any) {
       console.error("Exception during OTP verification:", error);
