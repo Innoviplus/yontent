@@ -29,7 +29,7 @@ const PhoneSignUpForm = () => {
   const [phoneNumber, setPhoneNumber] = useState('');
   const [showPassword, setShowPassword] = useState(false);
   const [isSubmitting, setIsSubmitting] = useState(false);
-  const { signUpWithPhone } = useAuth();
+  const { signUpWithPhone, verifyPhoneOtp, resendOtp } = useAuth();
   const [userCountry, setUserCountry] = useState('HK');
 
   const form = useForm<PhoneSignUpFormValues>({
@@ -82,8 +82,51 @@ const PhoneSignUpForm = () => {
     }
   };
 
+  const handleVerifyOtp = async (otp: string) => {
+    try {
+      console.log("Verifying OTP:", otp, "for phone:", phoneNumber);
+      const { error } = await verifyPhoneOtp(phoneNumber, otp);
+      
+      if (error) {
+        toast.error(error.message || "Failed to verify OTP");
+        return;
+      }
+      
+      toast.success("Phone number verified successfully");
+      // The auth context handles the navigation after successful verification
+    } catch (error: any) {
+      toast.error(error.message || "Failed to verify OTP");
+    }
+  };
+
+  const handleResendOtp = async () => {
+    try {
+      const { error } = await resendOtp(phoneNumber);
+      
+      if (error) {
+        toast.error(error.message || "Failed to resend OTP");
+        return;
+      }
+      
+      toast.success("Verification code resent");
+    } catch (error: any) {
+      toast.error(error.message || "Failed to resend OTP");
+    }
+  };
+
+  const handleCancelOtp = () => {
+    setShowOTP(false);
+  };
+
   if (showOTP) {
-    return <OTPVerification phoneNumber={phoneNumber} />;
+    return (
+      <OTPVerification 
+        phoneNumber={phoneNumber} 
+        onVerify={handleVerifyOtp}
+        onResend={handleResendOtp}
+        onCancel={handleCancelOtp}
+      />
+    );
   }
 
   return (
