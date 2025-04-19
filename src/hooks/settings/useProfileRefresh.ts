@@ -32,13 +32,15 @@ export const useProfileRefresh = ({
           setIsLoading(false);
           setInitialLoadComplete(true);
           if (!profileData) {
-            setLoadingAttempts(prev => prev + 1);
+            // Fixed: use direct number increment instead of function
+            setLoadingAttempts(loadingAttempts + 1);
           }
         })
         .catch(err => {
           console.error("ProfileTab: Error refreshing profile:", err);
           setIsLoading(false);
-          setLoadingAttempts(prev => prev + 1);
+          // Fixed: use direct number increment instead of function
+          setLoadingAttempts(loadingAttempts + 1);
         });
     }
   }, [user, refreshUserProfile, loadingAttempts, initialLoadComplete]);

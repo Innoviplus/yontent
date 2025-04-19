@@ -8,20 +8,21 @@ import { Loader2 } from 'lucide-react';
 import { Textarea } from '@/components/ui/textarea';
 import { BirthDateInput } from '@/components/settings/BirthDateInput';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
+import { ProfileFormValues } from '@/schemas/profileFormSchema';
 
 interface ProfileInfoFormProps {
   profileForm: UseFormReturn<any>;
-  onProfileSubmit: (values: any) => Promise<void>;
+  onSubmit: (values: ProfileFormValues) => Promise<void>;
   isUpdating: boolean;
 }
 
 export const ProfileInfoForm: React.FC<ProfileInfoFormProps> = ({
   profileForm,
-  onProfileSubmit,
+  onSubmit,
   isUpdating
 }) => {
   return (
-    <form onSubmit={profileForm.handleSubmit(onProfileSubmit)} className="space-y-6">
+    <form onSubmit={profileForm.handleSubmit(onSubmit)} className="space-y-6">
       <FormField
         control={profileForm.control}
         name="username"
