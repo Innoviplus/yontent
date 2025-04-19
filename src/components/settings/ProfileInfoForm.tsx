@@ -3,8 +3,6 @@ import React from 'react';
 import { UseFormReturn } from 'react-hook-form';
 import { FormField, FormItem, FormLabel, FormControl, FormMessage, FormDescription } from '@/components/ui/form';
 import { Input } from '@/components/ui/input';
-import { Button } from '@/components/ui/button';
-import { Loader2 } from 'lucide-react';
 import { Textarea } from '@/components/ui/textarea';
 import { BirthDateInput } from '@/components/settings/BirthDateInput';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
@@ -12,17 +10,13 @@ import { ProfileFormValues } from '@/schemas/profileFormSchema';
 
 interface ProfileInfoFormProps {
   profileForm: UseFormReturn<any>;
-  onSubmit: (values: ProfileFormValues) => Promise<void>;
-  isUpdating: boolean;
 }
 
 export const ProfileInfoForm: React.FC<ProfileInfoFormProps> = ({
-  profileForm,
-  onSubmit,
-  isUpdating
+  profileForm
 }) => {
   return (
-    <form onSubmit={profileForm.handleSubmit(onSubmit)} className="space-y-6">
+    <div className="space-y-6">
       <FormField
         control={profileForm.control}
         name="username"
@@ -159,21 +153,6 @@ export const ProfileInfoForm: React.FC<ProfileInfoFormProps> = ({
           </FormItem>
         )}
       />
-      
-      <Button 
-        type="submit"
-        className="bg-brand-teal hover:bg-brand-darkTeal text-white"
-        disabled={isUpdating || !profileForm.formState.isDirty}
-      >
-        {isUpdating ? (
-          <>
-            <Loader2 className="mr-2 h-4 w-4 animate-spin" />
-            Saving...
-          </>
-        ) : (
-          'Save Profile'
-        )}
-      </Button>
-    </form>
+    </div>
   );
 };

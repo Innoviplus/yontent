@@ -32,7 +32,7 @@ export const updateProfileData = async (userId: string, profileData: ExtendedPro
       throw updateError;
     }
     
-    toast.success("Profile updated successfully!");
+    console.log("Profile updated successfully in Supabase!");
     return true;
   } catch (error: any) {
     console.error("Error updating profile:", error.message);

@@ -10,6 +10,8 @@ import { SocialMediaSection } from './SocialMediaSection';
 import { LoadingSpinner } from './LoadingSpinner';
 import { useProfilePageState } from '@/hooks/settings/useProfilePageState';
 import { useProfileRefresh } from '@/hooks/settings/useProfileRefresh';
+import { Button } from '@/components/ui/button';
+import { Loader2 } from 'lucide-react';
 
 const ProfileTab = () => {
   const { user, userProfile, refreshUserProfile } = useAuth();
@@ -64,29 +66,50 @@ const ProfileTab = () => {
       </Card>
 
       <Form {...profileForm}>
-        <form onSubmit={profileForm.handleSubmit(onSubmit)}>
-          <div className="space-y-6">
-            <Card>
-              <CardHeader>
-                <CardTitle>Basic Information</CardTitle>
-                <CardDescription>
-                  Update your personal details.
-                </CardDescription>
-              </CardHeader>
-              <CardContent className="grid gap-6">
-                <ProfileInfoForm 
-                  profileForm={profileForm}
-                  onSubmit={onSubmit}
-                  isUpdating={isLoading}
-                />
-              </CardContent>
-            </Card>
-            
-            <SocialMediaSection 
-              profileForm={profileForm} 
-              onSubmit={onSubmit} 
-              isUpdating={isLoading} 
-            />
+        <form onSubmit={profileForm.handleSubmit(onSubmit)} className="space-y-6">
+          <Card>
+            <CardHeader>
+              <CardTitle>Basic Information</CardTitle>
+              <CardDescription>
+                Update your personal details.
+              </CardDescription>
+            </CardHeader>
+            <CardContent className="grid gap-6">
+              <ProfileInfoForm 
+                profileForm={profileForm}
+              />
+            </CardContent>
+          </Card>
+          
+          <Card>
+            <CardHeader>
+              <CardTitle>Social Media Profiles</CardTitle>
+              <CardDescription>
+                Link your social media accounts to your profile
+              </CardDescription>
+            </CardHeader>
+            <CardContent className="grid gap-6">
+              <SocialMediaSection 
+                profileForm={profileForm}
+              />
+            </CardContent>
+          </Card>
+          
+          <div className="flex justify-end">
+            <Button 
+              type="submit"
+              className="bg-brand-teal hover:bg-brand-darkTeal text-white"
+              disabled={isLoading || !profileForm.formState.isDirty}
+            >
+              {isLoading ? (
+                <>
+                  <Loader2 className="mr-2 h-4 w-4 animate-spin" />
+                  Saving...
+                </>
+              ) : (
+                'Save Profile'
+              )}
+            </Button>
           </div>
         </form>
       </Form>
