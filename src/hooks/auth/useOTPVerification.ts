@@ -6,6 +6,11 @@ import { supabase } from '@/integrations/supabase/client';
 export function useOTPVerification(setUserProfile: (profile: any) => void) {
   const verifyPhoneOtp = async (phone: string, token: string) => {
     try {
+      console.log("Verifying OTP for phone number:", phone);
+      
+      // Get the stored registration data
+      const pendingRegistration = window.pendingRegistrations?.get(phone);
+      
       const { data, error: verifyError } = await verifyOtp(phone, token);
       
       if (verifyError) {
@@ -13,19 +18,20 @@ export function useOTPVerification(setUserProfile: (profile: any) => void) {
         return { error: verifyError };
       }
       
-      // After OTP verification, update the user's profile with phone number
-      if (data?.user) {
+      // After OTP verification, update the user's profile with all data
+      if (data?.user && pendingRegistration) {
         const { error: updateError } = await supabase
           .from('profiles')
           .update({
-            phone_number: phone.replace(/\D/g, ''),
-            phone_country_code: phone.match(/^\+\d+/)?.[0] || '+'
+            username: pendingRegistration.username,
+            email: pendingRegistration.email,
+            phone_number: pendingRegistration.phone_number,
+            phone_country_code: pendingRegistration.phone_country_code
           })
           .eq('id', data.user.id);
         
         if (updateError) {
-          console.error("Error updating profile with phone number:", updateError);
-          // Don't fail the entire process for this
+          console.error("Error updating profile:", updateError);
         }
         
         // Fetch the updated profile

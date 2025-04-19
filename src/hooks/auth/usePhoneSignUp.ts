@@ -24,13 +24,22 @@ export function usePhoneSignUp() {
       const phoneValidation = await validatePhone(phone);
       if (!phoneValidation.isValid) return { error: phoneValidation.error };
       
-      // Store registration data
+      // Store registration data with proper metadata
+      const normalizedPhone = phone.replace(/\D/g, '');
+      const countryCode = phone.match(/^\+\d+/)?.[0] || '+';
+      
       pendingRegistrations.set(phone, {
         username,
         email,
         password: password || '',
-        phone_number: phone.replace(/\D/g, ''),
-        phone_country_code: '+'
+        phone_number: normalizedPhone,
+        phone_country_code: countryCode,
+        metadata: {
+          username,
+          email,
+          phone_number: normalizedPhone,
+          phone_country_code: countryCode
+        }
       });
       
       // Send OTP
@@ -42,7 +51,7 @@ export function usePhoneSignUp() {
         return { error: otpError };
       }
 
-      toast.success("Verification Code Sent");
+      toast.success("Verification code sent");
       return { error: null, phoneNumber: phone };
     } catch (error: any) {
       console.error("Exception during phone signup:", error);
