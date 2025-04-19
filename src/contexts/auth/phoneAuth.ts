@@ -1,4 +1,3 @@
-
 import { supabase } from '@/integrations/supabase/client';
 import * as authService from '@/services/auth/authService';
 import { toast } from 'sonner';
@@ -202,7 +201,7 @@ export function usePhoneAuth(setUserProfile: (profile: any) => void) {
         }
 
         toast.success("Registration Successful");
-        return { error: null, user: data.user };
+        return { error: null };
       }
     } catch (error: any) {
       console.error("Exception during OTP verification:", error);

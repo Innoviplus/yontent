@@ -14,7 +14,7 @@ import PhoneLoginForm, { PhoneLoginFormValues, phoneLoginSchema } from '@/compon
 
 const Login = () => {
   const [userCountry, setUserCountry] = useState('HK');
-  const [loginMethod, setLoginMethod] = useState<'email' | 'phone'>('phone'); // Default to phone login
+  const [loginMethod, setLoginMethod] = useState<'phone' | 'email'>('phone'); // Default to phone login
   const [showOtpVerification, setShowOtpVerification] = useState(false);
   const [phoneNumber, setPhoneNumber] = useState('');
   const [storedPassword, setStoredPassword] = useState('');

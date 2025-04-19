@@ -87,7 +87,7 @@ const PhoneSignUpForm = () => {
   const handleVerifyOtp = async (otp: string) => {
     try {
       console.log("Verifying OTP:", otp, "for phone:", phoneNumber);
-      const { error, user } = await verifyPhoneOtp(phoneNumber, otp);
+      const { error } = await verifyPhoneOtp(phoneNumber, otp);
       
       if (error) {
         toast.error(error.message || "Failed to verify OTP");
