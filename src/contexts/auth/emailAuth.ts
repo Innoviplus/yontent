@@ -6,10 +6,8 @@ export function useEmailAuth() {
   const signIn = async (email: string, password: string) => {
     const result = await authService.signIn(email, password);
     if (result.error) {
-      toast({
-        title: "Login Failed",
+      toast.error("Login Failed", {
         description: result.error.message,
-        variant: "destructive",
       });
     }
     return result;
@@ -18,10 +16,8 @@ export function useEmailAuth() {
   const signUp = async (email: string, password: string, username: string) => {
     const result = await authService.signUp(email, password, username);
     if (result.error) {
-      toast({
-        title: "Registration Failed",
+      toast.error("Registration Failed", {
         description: result.error.message,
-        variant: "destructive",
       });
     }
     return result;
