@@ -1,4 +1,3 @@
-
 import { createContext, useContext, useEffect, ReactNode } from 'react';
 import { supabase } from '@/integrations/supabase/client';
 import { fetchUserProfile } from '@/services/profile/profileService';
@@ -6,7 +5,7 @@ import { useAuthState } from './useAuthState';
 import { usePhoneAuth } from './phoneAuth';
 import { useEmailAuth } from './emailAuth';
 import { AuthContextType } from './types';
-import * as authService from '@/services/auth/authService';
+import { signOut, getCurrentSession, getCurrentUser } from '@/services/auth/sessionAuth';
 
 const AuthContext = createContext<AuthContextType>({
   session: null,

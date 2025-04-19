@@ -1,6 +1,6 @@
-
 import { supabase } from '@/integrations/supabase/client';
-import * as authService from '@/services/auth/authService';
+import { sendOtp, verifyOtp, resendOtp } from '@/services/auth/otpAuth';
+import { signInWithPhone, completePhoneSignIn } from '@/services/auth/phoneAuth';
 import { toast } from 'sonner';
 
 export function usePhoneAuth(setUserProfile: (profile: any) => void) {
@@ -59,7 +59,7 @@ export function usePhoneAuth(setUserProfile: (profile: any) => void) {
       });
       
       // Send OTP
-      const { error: otpError } = await authService.sendOtp(phone);
+      const { error: otpError } = await sendOtp(phone);
       
       if (otpError) {
         console.error("Error sending OTP:", otpError);
@@ -81,7 +81,7 @@ export function usePhoneAuth(setUserProfile: (profile: any) => void) {
       console.log("AuthContext: signInWithPhone called with phone:", phone);
       
       // First send OTP for verification before proceeding with login
-      const { error: otpError } = await authService.sendOtp(phone);
+      const { error: otpError } = await sendOtp(phone);
       
       if (otpError) {
         console.error("Error sending OTP during sign in:", otpError);
@@ -108,7 +108,7 @@ export function usePhoneAuth(setUserProfile: (profile: any) => void) {
 
   const verifyPhoneOtp = async (phone: string, token: string) => {
     try {
-      const { error: verifyError } = await authService.verifyOtp(phone, token);
+      const { error: verifyError } = await verifyOtp(phone, token);
       
       if (verifyError) {
         toast.error(verifyError.message || "Invalid verification code");
@@ -127,7 +127,7 @@ export function usePhoneAuth(setUserProfile: (profile: any) => void) {
       if (userData.isSignIn) {
         // This is a sign-in flow
         console.log("Processing sign-in after OTP verification");
-        const result = await authService.signInWithPhone(phone, userData.password);
+        const result = await signInWithPhone(phone, userData.password);
         pendingPhoneRegistrations.delete(phone);
         
         if (result.error) {
@@ -137,7 +137,7 @@ export function usePhoneAuth(setUserProfile: (profile: any) => void) {
         
         // Complete the sign-in with the profile data
         if (result.profileData && result.password) {
-          const emailSignInResult = await authService.completePhoneSignIn(
+          const emailSignInResult = await completePhoneSignIn(
             result.profileData.email, 
             result.password
           );
@@ -230,7 +230,7 @@ export function usePhoneAuth(setUserProfile: (profile: any) => void) {
 
   const resendOtp = async (phone: string) => {
     try {
-      const { error } = await authService.resendOtp(phone);
+      const { error } = await resendOtp(phone);
       
       if (error) {
         toast.error(error.message);
