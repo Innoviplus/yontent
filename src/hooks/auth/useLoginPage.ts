@@ -2,16 +2,19 @@
 import { useState } from 'react';
 import { toast } from 'sonner';
 import { useNavigate } from 'react-router-dom';
+import { useAuth } from '@/contexts/auth';
+import { EmailLoginFormValues, PhoneLoginFormValues } from '@/components/auth/login/LoginFormSchemas';
 
 export const useLoginPage = () => {
   const [showOtpVerification, setShowOtpVerification] = useState(false);
   const [phoneNumber, setPhoneNumber] = useState('');
   const navigate = useNavigate();
+  const { signInWithPhone, verifyPhoneOtp: authVerifyPhoneOtp, resendOtp: authResendOtp, signIn } = useAuth();
 
   const handleVerifyOtp = async (otp: string) => {
     try {
       console.log("Verifying OTP for phone number:", phoneNumber);
-      const { error } = await verifyPhoneOtp(phoneNumber, otp);
+      const { error } = await authVerifyPhoneOtp(phoneNumber, otp);
       
       if (error) {
         toast.error("Verification Failed", {
@@ -32,7 +35,7 @@ export const useLoginPage = () => {
 
   const handleResendOtp = async () => {
     try {
-      const { error } = await resendOtp(phoneNumber);
+      const { error } = await authResendOtp(phoneNumber);
       if (error) {
         toast.error("Failed to resend code", {
           description: error.message
@@ -50,6 +53,56 @@ export const useLoginPage = () => {
     setShowOtpVerification(false);
   };
 
+  const handlePhoneSubmit = async (values: PhoneLoginFormValues) => {
+    try {
+      const { phone, password } = values;
+      setPhoneNumber(phone);
+      
+      const { error, requiresOtp } = await signInWithPhone(phone, password);
+      
+      if (error) {
+        toast.error("Login Failed", {
+          description: error.message || "Invalid phone number or password"
+        });
+        return;
+      }
+      
+      if (requiresOtp) {
+        setShowOtpVerification(true);
+      } else {
+        // If no OTP required, we've already been redirected
+        navigate("/dashboard", { replace: true });
+      }
+    } catch (error: any) {
+      console.error("Phone login error:", error);
+      toast.error("Login Failed", {
+        description: error.message || "An unexpected error occurred"
+      });
+    }
+  };
+
+  const handleEmailSubmit = async (values: EmailLoginFormValues) => {
+    try {
+      const { email, password } = values;
+      
+      const { error } = await signIn(email, password);
+      
+      if (error) {
+        toast.error("Login Failed", {
+          description: error.message || "Invalid email or password"
+        });
+        return;
+      }
+      
+      // Auth context will handle redirection after successful login
+    } catch (error: any) {
+      console.error("Email login error:", error);
+      toast.error("Login Failed", {
+        description: error.message || "An unexpected error occurred"
+      });
+    }
+  };
+
   return {
     showOtpVerification,
     setShowOtpVerification,
@@ -57,6 +110,8 @@ export const useLoginPage = () => {
     setPhoneNumber,
     handleVerifyOtp,
     handleResendOtp,
-    handleCancelOtp
+    handleCancelOtp,
+    handlePhoneSubmit,
+    handleEmailSubmit
   };
 };

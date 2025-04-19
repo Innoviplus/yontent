@@ -1,16 +1,22 @@
 
-import { useState, useEffect } from 'react';
+import { useEffect } from 'react';
 import { useLocation, useNavigate } from 'react-router-dom';
 import { Star } from 'lucide-react';
 import { useAuth } from '@/contexts/auth';
 import Navbar from '@/components/Navbar';
-import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import LoginOTPVerification from '@/components/auth/login/LoginOTPVerification';
 import { useLoginPage } from '@/hooks/auth/useLoginPage';
 import LoginFormTabs from '@/components/auth/login/LoginFormTabs';
 
 const Login = () => {
-  const { showOtpVerification, phoneNumber, handleVerifyOtp, handleResendOtp, handleCancelOtp } = useLoginPage();
+  const { 
+    showOtpVerification, 
+    phoneNumber, 
+    handleVerifyOtp, 
+    handleResendOtp, 
+    handleCancelOtp 
+  } = useLoginPage();
+  
   const { user } = useAuth();
   const navigate = useNavigate();
   const location = useLocation();

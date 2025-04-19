@@ -2,14 +2,17 @@
 import { useEffect, useState } from 'react';
 import { Link } from 'react-router-dom';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
-import EmailLoginForm, { EmailLoginFormValues } from '@/components/auth/login/EmailLoginForm';
-import PhoneLoginForm, { PhoneLoginFormValues } from '@/components/auth/login/PhoneLoginForm';
+import EmailLoginForm from '@/components/auth/login/EmailLoginForm';
+import PhoneLoginForm from '@/components/auth/login/PhoneLoginForm';
 import { useForm } from 'react-hook-form';
 import { zodResolver } from '@hookform/resolvers/zod';
-import { phoneLoginSchema, emailLoginSchema } from '@/components/auth/login/LoginFormSchemas';
+import { phoneLoginSchema, emailLoginSchema, EmailLoginFormValues, PhoneLoginFormValues } from '@/components/auth/login/LoginFormSchemas';
+import { useLoginPage } from '@/hooks/auth/useLoginPage';
 
 const LoginFormTabs = () => {
   const [userCountry, setUserCountry] = useState('HK');
+  const { handlePhoneSubmit, handleEmailSubmit } = useLoginPage();
+  
   const emailForm = useForm<EmailLoginFormValues>({
     resolver: zodResolver(emailLoginSchema)
   });
@@ -43,7 +46,7 @@ const LoginFormTabs = () => {
         <TabsContent value="phone">
           <PhoneLoginForm
             form={phoneForm}
-            onSubmit={onPhoneSubmit}
+            onSubmit={handlePhoneSubmit}
             isLoading={phoneForm.formState.isSubmitting}
             userCountry={userCountry}
           />
@@ -52,7 +55,7 @@ const LoginFormTabs = () => {
         <TabsContent value="email">
           <EmailLoginForm
             form={emailForm}
-            onSubmit={onEmailSubmit}
+            onSubmit={handleEmailSubmit}
             isLoading={emailForm.formState.isSubmitting}
           />
         </TabsContent>
