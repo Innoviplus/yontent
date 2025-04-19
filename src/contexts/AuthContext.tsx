@@ -153,7 +153,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
       } = {
         username,
         email,
-        phone_number: phone.replace(/\+/g, ''), // Remove + from phone number for storage
+        phone_number: phone.replace(/\D/g, ''), // Remove all non-digits from phone number for storage
         phone_country_code: '+' // Store the country code
       };
 
@@ -174,12 +174,27 @@ export function AuthProvider({ children }: { children: ReactNode }) {
 
       if (error) {
         console.error("Error during phone signup:", error);
+        toast({
+          title: "Registration Failed",
+          description: error.message,
+          variant: "destructive",
+        });
         return { error };
       }
 
+      toast({
+        title: "Registration Successful",
+        description: "Your account has been created successfully.",
+      });
+      
       return { error: null };
     } catch (error: any) {
       console.error("Exception during phone signup:", error);
+      toast({
+        title: "Registration Failed",
+        description: error.message || "An unexpected error occurred",
+        variant: "destructive",
+      });
       return { error };
     }
   };

@@ -106,19 +106,24 @@ const Login = () => {
   const onPhoneSubmit = async (values: PhoneLoginFormValues) => {
     try {
       console.log("Submitting phone login with:", values.phone);
-      const { error } = await signInWithPhone(values.phone, values.password);
+      
+      // Ensure the phone number is properly formatted
+      const phoneNumber = values.phone;
+      
+      const { error } = await signInWithPhone(phoneNumber, values.password);
       if (error) {
         toast.error(error.message || "Invalid phone number or password");
         return;
       }
+      
       toast.success("Login successful!");
       console.log("Login successful, redirecting to:", from);
       navigate(from, {
         replace: true
       });
-    } catch (error) {
+    } catch (error: any) {
       console.error("Login error:", error);
-      toast.error("An error occurred during login. Please try again.");
+      toast.error(error.message || "An error occurred during login. Please try again.");
     }
   };
   

@@ -28,17 +28,20 @@ export const signInWithPhone = async (phone: string, password: string) => {
     // First try to find the user by phone number
     const { data: profiles, error: profileError } = await supabase
       .from('profiles')
-      .select('*')
-      .eq('phone_number', phone.replace(/\+/g, ''))
+      .select('email, phone_number')
+      .eq('phone_number', phone.replace(/\D/g, ''))
       .single();
     
     if (profileError || !profiles) {
-      console.error("Error finding profile:", profileError);
+      console.error("Error finding profile by phone:", profileError);
       return { error: { message: "Phone number not found" } };
     }
     
-    // If we have a profile, attempt to sign in with the user's email
+    console.log("Found profile:", profiles);
+    
+    // If we have a profile with an email, attempt to sign in with the user's email
     if (profiles.email) {
+      console.log("Signing in with associated email:", profiles.email);
       const { data, error } = await supabase.auth.signInWithPassword({
         email: profiles.email,
         password,
@@ -52,19 +55,9 @@ export const signInWithPhone = async (phone: string, password: string) => {
       sonnerToast.success('Welcome back!');
       return { session: data.session, user: data.user, error: null };
     } else {
-      // If there's no email associated with the phone number, try direct phone auth
-      const { data, error } = await supabase.auth.signInWithPassword({
-        phone,
-        password,
-      });
-      
-      if (error) {
-        console.error("Auth error with phone:", error);
-        return { error };
-      }
-      
-      sonnerToast.success('Welcome back!');
-      return { session: data.session, user: data.user, error: null };
+      // This should not happen with our current implementation
+      console.error("No email found for this phone number");
+      return { error: { message: "No email associated with this phone number" } };
     }
   } catch (error: any) {
     console.error("Sign in with phone error:", error);
