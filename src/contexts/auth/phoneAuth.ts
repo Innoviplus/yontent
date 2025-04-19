@@ -1,3 +1,4 @@
+
 import { supabase } from '@/integrations/supabase/client';
 import * as authService from '@/services/auth/authService';
 import { toast } from 'sonner';
@@ -134,12 +135,29 @@ export function usePhoneAuth(setUserProfile: (profile: any) => void) {
           return result;
         }
         
+        // Complete the sign-in with the profile data
+        if (result.profileData && result.password) {
+          const emailSignInResult = await authService.completePhoneSignIn(
+            result.profileData.email, 
+            result.password
+          );
+          
+          if (emailSignInResult.error) {
+            toast.error(emailSignInResult.error.message || "Login failed");
+            return emailSignInResult;
+          }
+          
+          toast.success("Login successful");
+          return emailSignInResult;
+        }
+        
         toast.success("Login successful");
         return result;
       } else {
-        // This is a sign-up flow
+        // This is a sign-up flow - NOW we create the user after OTP verification
         console.log("Processing sign-up after OTP verification");
-        // Now we can create the user after OTP verification
+        
+        // Create the user account
         const { data, error } = await supabase.auth.signUp({
           email: userData.email,
           password: userData.password,
