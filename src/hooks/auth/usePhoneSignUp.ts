@@ -1,53 +1,28 @@
 
-import { supabase } from '@/integrations/supabase/client';
+import { useState } from 'react';
 import { toast } from 'sonner';
 import { sendOtp } from '@/services/auth/otpAuth';
+import { validateUsername, validateEmail, validatePhone } from './validation/phoneSignUpValidation';
+import type { PendingRegistration } from './types/phoneSignUpTypes';
 
 export function usePhoneSignUp() {
-  const pendingRegistrations = new Map();
+  const pendingRegistrations = new Map<string, PendingRegistration>();
 
   const signUpWithPhone = async (phone: string, username: string, email: string, password?: string) => {
     try {
       console.log("Phone signup initiated:", { phone, username, email, hasPassword: !!password });
       
-      // Check if username exists
-      const { data: existingUsernames, error: usernameCheckError } = await supabase
-        .from('profiles')
-        .select('id')
-        .eq('username', username);
-        
-      if (usernameCheckError) {
-        console.error('Error checking username:', usernameCheckError);
-      } else if (existingUsernames && existingUsernames.length > 0) {
-        toast.error("This username is already taken");
-        return { error: { message: "Username already taken" } };
-      }
+      // Validate username
+      const usernameValidation = await validateUsername(username);
+      if (!usernameValidation.isValid) return { error: usernameValidation.error };
       
-      // Check if email exists
-      const { data: existingEmails, error: emailCheckError } = await supabase
-        .from('profiles')
-        .select('id')
-        .eq('email', email);
-        
-      if (emailCheckError) {
-        console.error('Error checking email:', emailCheckError);
-      } else if (existingEmails && existingEmails.length > 0) {
-        toast.error("This email is already registered");
-        return { error: { message: "Email already registered" } };
-      }
+      // Validate email
+      const emailValidation = await validateEmail(email);
+      if (!emailValidation.isValid) return { error: emailValidation.error };
       
-      // Check if phone exists
-      const { data: existingPhones, error: phoneCheckError } = await supabase
-        .from('profiles')
-        .select('id')
-        .eq('phone_number', phone.replace(/\D/g, ''));
-        
-      if (phoneCheckError) {
-        console.error('Error checking phone:', phoneCheckError);
-      } else if (existingPhones && existingPhones.length > 0) {
-        toast.error("This phone number is already registered");
-        return { error: { message: "Phone number already registered" } };
-      }
+      // Validate phone
+      const phoneValidation = await validatePhone(phone);
+      if (!phoneValidation.isValid) return { error: phoneValidation.error };
       
       // Store registration data
       pendingRegistrations.set(phone, {
