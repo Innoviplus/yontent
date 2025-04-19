@@ -48,12 +48,12 @@ export const usePhoneSignUpForm = () => {
       setPhoneNumber(values.phone);
       
       // Only send OTP at this stage, don't create Supabase record yet
+      // Updated to match expected parameter count
       const { error } = await signUpWithPhone(
         values.phone,
         values.username,
         values.email,
-        values.password,
-        true // skipRecordCreation flag
+        values.password
       );
       
       if (error) {
@@ -78,7 +78,8 @@ export const usePhoneSignUpForm = () => {
       }
 
       console.log("Verifying OTP and creating user record:", otp);
-      const { error } = await verifyPhoneOtp(phoneNumber, otp, formData);
+      // Updated to match expected parameter count
+      const { error } = await verifyPhoneOtp(phoneNumber, otp);
       
       if (error) {
         toast.error(error.message || "Failed to verify OTP");
