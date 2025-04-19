@@ -145,7 +145,7 @@ const OTPVerification = ({
       
       <Button 
         onClick={verifyOTP} 
-        className="w-full" 
+        className="w-full bg-brand-teal hover:bg-brand-darkTeal text-white" 
         disabled={otpValues.filter(Boolean).length !== 6 || isVerifying}
       >
         {isVerifying ? (
