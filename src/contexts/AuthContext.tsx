@@ -126,14 +126,21 @@ export function AuthProvider({ children }: { children: ReactNode }) {
 
   const signUpWithPhone = async (phone: string, username: string, email: string, password?: string) => {
     try {
-      const userData = {
+      // Create the base user data object
+      const userData: {
+        username: string;
+        email: string;
+        phone_number: string;
+        phone_country_code: string;
+        password?: string;  // Make password optional in the type
+      } = {
         username,
         email,
         phone_number: phone.replace(/\+/g, ''), // Remove + from phone number for storage
         phone_country_code: phone.slice(0, phone.indexOf('+')+1)
       };
 
-      // If password is provided, we'll need to create a user with the phone and password
+      // Only add password to the object if it was provided
       if (password) {
         userData.password = password;
       }
