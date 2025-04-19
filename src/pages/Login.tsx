@@ -14,7 +14,7 @@ import PhoneLoginForm, { PhoneLoginFormValues, phoneLoginSchema } from '@/compon
 
 const Login = () => {
   const [userCountry, setUserCountry] = useState('HK');
-  const [loginMethod, setLoginMethod] = useState<'email' | 'phone'>('email');
+  const [loginMethod, setLoginMethod] = useState<'email' | 'phone'>('phone'); // Default to phone login
   const [showOtpVerification, setShowOtpVerification] = useState(false);
   const [phoneNumber, setPhoneNumber] = useState('');
   const [storedPassword, setStoredPassword] = useState('');
@@ -104,6 +104,7 @@ const Login = () => {
         return;
       }
       
+      // Redirect to dashboard after successful verification
       navigate(from, { replace: true });
     } catch (error: any) {
       console.error("OTP verification error:", error);
@@ -129,6 +130,10 @@ const Login = () => {
     }
   };
 
+  const handleCancelOtp = () => {
+    setShowOtpVerification(false);
+  };
+
   if (showOtpVerification) {
     return (
       <div className="min-h-screen bg-gray-50">
@@ -150,7 +155,7 @@ const Login = () => {
                 phoneNumber={phoneNumber}
                 onVerify={handleVerifyOtp}
                 onResend={handleResendOtp}
-                onCancel={() => setShowOtpVerification(false)}
+                onCancel={handleCancelOtp}
               />
 
               <div className="mt-6 text-center">
@@ -183,22 +188,14 @@ const Login = () => {
             </div>
 
             <Tabs
-              defaultValue="email"
+              defaultValue="phone"
               className="w-full"
               onValueChange={(value) => setLoginMethod(value as 'email' | 'phone')}
             >
               <TabsList className="grid w-full grid-cols-2 mb-6">
-                <TabsTrigger value="email">Email</TabsTrigger>
                 <TabsTrigger value="phone">Phone</TabsTrigger>
+                <TabsTrigger value="email">Email</TabsTrigger>
               </TabsList>
-
-              <TabsContent value="email">
-                <EmailLoginForm
-                  form={emailForm}
-                  onSubmit={onEmailSubmit}
-                  isLoading={emailForm.formState.isSubmitting}
-                />
-              </TabsContent>
 
               <TabsContent value="phone">
                 <PhoneLoginForm
@@ -206,6 +203,14 @@ const Login = () => {
                   onSubmit={onPhoneSubmit}
                   isLoading={phoneForm.formState.isSubmitting}
                   userCountry={userCountry}
+                />
+              </TabsContent>
+
+              <TabsContent value="email">
+                <EmailLoginForm
+                  form={emailForm}
+                  onSubmit={onEmailSubmit}
+                  isLoading={emailForm.formState.isSubmitting}
                 />
               </TabsContent>
             </Tabs>

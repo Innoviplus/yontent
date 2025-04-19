@@ -1,5 +1,6 @@
 
 import { useState } from 'react';
+import { useNavigate } from 'react-router-dom';
 import { Button } from '@/components/ui/button';
 import { FormLabel } from '@/components/ui/form';
 import { Loader2 } from 'lucide-react';
@@ -22,6 +23,7 @@ const OTPVerification = ({
 }: OTPVerificationProps) => {
   const [otpValues, setOtpValues] = useState<string[]>(Array(6).fill(''));
   const [isVerifying, setIsVerifying] = useState(false);
+  const navigate = useNavigate();
 
   const handleOtpChange = (index: number, value: string) => {
     if (value && !/^\d*$/.test(value)) return;
@@ -67,6 +69,9 @@ const OTPVerification = ({
     try {
       setIsVerifying(true);
       await onVerify(otpValues.join(''));
+      // Redirecting to dashboard is now handled by the calling component
+    } catch (error) {
+      console.error("Error verifying OTP:", error);
     } finally {
       setIsVerifying(false);
     }

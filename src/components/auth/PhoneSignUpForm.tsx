@@ -1,4 +1,6 @@
+
 import { useState, useEffect } from 'react';
+import { useNavigate } from 'react-router-dom';
 import { useAuth } from '@/contexts/AuthContext';
 import { toast } from 'sonner';
 import { Button } from '@/components/ui/button';
@@ -24,6 +26,7 @@ const phoneSignUpSchema = z.object({
 type PhoneSignUpFormValues = z.infer<typeof phoneSignUpSchema>;
 
 const PhoneSignUpForm = () => {
+  const navigate = useNavigate();
   const [showOTP, setShowOTP] = useState(false);
   const [phoneNumber, setPhoneNumber] = useState('');
   const [showPassword, setShowPassword] = useState(false);
@@ -84,7 +87,7 @@ const PhoneSignUpForm = () => {
   const handleVerifyOtp = async (otp: string) => {
     try {
       console.log("Verifying OTP:", otp, "for phone:", phoneNumber);
-      const { error } = await verifyPhoneOtp(phoneNumber, otp);
+      const { error, user } = await verifyPhoneOtp(phoneNumber, otp);
       
       if (error) {
         toast.error(error.message || "Failed to verify OTP");
@@ -92,7 +95,9 @@ const PhoneSignUpForm = () => {
       }
       
       toast.success("Phone number verified successfully");
-      // The auth context handles the navigation after successful verification
+      
+      // Redirect to dashboard after successful verification
+      navigate('/dashboard');
     } catch (error: any) {
       toast.error(error.message || "Failed to verify OTP");
     }

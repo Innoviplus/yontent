@@ -1,3 +1,4 @@
+
 import { useRef, useEffect, useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { toast } from 'sonner';
@@ -21,7 +22,6 @@ const OTPVerification = ({ phoneNumber, onVerify, onResend, onCancel }: OTPVerif
   const [timer, setTimer] = useState(45);
   const inputRefs = useRef<(HTMLInputElement | null)[]>([]);
   const navigate = useNavigate();
-  const { verifyPhoneOtp, resendOtp } = useAuth();
 
   useEffect(() => {
     // Focus first input when component mounts
@@ -52,19 +52,12 @@ const OTPVerification = ({ phoneNumber, onVerify, onResend, onCancel }: OTPVerif
       }
       
       setIsVerifying(true);
-
-      const { error } = await verifyPhoneOtp(phoneNumber, otpValue);
-
-      if (error) {
-        toast.error(error.message || 'Failed to verify OTP');
-        setIsVerifying(false);
-        return;
-      }
-
-      toast.success('Phone number verified successfully');
-      navigate('/dashboard');
+      
+      await onVerify(otpValue);
+      // Navigation to dashboard is now handled by the parent component
     } catch (error: any) {
       toast.error(error.message || 'Failed to verify OTP');
+    } finally {
       setIsVerifying(false);
     }
   };
@@ -73,12 +66,7 @@ const OTPVerification = ({ phoneNumber, onVerify, onResend, onCancel }: OTPVerif
     try {
       setResendDisabled(true);
       
-      const { error } = await resendOtp(phoneNumber);
-      
-      if (error) {
-        setResendDisabled(false);
-        return;
-      }
+      await onResend();
       
       // Reset timer
       setTimer(45);
@@ -215,6 +203,17 @@ const OTPVerification = ({ phoneNumber, onVerify, onResend, onCancel }: OTPVerif
           </>
         ) : 'Verify OTP'}
       </Button>
+
+      <div className="mt-4 text-center">
+        <Button
+          variant="ghost"
+          size="sm"
+          onClick={onCancel}
+          className="text-gray-500 hover:text-gray-700"
+        >
+          Back
+        </Button>
+      </div>
     </div>
   );
 };

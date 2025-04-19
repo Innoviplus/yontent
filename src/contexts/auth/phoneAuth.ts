@@ -157,56 +157,52 @@ export function usePhoneAuth(setUserProfile: (profile: any) => void) {
 
         pendingPhoneRegistrations.delete(phone);
         
-        // Wait for a moment before refreshing profile to ensure database trigger has completed
-        setTimeout(async () => {
-          if (data.user) {
-            try {
-              // Check if profile was created properly
-              const { data: profile, error: profileError } = await supabase
-                .from('profiles')
-                .select('*')
-                .eq('id', data.user!.id)
-                .single();
+        // After successful verification and account creation, log a welcome points transaction
+        if (data.user) {
+          try {
+            // Log a welcome points transaction
+            const { error: transactionError } = await supabase
+              .from('point_transactions')
+              .insert({
+                user_id: data.user.id,
+                amount: 10,
+                type: 'WELCOME',
+                description: 'Welcome Bonus'
+              });
               
-              if (profileError) {
-                console.error("Error checking profile:", profileError);
-                return;
-              }
-              
-              // Set user profile to trigger UI updates
-              setUserProfile(profile);
-              
-              // Log a welcome points transaction manually since we're bypassing the trigger
-              const { error: transactionError } = await supabase
-                .from('point_transactions')
-                .insert({
-                  user_id: data.user.id,
-                  amount: 10,
-                  type: 'WELCOME',
-                  description: 'Welcome Bonus'
-                });
-                
-              if (transactionError) {
-                console.error("Failed to add welcome points transaction:", transactionError);
-              }
-              
-              // Update the profile points directly
-              const { error: pointsError } = await supabase
-                .from('profiles')
-                .update({ points: 10 })
-                .eq('id', data.user.id);
-                
-              if (pointsError) {
-                console.error("Failed to update profile points:", pointsError);
-              }
-            } catch (e) {
-              console.error("Error in profile update:", e);
+            if (transactionError) {
+              console.error("Failed to add welcome points transaction:", transactionError);
             }
+            
+            // Update the profile points directly
+            const { error: pointsError } = await supabase
+              .from('profiles')
+              .update({ points: 10 })
+              .eq('id', data.user.id);
+              
+            if (pointsError) {
+              console.error("Failed to update profile points:", pointsError);
+            }
+            
+            // Set user profile to trigger UI updates
+            const { data: profile, error: profileError } = await supabase
+              .from('profiles')
+              .select('*')
+              .eq('id', data.user.id)
+              .single();
+            
+            if (profileError) {
+              console.error("Error checking profile:", profileError);
+            } else {
+              setUserProfile(profile);
+            }
+          } catch (e) {
+            console.error("Error in profile update:", e);
           }
-        }, 1000);
+        }
 
         toast.success("Registration Successful");
-        return { error: null };
+        return { error: null, user: data.user };
       }
     } catch (error: any) {
       console.error("Exception during OTP verification:", error);
