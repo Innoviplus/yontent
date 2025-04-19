@@ -1,6 +1,5 @@
-
 import { supabase } from '@/integrations/supabase/client';
-import { sonnerToast } from 'sonner';
+import { toast } from 'sonner';
 
 export const signInWithPhone = async (phone: string, password: string) => {
   try {
@@ -50,11 +49,10 @@ export const completePhoneSignIn = async (email: string, password: string) => {
       return { error };
     }
     
-    sonnerToast.success('Welcome back!');
+    toast.success('Welcome back!');
     return { session: data.session, user: data.user, error: null };
   } catch (error: any) {
     console.error("Complete sign in error:", error);
     return { error };
   }
 };
-

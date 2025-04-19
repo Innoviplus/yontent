@@ -5,7 +5,7 @@ import { useAuthState } from './useAuthState';
 import { usePhoneAuth } from './phoneAuth';
 import { useEmailAuth } from './emailAuth';
 import { AuthContextType } from './types';
-import { signOut, getCurrentSession, getCurrentUser } from '@/services/auth/sessionAuth';
+import { signOut } from '@/services/auth/sessionAuth';
 
 const AuthContext = createContext<AuthContextType>({
   session: null,
@@ -115,7 +115,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
     user,
     signIn,
     signUp,
-    signOut: authService.signOut,
+    signOut,
     loading,
     userProfile,
     refreshUserProfile,
