@@ -1,26 +1,10 @@
 
-import { useState } from 'react';
-import { Link } from 'react-router-dom';
-import { Lock } from 'lucide-react';
-import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
-import EmailSignUpForm from './EmailSignUpForm';
 import PhoneSignUpForm from './PhoneSignUpForm';
 
 const RegisterForm = () => {
   return (
     <div className="space-y-6">
-      <Tabs defaultValue="phone" className="w-full">
-        <TabsList className="grid w-full grid-cols-2">
-          <TabsTrigger value="phone">Phone</TabsTrigger>
-          <TabsTrigger value="email">Email</TabsTrigger>
-        </TabsList>
-        <TabsContent value="phone">
-          <PhoneSignUpForm />
-        </TabsContent>
-        <TabsContent value="email">
-          <EmailSignUpForm />
-        </TabsContent>
-      </Tabs>
+      <PhoneSignUpForm />
 
       <div className="mt-6 flex items-center gap-2 text-sm text-gray-600">
         <Lock className="h-4 w-4 text-brand-slate" />
@@ -40,3 +24,4 @@ const RegisterForm = () => {
 };
 
 export default RegisterForm;
+
