@@ -25,7 +25,7 @@ export const useMissionsAdmin = () => {
       setIsLoading(true);
       setError(null);
       
-      // Check for admin privileges but don't block loading
+      // Check for admin privileges but don't block loading for testing/development
       const isAdmin = userProfile?.extended_data?.isAdmin || 
                      userProfile?.extended_data?.isSuperAdmin;
       
@@ -47,21 +47,29 @@ export const useMissionsAdmin = () => {
         throw new Error('Invalid response format from database');
       }
 
-      // Force the component to display missions even without admin privileges
+      console.log('Raw missions data from database:', data.length, data[0]?.id);
+
+      // Format the missions even without admin privileges
       // This is important for testing and previewing the admin panel
       const formattedMissions: Mission[] = data.map(mission => 
         formatMissionFromDatabase(mission)
       );
 
       console.log('Missions loaded successfully:', formattedMissions.length);
-      console.log('Missions loaded with rich text fields:', formattedMissions.map(m => ({
-        id: m.id, 
-        title: m.title,
-        hasRequirements: !!m.requirementDescription,
-        hasTerms: !!m.termsConditions,
-        hasSteps: !!m.completionSteps,
-        hasProductDesc: !!m.productDescription
-      })));
+      
+      if (formattedMissions.length > 0) {
+        console.log('First mission:', formattedMissions[0].id, formattedMissions[0].title);
+        console.log('Mission with rich text fields:', formattedMissions.map(m => ({
+          id: m.id, 
+          title: m.title,
+          hasRequirements: !!m.requirementDescription,
+          hasTerms: !!m.termsConditions,
+          hasSteps: !!m.completionSteps,
+          hasProductDesc: !!m.productDescription
+        })));
+      } else {
+        console.log('No missions found in database');
+      }
 
       setMissions(formattedMissions);
       setLoadAttempts(0); // Reset attempts on success
@@ -78,7 +86,6 @@ export const useMissionsAdmin = () => {
       // After multiple failed attempts, set empty array but don't block the UI
       if (loadAttempts >= 1) { // Reduced from 2 to 1 attempt
         setMissions([]);
-        setIsLoading(false);
       }
     } finally {
       setIsLoading(false);
@@ -126,7 +133,7 @@ export const useMissionsAdmin = () => {
           setMissions([]);
         }
       }
-    }, 3000); // Reduced timeout to 3 seconds
+    }, 2500); // Reduced timeout to 2.5 seconds
     
     return () => clearTimeout(loadingTimeout);
   }, []);

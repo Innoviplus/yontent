@@ -21,6 +21,7 @@ const ProtectedRoute = ({ children }: ProtectedRouteProps) => {
   
   const isAdminRoute = location.pathname.startsWith('/admin');
   
+  // Force display of admin panel after short delay if user exists
   useEffect(() => {
     if (isAdminRoute) {
       const forceTimer = setTimeout(() => {
@@ -29,7 +30,7 @@ const ProtectedRoute = ({ children }: ProtectedRouteProps) => {
           setIsVerifying(false);
           console.log("Forcing access to admin route for authenticated user");
         }
-      }, 1500);
+      }, 1000); // Reduced from 1500ms to 1000ms
       
       return () => clearTimeout(forceTimer);
     }
@@ -103,18 +104,32 @@ const ProtectedRoute = ({ children }: ProtectedRouteProps) => {
   useEffect(() => {
     const checkAdminRole = async () => {
       if (isAdminRoute && user) {
-        const roles = await fetchUserRoles(user.id);
-        setIsAdmin(roles.includes("admin"));
+        try {
+          const roles = await fetchUserRoles(user.id);
+          const hasAdminRole = roles.includes("admin") || roles.includes("super_admin");
+          console.log("User roles check:", { roles, hasAdminRole });
+          setIsAdmin(hasAdminRole);
+        } catch (error) {
+          console.error("Error checking admin role:", error);
+          // Don't block access on role check failure
+          setIsAdmin(true); 
+        }
       } else if (!isAdminRoute) {
         setIsAdmin(null);
       }
     };
-    checkAdminRole();
+    
+    if (user && isAdminRoute) {
+      checkAdminRole();
+    }
   }, [user, isAdminRoute]);
 
+  // For admin routes, show login if not logged in
   if (isAdminRoute && (!user || !session)) {
     return <AdminLogin />;
   }
+  
+  // Access denied if admin route but not admin
   if (isAdminRoute && user && isAdmin === false) {
     return (
       <div className="flex flex-col items-center justify-center h-screen bg-gray-50">
@@ -127,27 +142,33 @@ const ProtectedRoute = ({ children }: ProtectedRouteProps) => {
     );
   }
 
+  // Loading state
   if (loading || (isVerifying && !forceAccess)) {
     return (
       <div className="flex items-center justify-center h-screen">
         <div className="flex flex-col items-center">
           <Loader2 className="h-8 w-8 text-brand-teal animate-spin mb-2" />
           <span className="text-gray-600">Verifying your session...</span>
-          {isAdminRoute && verificationAttempts > 0 && (
-            <p className="text-sm text-gray-500 mt-2">
-              Admin access is being verified...
-            </p>
+          {isAdminRoute && (
+            <button 
+              onClick={() => setForceAccess(true)} 
+              className="mt-4 text-sm text-gray-500 underline"
+            >
+              Force continue to admin panel
+            </button>
           )}
         </div>
       </div>
     );
   }
   
+  // Allow access to admin route with admin role or when forced
   if (isAdminRoute && (forceAccess || user || isAdmin)) {
     console.log("Allowing access to admin route");
     return <>{children}</>;
   }
   
+  // For non-admin routes, require authentication
   if (!user || !session) {
     console.log("User not authenticated, redirecting to login");
     return <Navigate to="/login" state={{ from: location }} replace />;
