@@ -36,9 +36,21 @@ export const useAccountActions = (
     try {
       console.log("Attempting to sign out...");
       // Call both the context signOut and the service signOut to ensure session is cleared
-      await authSignOut();
-      await signOut();
-      console.log("Sign out successful");
+      try {
+        await authSignOut();
+        console.log("Auth context signOut successful");
+      } catch (authError) {
+        console.error("Auth context signOut error:", authError);
+      }
+
+      try {
+        await signOut();
+        console.log("Service signOut successful");
+      } catch (serviceError) {
+        console.error("Service signOut error:", serviceError);
+      }
+
+      console.log("Sign out processes completed");
       sonnerToast.success("You have been logged out");
       navigate('/');
     } catch (error: any) {

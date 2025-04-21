@@ -93,7 +93,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
     checkSession();
   }, []);
 
-  const handleSignOut = async () => {
+  const handleSignOut = async (): Promise<void> => {
     try {
       console.log("AuthContext: Signing out user");
       await supabase.auth.signOut();
@@ -103,11 +103,9 @@ export function AuthProvider({ children }: { children: ReactNode }) {
       setSession(null);
       setUser(null);
       setUserProfile(null);
-      
-      return { error: null };
     } catch (error) {
       console.error("Sign out error:", error);
-      return { error };
+      throw error; // Re-throw the error to be handled by the caller
     }
   };
 

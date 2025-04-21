@@ -2,7 +2,7 @@
 import { supabase } from '@/integrations/supabase/client';
 import { toast } from 'sonner';
 
-export const signOut = async () => {
+export const signOut = async (): Promise<void> => {
   console.log("sessionAuth: Calling signOut");
   const { error } = await supabase.auth.signOut();
   if (error) {
