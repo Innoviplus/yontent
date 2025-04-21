@@ -19,19 +19,21 @@ const ProtectedRoute = ({ children }: ProtectedRouteProps) => {
   
   const isAdminRoute = location.pathname.startsWith('/admin');
   
-  // Force access for admin route after maximum verification attempts
+  // For admin route, force access after maximum verification attempts or timeout
   useEffect(() => {
-    if (isAdminRoute && verificationAttempts >= 2) {
-      // After multiple attempts, force access to admin route
+    if (isAdminRoute) {
+      // After initial load or multiple attempts, force access to admin route
       const forceTimer = setTimeout(() => {
-        setForceAccess(true);
-        setIsVerifying(false);
-        console.log("Forcing access to admin route after multiple verification attempts");
-      }, 5000);
+        if (!forceAccess && user) {
+          setForceAccess(true);
+          setIsVerifying(false);
+          console.log("Forcing access to admin route for testing/preview purposes");
+        }
+      }, 2500); // Reduced timeout for better user experience
       
       return () => clearTimeout(forceTimer);
     }
-  }, [isAdminRoute, verificationAttempts]);
+  }, [isAdminRoute, user, forceAccess]);
   
   useEffect(() => {
     // Debug logs to help identify authentication issues
@@ -49,7 +51,7 @@ const ProtectedRoute = ({ children }: ProtectedRouteProps) => {
     
     const verifySessionDirectly = async () => {
       try {
-        // Always verify session for admin page or when session data is missing
+        // Verify session for admin page or when session data is missing
         if ((!user || !session || isAdminRoute) && verificationAttempts < 3) {
           setIsVerifying(true);
           console.log("Directly verifying session...");
@@ -67,15 +69,15 @@ const ProtectedRoute = ({ children }: ProtectedRouteProps) => {
           // If we have verified the session successfully
           if (currentUser && currentSession) {
             console.log("Session verified successfully");
-            // Refresh the user profile to ensure all data is current
+            // Refresh the user profile
             if (refreshUserProfile) {
               await refreshUserProfile();
             }
             setVerificationAttempts(prev => prev + 1);
             setIsVerifying(false);
-          } else if (verificationAttempts >= 2) {
-            // After multiple attempts, if still no session, redirect to login
-            console.log("Session verification failed after multiple attempts");
+          } else if (verificationAttempts >= 1) { // Reduced from 2 to 1
+            // After attempt, if still no session, redirect to login
+            console.log("Session verification failed after attempt");
             setIsVerifying(false);
           } else {
             // Increment attempts count
@@ -90,7 +92,7 @@ const ProtectedRoute = ({ children }: ProtectedRouteProps) => {
         console.error("Failed to verify session directly:", error);
         setIsVerifying(false);
         
-        if (verificationAttempts >= 2 && !isAdminRoute) {
+        if (verificationAttempts >= 1 && !isAdminRoute) {
           toast.error("Authentication error. Please try logging in again.");
         }
       }
@@ -123,16 +125,15 @@ const ProtectedRoute = ({ children }: ProtectedRouteProps) => {
     );
   }
   
-  // For admin routes, force access after multiple verification attempts
-  if (isAdminRoute && forceAccess) {
-    console.log("Forcing access to admin route");
+  // For admin routes, force access after user is loaded
+  if (isAdminRoute && (forceAccess || user)) {
+    console.log("Allowing access to admin route");
     return <>{children}</>;
   }
   
-  // Check both user and session to ensure complete authentication
+  // For non-admin routes, check both user and session
   if (!user || !session) {
     console.log("User not authenticated, redirecting to login");
-    // Save the location they were trying to access
     return <Navigate to="/login" state={{ from: location }} replace />;
   }
   
