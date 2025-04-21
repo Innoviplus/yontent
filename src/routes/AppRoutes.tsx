@@ -2,6 +2,7 @@
 import React from "react";
 import { Routes, Route } from "react-router-dom";
 import ProtectedRoute from "@/components/ProtectedRoute";
+import AdminProtectedRoute from "@/components/AdminProtectedRoute";
 
 // Pages
 import Index from "@/pages/Index";
@@ -17,7 +18,8 @@ import Missions from "@/pages/Missions";
 import MissionDetail from "@/pages/MissionDetail";
 import MissionReviewSubmission from "@/pages/MissionReviewSubmission";
 import MissionReceiptSubmission from "@/pages/MissionReceiptSubmission";
-import AdminPanel from "@/pages/admin/AdminPanel"; // Updated import path
+import AdminPanel from "@/pages/admin/AdminPanel"; 
+import AdminLogin from "@/pages/admin/AdminLogin"; // Added import for AdminLogin
 import Settings from "@/pages/Settings";
 import UserProfile from "@/pages/UserProfile";
 import UserRankings from "@/pages/UserRankings";
@@ -54,7 +56,11 @@ const AppRoutes = () => {
       <Route path="/mission/:id" element={<MissionDetail />} />
       <Route path="/mission/:id/review" element={<ProtectedRoute><MissionReviewSubmission /></ProtectedRoute>} />
       <Route path="/mission/:id/receipt" element={<ProtectedRoute><MissionReceiptSubmission /></ProtectedRoute>} />
-      <Route path="/admin" element={<ProtectedRoute><AdminPanel /></ProtectedRoute>} />
+      
+      {/* Admin routes */}
+      <Route path="/admin/login" element={<AdminLogin />} />
+      <Route path="/admin" element={<AdminProtectedRoute><AdminPanel /></AdminProtectedRoute>} />
+      
       <Route path="/settings" element={<ProtectedRoute><Settings /></ProtectedRoute>} />
       <Route path="/user/:username" element={<UserProfile />} />
       <Route path="/user/:username/followers" element={<FollowersList />} />
