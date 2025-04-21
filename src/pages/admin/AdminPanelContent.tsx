@@ -1,10 +1,10 @@
+
 import Navbar from '@/components/Navbar';
 import AdminHeader from '@/components/admin/panel/AdminHeader';
 import AdminTabsContainer from '@/components/admin/panel/AdminTabsContainer';
 import AdminPanelLoadingState from '@/components/admin/panel/AdminPanelLoadingState';
 import { Button } from '@/components/ui/button';
 import { AlertCircle, RefreshCw } from 'lucide-react';
-import AdminUsersManagement from "@/components/admin/panel/AdminUsersManagement";
 
 interface AdminPanelContentProps {
   state: ReturnType<typeof import('./useAdminPanelState').useAdminPanelState>;
@@ -133,7 +133,6 @@ const AdminPanelContent = ({ state }: AdminPanelContentProps) => {
             refreshMissions={tabsRefreshMissions}
             maxLoadingTime={maxLoadingTime}
           />
-          <AdminUsersManagement />
         </div>
       </div>
     </div>

@@ -5,6 +5,7 @@ import RequestsManagement from '@/components/admin/rewards/RequestsManagement';
 import MissionsManagement from '@/components/admin/missions/MissionsManagement';
 import MissionsParticipation from '@/components/admin/missions/MissionsParticipation';
 import SiteContentTab from '@/components/admin/siteContent/SiteContentTab';
+import AdminUsersManagement from "@/components/admin/panel/AdminUsersManagement";
 
 interface AdminTabsContainerProps {
   activeTab: string;
@@ -74,6 +75,7 @@ const AdminTabsContainer = ({
       <TabsTrigger value="missions">Missions</TabsTrigger>
       <TabsTrigger value="participations">Participations</TabsTrigger>
       <TabsTrigger value="site-content">Site Content</TabsTrigger>
+      <TabsTrigger value="admin-users">Admin Users</TabsTrigger>
     </TabsList>
 
     <TabsContent value="rewards" className="space-y-4">
@@ -118,6 +120,9 @@ const AdminTabsContainer = ({
     </TabsContent>
     <TabsContent value="site-content" className="space-y-4">
       <SiteContentTab />
+    </TabsContent>
+    <TabsContent value="admin-users" className="space-y-4">
+      <AdminUsersManagement />
     </TabsContent>
   </Tabs>
 );
