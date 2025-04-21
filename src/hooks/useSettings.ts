@@ -11,7 +11,6 @@ export const useSettings = () => {
   const {
     user,
     userProfile,
-    signOut,
     isUpdating,
     setIsUpdating,
     activeTab,
@@ -40,7 +39,6 @@ export const useSettings = () => {
   
   const { handleDeleteAccount, handleLogout } = useAccountActions(
     user, 
-    signOut, 
     navigate
   );
 

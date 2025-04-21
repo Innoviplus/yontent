@@ -38,7 +38,16 @@ export function SettingsLayout({
           </TabsList>
           
           <TabsContent value="profile" className="mt-0">
-            <ProfileTab />
+            <ProfileTab 
+              userProfile={userProfile}
+              profileForm={profileForm}
+              onProfileSubmit={onProfileSubmit}
+              isUpdating={isUpdating}
+              avatarUrl={avatarUrl}
+              uploading={uploading}
+              handleAvatarUpload={handleAvatarUpload}
+              extendedProfile={extendedProfile}
+            />
           </TabsContent>
           
           <TabsContent value="account" className="mt-0">

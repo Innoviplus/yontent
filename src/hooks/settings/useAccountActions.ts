@@ -2,10 +2,10 @@
 import { supabase } from '@/integrations/supabase/client';
 import { useToast } from '@/hooks/use-toast';
 import { toast as sonnerToast } from 'sonner';
+import { signOut } from '@/services/auth/sessionAuth';
 
 export const useAccountActions = (
   user: any,
-  signOut: () => Promise<void>,
   navigate: (path: string) => void
 ) => {
   const { toast } = useToast();
@@ -34,6 +34,7 @@ export const useAccountActions = (
   const handleLogout = async () => {
     try {
       await signOut();
+      sonnerToast.success("You have been logged out");
       navigate('/');
     } catch (error: any) {
       toast({
