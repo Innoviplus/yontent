@@ -37,10 +37,7 @@ export const useSettings = () => {
   // Get form-related functions from useSettingsForm
   const { form: settingsForm, handleResetPassword, onSubmit: onSettingsSubmit, isSubmitting } = useSettingsForm();
   
-  const { handleDeleteAccount, handleLogout } = useAccountActions(
-    user, 
-    navigate
-  );
+  const { handleDeleteAccount, handleLogout } = useAccountActions(navigate);
 
   // Debugging - log critical objects
   useEffect(() => {
