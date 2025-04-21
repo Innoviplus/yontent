@@ -8,6 +8,7 @@ import { signOut } from '@/services/auth/sessionAuth';
 import { useAuthSubscription } from '@/hooks/auth/useAuthSubscription';
 import { fetchUserProfile } from '@/services/profile/profileService';
 import { supabase } from '@/integrations/supabase/client';
+import { toast } from 'sonner';
 
 const AuthContext = createContext<AuthContextType>({
   session: null,
@@ -52,22 +53,38 @@ export function AuthProvider({ children }: { children: ReactNode }) {
   useEffect(() => {
     const checkSession = async () => {
       try {
+        console.log("AuthProvider: Checking for existing session");
         setLoading(true);
-        const { data } = await supabase.auth.getSession();
+        
+        // Get current session
+        const { data, error } = await supabase.auth.getSession();
+        
+        if (error) {
+          console.error("Error getting session:", error);
+          return;
+        }
         
         if (data.session) {
-          console.log("AuthProvider: Session found on initialization");
+          console.log("AuthProvider: Session found on initialization for", data.session.user.email);
           setSession(data.session);
           setUser(data.session.user);
           
           // Fetch profile data if we have a user
           if (data.session.user) {
-            const profileData = await fetchUserProfile(data.session.user.id, data.session.user.email);
-            setUserProfile(profileData);
+            try {
+              const profileData = await fetchUserProfile(data.session.user.id, data.session.user.email);
+              console.log("Initial profile loaded:", profileData ? "success" : "not found");
+              setUserProfile(profileData);
+            } catch (profileError) {
+              console.error("Error fetching initial profile:", profileError);
+            }
           }
+        } else {
+          console.log("AuthProvider: No session found on initialization");
         }
       } catch (error) {
         console.error("Error checking initial session:", error);
+        toast.error("Error verifying your session");
       } finally {
         setLoading(false);
       }

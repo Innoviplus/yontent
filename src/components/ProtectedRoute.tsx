@@ -4,6 +4,7 @@ import { useAuth } from '@/contexts/AuthContext';
 import { Loader2 } from 'lucide-react';
 import { useEffect, useState } from 'react';
 import { getCurrentSession, getCurrentUser } from '@/services/auth/sessionAuth';
+import { toast } from 'sonner';
 
 interface ProtectedRouteProps {
   children: React.ReactNode;
@@ -12,7 +13,8 @@ interface ProtectedRouteProps {
 const ProtectedRoute = ({ children }: ProtectedRouteProps) => {
   const { user, loading, session, userProfile, refreshUserProfile } = useAuth();
   const location = useLocation();
-  const [isVerifying, setIsVerifying] = useState(false);
+  const [isVerifying, setIsVerifying] = useState(true);
+  const [verificationAttempts, setVerificationAttempts] = useState(0);
   
   useEffect(() => {
     // Debug logs to help identify authentication issues
@@ -22,45 +24,81 @@ const ProtectedRoute = ({ children }: ProtectedRouteProps) => {
       hasUser: !!user,
       hasSession: !!session,
       hasProfile: !!userProfile,
-      sessionExpiry: session?.expires_at ? new Date(session.expires_at * 1000).toISOString() : 'N/A'
+      sessionExpiry: session?.expires_at ? new Date(session.expires_at * 1000).toISOString() : 'N/A',
+      verificationAttempts
     });
     
-    // Special handling for admin page - verify session directly if needed
     const verifySessionDirectly = async () => {
-      if (!user && !loading && location.pathname === '/admin') {
-        try {
+      try {
+        // Always verify session for admin page or when session data is missing
+        if ((!user || !session) && verificationAttempts < 3) {
           setIsVerifying(true);
-          const currentSession = await getCurrentSession();
-          const currentUser = await getCurrentUser();
+          console.log("Directly verifying session...");
           
+          // Get current session and user directly from auth service
+          const currentSession = await getCurrentSession();
+          const currentUser = currentSession ? await getCurrentUser() : null;
+          
+          console.log("Direct verification results:", { 
+            hasSession: !!currentSession, 
+            hasUser: !!currentUser,
+            userEmail: currentUser?.email
+          });
+          
+          // If we have verified the session successfully
           if (currentUser && currentSession) {
-            console.log("Manually verified session for admin page");
-            // Don't need to set anything here, the auth listener will handle it
+            console.log("Session verified successfully");
+            // Refresh the user profile to ensure all data is current
             if (refreshUserProfile) {
-              refreshUserProfile();
+              await refreshUserProfile();
             }
+            setVerificationAttempts(prev => prev + 1);
+          } else if (verificationAttempts >= 2) {
+            // After multiple attempts, if still no session, redirect to login
+            console.log("Session verification failed after multiple attempts");
+            setIsVerifying(false);
+          } else {
+            // Increment attempts count
+            setVerificationAttempts(prev => prev + 1);
+            setIsVerifying(false);
           }
-        } catch (error) {
-          console.error("Failed to verify session directly:", error);
-        } finally {
+        } else {
+          // We have a user and session, or we've reached max attempts
           setIsVerifying(false);
+        }
+      } catch (error) {
+        console.error("Failed to verify session directly:", error);
+        setIsVerifying(false);
+        
+        if (verificationAttempts >= 2) {
+          toast.error("Authentication error. Please try logging in again.");
         }
       }
     };
     
-    verifySessionDirectly();
-    
-    // Refresh profile if user exists but profile is missing
-    if (user && !userProfile && !loading && refreshUserProfile) {
-      console.log("Protected route: Refreshing missing user profile");
-      refreshUserProfile();
+    // Check if we're already verified or still loading from context
+    if (user && session) {
+      setIsVerifying(false);
+      
+      // Refresh profile if user exists but profile is missing
+      if (!userProfile && refreshUserProfile) {
+        console.log("Protected route: Refreshing missing user profile");
+        refreshUserProfile();
+      }
+    } else if (!loading) {
+      // Only try to verify if the auth context has finished its own loading
+      verifySessionDirectly();
     }
-  }, [location.pathname, loading, user, session, userProfile, refreshUserProfile]);
+  }, [location.pathname, loading, user, session, userProfile, refreshUserProfile, verificationAttempts]);
   
+  // Show loading state when either the auth context is loading or we're manually verifying
   if (loading || isVerifying) {
     return (
       <div className="flex items-center justify-center h-screen">
-        <Loader2 className="h-8 w-8 text-brand-teal animate-spin" />
+        <div className="flex flex-col items-center">
+          <Loader2 className="h-8 w-8 text-brand-teal animate-spin mb-2" />
+          <span className="text-gray-600">Verifying your session...</span>
+        </div>
       </div>
     );
   }

@@ -12,12 +12,14 @@ export const useMissionsAdmin = () => {
   const [isLoading, setIsLoading] = useState(true);
   const [isRefreshing, setIsRefreshing] = useState(false);
   const [error, setError] = useState<string | null>(null);
+  const [loadAttempts, setLoadAttempts] = useState(0);
   
   const { formatMissionFromDatabase } = useMissionFormatters();
   const { ensureMissionsStorageBucketExists } = useStorageBucket();
 
   const fetchMissions = async () => {
     try {
+      console.log("Fetching missions...");
       setIsLoading(true);
       setError(null);
       
@@ -30,11 +32,16 @@ export const useMissionsAdmin = () => {
         throw error;
       }
 
+      if (!data || !Array.isArray(data)) {
+        throw new Error('Invalid response format from database');
+      }
+
       const formattedMissions: Mission[] = data.map(mission => 
         formatMissionFromDatabase(mission)
       );
 
       // Log loaded missions' rich text data for debugging
+      console.log('Missions loaded successfully:', formattedMissions.length);
       console.log('Missions loaded with rich text fields:', formattedMissions.map(m => ({
         id: m.id, 
         title: m.title,
@@ -45,10 +52,22 @@ export const useMissionsAdmin = () => {
       })));
 
       setMissions(formattedMissions);
+      setLoadAttempts(0); // Reset attempts on success
     } catch (error: any) {
       console.error('Error fetching missions:', error.message);
       setError('Failed to load missions: ' + error.message);
-      toast.error('Failed to load missions');
+      
+      // Only show toast on first error
+      if (loadAttempts === 0) {
+        toast.error('Failed to load missions');
+      }
+      
+      setLoadAttempts(prev => prev + 1);
+      
+      // Return empty array as fallback after multiple failed attempts
+      if (loadAttempts >= 2) {
+        setMissions([]);
+      }
     } finally {
       setIsLoading(false);
     }
@@ -64,14 +83,34 @@ export const useMissionsAdmin = () => {
   const { addMission, updateMission, deleteMission } = useMissionOperations(refreshMissions);
 
   useEffect(() => {
-    // Try to ensure the storage bucket exists but continue even if it fails
-    // This prevents the admin panel from breaking due to storage permission issues
-    ensureMissionsStorageBucketExists().catch(error => {
-      console.error("Error creating missions bucket:", error);
-      // Continue loading the component even if bucket creation fails
-    });
+    const initializeData = async () => {
+      try {
+        // Try to ensure the storage bucket exists but continue even if it fails
+        await ensureMissionsStorageBucketExists().catch(bucketError => {
+          console.warn("Warning: Error creating missions bucket:", bucketError);
+          // Continue loading the component even if bucket creation fails
+        });
+        
+        // Fetch missions data
+        await fetchMissions();
+      } catch (e) {
+        console.error("Error initializing missions admin:", e);
+        setIsLoading(false);
+      }
+    };
     
-    fetchMissions();
+    initializeData();
+    
+    // If loading state persists too long, set timeout to force completion
+    const loadingTimeout = setTimeout(() => {
+      if (isLoading) {
+        console.warn("Missions loading timeout reached, forcing completion");
+        setIsLoading(false);
+        setError("Loading timed out. Please try refreshing the page.");
+      }
+    }, 10000); // 10 second timeout
+    
+    return () => clearTimeout(loadingTimeout);
   }, []);
 
   return {

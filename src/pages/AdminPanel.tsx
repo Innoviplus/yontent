@@ -1,5 +1,5 @@
 
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import Navbar from '@/components/Navbar';
 import { useRewardsAdmin } from '@/hooks/admin/useRewardsAdmin';
@@ -12,11 +12,18 @@ import MissionsParticipation from '@/components/admin/missions/MissionsParticipa
 import RequestsManagement from '@/components/admin/rewards/RequestsManagement';
 import SiteContentTab from '@/components/admin/siteContent/SiteContentTab';
 import { useAuth } from '@/contexts/AuthContext';
-import { Loader2 } from 'lucide-react';
+import { Loader2, AlertCircle, RefreshCw } from 'lucide-react';
+import { Button } from '@/components/ui/button';
 
 const AdminPanel = () => {
   const [activeTab, setActiveTab] = useState('rewards');
-  const { loading: authLoading, user } = useAuth();
+  const { loading: authLoading, user, session } = useAuth();
+  const [retryCount, setRetryCount] = useState(0);
+  
+  // Force page to retry loading data if needed
+  const handleRetry = () => {
+    setRetryCount(count => count + 1);
+  };
   
   const { 
     rewards, 
@@ -32,7 +39,8 @@ const AdminPanel = () => {
     addMission,
     updateMission,
     deleteMission,
-    error: missionsError
+    error: missionsError,
+    refreshMissions
   } = useMissionsAdmin();
 
   const {
@@ -55,11 +63,25 @@ const AdminPanel = () => {
     handleRejectRequest
   } = useRequestsAdmin();
 
+  // Check for authentication status
+  useEffect(() => {
+    console.log("Admin panel auth status:", {
+      isLoading: authLoading,
+      hasUser: !!user,
+      hasSession: !!session,
+      userEmail: user?.email,
+      retryCount
+    });
+  }, [authLoading, user, session, retryCount]);
+
   // Main loading state for the entire admin panel
   const isLoading = authLoading || isLoadingRewards || isLoadingMissions || isLoadingParticipations || isLoadingRequests;
+  
+  // Check if we're stuck in a loading state
+  const isLoadingTooLong = !authLoading && (isLoadingMissions || isLoadingRewards) && retryCount > 0;
 
   // Check if we're still loading or if there was an error
-  if (isLoading) {
+  if (isLoading && !isLoadingTooLong) {
     return (
       <div className="min-h-screen bg-gray-50">
         <Navbar />
@@ -67,6 +89,42 @@ const AdminPanel = () => {
           <div className="flex flex-col items-center gap-4">
             <Loader2 className="h-12 w-12 text-brand-teal animate-spin" />
             <p className="text-gray-600">Loading admin panel...</p>
+            {(retryCount > 0) && (
+              <div className="text-sm text-gray-500 max-w-xs text-center mt-2">
+                Attempt {retryCount + 1}...
+              </div>
+            )}
+          </div>
+        </div>
+      </div>
+    );
+  }
+  
+  // Check if loading is taking too long
+  if (isLoadingTooLong) {
+    return (
+      <div className="min-h-screen bg-gray-50">
+        <Navbar />
+        <div className="container mx-auto px-4 pt-28 pb-16">
+          <div className="bg-yellow-50 border border-yellow-200 rounded-lg p-6 max-w-2xl mx-auto">
+            <div className="flex items-start">
+              <AlertCircle className="text-yellow-500 h-6 w-6 mt-0.5 mr-3" />
+              <div>
+                <h2 className="text-xl font-semibold text-yellow-700 mb-2">Loading Is Taking Too Long</h2>
+                <p className="text-yellow-600 mb-4">
+                  We're having trouble loading the data for the admin panel. This could be due to connection issues or authentication problems.
+                </p>
+                <div className="flex flex-col sm:flex-row gap-3">
+                  <Button 
+                    onClick={handleRetry}
+                    className="flex items-center"
+                  >
+                    <RefreshCw className="mr-2 h-4 w-4" />
+                    Retry Loading
+                  </Button>
+                </div>
+              </div>
+            </div>
           </div>
         </div>
       </div>
@@ -79,10 +137,24 @@ const AdminPanel = () => {
       <div className="min-h-screen bg-gray-50">
         <Navbar />
         <div className="container mx-auto px-4 pt-28 pb-16">
-          <div className="bg-red-50 border border-red-200 rounded-lg p-6">
-            <h2 className="text-xl font-semibold text-red-700 mb-2">Error Loading Admin Panel</h2>
-            <p className="text-red-600 mb-4">{missionsError}</p>
-            <p className="text-gray-700">Please try refreshing the page or contact support if the issue persists.</p>
+          <div className="bg-red-50 border border-red-200 rounded-lg p-6 max-w-2xl mx-auto">
+            <div className="flex items-start">
+              <AlertCircle className="text-red-500 h-6 w-6 mt-0.5 mr-3" />
+              <div>
+                <h2 className="text-xl font-semibold text-red-700 mb-2">Error Loading Admin Panel</h2>
+                <p className="text-red-600 mb-4">{missionsError}</p>
+                <div className="flex flex-col sm:flex-row gap-3">
+                  <Button 
+                    onClick={() => refreshMissions()}
+                    variant="destructive"
+                    className="flex items-center"
+                  >
+                    <RefreshCw className="mr-2 h-4 w-4" />
+                    Retry Loading
+                  </Button>
+                </div>
+              </div>
+            </div>
           </div>
         </div>
       </div>

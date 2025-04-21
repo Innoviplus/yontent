@@ -22,12 +22,16 @@ export function useAuthSubscription({
     
     setLoading(true);
     
+    // Handle auth state changes (login, logout, token refresh)
     const { data: { subscription } } = supabase.auth.onAuthStateChange(
       async (event, newSession) => {
         console.log("Auth state changed:", event, newSession?.user?.id);
+        
+        // Update session and user state
         setSession(newSession);
         setUser(newSession?.user ?? null);
         
+        // Get profile data if user is authenticated
         if (newSession?.user) {
           try {
             const data = await fetchUserProfile(newSession.user.id, newSession.user.email);
@@ -93,8 +97,14 @@ export function useAuthSubscription({
       }
     );
 
-    // Get initial session
-    supabase.auth.getSession().then(({ data: { session: currentSession } }) => {
+    // Get initial session - this is crucial for new browser windows
+    supabase.auth.getSession().then(({ data: { session: currentSession }, error }) => {
+      if (error) {
+        console.error("Error getting initial session:", error);
+        setLoading(false);
+        return;
+      }
+      
       console.log("Initial session check:", currentSession ? `Found session for ${currentSession.user.email}` : "No session");
       setSession(currentSession);
       setUser(currentSession?.user ?? null);
