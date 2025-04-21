@@ -93,6 +93,24 @@ export function AuthProvider({ children }: { children: ReactNode }) {
     checkSession();
   }, []);
 
+  const handleSignOut = async () => {
+    try {
+      console.log("AuthContext: Signing out user");
+      await supabase.auth.signOut();
+      console.log("AuthContext: Supabase signOut completed");
+      
+      // Clear local state
+      setSession(null);
+      setUser(null);
+      setUserProfile(null);
+      
+      return { error: null };
+    } catch (error) {
+      console.error("Sign out error:", error);
+      return { error };
+    }
+  };
+
   const refreshUserProfile = async () => {
     if (user) {
       try {
@@ -114,7 +132,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
     user,
     signIn,
     signUp,
-    signOut,
+    signOut: handleSignOut,
     loading,
     userProfile,
     refreshUserProfile,

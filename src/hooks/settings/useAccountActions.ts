@@ -34,13 +34,18 @@ export const useAccountActions = (
 
   const handleLogout = async () => {
     try {
+      console.log("Attempting to sign out...");
+      // Call both the context signOut and the service signOut to ensure session is cleared
       await authSignOut();
+      await signOut();
+      console.log("Sign out successful");
       sonnerToast.success("You have been logged out");
       navigate('/');
     } catch (error: any) {
+      console.error("Logout error:", error);
       toast({
         title: "Logout Failed",
-        description: error.message,
+        description: error.message || "An unknown error occurred",
         variant: "destructive",
       });
     }

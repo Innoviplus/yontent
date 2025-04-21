@@ -26,10 +26,12 @@ const UserMenuDropdown = () => {
   
   const handleLogout = async () => {
     try {
+      console.log("UserMenuDropdown: Attempting to sign out");
       await signOut();
       toast.success("You have been logged out");
       navigate('/');
     } catch (error: any) {
+      console.error("Logout error:", error);
       toast.error("Failed to log out: " + (error.message || "Unknown error"));
     }
   };
