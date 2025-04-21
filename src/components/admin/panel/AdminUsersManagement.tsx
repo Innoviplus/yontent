@@ -1,20 +1,51 @@
 
-import { useEffect, useState } from "react";
+import { useState, useEffect } from "react";
 import { fetchAllUsersWithRoles, grantAdminRole, revokeAdminRole } from "@/services/admin/users";
 import { Button } from "@/components/ui/button";
-import { Shield, User, UserMinus, UserPlus } from "lucide-react";
+import { Shield, RefreshCw, AlertCircle } from "lucide-react";
 import { toast } from "sonner";
+import { useUserSearch } from "@/hooks/admin/useUserSearch";
+import { UserSearchForm } from "./users/UserSearchForm";
+import { UsersTable } from "./users/UsersTable";
+
+type UserWithRoles = {
+  id: string;
+  username: string | null;
+  email: string | null;
+  roles: string[];
+};
 
 const AdminUsersManagement = () => {
-  const [users, setUsers] = useState<any[]>([]);
+  const [users, setUsers] = useState<UserWithRoles[]>([]);
   const [loading, setLoading] = useState(false);
+  const [error, setError] = useState<string | null>(null);
   const [updatingUserId, setUpdatingUserId] = useState<string | null>(null);
+
+  const {
+    searchQuery,
+    setSearchQuery,
+    searchResults,
+    setSearchResults,
+    searching,
+    searchError,
+    handleSearch
+  } = useUserSearch();
 
   const fetchUsers = async () => {
     setLoading(true);
-    const all = await fetchAllUsersWithRoles();
-    setUsers(all);
-    setLoading(false);
+    setError(null);
+    try {
+      console.log("Fetching all users with roles...");
+      const all = await fetchAllUsersWithRoles();
+      console.log(`Fetched ${all.length} users`);
+      setUsers(all);
+    } catch (error: any) {
+      console.error("Error fetching users:", error);
+      setError(error?.message || "Failed to load users");
+      toast.error("Failed to load users");
+    } finally {
+      setLoading(false);
+    }
   };
 
   useEffect(() => {
@@ -23,71 +54,138 @@ const AdminUsersManagement = () => {
 
   const handleGrant = async (user_id: string) => {
     setUpdatingUserId(user_id);
-    await grantAdminRole(user_id);
-    toast.success("Granted admin rights");
-    await fetchUsers();
-    setUpdatingUserId(null);
+    try {
+      await grantAdminRole(user_id);
+      toast.success("Granted admin rights");
+      
+      // Update local state
+      const updateUserList = (list: UserWithRoles[]) => 
+        list.map(user => 
+          user.id === user_id 
+            ? { ...user, roles: [...user.roles, 'admin'] } 
+            : user
+        );
+      
+      setUsers(updateUserList);
+      if (searchResults.length > 0) {
+        setSearchResults(updateUserList);
+      }
+      
+      await fetchUsers();
+    } catch (error: any) {
+      console.error("Error granting admin role:", error);
+      toast.error(error?.message || "Failed to grant admin rights");
+    } finally {
+      setUpdatingUserId(null);
+    }
   };
 
   const handleRevoke = async (user_id: string) => {
     setUpdatingUserId(user_id);
-    await revokeAdminRole(user_id);
-    toast.info("Revoked admin rights");
-    await fetchUsers();
-    setUpdatingUserId(null);
+    try {
+      await revokeAdminRole(user_id);
+      toast.info("Revoked admin rights");
+      
+      // Update local state
+      const updateUserList = (list: UserWithRoles[]) => 
+        list.map(user => 
+          user.id === user_id 
+            ? { ...user, roles: user.roles.filter(role => role !== 'admin') } 
+            : user
+        );
+      
+      setUsers(updateUserList);
+      if (searchResults.length > 0) {
+        setSearchResults(updateUserList);
+      }
+      
+      await fetchUsers();
+    } catch (error: any) {
+      console.error("Error revoking admin role:", error);
+      toast.error(error?.message || "Failed to revoke admin rights");
+    } finally {
+      setUpdatingUserId(null);
+    }
+  };
+
+  const handleSearchSubmit = (e: React.FormEvent) => {
+    e.preventDefault();
+    handleSearch(searchQuery);
   };
 
   return (
-    <div className="bg-white rounded-lg p-6 border border-gray-200 mt-10 max-w-2xl mx-auto">
-      <div className="flex items-center gap-2 mb-4">
-        <Shield className="h-5 w-5 text-brand-teal" />
-        <h2 className="text-lg font-semibold">Admin Users Management</h2>
+    <div className="space-y-6">
+      <UserSearchForm
+        searchQuery={searchQuery}
+        onSearchQueryChange={setSearchQuery}
+        onSubmit={handleSearchSubmit}
+        searching={searching}
+      />
+      
+      {searchError && (
+        <div className="bg-red-50 border border-red-100 rounded-md p-3 mb-4">
+          <div className="flex">
+            <AlertCircle className="h-5 w-5 text-red-500 mr-2" />
+            <div className="text-sm text-red-700">{searchError}</div>
+          </div>
+        </div>
+      )}
+
+      {searchResults.length > 0 && (
+        <div className="bg-white rounded-lg p-6 border border-gray-200 max-w-2xl mx-auto">
+          <h3 className="text-md font-medium mb-4">Search Results</h3>
+          <UsersTable
+            users={searchResults}
+            updatingUserId={updatingUserId}
+            onGrant={handleGrant}
+            onRevoke={handleRevoke}
+          />
+        </div>
+      )}
+      
+      <div className="bg-white rounded-lg p-6 border border-gray-200 max-w-2xl mx-auto">
+        <div className="flex items-center justify-between gap-2 mb-4">
+          <div className="flex items-center gap-2">
+            <Shield className="h-5 w-5 text-brand-teal" />
+            <h2 className="text-lg font-semibold">Admin Users List</h2>
+          </div>
+          
+          <Button
+            variant="outline"
+            size="sm"
+            onClick={fetchUsers}
+            disabled={loading}
+          >
+            {loading ? (
+              <RefreshCw className="w-4 h-4 animate-spin" />
+            ) : (
+              <RefreshCw className="w-4 h-4" />
+            )}
+            <span className="ml-1">Refresh</span>
+          </Button>
+        </div>
+        
+        {error && (
+          <div className="bg-red-50 border border-red-100 rounded-md p-3 mb-4">
+            <div className="flex">
+              <AlertCircle className="h-5 w-5 text-red-500 mr-2" />
+              <div className="text-sm text-red-700">{error}</div>
+            </div>
+          </div>
+        )}
+        
+        <UsersTable
+          users={users}
+          updatingUserId={updatingUserId}
+          onGrant={handleGrant}
+          onRevoke={handleRevoke}
+        />
+        
+        {loading && <div className="text-center text-gray-400 my-2">Loading users...</div>}
+        {!loading && !error && users.length === 0 && (
+          <div className="text-center text-gray-500 py-4">No users found</div>
+        )}
       </div>
-      <table className="min-w-full text-left">
-        <thead>
-          <tr className="text-gray-700 border-b">
-            <th className="py-2">Username</th>
-            <th className="py-2">Email</th>
-            <th className="py-2">Roles</th>
-            <th className="py-2">Actions</th>
-          </tr>
-        </thead>
-        <tbody>
-          {users.map((u) => (
-            <tr key={u.id} className="border-b">
-              <td className="py-2">{u.username || <span className="font-mono text-xs text-gray-400">N/A</span>}</td>
-              <td className="py-2">{u.email || <span className="font-mono text-xs text-gray-400">N/A</span>}</td>
-              <td className="py-2">{u.roles.join(", ")}</td>
-              <td className="py-2">
-                {u.roles.includes("admin") ? (
-                  <Button
-                    variant="destructive"
-                    size="sm"
-                    className="gap-1"
-                    onClick={() => handleRevoke(u.id)}
-                    disabled={updatingUserId === u.id}
-                  >
-                    <UserMinus className="w-4 h-4" />
-                    Revoke Admin
-                  </Button>
-                ) : (
-                  <Button
-                    variant="outline"
-                    size="sm"
-                    className="gap-1"
-                    onClick={() => handleGrant(u.id)}
-                    disabled={updatingUserId === u.id}
-                  >
-                    <UserPlus className="w-4 h-4" />
-                    Grant Admin
-                  </Button>
-                )}
-              </td>
-            </tr>
-          ))}
-        </tbody>
-      </table>
-      {loading && <div className="text-center text-gray-400 my-2">Loading users...</div>}
     </div>
   );
 };
