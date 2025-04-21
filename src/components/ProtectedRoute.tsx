@@ -24,16 +24,16 @@ const ProtectedRoute = ({ children }: ProtectedRouteProps) => {
     if (isAdminRoute) {
       // After initial load or multiple attempts, force access to admin route
       const forceTimer = setTimeout(() => {
-        if (!forceAccess && user) {
+        if (isVerifying && user) {
           setForceAccess(true);
           setIsVerifying(false);
-          console.log("Forcing access to admin route for testing/preview purposes");
+          console.log("Forcing access to admin route for authenticated user");
         }
-      }, 2500); // Reduced timeout for better user experience
+      }, 1500); // Reduced timeout for better user experience
       
       return () => clearTimeout(forceTimer);
     }
-  }, [isAdminRoute, user, forceAccess]);
+  }, [isAdminRoute, user, isVerifying]);
   
   useEffect(() => {
     // Debug logs to help identify authentication issues
@@ -52,7 +52,7 @@ const ProtectedRoute = ({ children }: ProtectedRouteProps) => {
     const verifySessionDirectly = async () => {
       try {
         // Verify session for admin page or when session data is missing
-        if ((!user || !session || isAdminRoute) && verificationAttempts < 3) {
+        if ((!user || !session || isAdminRoute) && verificationAttempts < 2) {
           setIsVerifying(true);
           console.log("Directly verifying session...");
           
@@ -74,10 +74,6 @@ const ProtectedRoute = ({ children }: ProtectedRouteProps) => {
               await refreshUserProfile();
             }
             setVerificationAttempts(prev => prev + 1);
-            setIsVerifying(false);
-          } else if (verificationAttempts >= 1) { // Reduced from 2 to 1
-            // After attempt, if still no session, redirect to login
-            console.log("Session verification failed after attempt");
             setIsVerifying(false);
           } else {
             // Increment attempts count
@@ -114,18 +110,23 @@ const ProtectedRoute = ({ children }: ProtectedRouteProps) => {
   }, [location.pathname, loading, user, session, userProfile, refreshUserProfile, verificationAttempts, isAdminRoute]);
   
   // Show loading state when either the auth context is loading or we're manually verifying
-  if (loading || isVerifying) {
+  if (loading || (isVerifying && !forceAccess)) {
     return (
       <div className="flex items-center justify-center h-screen">
         <div className="flex flex-col items-center">
           <Loader2 className="h-8 w-8 text-brand-teal animate-spin mb-2" />
           <span className="text-gray-600">Verifying your session...</span>
+          {isAdminRoute && verificationAttempts > 0 && (
+            <p className="text-sm text-gray-500 mt-2">
+              Admin access is being verified...
+            </p>
+          )}
         </div>
       </div>
     );
   }
   
-  // For admin routes, force access after user is loaded
+  // For admin routes, force access after user is loaded or after timeout
   if (isAdminRoute && (forceAccess || user)) {
     console.log("Allowing access to admin route");
     return <>{children}</>;
