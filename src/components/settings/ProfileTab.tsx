@@ -1,6 +1,5 @@
 
 import { useAuth } from '@/contexts/AuthContext';
-import { useSettings } from '@/hooks/useSettings';
 import { Form } from '@/components/ui/form';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { ProfileFormValues } from '@/schemas/profileFormSchema';
@@ -12,10 +11,31 @@ import { useProfilePageState } from '@/hooks/settings/useProfilePageState';
 import { useProfileRefresh } from '@/hooks/settings/useProfileRefresh';
 import { Button } from '@/components/ui/button';
 import { Loader2 } from 'lucide-react';
+import { UseFormReturn } from 'react-hook-form';
+import { ExtendedProfile } from '@/lib/types';
 
-const ProfileTab = () => {
-  const { user, userProfile, refreshUserProfile } = useAuth();
-  const { extendedProfile, profileForm, onProfileSubmit, handleAvatarUpload, avatarUrl, uploading } = useSettings();
+interface ProfileTabProps {
+  userProfile: any;
+  profileForm: UseFormReturn<any>;
+  onProfileSubmit: (values: ProfileFormValues) => Promise<void>;
+  isUpdating: boolean;
+  avatarUrl: string | null;
+  uploading: boolean;
+  handleAvatarUpload: (event: React.ChangeEvent<HTMLInputElement>) => Promise<void>;
+  extendedProfile: ExtendedProfile | null;
+}
+
+const ProfileTab = ({
+  userProfile,
+  profileForm,
+  onProfileSubmit,
+  isUpdating,
+  avatarUrl,
+  uploading,
+  handleAvatarUpload,
+  extendedProfile
+}: ProfileTabProps) => {
+  const { user, refreshUserProfile } = useAuth();
   
   const {
     isLoading,
