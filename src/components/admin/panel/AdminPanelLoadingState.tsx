@@ -15,11 +15,9 @@ const AdminPanelLoadingState = ({ retryCount, handleRetry }: AdminPanelLoadingSt
       <div className="flex flex-col items-center gap-4">
         <Loader2 className="h-12 w-12 text-brand-teal animate-spin" />
         <p className="text-gray-600">Loading admin panel...</p>
-        {retryCount > 0 && (
-          <div className="text-sm text-gray-500 max-w-xs text-center mt-2">
-            Attempt {retryCount + 1}...
-          </div>
-        )}
+        <div className="text-sm text-gray-500 max-w-xs text-center mt-2">
+          {retryCount > 0 ? `Attempt ${retryCount + 1}...` : 'If loading takes too long, try clicking the retry button.'}
+        </div>
         <Button
           variant="outline"
           className="mt-4"

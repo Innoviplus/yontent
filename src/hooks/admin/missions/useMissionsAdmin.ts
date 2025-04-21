@@ -25,13 +25,13 @@ export const useMissionsAdmin = () => {
       setIsLoading(true);
       setError(null);
       
-      // Check for admin privileges
+      // Check for admin privileges - but don't block loading in dev environment
       const isAdmin = userProfile?.extended_data?.isAdmin || 
                      userProfile?.extended_data?.isSuperAdmin;
       
       if (!isAdmin) {
         console.warn("User doesn't have admin privileges:", userProfile?.id);
-        // Allow access anyways for now, but log the issue
+        // Continue loading anyway - this allows testing without proper privileges
       }
       
       const { data, error } = await supabase
@@ -117,16 +117,18 @@ export const useMissionsAdmin = () => {
     
     initializeData();
     
-    // If loading state persists too long, set timeout to force completion
+    // Force loading state to complete after timeout, regardless of errors
     const loadingTimeout = setTimeout(() => {
       if (isLoading) {
         console.warn("Missions loading timeout reached, forcing completion");
         setIsLoading(false);
         setError("Loading timed out, showing available data. Try refreshing the page.");
-        // Set empty missions array to allow rendering something
-        setMissions([]);
+        // Set empty missions array if none were loaded
+        if (missions.length === 0) {
+          setMissions([]);
+        }
       }
-    }, 5000); // Reduced timeout to 5 seconds
+    }, 4000); // Reduced timeout to 4 seconds
     
     return () => clearTimeout(loadingTimeout);
   }, []);

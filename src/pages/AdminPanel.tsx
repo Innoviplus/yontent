@@ -11,6 +11,7 @@ import AdminHeader from '@/components/admin/panel/AdminHeader';
 import AdminTabsContainer from '@/components/admin/panel/AdminTabsContainer';
 import AdminPanelLoadingState from '@/components/admin/panel/AdminPanelLoadingState';
 import { Button } from '@/components/ui/button';
+import { toast } from 'sonner';
 
 const AdminPanel = () => {
   const [activeTab, setActiveTab] = useState('rewards');
@@ -18,10 +19,12 @@ const AdminPanel = () => {
   const [retryCount, setRetryCount] = useState(0);
   const [maxLoadingTime, setMaxLoadingTime] = useState(false);
 
+  // Force the panel to show after a maximum loading time (reduced to 6 seconds)
   useEffect(() => {
     const timeoutId = setTimeout(() => {
       setMaxLoadingTime(true);
-    }, 8000);
+      console.log("Max loading time reached, forcing display of admin panel");
+    }, 6000);
     return () => clearTimeout(timeoutId);
   }, []);
 
@@ -29,6 +32,7 @@ const AdminPanel = () => {
     setRetryCount(count => count + 1);
     setMaxLoadingTime(false);
     refreshMissions();
+    toast.info("Retrying admin panel load...");
   };
 
   const {
@@ -60,7 +64,13 @@ const AdminPanel = () => {
 
   // Wrap the refreshParticipations function to ensure it returns a Promise
   const refreshParticipations = async () => {
-    return originalRefreshParticipations();
+    try {
+      return await originalRefreshParticipations();
+    } catch (error) {
+      console.error("Error refreshing participations:", error);
+      // Return a resolved promise to prevent errors
+      return Promise.resolve();
+    }
   };
 
   const {
@@ -76,7 +86,13 @@ const AdminPanel = () => {
 
   // Wrap the refreshRequests function to ensure it returns a Promise
   const refreshRequests = async () => {
-    return originalRefreshRequests();
+    try {
+      return await originalRefreshRequests();
+    } catch (error) {
+      console.error("Error refreshing requests:", error);
+      // Return a resolved promise to prevent errors
+      return Promise.resolve();
+    }
   };
 
   useEffect(() => {
@@ -90,24 +106,28 @@ const AdminPanel = () => {
     });
   }, [authLoading, user, session, retryCount, userProfile]);
 
+  // Enhanced loading logic with better error handling
   const isLoading =
     authLoading ||
-    isLoadingRewards ||
-    isLoadingMissions ||
-    isLoadingParticipations ||
-    isLoadingRequests;
+    (isLoadingRewards && 
+     isLoadingMissions && 
+     isLoadingParticipations && 
+     isLoadingRequests &&
+     !maxLoadingTime); // Added maxLoadingTime check
 
-  const shouldShowContent = !isLoading || maxLoadingTime;
+  const shouldShowContent = !isLoading || maxLoadingTime || retryCount > 1;
   const isLoadingTooLong =
-    !authLoading && (isLoadingMissions || isLoadingRewards) && (retryCount > 0 || maxLoadingTime);
+    !authLoading && ((isLoadingMissions || isLoadingRewards) && (retryCount > 0 || maxLoadingTime));
 
-  if (isLoading && !maxLoadingTime) {
+  // Show loading state only if we haven't reached max time or retry limit
+  if (isLoading && !maxLoadingTime && retryCount <= 1) {
     return (
       <AdminPanelLoadingState retryCount={retryCount} handleRetry={handleRetry} />
     );
   }
 
-  if (missionsError && !maxLoadingTime) {
+  // Show mission errors only if explicitly caught and not bypassed by max time
+  if (missionsError && !maxLoadingTime && retryCount <= 1) {
     return (
       <div className="min-h-screen bg-gray-50">
         <Navbar />
@@ -120,12 +140,22 @@ const AdminPanel = () => {
                 <p className="text-red-600 mb-4">{missionsError}</p>
                 <div className="flex flex-col sm:flex-row gap-3">
                   <Button
-                    onClick={() => refreshMissions()}
+                    onClick={() => {
+                      refreshMissions();
+                      setRetryCount(prev => prev + 1);
+                    }}
                     variant="destructive"
                     className="flex items-center"
                   >
                     <RefreshCw className="mr-2 h-4 w-4" />
                     Retry Loading
+                  </Button>
+                  <Button
+                    onClick={() => setMaxLoadingTime(true)}
+                    variant="outline"
+                    className="flex items-center"
+                  >
+                    Force Load Panel
                   </Button>
                 </div>
               </div>
@@ -141,30 +171,33 @@ const AdminPanel = () => {
       <Navbar />
       <div className="container mx-auto px-4 pt-28 pb-16 max-w-7xl">
         <div className="flex flex-col gap-8">
-          <AdminHeader isLoadingTooLong={isLoadingTooLong} handleRetry={handleRetry} />
+          <AdminHeader 
+            isLoadingTooLong={isLoadingTooLong} 
+            handleRetry={handleRetry} 
+          />
           <AdminTabsContainer
             activeTab={activeTab}
             setActiveTab={setActiveTab}
-            rewards={rewards}
-            isLoadingRewards={isLoadingRewards}
+            rewards={rewards || []}
+            isLoadingRewards={isLoadingRewards && !maxLoadingTime}
             addReward={addReward}
             updateReward={updateReward}
             deleteReward={deleteReward}
-            requests={requests}
-            isLoadingRequests={isLoadingRequests}
+            requests={requests || []}
+            isLoadingRequests={isLoadingRequests && !maxLoadingTime}
             isRefreshingRequests={isRefreshingRequests}
             requestsActiveTab={requestsActiveTab}
             setRequestsActiveTab={setRequestsActiveTab}
             refreshRequests={refreshRequests}
             handleApproveRequest={handleApproveRequest}
             handleRejectRequest={handleRejectRequest}
-            missions={missions}
-            isLoadingMissions={isLoadingMissions}
+            missions={missions || []}
+            isLoadingMissions={isLoadingMissions && !maxLoadingTime}
             addMission={addMission}
             updateMission={updateMission}
             deleteMission={deleteMission}
-            participations={participations}
-            isLoadingParticipations={isLoadingParticipations}
+            participations={participations || []}
+            isLoadingParticipations={isLoadingParticipations && !maxLoadingTime}
             isRefreshingParticipations={isRefreshingParticipations}
             refreshParticipations={refreshParticipations}
             approveParticipation={approveParticipation}
