@@ -2,13 +2,14 @@
 import { supabase } from '@/integrations/supabase/client';
 import { useToast } from '@/hooks/use-toast';
 import { toast as sonnerToast } from 'sonner';
+import { signOut } from '@/services/auth/sessionAuth';
+import { useAuth } from '@/contexts/AuthContext';
 
 export const useAccountActions = (
-  user: any,
-  signOut: () => Promise<void>,
   navigate: (path: string) => void
 ) => {
   const { toast } = useToast();
+  const { user, signOut: authSignOut } = useAuth();
 
   const handleDeleteAccount = async () => {
     if (!user) return;
@@ -20,7 +21,7 @@ export const useAccountActions = (
     try {
       // In a real application, this would typically be handled by a secure server-side function
       sonnerToast.info('Account deletion would be processed here. Signing you out for demo purposes.');
-      await signOut();
+      await authSignOut();
       navigate('/');
     } catch (error: any) {
       toast({
@@ -33,7 +34,8 @@ export const useAccountActions = (
 
   const handleLogout = async () => {
     try {
-      await signOut();
+      await authSignOut();
+      sonnerToast.success("You have been logged out");
       navigate('/');
     } catch (error: any) {
       toast({

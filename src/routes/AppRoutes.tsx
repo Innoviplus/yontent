@@ -17,7 +17,7 @@ import Missions from "@/pages/Missions";
 import MissionDetail from "@/pages/MissionDetail";
 import MissionReviewSubmission from "@/pages/MissionReviewSubmission";
 import MissionReceiptSubmission from "@/pages/MissionReceiptSubmission";
-import AdminPanel from "@/pages/AdminPanel";
+import AdminPanel from "@/pages/admin/AdminPanel"; // Updated import path
 import Settings from "@/pages/Settings";
 import UserProfile from "@/pages/UserProfile";
 import UserRankings from "@/pages/UserRankings";

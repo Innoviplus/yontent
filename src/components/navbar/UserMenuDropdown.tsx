@@ -10,17 +10,29 @@ import {
 } from "@/components/ui/dropdown-menu";
 import { useAuth } from "@/contexts/AuthContext";
 import { usePoints } from "@/contexts/PointsContext";
-import { Link } from "react-router-dom";
+import { Link, useNavigate } from "react-router-dom";
 import { LogOut, User, Settings } from "lucide-react";
 import PointsBadge from "@/components/PointsBadge";
+import { toast } from "sonner";
 
 const UserMenuDropdown = () => {
   const { user, userProfile, signOut } = useAuth();
   const { userPoints } = usePoints();
+  const navigate = useNavigate();
   
   if (!user) return null;
   
   const username = userProfile?.username || 'User';
+  
+  const handleLogout = async () => {
+    try {
+      await signOut();
+      toast.success("You have been logged out");
+      navigate('/');
+    } catch (error: any) {
+      toast.error("Failed to log out: " + (error.message || "Unknown error"));
+    }
+  };
   
   return (
     <DropdownMenu>
@@ -53,7 +65,7 @@ const UserMenuDropdown = () => {
         </DropdownMenuItem>
         
         <DropdownMenuSeparator />
-        <DropdownMenuItem onClick={signOut} className="cursor-pointer">
+        <DropdownMenuItem onClick={handleLogout} className="cursor-pointer">
           <LogOut className="h-4 w-4 mr-2" /> Log out
         </DropdownMenuItem>
       </DropdownMenuContent>

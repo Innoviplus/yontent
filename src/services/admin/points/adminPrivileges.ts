@@ -24,7 +24,7 @@ export const setUserAsSuperAdmin = async (userId: string) => {
     }
     
     // Create a properly typed extended_data object
-    let extendedData = {};
+    let extendedData: Record<string, any> = {};
     
     if (user.extended_data && typeof user.extended_data === 'object' && !Array.isArray(user.extended_data)) {
       extendedData = { ...user.extended_data };

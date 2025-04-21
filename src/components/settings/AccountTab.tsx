@@ -62,7 +62,10 @@ export const AccountTab: React.FC<AccountTabProps> = ({
           <div className="pb-6">
             <h3 className="text-lg font-medium mb-4">Account Actions</h3>
             <div className="space-y-4">
-              <Button onClick={handleLogout} className="w-auto px-8 bg-brand-teal hover:bg-brand-darkTeal">
+              <Button 
+                onClick={handleLogout} 
+                className="w-auto px-8 bg-brand-teal hover:bg-brand-darkTeal"
+              >
                 Log out
               </Button>
             </div>

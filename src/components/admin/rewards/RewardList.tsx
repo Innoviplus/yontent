@@ -5,6 +5,7 @@ import { Button } from '@/components/ui/button';
 import { Switch } from '@/components/ui/switch';
 import { Pencil, Trash2, Gift, Wallet, Copy, ArrowUp, ArrowDown } from 'lucide-react';
 import { RedemptionItem } from '@/types/redemption';
+import { useState } from 'react';
 
 interface RewardListProps {
   rewards: RedemptionItem[];
@@ -23,12 +24,30 @@ const RewardList = ({
   onDuplicate,
   onUpdateOrder
 }: RewardListProps) => {
+  const [processingOrderIds, setProcessingOrderIds] = useState<Record<string, boolean>>({});
   
   const getRedemptionTypeIcon = (type?: string) => {
     if (!type || type === 'GIFT_VOUCHER') {
       return <Gift className="h-4 w-4 text-purple-500" />;
     } else {
       return <Wallet className="h-4 w-4 text-blue-500" />;
+    }
+  };
+
+  const handleUpdateOrder = async (id: string, direction: 'up' | 'down') => {
+    // Prevent multiple clicks while processing
+    if (processingOrderIds[id]) return;
+    
+    // Mark this reward as being processed
+    setProcessingOrderIds(prev => ({ ...prev, [id]: true }));
+    
+    try {
+      await onUpdateOrder(id, direction);
+    } catch (error) {
+      console.error("Error updating reward order:", error);
+    } finally {
+      // Clear processing state
+      setProcessingOrderIds(prev => ({ ...prev, [id]: false }));
     }
   };
 
@@ -100,16 +119,18 @@ const RewardList = ({
                     <Button 
                       variant="outline" 
                       size="sm" 
-                      onClick={() => onUpdateOrder(reward.id, 'up')}
+                      onClick={() => handleUpdateOrder(reward.id, 'up')}
                       className="h-7 w-7 p-0"
+                      disabled={processingOrderIds[reward.id]}
                     >
                       <ArrowUp className="h-4 w-4" />
                     </Button>
                     <Button 
                       variant="outline" 
                       size="sm" 
-                      onClick={() => onUpdateOrder(reward.id, 'down')}
+                      onClick={() => handleUpdateOrder(reward.id, 'down')}
                       className="h-7 w-7 p-0"
+                      disabled={processingOrderIds[reward.id]}
                     >
                       <ArrowDown className="h-4 w-4" />
                     </Button>
