@@ -60,8 +60,13 @@ export const useMissionsAdmin = () => {
   const { addMission, updateMission, deleteMission } = useMissionOperations(refreshMissions);
 
   useEffect(() => {
-    // Ensure the storage bucket exists
-    ensureMissionsStorageBucketExists();
+    // Try to ensure the storage bucket exists but continue even if it fails
+    // This prevents the admin panel from breaking due to storage permission issues
+    ensureMissionsStorageBucketExists().catch(error => {
+      console.error("Error creating missions bucket:", error);
+      // Continue loading the component even if bucket creation fails
+    });
+    
     fetchMissions();
   }, []);
 
