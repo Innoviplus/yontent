@@ -18,7 +18,6 @@ const AdminPanelContent = ({ state }: AdminPanelContentProps) => {
     retryCount,
     missionsError,
     refreshMissions,
-    setRetryCount,
     shouldShowContent,
     isLoadingTooLong,
     activeTab,
@@ -73,7 +72,8 @@ const AdminPanelContent = ({ state }: AdminPanelContentProps) => {
                   <Button
                     onClick={() => {
                       refreshMissions();
-                      setRetryCount && setRetryCount((prev: number) => prev + 1);
+                      // Use state's property directly instead of the destructured variable
+                      state.setRetryCount && state.setRetryCount((prev: number) => prev + 1);
                     }}
                     variant="destructive"
                     className="flex items-center"

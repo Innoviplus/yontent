@@ -1,5 +1,5 @@
 
-import { useState, useEffect } from 'react';
+import { useState, useEffect, Dispatch, SetStateAction } from 'react';
 import { useRewardsAdmin } from '@/hooks/admin/useRewardsAdmin';
 import { useMissionsAdmin } from '@/hooks/admin/missions';
 import { useMissionParticipations } from '@/hooks/admin/useMissionParticipations';
@@ -146,6 +146,7 @@ export const useAdminPanelState = () => {
     shouldShowContent,
     isLoadingTooLong,
     retryCount,
+    setRetryCount,  // Explicitly including setRetryCount in the returned object
     missionsError,
     authLoading
   };
