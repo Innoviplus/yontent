@@ -19,7 +19,7 @@ interface AdminTabsContainerProps {
   isRefreshingRequests: boolean;
   requestsActiveTab: string;
   setRequestsActiveTab: (tab: string) => void;
-  refreshRequests: () => void;
+  refreshRequests: () => Promise<void>;
   handleApproveRequest: any;
   handleRejectRequest: any;
   missions: any[];
@@ -30,7 +30,7 @@ interface AdminTabsContainerProps {
   participations: any[];
   isLoadingParticipations: boolean;
   isRefreshingParticipations: boolean;
-  refreshParticipations: () => void;
+  refreshParticipations: () => Promise<void>;
   approveParticipation: any;
   rejectParticipation: any;
   refreshMissions: () => void;

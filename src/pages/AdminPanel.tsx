@@ -53,10 +53,15 @@ const AdminPanel = () => {
     participations,
     isLoading: isLoadingParticipations,
     isRefreshing: isRefreshingParticipations,
-    refreshParticipations,
+    refreshParticipations: originalRefreshParticipations,
     approveParticipation,
     rejectParticipation
   } = useMissionParticipations();
+
+  // Wrap the refreshParticipations function to ensure it returns a Promise
+  const refreshParticipations = async () => {
+    return originalRefreshParticipations();
+  };
 
   const {
     requests,
@@ -64,10 +69,15 @@ const AdminPanel = () => {
     activeTab: requestsActiveTab,
     setActiveTab: setRequestsActiveTab,
     isRefreshing: isRefreshingRequests,
-    refreshRequests,
+    refreshRequests: originalRefreshRequests,
     handleApproveRequest,
     handleRejectRequest
   } = useRequestsAdmin();
+
+  // Wrap the refreshRequests function to ensure it returns a Promise
+  const refreshRequests = async () => {
+    return originalRefreshRequests();
+  };
 
   useEffect(() => {
     console.log("Admin panel auth status:", {
