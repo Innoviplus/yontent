@@ -25,12 +25,12 @@ export const useMissionsAdmin = () => {
       setIsLoading(true);
       setError(null);
       
-      // Check for admin privileges but don't block loading for testing/development
+      // Check for admin privileges but don't block loading
       const isAdmin = userProfile?.extended_data?.isAdmin || 
                      userProfile?.extended_data?.isSuperAdmin;
       
       if (!isAdmin) {
-        console.warn("User doesn't have admin privileges:", userProfile?.id);
+        console.warn("User doesn't have admin privileges in profile:", userProfile?.id);
         // Continue loading anyway for preview/testing purposes
       }
       
@@ -49,8 +49,7 @@ export const useMissionsAdmin = () => {
 
       console.log('Raw missions data from database:', data.length, data[0]?.id);
 
-      // Format the missions even without admin privileges
-      // This is important for testing and previewing the admin panel
+      // Format the missions
       const formattedMissions: Mission[] = data.map(mission => 
         formatMissionFromDatabase(mission)
       );
@@ -59,14 +58,6 @@ export const useMissionsAdmin = () => {
       
       if (formattedMissions.length > 0) {
         console.log('First mission:', formattedMissions[0].id, formattedMissions[0].title);
-        console.log('Mission with rich text fields:', formattedMissions.map(m => ({
-          id: m.id, 
-          title: m.title,
-          hasRequirements: !!m.requirementDescription,
-          hasTerms: !!m.termsConditions,
-          hasSteps: !!m.completionSteps,
-          hasProductDesc: !!m.productDescription
-        })));
       } else {
         console.log('No missions found in database');
       }
@@ -83,8 +74,8 @@ export const useMissionsAdmin = () => {
       
       setLoadAttempts(prev => prev + 1);
       
-      // After multiple failed attempts, set empty array but don't block the UI
-      if (loadAttempts >= 1) { // Reduced from 2 to 1 attempt
+      // After failed attempt, set empty array but don't block the UI
+      if (loadAttempts >= 0) { // Load on first attempt without waiting
         setMissions([]);
       }
     } finally {
@@ -123,17 +114,13 @@ export const useMissionsAdmin = () => {
     
     initializeData();
     
-    // Force loading state to complete after timeout
+    // Force loading state to complete after short timeout
     const loadingTimeout = setTimeout(() => {
       if (isLoading) {
         console.warn("Missions loading timeout reached, forcing completion");
         setIsLoading(false);
-        // Don't set error if missions were loaded successfully
-        if (missions.length === 0) {
-          setMissions([]);
-        }
       }
-    }, 2500); // Reduced timeout to 2.5 seconds
+    }, 1500); // Reduced timeout to 1.5 seconds
     
     return () => clearTimeout(loadingTimeout);
   }, []);

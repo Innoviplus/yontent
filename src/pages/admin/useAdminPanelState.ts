@@ -8,17 +8,17 @@ import { useAuth } from '@/contexts/AuthContext';
 import { toast } from 'sonner';
 
 export const useAdminPanelState = () => {
-  const [activeTab, setActiveTab] = useState('missions'); // Changed default to missions tab
+  const [activeTab, setActiveTab] = useState('missions'); // Default to missions tab
   const { loading: authLoading, user, session, userProfile } = useAuth();
   const [retryCount, setRetryCount] = useState(0);
   const [maxLoadingTime, setMaxLoadingTime] = useState(false);
 
-  // Reduced timeout to 3 seconds from 6 seconds
+  // Very short timeout of 1.5 seconds to force display content
   useEffect(() => {
     const timeoutId = setTimeout(() => {
       setMaxLoadingTime(true);
       console.log("Max loading time reached, forcing display of admin panel");
-    }, 3000);
+    }, 1500);
     return () => clearTimeout(timeoutId);
   }, []);
 
@@ -31,7 +31,7 @@ export const useAdminPanelState = () => {
     deleteReward
   } = useRewardsAdmin();
 
-  // Missions state/actions - this is where your issue is
+  // Missions state/actions
   const {
     missions,
     isLoading: isLoadingMissions,
@@ -106,18 +106,21 @@ export const useAdminPanelState = () => {
     toast.info("Retrying admin panel load...");
   };
 
-  // Relaxed loading conditions - now shows content sooner
+  // Always show content after a very short loading time
   const isLoading =
-    authLoading ||
-    (isLoadingRewards &&
-     isLoadingMissions &&
-     isLoadingParticipations &&
-     isLoadingRequests &&
-     !maxLoadingTime);
+    authLoading && 
+    isLoadingRewards &&
+    isLoadingMissions &&
+    isLoadingParticipations &&
+    isLoadingRequests &&
+    !maxLoadingTime;
 
+  // Always show content if max loading time is reached
   const shouldShowContent = !isLoading || maxLoadingTime || retryCount > 0;
+  
+  // Flag for displaying error state but still allow content to show
   const isLoadingTooLong =
-    !authLoading && ((isLoadingMissions || isLoadingRewards) && (retryCount > 0 || maxLoadingTime));
+    !authLoading && ((isLoadingMissions || isLoadingRewards) && maxLoadingTime);
 
   return {
     activeTab,

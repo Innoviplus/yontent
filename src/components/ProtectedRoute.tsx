@@ -21,20 +21,20 @@ const ProtectedRoute = ({ children }: ProtectedRouteProps) => {
   
   const isAdminRoute = location.pathname.startsWith('/admin');
   
-  // Force display of admin panel after short delay if user exists
+  // Force display of admin panel after very short delay if user exists
   useEffect(() => {
     if (isAdminRoute) {
       const forceTimer = setTimeout(() => {
-        if (isVerifying && user) {
+        if (user) {
           setForceAccess(true);
           setIsVerifying(false);
           console.log("Forcing access to admin route for authenticated user");
         }
-      }, 1000); // Reduced from 1500ms to 1000ms
+      }, 500); // Reduced from 1000ms to 500ms for faster access
       
       return () => clearTimeout(forceTimer);
     }
-  }, [isAdminRoute, user, isVerifying]);
+  }, [isAdminRoute, user]);
   
   useEffect(() => {
     console.log("Protected route check:", {
@@ -51,7 +51,7 @@ const ProtectedRoute = ({ children }: ProtectedRouteProps) => {
     
     const verifySessionDirectly = async () => {
       try {
-        if ((!user || !session || isAdminRoute) && verificationAttempts < 2) {
+        if ((!user || !session) && verificationAttempts < 1) {
           setIsVerifying(true);
           console.log("Directly verifying session...");
           
@@ -69,7 +69,6 @@ const ProtectedRoute = ({ children }: ProtectedRouteProps) => {
             if (refreshUserProfile) {
               await refreshUserProfile();
             }
-            setVerificationAttempts(prev => prev + 1);
             setIsVerifying(false);
           } else {
             setVerificationAttempts(prev => prev + 1);
@@ -81,10 +80,6 @@ const ProtectedRoute = ({ children }: ProtectedRouteProps) => {
       } catch (error) {
         console.error("Failed to verify session directly:", error);
         setIsVerifying(false);
-        
-        if (verificationAttempts >= 1 && !isAdminRoute) {
-          toast.error("Authentication error. Please try logging in again.");
-        }
       }
     };
     
@@ -95,17 +90,35 @@ const ProtectedRoute = ({ children }: ProtectedRouteProps) => {
         console.log("Protected route: Refreshing missing user profile");
         refreshUserProfile();
       }
-    } else if (!loading) {
+    } else if (!loading && !isAdminRoute) {
       verifySessionDirectly();
+    } else if (!loading && isAdminRoute) {
+      // For admin routes, either verify directly or force through after short timeout
+      if (!forceAccess) {
+        verifySessionDirectly();
+        
+        // Set a backup timeout to prevent infinite loading
+        const backupTimer = setTimeout(() => {
+          setIsVerifying(false);
+        }, 1500);
+        return () => clearTimeout(backupTimer);
+      }
     }
-  }, [location.pathname, loading, user, session, userProfile, refreshUserProfile, verificationAttempts, isAdminRoute]);
+  }, [location.pathname, loading, user, session, userProfile, refreshUserProfile, verificationAttempts, isAdminRoute, forceAccess]);
   
   const [isAdmin, setIsAdmin] = useState<boolean | null>(null);
   useEffect(() => {
     const checkAdminRole = async () => {
       if (isAdminRoute && user) {
         try {
-          const roles = await fetchUserRoles(user.id);
+          // Simplified role check - don't wait indefinitely for role check
+          const roles = await Promise.race([
+            fetchUserRoles(user.id),
+            new Promise<string[]>((resolve) => {
+              setTimeout(() => resolve([]), 1000); // Timeout after 1 second
+            })
+          ]);
+          
           const hasAdminRole = roles.includes("admin") || roles.includes("super_admin");
           console.log("User roles check:", { roles, hasAdminRole });
           setIsAdmin(hasAdminRole);
@@ -142,7 +155,7 @@ const ProtectedRoute = ({ children }: ProtectedRouteProps) => {
     );
   }
 
-  // Loading state
+  // Loading state - with drastically reduced loading time
   if (loading || (isVerifying && !forceAccess)) {
     return (
       <div className="flex items-center justify-center h-screen">
