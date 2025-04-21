@@ -11,6 +11,7 @@ export const useMissionsAdmin = () => {
   const [missions, setMissions] = useState<Mission[]>([]);
   const [isLoading, setIsLoading] = useState(true);
   const [isRefreshing, setIsRefreshing] = useState(false);
+  const [error, setError] = useState<string | null>(null);
   
   const { formatMissionFromDatabase } = useMissionFormatters();
   const { ensureMissionsStorageBucketExists } = useStorageBucket();
@@ -18,6 +19,8 @@ export const useMissionsAdmin = () => {
   const fetchMissions = async () => {
     try {
       setIsLoading(true);
+      setError(null);
+      
       const { data, error } = await supabase
         .from('missions')
         .select('*')
@@ -44,6 +47,7 @@ export const useMissionsAdmin = () => {
       setMissions(formattedMissions);
     } catch (error: any) {
       console.error('Error fetching missions:', error.message);
+      setError('Failed to load missions: ' + error.message);
       toast.error('Failed to load missions');
     } finally {
       setIsLoading(false);
@@ -74,6 +78,7 @@ export const useMissionsAdmin = () => {
     missions,
     isLoading,
     isRefreshing,
+    error,
     refreshMissions,
     addMission,
     updateMission,

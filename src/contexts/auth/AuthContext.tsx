@@ -1,5 +1,5 @@
 
-import { createContext, useContext, ReactNode } from 'react';
+import { createContext, useContext, ReactNode, useEffect } from 'react';
 import { useAuthState } from './useAuthState';
 import { usePhoneAuth } from './phoneAuth';
 import { useEmailAuth } from './emailAuth';
@@ -7,6 +7,7 @@ import { AuthContextType } from './types';
 import { signOut } from '@/services/auth/sessionAuth';
 import { useAuthSubscription } from '@/hooks/auth/useAuthSubscription';
 import { fetchUserProfile } from '@/services/profile/profileService';
+import { supabase } from '@/integrations/supabase/client';
 
 const AuthContext = createContext<AuthContextType>({
   session: null,
@@ -39,12 +40,41 @@ export function AuthProvider({ children }: { children: ReactNode }) {
   const { signIn, signUp } = useEmailAuth();
   const { signUpWithPhone, signInWithPhone, verifyPhoneOtp, resendOtp, completeSignIn } = usePhoneAuth(setUserProfile);
 
+  // Use the auth subscription hook to update state
   useAuthSubscription({
     setSession,
     setUser,
     setLoading,
     setUserProfile
   });
+
+  // Additional effect to check for session on page load and browser refresh
+  useEffect(() => {
+    const checkSession = async () => {
+      try {
+        setLoading(true);
+        const { data } = await supabase.auth.getSession();
+        
+        if (data.session) {
+          console.log("AuthProvider: Session found on initialization");
+          setSession(data.session);
+          setUser(data.session.user);
+          
+          // Fetch profile data if we have a user
+          if (data.session.user) {
+            const profileData = await fetchUserProfile(data.session.user.id, data.session.user.email);
+            setUserProfile(profileData);
+          }
+        }
+      } catch (error) {
+        console.error("Error checking initial session:", error);
+      } finally {
+        setLoading(false);
+      }
+    };
+    
+    checkSession();
+  }, []);
 
   const refreshUserProfile = async () => {
     if (user) {

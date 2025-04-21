@@ -11,9 +11,13 @@ import MissionsManagement from '@/components/admin/missions/MissionsManagement';
 import MissionsParticipation from '@/components/admin/missions/MissionsParticipation';
 import RequestsManagement from '@/components/admin/rewards/RequestsManagement';
 import SiteContentTab from '@/components/admin/siteContent/SiteContentTab';
+import { useAuth } from '@/contexts/AuthContext';
+import { Loader2 } from 'lucide-react';
 
 const AdminPanel = () => {
   const [activeTab, setActiveTab] = useState('rewards');
+  const { loading: authLoading, user } = useAuth();
+  
   const { 
     rewards, 
     isLoadingRewards, 
@@ -27,7 +31,8 @@ const AdminPanel = () => {
     isLoading: isLoadingMissions,
     addMission,
     updateMission,
-    deleteMission
+    deleteMission,
+    error: missionsError
   } = useMissionsAdmin();
 
   const {
@@ -49,6 +54,40 @@ const AdminPanel = () => {
     handleApproveRequest,
     handleRejectRequest
   } = useRequestsAdmin();
+
+  // Main loading state for the entire admin panel
+  const isLoading = authLoading || isLoadingRewards || isLoadingMissions || isLoadingParticipations || isLoadingRequests;
+
+  // Check if we're still loading or if there was an error
+  if (isLoading) {
+    return (
+      <div className="min-h-screen bg-gray-50">
+        <Navbar />
+        <div className="container mx-auto px-4 pt-28 pb-16 flex justify-center items-center">
+          <div className="flex flex-col items-center gap-4">
+            <Loader2 className="h-12 w-12 text-brand-teal animate-spin" />
+            <p className="text-gray-600">Loading admin panel...</p>
+          </div>
+        </div>
+      </div>
+    );
+  }
+  
+  // Check if there's an error with missions
+  if (missionsError) {
+    return (
+      <div className="min-h-screen bg-gray-50">
+        <Navbar />
+        <div className="container mx-auto px-4 pt-28 pb-16">
+          <div className="bg-red-50 border border-red-200 rounded-lg p-6">
+            <h2 className="text-xl font-semibold text-red-700 mb-2">Error Loading Admin Panel</h2>
+            <p className="text-red-600 mb-4">{missionsError}</p>
+            <p className="text-gray-700">Please try refreshing the page or contact support if the issue persists.</p>
+          </div>
+        </div>
+      </div>
+    );
+  }
 
   return (
     <div className="min-h-screen bg-gray-50">
