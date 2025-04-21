@@ -1,7 +1,8 @@
+
 import { Navigate, useLocation } from 'react-router-dom';
 import { useAuth } from '@/contexts/AuthContext';
 import { Loader2, Shield } from 'lucide-react';
-import { useEffect, useState as useReactState, useState } from 'react';
+import { useEffect, useState } from 'react';
 import { getCurrentSession, getCurrentUser } from '@/services/auth/sessionAuth';
 import { toast } from 'sonner';
 import AdminLogin from "@/pages/admin/AdminLogin";
@@ -98,7 +99,7 @@ const ProtectedRoute = ({ children }: ProtectedRouteProps) => {
     }
   }, [location.pathname, loading, user, session, userProfile, refreshUserProfile, verificationAttempts, isAdminRoute]);
   
-  const [isAdmin, setIsAdmin] = useReactState<boolean | null>(null);
+  const [isAdmin, setIsAdmin] = useState<boolean | null>(null);
   useEffect(() => {
     const checkAdminRole = async () => {
       if (isAdminRoute && user) {
