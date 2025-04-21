@@ -20,24 +20,21 @@ const ProtectedRoute = ({ children }: ProtectedRouteProps) => {
   
   const isAdminRoute = location.pathname.startsWith('/admin');
   
-  // For admin route, force access after maximum verification attempts or timeout
   useEffect(() => {
     if (isAdminRoute) {
-      // After initial load or multiple attempts, force access to admin route
       const forceTimer = setTimeout(() => {
         if (isVerifying && user) {
           setForceAccess(true);
           setIsVerifying(false);
           console.log("Forcing access to admin route for authenticated user");
         }
-      }, 1500); // Reduced timeout for better user experience
+      }, 1500);
       
       return () => clearTimeout(forceTimer);
     }
   }, [isAdminRoute, user, isVerifying]);
   
   useEffect(() => {
-    // Debug logs to help identify authentication issues
     console.log("Protected route check:", {
       path: location.pathname,
       isLoading: loading,
@@ -52,12 +49,10 @@ const ProtectedRoute = ({ children }: ProtectedRouteProps) => {
     
     const verifySessionDirectly = async () => {
       try {
-        // Verify session for admin page or when session data is missing
         if ((!user || !session || isAdminRoute) && verificationAttempts < 2) {
           setIsVerifying(true);
           console.log("Directly verifying session...");
           
-          // Get current session and user directly from auth service
           const currentSession = await getCurrentSession();
           const currentUser = currentSession ? await getCurrentUser() : null;
           
@@ -67,22 +62,18 @@ const ProtectedRoute = ({ children }: ProtectedRouteProps) => {
             userEmail: currentUser?.email
           });
           
-          // If we have verified the session successfully
           if (currentUser && currentSession) {
             console.log("Session verified successfully");
-            // Refresh the user profile
             if (refreshUserProfile) {
               await refreshUserProfile();
             }
             setVerificationAttempts(prev => prev + 1);
             setIsVerifying(false);
           } else {
-            // Increment attempts count
             setVerificationAttempts(prev => prev + 1);
             setIsVerifying(false);
           }
         } else {
-          // We have a user and session, or we've reached max attempts
           setIsVerifying(false);
         }
       } catch (error) {
@@ -95,41 +86,35 @@ const ProtectedRoute = ({ children }: ProtectedRouteProps) => {
       }
     };
     
-    // Check if we're already verified or still loading from context
     if (user && session) {
       setIsVerifying(false);
       
-      // Refresh profile if user exists but profile is missing
       if (!userProfile && refreshUserProfile) {
         console.log("Protected route: Refreshing missing user profile");
         refreshUserProfile();
       }
     } else if (!loading) {
-      // Only try to verify if the auth context has finished its own loading
       verifySessionDirectly();
     }
   }, [location.pathname, loading, user, session, userProfile, refreshUserProfile, verificationAttempts, isAdminRoute]);
   
-  // Step: Check if user is an admin for the /admin route
   const [isAdmin, setIsAdmin] = useReactState<boolean | null>(null);
-  useReactEffect(() => {
+  useEffect(() => {
     const checkAdminRole = async () => {
       if (isAdminRoute && user) {
         const roles = await fetchUserRoles(user.id);
         setIsAdmin(roles.includes("admin"));
       } else if (!isAdminRoute) {
-        setIsAdmin(null); // Not relevant for non-admin route
+        setIsAdmin(null);
       }
     };
     checkAdminRole();
   }, [user, isAdminRoute]);
 
-  // Show login form for /admin if not logged in or not admin
   if (isAdminRoute && (!user || !session)) {
     return <AdminLogin />;
   }
   if (isAdminRoute && user && isAdmin === false) {
-    // User logged in, but not admin
     return (
       <div className="flex flex-col items-center justify-center h-screen bg-gray-50">
         <div className="bg-white shadow-lg rounded-lg p-8 flex flex-col items-center gap-2">
@@ -141,7 +126,6 @@ const ProtectedRoute = ({ children }: ProtectedRouteProps) => {
     );
   }
 
-  // Show loading state when either the auth context is loading or we're manually verifying
   if (loading || (isVerifying && !forceAccess)) {
     return (
       <div className="flex items-center justify-center h-screen">
@@ -158,13 +142,11 @@ const ProtectedRoute = ({ children }: ProtectedRouteProps) => {
     );
   }
   
-  // For admin routes, force access after user is loaded or after timeout
   if (isAdminRoute && (forceAccess || user || isAdmin)) {
     console.log("Allowing access to admin route");
     return <>{children}</>;
   }
   
-  // For non-admin routes, check both user and session
   if (!user || !session) {
     console.log("User not authenticated, redirecting to login");
     return <Navigate to="/login" state={{ from: location }} replace />;
