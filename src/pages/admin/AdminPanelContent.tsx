@@ -1,10 +1,10 @@
-
 import Navbar from '@/components/Navbar';
 import AdminHeader from '@/components/admin/panel/AdminHeader';
 import AdminTabsContainer from '@/components/admin/panel/AdminTabsContainer';
 import AdminPanelLoadingState from '@/components/admin/panel/AdminPanelLoadingState';
 import { Button } from '@/components/ui/button';
 import { AlertCircle, RefreshCw } from 'lucide-react';
+import AdminUsersManagement from "@/components/admin/panel/AdminUsersManagement";
 
 interface AdminPanelContentProps {
   state: ReturnType<typeof import('./useAdminPanelState').useAdminPanelState>;
@@ -49,14 +49,12 @@ const AdminPanelContent = ({ state }: AdminPanelContentProps) => {
     refreshMissions: tabsRefreshMissions,
   } = state;
 
-  // Show loading state only if we haven't reached max time or retry limit
   if (isLoading && !maxLoadingTime && retryCount <= 1) {
     return (
       <AdminPanelLoadingState retryCount={retryCount} handleRetry={handleRetry} />
     );
   }
 
-  // Show mission errors only if explicitly caught and not bypassed by max time
   if (missionsError && !maxLoadingTime && retryCount <= 1) {
     return (
       <div className="min-h-screen bg-gray-50">
@@ -72,7 +70,6 @@ const AdminPanelContent = ({ state }: AdminPanelContentProps) => {
                   <Button
                     onClick={() => {
                       refreshMissions();
-                      // Use state's property directly instead of the destructured variable
                       state.setRetryCount && state.setRetryCount((prev: number) => prev + 1);
                     }}
                     variant="destructive"
@@ -136,6 +133,7 @@ const AdminPanelContent = ({ state }: AdminPanelContentProps) => {
             refreshMissions={tabsRefreshMissions}
             maxLoadingTime={maxLoadingTime}
           />
+          <AdminUsersManagement />
         </div>
       </div>
     </div>

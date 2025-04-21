@@ -1,10 +1,11 @@
-
 import { Navigate, useLocation } from 'react-router-dom';
 import { useAuth } from '@/contexts/AuthContext';
-import { Loader2 } from 'lucide-react';
-import { useEffect, useState } from 'react';
+import { Loader2, Shield } from 'lucide-react';
+import { useEffect, useState as useReactState, useState } from 'react';
 import { getCurrentSession, getCurrentUser } from '@/services/auth/sessionAuth';
 import { toast } from 'sonner';
+import AdminLogin from "@/pages/admin/AdminLogin";
+import { fetchUserRoles } from "@/services/admin/users";
 
 interface ProtectedRouteProps {
   children: React.ReactNode;
@@ -109,6 +110,37 @@ const ProtectedRoute = ({ children }: ProtectedRouteProps) => {
     }
   }, [location.pathname, loading, user, session, userProfile, refreshUserProfile, verificationAttempts, isAdminRoute]);
   
+  // Step: Check if user is an admin for the /admin route
+  const [isAdmin, setIsAdmin] = useReactState<boolean | null>(null);
+  useReactEffect(() => {
+    const checkAdminRole = async () => {
+      if (isAdminRoute && user) {
+        const roles = await fetchUserRoles(user.id);
+        setIsAdmin(roles.includes("admin"));
+      } else if (!isAdminRoute) {
+        setIsAdmin(null); // Not relevant for non-admin route
+      }
+    };
+    checkAdminRole();
+  }, [user, isAdminRoute]);
+
+  // Show login form for /admin if not logged in or not admin
+  if (isAdminRoute && (!user || !session)) {
+    return <AdminLogin />;
+  }
+  if (isAdminRoute && user && isAdmin === false) {
+    // User logged in, but not admin
+    return (
+      <div className="flex flex-col items-center justify-center h-screen bg-gray-50">
+        <div className="bg-white shadow-lg rounded-lg p-8 flex flex-col items-center gap-2">
+          <Shield className="h-10 w-10 text-red-500 mb-1" />
+          <h2 className="text-xl font-bold text-gray-800">Access Denied</h2>
+          <p className="text-gray-500 text-sm">You do not have admin rights.</p>
+        </div>
+      </div>
+    );
+  }
+
   // Show loading state when either the auth context is loading or we're manually verifying
   if (loading || (isVerifying && !forceAccess)) {
     return (
@@ -127,7 +159,7 @@ const ProtectedRoute = ({ children }: ProtectedRouteProps) => {
   }
   
   // For admin routes, force access after user is loaded or after timeout
-  if (isAdminRoute && (forceAccess || user)) {
+  if (isAdminRoute && (forceAccess || user || isAdmin)) {
     console.log("Allowing access to admin route");
     return <>{children}</>;
   }
