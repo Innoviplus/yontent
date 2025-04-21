@@ -2,7 +2,7 @@
 import React, { useEffect, useState } from "react";
 import { Navigate, useLocation } from "react-router-dom";
 import { useAuth } from "@/contexts/auth";
-import { fetchUserRoles } from "@/services/admin/users";
+import { checkIsAdmin } from "@/services/admin/users";
 import { Loader2 } from "lucide-react";
 
 interface AdminProtectedRouteProps {
@@ -24,8 +24,9 @@ const AdminProtectedRoute = ({ children }: AdminProtectedRouteProps) => {
       }
 
       try {
-        const roles = await fetchUserRoles(user.id);
-        setIsAdmin(roles.includes("admin"));
+        // Use the checkIsAdmin function which handles error cases better
+        const isAdminUser = await checkIsAdmin(user.id);
+        setIsAdmin(isAdminUser);
       } catch (error) {
         console.error("Error checking admin status:", error);
         setIsAdmin(false);
@@ -40,6 +41,14 @@ const AdminProtectedRoute = ({ children }: AdminProtectedRouteProps) => {
     }
   }, [user, loading]);
 
+  // Debug logging to help track the authentication flow
+  console.log("AdminProtectedRoute state:", { 
+    user: user?.id, 
+    loading, 
+    checkingRole, 
+    isAdmin 
+  });
+
   if (loading || checkingRole) {
     return (
       <div className="min-h-screen flex justify-center items-center">
@@ -52,7 +61,7 @@ const AdminProtectedRoute = ({ children }: AdminProtectedRouteProps) => {
     return <Navigate to="/admin/login" state={{ from: location }} replace />;
   }
 
-  if (!isAdmin) {
+  if (isAdmin === false) {
     return <Navigate to="/admin/login" state={{ from: location, notAdmin: true }} replace />;
   }
 

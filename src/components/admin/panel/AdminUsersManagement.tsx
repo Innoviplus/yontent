@@ -2,7 +2,7 @@
 import { useEffect, useState } from "react";
 import { fetchAllUsersWithRoles, grantAdminRole, revokeAdminRole, searchUsersByUsernameOrEmail } from "@/services/admin/users";
 import { Button } from "@/components/ui/button";
-import { Shield, User, UserMinus, UserPlus, Search } from "lucide-react";
+import { Shield, User, UserMinus, UserPlus, Search, RefreshCw, AlertCircle } from "lucide-react";
 import { toast } from "sonner";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
@@ -25,18 +25,24 @@ type UserWithRoles = {
 const AdminUsersManagement = () => {
   const [users, setUsers] = useState<UserWithRoles[]>([]);
   const [loading, setLoading] = useState(false);
+  const [error, setError] = useState<string | null>(null);
   const [updatingUserId, setUpdatingUserId] = useState<string | null>(null);
   const [searchQuery, setSearchQuery] = useState("");
   const [searchResults, setSearchResults] = useState<UserWithRoles[]>([]);
   const [searching, setSearching] = useState(false);
+  const [searchError, setSearchError] = useState<string | null>(null);
 
   const fetchUsers = async () => {
     setLoading(true);
+    setError(null);
     try {
+      console.log("Fetching all users with roles...");
       const all = await fetchAllUsersWithRoles();
+      console.log(`Fetched ${all.length} users`);
       setUsers(all);
-    } catch (error) {
+    } catch (error: any) {
       console.error("Error fetching users:", error);
+      setError(error?.message || "Failed to load users");
       toast.error("Failed to load users");
     } finally {
       setLoading(false);
@@ -50,16 +56,36 @@ const AdminUsersManagement = () => {
   const handleGrant = async (user_id: string) => {
     setUpdatingUserId(user_id);
     try {
+      console.log(`Granting admin role to user ${user_id}`);
       await grantAdminRole(user_id);
       toast.success("Granted admin rights");
+      
+      // Update local state before refetching
+      setUsers(prev => prev.map(user => 
+        user.id === user_id 
+          ? { ...user, roles: [...user.roles, 'admin'] } 
+          : user
+      ));
+      
+      // If this was from search results, update those too
+      if (searchResults.length > 0) {
+        setSearchResults(prev => prev.map(user => 
+          user.id === user_id 
+            ? { ...user, roles: [...user.roles, 'admin'] } 
+            : user
+        ));
+      }
+
+      // Then refetch to ensure consistency
       await fetchUsers();
+      
       // If this was from search results, update those too
       if (searchResults.length > 0) {
         handleSearch(searchQuery);
       }
-    } catch (error) {
+    } catch (error: any) {
       console.error("Error granting admin role:", error);
-      toast.error("Failed to grant admin rights");
+      toast.error(error?.message || "Failed to grant admin rights");
     } finally {
       setUpdatingUserId(null);
     }
@@ -68,16 +94,36 @@ const AdminUsersManagement = () => {
   const handleRevoke = async (user_id: string) => {
     setUpdatingUserId(user_id);
     try {
+      console.log(`Revoking admin role from user ${user_id}`);
       await revokeAdminRole(user_id);
       toast.info("Revoked admin rights");
+      
+      // Update local state before refetching
+      setUsers(prev => prev.map(user => 
+        user.id === user_id 
+          ? { ...user, roles: user.roles.filter(role => role !== 'admin') } 
+          : user
+      ));
+      
+      // If this was from search results, update those too
+      if (searchResults.length > 0) {
+        setSearchResults(prev => prev.map(user => 
+          user.id === user_id 
+            ? { ...user, roles: user.roles.filter(role => role !== 'admin') } 
+            : user
+        ));
+      }
+
+      // Then refetch to ensure consistency
       await fetchUsers();
+      
       // If this was from search results, update those too
       if (searchResults.length > 0) {
         handleSearch(searchQuery);
       }
-    } catch (error) {
+    } catch (error: any) {
       console.error("Error revoking admin role:", error);
-      toast.error("Failed to revoke admin rights");
+      toast.error(error?.message || "Failed to revoke admin rights");
     } finally {
       setUpdatingUserId(null);
     }
@@ -86,15 +132,20 @@ const AdminUsersManagement = () => {
   const handleSearch = async (query: string) => {
     if (!query.trim()) {
       setSearchResults([]);
+      setSearchError(null);
       return;
     }
 
     setSearching(true);
+    setSearchError(null);
     try {
+      console.log(`Searching users with query: ${query}`);
       const results = await searchUsersByUsernameOrEmail(query);
+      console.log(`Found ${results.length} results`);
       setSearchResults(results);
-    } catch (error) {
+    } catch (error: any) {
       console.error("Error searching users:", error);
+      setSearchError(error?.message || "Failed to search users");
       toast.error("Failed to search users");
     } finally {
       setSearching(false);
@@ -137,6 +188,15 @@ const AdminUsersManagement = () => {
           </div>
         </form>
 
+        {searchError && (
+          <div className="bg-red-50 border border-red-100 rounded-md p-3 mb-4">
+            <div className="flex">
+              <AlertCircle className="h-5 w-5 text-red-500 mr-2" />
+              <div className="text-sm text-red-700">{searchError}</div>
+            </div>
+          </div>
+        )}
+
         {searchResults.length > 0 && (
           <div className="mt-4">
             <h3 className="text-md font-medium mb-2">Search Results</h3>
@@ -164,7 +224,11 @@ const AdminUsersManagement = () => {
                           onClick={() => handleRevoke(user.id)}
                           disabled={updatingUserId === user.id}
                         >
-                          <UserMinus className="w-4 h-4" />
+                          {updatingUserId === user.id ? (
+                            <RefreshCw className="w-4 h-4 animate-spin" />
+                          ) : (
+                            <UserMinus className="w-4 h-4" />
+                          )}
                           Revoke Admin
                         </Button>
                       ) : (
@@ -175,7 +239,11 @@ const AdminUsersManagement = () => {
                           onClick={() => handleGrant(user.id)}
                           disabled={updatingUserId === user.id}
                         >
-                          <UserPlus className="w-4 h-4" />
+                          {updatingUserId === user.id ? (
+                            <RefreshCw className="w-4 h-4 animate-spin" />
+                          ) : (
+                            <UserPlus className="w-4 h-4" />
+                          )}
                           Grant Admin
                         </Button>
                       )}
@@ -189,10 +257,35 @@ const AdminUsersManagement = () => {
       </div>
       
       <div className="bg-white rounded-lg p-6 border border-gray-200 max-w-2xl mx-auto">
-        <div className="flex items-center gap-2 mb-4">
-          <Shield className="h-5 w-5 text-brand-teal" />
-          <h2 className="text-lg font-semibold">Admin Users List</h2>
+        <div className="flex items-center justify-between gap-2 mb-4">
+          <div className="flex items-center gap-2">
+            <Shield className="h-5 w-5 text-brand-teal" />
+            <h2 className="text-lg font-semibold">Admin Users List</h2>
+          </div>
+          
+          <Button
+            variant="outline"
+            size="sm"
+            onClick={fetchUsers}
+            disabled={loading}
+          >
+            {loading ? (
+              <RefreshCw className="w-4 h-4 animate-spin" />
+            ) : (
+              <RefreshCw className="w-4 h-4" />
+            )}
+            <span className="ml-1">Refresh</span>
+          </Button>
         </div>
+        
+        {error && (
+          <div className="bg-red-50 border border-red-100 rounded-md p-3 mb-4">
+            <div className="flex">
+              <AlertCircle className="h-5 w-5 text-red-500 mr-2" />
+              <div className="text-sm text-red-700">{error}</div>
+            </div>
+          </div>
+        )}
         
         <Table>
           <TableHeader>
@@ -208,7 +301,7 @@ const AdminUsersManagement = () => {
               <TableRow key={user.id}>
                 <TableCell>{user.username || <span className="font-mono text-xs text-gray-400">N/A</span>}</TableCell>
                 <TableCell>{user.email || <span className="font-mono text-xs text-gray-400">N/A</span>}</TableCell>
-                <TableCell>{user.roles.join(", ")}</TableCell>
+                <TableCell>{user.roles.join(", ") || "—"}</TableCell>
                 <TableCell>
                   {user.roles.includes("admin") ? (
                     <Button
@@ -218,7 +311,11 @@ const AdminUsersManagement = () => {
                       onClick={() => handleRevoke(user.id)}
                       disabled={updatingUserId === user.id}
                     >
-                      <UserMinus className="w-4 h-4" />
+                      {updatingUserId === user.id ? (
+                        <RefreshCw className="w-4 h-4 animate-spin" />
+                      ) : (
+                        <UserMinus className="w-4 h-4" />
+                      )}
                       Revoke Admin
                     </Button>
                   ) : (
@@ -229,7 +326,11 @@ const AdminUsersManagement = () => {
                       onClick={() => handleGrant(user.id)}
                       disabled={updatingUserId === user.id}
                     >
-                      <UserPlus className="w-4 h-4" />
+                      {updatingUserId === user.id ? (
+                        <RefreshCw className="w-4 h-4 animate-spin" />
+                      ) : (
+                        <UserPlus className="w-4 h-4" />
+                      )}
                       Grant Admin
                     </Button>
                   )}
@@ -240,7 +341,7 @@ const AdminUsersManagement = () => {
         </Table>
         
         {loading && <div className="text-center text-gray-400 my-2">Loading users...</div>}
-        {!loading && users.length === 0 && (
+        {!loading && !error && users.length === 0 && (
           <div className="text-center text-gray-500 py-4">No users found</div>
         )}
       </div>

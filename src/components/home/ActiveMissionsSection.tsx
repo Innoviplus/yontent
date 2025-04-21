@@ -1,23 +1,38 @@
+
 import { useState, useEffect } from 'react';
 import { Mission } from '@/lib/types';
 import MissionCard from '@/components/MissionCard';
 import { Button } from '@/components/ui/button';
 import { Link } from 'react-router-dom';
 import { supabase } from '@/integrations/supabase/client';
+import { AlertCircle } from 'lucide-react';
+
 const ActiveMissionsSection = () => {
   const [missions, setMissions] = useState<Mission[]>([]);
   const [isLoading, setIsLoading] = useState(true);
+  const [error, setError] = useState<string | null>(null);
+
   useEffect(() => {
     const fetchMissions = async () => {
       try {
+        console.log("Fetching missions for home page...");
+        setIsLoading(true);
+        setError(null);
+        
         const {
           data,
           error
-        } = await supabase.from('missions').select('*').eq('status', 'ACTIVE').order('created_at', {
-          ascending: false
-        }).limit(3);
+        } = await supabase
+          .from('missions')
+          .select('*')
+          .eq('status', 'ACTIVE')
+          .order('created_at', { ascending: false })
+          .limit(3);
+          
         if (error) throw error;
 
+        console.log(`Fetched ${data?.length || 0} missions for home page`);
+        
         // Transform the data to match the Mission type
         const transformedMissions: Mission[] = data.map(mission => ({
           id: mission.id,
@@ -38,10 +53,6 @@ const ActiveMissionsSection = () => {
           createdAt: new Date(mission.created_at),
           updatedAt: new Date(mission.updated_at)
         }));
-        console.log('Fetched missions:', transformedMissions);
-        if (transformedMissions.length === 0) {
-          console.log('No missions found');
-        }
 
         // Sort missions so expired ones are at the bottom
         const now = new Date();
@@ -52,15 +63,36 @@ const ActiveMissionsSection = () => {
           if (!aExpired && bExpired) return -1; // a is not expired, b is -> a goes before b
           return 0; // No change in order based on expiration
         });
+        
         setMissions(sortedMissions);
-      } catch (error) {
-        console.error('Error fetching missions:', error);
+      } catch (error: any) {
+        console.error('Error fetching home page missions:', error);
+        setError(error?.message || 'Failed to load missions');
       } finally {
         setIsLoading(false);
       }
     };
+    
     fetchMissions();
   }, []);
+
+  // If there's an error, show a message with retry button
+  if (error) {
+    return <section className="py-16 bg-gray-50">
+      <div className="container mx-auto px-4">
+        <div className="max-w-2xl mx-auto bg-red-50 border border-red-100 rounded-lg p-4">
+          <div className="flex items-start">
+            <AlertCircle className="h-5 w-5 text-red-500 mt-0.5 mr-2 flex-shrink-0" />
+            <div>
+              <h3 className="text-sm font-medium text-red-800">Error loading missions</h3>
+              <p className="text-sm text-red-600 mt-1">Please try again later</p>
+            </div>
+          </div>
+        </div>
+      </div>
+    </section>;
+  }
+
   if (isLoading) {
     return <section className="py-16 bg-gray-50">
         <div className="container mx-auto px-4">
@@ -77,9 +109,12 @@ const ActiveMissionsSection = () => {
         </div>
       </section>;
   }
+  
+  // If no missions, don't show the section at all
   if (missions.length === 0) {
     return null;
   }
+  
   return <section className="py-16 bg-gray-50">
       <div className="container mx-auto px-4">
         <div className="text-center mb-12">
@@ -103,4 +138,5 @@ const ActiveMissionsSection = () => {
       </div>
     </section>;
 };
+
 export default ActiveMissionsSection;

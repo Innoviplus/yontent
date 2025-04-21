@@ -4,7 +4,7 @@ import { Mission } from '@/lib/types';
 import MissionCard from '@/components/MissionCard';
 import MissionSortDropdown from '@/components/mission/MissionSortDropdown';
 import Navbar from '@/components/Navbar';
-import { RefreshCw, Award } from 'lucide-react';
+import { RefreshCw, Award, AlertCircle } from 'lucide-react';
 import { supabase } from '@/integrations/supabase/client';
 import { toast } from 'sonner';
 import { useIsMobile } from '@/hooks/use-mobile';
@@ -15,12 +15,17 @@ const Missions = () => {
   const [missions, setMissions] = useState<Mission[]>([]);
   const [sortBy, setSortBy] = useState<SortOption>('recent');
   const [isLoading, setIsLoading] = useState(true);
+  const [loadError, setLoadError] = useState<string | null>(null);
   const [activeMissionsCount, setActiveMissionsCount] = useState(0);
   const isMobile = useIsMobile();
+  const [loadAttempts, setLoadAttempts] = useState(0);
 
   const fetchMissions = async () => {
     setIsLoading(true);
+    setLoadError(null);
+    
     try {
+      console.log("Fetching missions data...");
       let query = supabase
         .from('missions')
         .select('*')
@@ -29,6 +34,16 @@ const Missions = () => {
       const { data, error } = await query;
       
       if (error) throw error;
+      
+      console.log(`Fetched ${data?.length || 0} missions successfully`);
+      
+      if (!data || data.length === 0) {
+        console.log("No active missions found");
+        setMissions([]);
+        setActiveMissionsCount(0);
+        setIsLoading(false);
+        return;
+      }
       
       const transformedMissions: Mission[] = data.map(mission => ({
         id: mission.id,
@@ -61,9 +76,18 @@ const Missions = () => {
       // Sort the missions - first by expiration (expired at bottom), then by selected sort
       const sortedMissions = sortMissionsByExpiration(transformedMissions);
       setMissions(sortedMissions);
-    } catch (error) {
+      setLoadAttempts(0); // Reset attempts on success
+    } catch (error: any) {
       console.error('Error fetching missions:', error);
-      toast.error('Failed to load missions');
+      setLoadError(error?.message || 'Failed to load missions');
+      
+      // Only show toast on first attempt
+      if (loadAttempts === 0) {
+        toast.error('Failed to load missions');
+      }
+      
+      // Increment load attempts
+      setLoadAttempts(prev => prev + 1);
     } finally {
       setIsLoading(false);
     }
@@ -71,6 +95,16 @@ const Missions = () => {
 
   useEffect(() => {
     fetchMissions();
+    
+    // Automatically retry once if load fails
+    const retryTimeout = setTimeout(() => {
+      if (loadError && loadAttempts <= 1) {
+        console.log("Automatically retrying mission fetch...");
+        fetchMissions();
+      }
+    }, 3000);
+    
+    return () => clearTimeout(retryTimeout);
   }, []);
 
   // Function to sort missions first by expiration (expired missions at the bottom)
@@ -154,12 +188,29 @@ const Missions = () => {
               <button 
                 className="flex items-center justify-center p-2 rounded-md border border-gray-300 text-gray-500 hover:bg-gray-50 transition-colors"
                 onClick={fetchMissions}
+                disabled={isLoading}
               >
-                <RefreshCw className="h-5 w-5" />
+                <RefreshCw className={`h-5 w-5 ${isLoading ? 'animate-spin' : ''}`} />
               </button>
             </div>
           </div>
         </div>
+        
+        {loadError && (
+          <div className="bg-red-50 border border-red-200 rounded-xl p-4 mb-6 flex items-start">
+            <AlertCircle className="h-5 w-5 text-red-500 mt-0.5 mr-2 flex-shrink-0" />
+            <div>
+              <h3 className="text-sm font-medium text-red-800">Error loading missions</h3>
+              <p className="text-sm text-red-700 mt-1">{loadError}</p>
+              <button
+                onClick={fetchMissions}
+                className="mt-2 text-sm font-medium text-red-600 hover:text-red-800"
+              >
+                Try again
+              </button>
+            </div>
+          </div>
+        )}
         
         {isLoading ? (
           <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">

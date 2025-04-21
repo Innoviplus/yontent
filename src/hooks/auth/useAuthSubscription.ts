@@ -22,74 +22,29 @@ export function useAuthSubscription({
     
     setLoading(true);
     
-    // Handle auth state changes (login, logout, token refresh)
+    // Important: First set up the auth state listener
     const { data: { subscription } } = supabase.auth.onAuthStateChange(
-      async (event, newSession) => {
+      (event, newSession) => {
         console.log("Auth state changed:", event, newSession?.user?.id);
         
-        // Update session and user state
+        // First do only synchronous updates to prevent blocking
         setSession(newSession);
         setUser(newSession?.user ?? null);
         
-        // Get profile data if user is authenticated
+        // Then use setTimeout to prevent blocking for async operations
         if (newSession?.user) {
-          try {
-            const data = await fetchUserProfile(newSession.user.id, newSession.user.email);
-            console.log("Profile data fetched on auth change:", data);
-            
-            if (data && newSession.user) {
-              // Check for missing profile data that might be in user metadata
-              const needsUpdate = (!data.phone_number || !data.email);
-              if (needsUpdate) {
-                console.log("Updating missing profile data...");
-                const userData = newSession.user.user_metadata || {};
-                
-                const updateData: any = {};
-                if (!data.email && newSession.user.email) {
-                  updateData.email = newSession.user.email;
-                }
-                
-                if (!data.phone_number && userData.phone_number) {
-                  updateData.phone_number = userData.phone_number;
-                  updateData.phone_country_code = userData.phone_country_code || '+';
-                }
-                
-                if (Object.keys(updateData).length > 0) {
-                  console.log("Updating profile with metadata:", updateData);
-                  const { error: updateError } = await supabase
-                    .from('profiles')
-                    .update({
-                      ...updateData,
-                      updated_at: new Date().toISOString()
-                    })
-                    .eq('id', newSession.user.id);
-                    
-                  if (updateError) {
-                    console.error("Error updating profile with missing data:", updateError);
-                  } else {
-                    // Fetch updated profile data
-                    const updatedData = await fetchUserProfile(newSession.user.id, newSession.user.email);
-                    console.log("Updated profile data:", updatedData);
-                    setUserProfile(updatedData);
-                  }
-                } else {
-                  setUserProfile(data);
-                }
-              } else {
-                setUserProfile(data);
-              }
-            } else if (data) {
+          setTimeout(async () => {
+            try {
+              const data = await fetchUserProfile(newSession.user!.id, newSession.user!.email);
+              console.log("Profile data fetched on auth change:", data ? "success" : "not found");
               setUserProfile(data);
-            } else {
-              console.log("No profile data found for user:", newSession.user.id);
+            } catch (err) {
+              console.error("Error fetching profile on auth change:", err);
               setUserProfile(null);
+            } finally {
+              setLoading(false);
             }
-          } catch (err) {
-            console.error("Error fetching profile on auth change:", err);
-            setUserProfile(null);
-          } finally {
-            setLoading(false);
-          }
+          }, 0);
         } else {
           setUserProfile(null);
           setLoading(false);
@@ -97,7 +52,7 @@ export function useAuthSubscription({
       }
     );
 
-    // Get initial session - this is crucial for new browser windows
+    // Then check for initial session - this prevents race conditions
     supabase.auth.getSession().then(({ data: { session: currentSession }, error }) => {
       if (error) {
         console.error("Error getting initial session:", error);
@@ -106,28 +61,33 @@ export function useAuthSubscription({
       }
       
       console.log("Initial session check:", currentSession ? `Found session for ${currentSession.user.email}` : "No session");
+      
+      // First do synchronous updates
       setSession(currentSession);
       setUser(currentSession?.user ?? null);
       
+      // Then use setTimeout to prevent blocking for async operations
       if (currentSession?.user) {
-        fetchUserProfile(currentSession.user.id, currentSession.user.email)
-          .then(data => {
-            console.log("Initial profile data:", data);
+        setTimeout(async () => {
+          try {
+            const data = await fetchUserProfile(currentSession.user.id, currentSession.user.email);
+            console.log("Initial profile data:", data ? "success" : "not found");
             setUserProfile(data);
-          })
-          .catch(err => {
+          } catch (err) {
             console.error("Error fetching initial profile:", err);
             setUserProfile(null);
-          })
-          .finally(() => {
+          } finally {
             setLoading(false);
-          });
+          }
+        }, 0);
       } else {
         setLoading(false);
       }
     });
 
+    // Clean up subscription on unmount
     return () => {
+      console.log("Cleaning up auth subscription");
       subscription.unsubscribe();
     };
   }, [setSession, setUser, setLoading, setUserProfile]);

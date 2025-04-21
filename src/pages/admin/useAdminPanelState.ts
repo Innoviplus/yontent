@@ -6,12 +6,15 @@ import { useMissionParticipations } from '@/hooks/admin/useMissionParticipations
 import { useRequestsAdmin } from '@/hooks/admin/useRequestsAdmin';
 import { useAuth } from '@/contexts/AuthContext';
 import { toast } from 'sonner';
+import { checkIsAdmin } from '@/services/admin/users';
 
 export const useAdminPanelState = () => {
   const [activeTab, setActiveTab] = useState('missions'); // Default to missions tab
   const { loading: authLoading, user, session, userProfile } = useAuth();
   const [retryCount, setRetryCount] = useState(0);
   const [maxLoadingTime, setMaxLoadingTime] = useState(false);
+  const [isValidAdmin, setIsValidAdmin] = useState<boolean | null>(null);
+  const [checkingAdmin, setCheckingAdmin] = useState(true);
 
   // Very short timeout of 1.5 seconds to force display content
   useEffect(() => {
@@ -21,6 +24,36 @@ export const useAdminPanelState = () => {
     }, 1500);
     return () => clearTimeout(timeoutId);
   }, []);
+
+  // Verify admin status on load
+  useEffect(() => {
+    const verifyAdminStatus = async () => {
+      if (!user) {
+        setIsValidAdmin(false);
+        setCheckingAdmin(false);
+        return;
+      }
+      
+      try {
+        setCheckingAdmin(true);
+        const isAdmin = await checkIsAdmin(user.id);
+        console.log("Admin status verification result:", isAdmin);
+        setIsValidAdmin(isAdmin);
+      } catch (error) {
+        console.error("Error verifying admin status:", error);
+        setIsValidAdmin(false);
+      } finally {
+        setCheckingAdmin(false);
+      }
+    };
+    
+    if (!authLoading && user) {
+      verifyAdminStatus();
+    } else if (!authLoading && !user) {
+      setIsValidAdmin(false);
+      setCheckingAdmin(false);
+    }
+  }, [user, authLoading]);
 
   // Rewards state/actions
   const {
@@ -91,13 +124,15 @@ export const useAdminPanelState = () => {
       userEmail: user?.email,
       retryCount,
       userProfile,
-      missionsCount: missions?.length
+      missionsCount: missions?.length,
+      isValidAdmin,
+      checkingAdmin
     });
     
     if (missions && missions.length > 0) {
       console.log("Missions loaded successfully in admin panel:", missions.length);
     }
-  }, [authLoading, user, session, retryCount, userProfile, missions]);
+  }, [authLoading, user, session, retryCount, userProfile, missions, isValidAdmin, checkingAdmin]);
 
   const handleRetry = () => {
     setRetryCount(count => count + 1);
@@ -108,7 +143,7 @@ export const useAdminPanelState = () => {
 
   // Always show content after a very short loading time
   const isLoading =
-    authLoading && 
+    (authLoading || checkingAdmin) && 
     isLoadingRewards &&
     isLoadingMissions &&
     isLoadingParticipations &&
@@ -120,7 +155,7 @@ export const useAdminPanelState = () => {
   
   // Flag for displaying error state but still allow content to show
   const isLoadingTooLong =
-    !authLoading && ((isLoadingMissions || isLoadingRewards) && maxLoadingTime);
+    !authLoading && !checkingAdmin && ((isLoadingMissions || isLoadingRewards) && maxLoadingTime);
 
   return {
     activeTab,
@@ -158,6 +193,8 @@ export const useAdminPanelState = () => {
     retryCount,
     setRetryCount,
     missionsError,
-    authLoading
+    authLoading,
+    isValidAdmin,
+    checkingAdmin
   };
 };
