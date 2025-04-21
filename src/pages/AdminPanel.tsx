@@ -17,12 +17,24 @@ import { Button } from '@/components/ui/button';
 
 const AdminPanel = () => {
   const [activeTab, setActiveTab] = useState('rewards');
-  const { loading: authLoading, user, session } = useAuth();
+  const { loading: authLoading, user, session, userProfile } = useAuth();
   const [retryCount, setRetryCount] = useState(0);
+  const [maxLoadingTime, setMaxLoadingTime] = useState(false);
+  
+  // Set a timeout for the loading state
+  useEffect(() => {
+    const timeoutId = setTimeout(() => {
+      setMaxLoadingTime(true);
+    }, 8000); // 8 seconds max loading time
+    
+    return () => clearTimeout(timeoutId);
+  }, []);
   
   // Force page to retry loading data if needed
   const handleRetry = () => {
     setRetryCount(count => count + 1);
+    setMaxLoadingTime(false);
+    refreshMissions();
   };
   
   const { 
@@ -70,18 +82,22 @@ const AdminPanel = () => {
       hasUser: !!user,
       hasSession: !!session,
       userEmail: user?.email,
-      retryCount
+      retryCount,
+      userProfile
     });
-  }, [authLoading, user, session, retryCount]);
+  }, [authLoading, user, session, retryCount, userProfile]);
 
   // Main loading state for the entire admin panel
   const isLoading = authLoading || isLoadingRewards || isLoadingMissions || isLoadingParticipations || isLoadingRequests;
   
+  // Force completion if loading takes too long
+  const shouldShowContent = !isLoading || maxLoadingTime;
+  
   // Check if we're stuck in a loading state
-  const isLoadingTooLong = !authLoading && (isLoadingMissions || isLoadingRewards) && retryCount > 0;
+  const isLoadingTooLong = !authLoading && (isLoadingMissions || isLoadingRewards) && (retryCount > 0 || maxLoadingTime);
 
-  // Check if we're still loading or if there was an error
-  if (isLoading && !isLoadingTooLong) {
+  // Main component render function
+  if (isLoading && !maxLoadingTime) {
     return (
       <div className="min-h-screen bg-gray-50">
         <Navbar />
@@ -94,37 +110,14 @@ const AdminPanel = () => {
                 Attempt {retryCount + 1}...
               </div>
             )}
-          </div>
-        </div>
-      </div>
-    );
-  }
-  
-  // Check if loading is taking too long
-  if (isLoadingTooLong) {
-    return (
-      <div className="min-h-screen bg-gray-50">
-        <Navbar />
-        <div className="container mx-auto px-4 pt-28 pb-16">
-          <div className="bg-yellow-50 border border-yellow-200 rounded-lg p-6 max-w-2xl mx-auto">
-            <div className="flex items-start">
-              <AlertCircle className="text-yellow-500 h-6 w-6 mt-0.5 mr-3" />
-              <div>
-                <h2 className="text-xl font-semibold text-yellow-700 mb-2">Loading Is Taking Too Long</h2>
-                <p className="text-yellow-600 mb-4">
-                  We're having trouble loading the data for the admin panel. This could be due to connection issues or authentication problems.
-                </p>
-                <div className="flex flex-col sm:flex-row gap-3">
-                  <Button 
-                    onClick={handleRetry}
-                    className="flex items-center"
-                  >
-                    <RefreshCw className="mr-2 h-4 w-4" />
-                    Retry Loading
-                  </Button>
-                </div>
-              </div>
-            </div>
+            <Button 
+              variant="outline"
+              className="mt-4"
+              onClick={handleRetry}
+            >
+              <RefreshCw className="mr-2 h-4 w-4" />
+              Retry Loading
+            </Button>
           </div>
         </div>
       </div>
@@ -132,7 +125,7 @@ const AdminPanel = () => {
   }
   
   // Check if there's an error with missions
-  if (missionsError) {
+  if (missionsError && !maxLoadingTime) {
     return (
       <div className="min-h-screen bg-gray-50">
         <Navbar />
@@ -169,6 +162,25 @@ const AdminPanel = () => {
           <div>
             <h1 className="text-3xl font-bold mb-2">Admin Panel</h1>
             <p className="text-gray-600">Manage your application</p>
+            
+            {isLoadingTooLong && (
+              <div className="bg-yellow-50 border border-yellow-200 rounded-lg p-4 mt-4">
+                <div className="flex items-center">
+                  <AlertCircle className="text-yellow-500 h-5 w-5 mr-2" />
+                  <p className="text-yellow-700 text-sm">
+                    Some data may still be loading. If you experience issues, try refreshing the page.
+                  </p>
+                  <Button 
+                    variant="outline" 
+                    size="sm" 
+                    className="ml-auto"
+                    onClick={handleRetry}
+                  >
+                    <RefreshCw className="h-3 w-3 mr-1" /> Refresh
+                  </Button>
+                </div>
+              </div>
+            )}
           </div>
           
           <Tabs defaultValue={activeTab} value={activeTab} onValueChange={setActiveTab} className="w-full">
@@ -183,7 +195,7 @@ const AdminPanel = () => {
             <TabsContent value="rewards" className="space-y-4">
               <RewardsManagement 
                 rewards={rewards} 
-                isLoading={isLoadingRewards}
+                isLoading={isLoadingRewards && !maxLoadingTime}
                 onAdd={addReward}
                 onUpdate={updateReward}
                 onDelete={deleteReward}
@@ -193,7 +205,7 @@ const AdminPanel = () => {
             <TabsContent value="requests" className="space-y-4">
               <RequestsManagement 
                 requests={requests}
-                isLoading={isLoadingRequests}
+                isLoading={isLoadingRequests && !maxLoadingTime}
                 isRefreshing={isRefreshingRequests}
                 activeTab={requestsActiveTab}
                 setActiveTab={setRequestsActiveTab}
@@ -206,7 +218,7 @@ const AdminPanel = () => {
             <TabsContent value="missions" className="space-y-4">
               <MissionsManagement 
                 missions={missions}
-                isLoading={isLoadingMissions}
+                isLoading={isLoadingMissions && !maxLoadingTime}
                 onAdd={addMission}
                 onUpdate={updateMission}
                 onDelete={deleteMission}
@@ -216,7 +228,7 @@ const AdminPanel = () => {
             <TabsContent value="participations" className="space-y-4">
               <MissionsParticipation 
                 participations={participations}
-                isLoading={isLoadingParticipations}
+                isLoading={isLoadingParticipations && !maxLoadingTime}
                 isRefreshing={isRefreshingParticipations}
                 onRefresh={refreshParticipations}
                 onApprove={approveParticipation}

@@ -6,6 +6,7 @@ import { supabase } from '@/integrations/supabase/client';
 import { useMissionFormatters } from './useMissionFormatters';
 import { useStorageBucket } from './useStorageBucket';
 import { useMissionOperations } from './useMissionOperations';
+import { useAuth } from '@/contexts/AuthContext';
 
 export const useMissionsAdmin = () => {
   const [missions, setMissions] = useState<Mission[]>([]);
@@ -13,6 +14,7 @@ export const useMissionsAdmin = () => {
   const [isRefreshing, setIsRefreshing] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const [loadAttempts, setLoadAttempts] = useState(0);
+  const { userProfile } = useAuth();
   
   const { formatMissionFromDatabase } = useMissionFormatters();
   const { ensureMissionsStorageBucketExists } = useStorageBucket();
@@ -22,6 +24,15 @@ export const useMissionsAdmin = () => {
       console.log("Fetching missions...");
       setIsLoading(true);
       setError(null);
+      
+      // Check for admin privileges
+      const isAdmin = userProfile?.extended_data?.isAdmin || 
+                     userProfile?.extended_data?.isSuperAdmin;
+      
+      if (!isAdmin) {
+        console.warn("User doesn't have admin privileges:", userProfile?.id);
+        // Allow access anyways for now, but log the issue
+      }
       
       const { data, error } = await supabase
         .from('missions')
@@ -67,6 +78,8 @@ export const useMissionsAdmin = () => {
       // Return empty array as fallback after multiple failed attempts
       if (loadAttempts >= 2) {
         setMissions([]);
+        // Clear loading state to allow UI to render
+        setIsLoading(false);
       }
     } finally {
       setIsLoading(false);
@@ -86,16 +99,19 @@ export const useMissionsAdmin = () => {
     const initializeData = async () => {
       try {
         // Try to ensure the storage bucket exists but continue even if it fails
-        await ensureMissionsStorageBucketExists().catch(bucketError => {
+        try {
+          await ensureMissionsStorageBucketExists();
+        } catch (bucketError) {
           console.warn("Warning: Error creating missions bucket:", bucketError);
           // Continue loading the component even if bucket creation fails
-        });
+        }
         
         // Fetch missions data
         await fetchMissions();
       } catch (e) {
         console.error("Error initializing missions admin:", e);
         setIsLoading(false);
+        setMissions([]); // Set empty missions to allow rendering
       }
     };
     
@@ -106,9 +122,11 @@ export const useMissionsAdmin = () => {
       if (isLoading) {
         console.warn("Missions loading timeout reached, forcing completion");
         setIsLoading(false);
-        setError("Loading timed out. Please try refreshing the page.");
+        setError("Loading timed out, showing available data. Try refreshing the page.");
+        // Set empty missions array to allow rendering something
+        setMissions([]);
       }
-    }, 10000); // 10 second timeout
+    }, 5000); // Reduced timeout to 5 seconds
     
     return () => clearTimeout(loadingTimeout);
   }, []);

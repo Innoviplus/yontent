@@ -16,6 +16,8 @@ const ProtectedRoute = ({ children }: ProtectedRouteProps) => {
   const [isVerifying, setIsVerifying] = useState(true);
   const [verificationAttempts, setVerificationAttempts] = useState(0);
   
+  const isAdminRoute = location.pathname.startsWith('/admin');
+  
   useEffect(() => {
     // Debug logs to help identify authentication issues
     console.log("Protected route check:", {
@@ -25,13 +27,14 @@ const ProtectedRoute = ({ children }: ProtectedRouteProps) => {
       hasSession: !!session,
       hasProfile: !!userProfile,
       sessionExpiry: session?.expires_at ? new Date(session.expires_at * 1000).toISOString() : 'N/A',
-      verificationAttempts
+      verificationAttempts,
+      isAdminRoute
     });
     
     const verifySessionDirectly = async () => {
       try {
         // Always verify session for admin page or when session data is missing
-        if ((!user || !session) && verificationAttempts < 3) {
+        if ((!user || !session || isAdminRoute) && verificationAttempts < 3) {
           setIsVerifying(true);
           console.log("Directly verifying session...");
           
@@ -53,6 +56,7 @@ const ProtectedRoute = ({ children }: ProtectedRouteProps) => {
               await refreshUserProfile();
             }
             setVerificationAttempts(prev => prev + 1);
+            setIsVerifying(false);
           } else if (verificationAttempts >= 2) {
             // After multiple attempts, if still no session, redirect to login
             console.log("Session verification failed after multiple attempts");
@@ -89,7 +93,7 @@ const ProtectedRoute = ({ children }: ProtectedRouteProps) => {
       // Only try to verify if the auth context has finished its own loading
       verifySessionDirectly();
     }
-  }, [location.pathname, loading, user, session, userProfile, refreshUserProfile, verificationAttempts]);
+  }, [location.pathname, loading, user, session, userProfile, refreshUserProfile, verificationAttempts, isAdminRoute]);
   
   // Show loading state when either the auth context is loading or we're manually verifying
   if (loading || isVerifying) {
