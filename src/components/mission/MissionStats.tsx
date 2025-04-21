@@ -1,4 +1,3 @@
-
 import { useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { Mission } from '@/lib/types';
@@ -9,6 +8,7 @@ import { format, isPast } from 'date-fns';
 import { toast } from 'sonner';
 import { supabase } from '@/integrations/supabase/client';
 import { formatNumber } from '@/lib/formatUtils';
+
 interface MissionStatsProps {
   mission: Mission;
   participating: boolean;
@@ -17,6 +17,7 @@ interface MissionStatsProps {
   onParticipationUpdate: (isParticipating: boolean, status: string) => void;
   currentSubmissions: number;
 }
+
 const MissionStats = ({
   mission,
   participating,
@@ -29,6 +30,7 @@ const MissionStats = ({
   const navigate = useNavigate();
   const isExpired = mission.expiresAt ? isPast(mission.expiresAt) : false;
   const isCompleted = participationStatus === 'APPROVED';
+
   const handleMissionParticipation = async () => {
     if (!userId) {
       toast.error('Please log in to join this mission');
@@ -39,11 +41,11 @@ const MissionStats = ({
 
       // For receipt and review type missions, navigate to the appropriate submission page
       if (mission.type === 'RECEIPT') {
-        navigate(`/mission/${mission.id}/submit-receipt`);
+        navigate(`/mission/${mission.id}/receipt`);
         return;
       }
       if (mission.type === 'REVIEW') {
-        navigate(`/mission/${mission.id}/submit-review`);
+        navigate(`/mission/${mission.id}/review`);
         return;
       }
 
@@ -65,6 +67,7 @@ const MissionStats = ({
       setLoading(false);
     }
   };
+
   const getMissionActionButton = () => {
     if (isCompleted) {
       return <Button disabled className="w-full border-brand-teal text-brand-teal bg-white hover:bg-gray-50">
@@ -85,6 +88,7 @@ const MissionStats = ({
         {userId ? 'Join Mission' : 'Log in to Join'}
       </Button>;
   };
+
   return <Card className="overflow-hidden border-t-4 border-t-brand-teal">
       <CardContent className="p-6">
         <div className="mb-4">
@@ -137,4 +141,5 @@ const MissionStats = ({
       </CardContent>
     </Card>;
 };
+
 export default MissionStats;
