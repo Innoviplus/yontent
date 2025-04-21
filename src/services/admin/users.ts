@@ -42,6 +42,19 @@ export async function fetchUserRoles(user_id: string): Promise<string[]> {
   }
 }
 
+// Check if a user has admin role
+export async function checkIsAdmin(user_id: string): Promise<boolean> {
+  try {
+    if (!user_id) return false;
+    
+    const roles = await fetchUserRoles(user_id);
+    return roles.includes("admin");
+  } catch (error) {
+    console.error("Error checking admin status:", error);
+    return false;
+  }
+}
+
 // Returns all users with their roles
 export async function fetchAllUsersWithRoles() {
   try {

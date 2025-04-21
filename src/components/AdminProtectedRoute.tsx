@@ -35,6 +35,7 @@ const AdminProtectedRoute = ({ children }: AdminProtectedRouteProps) => {
     };
 
     if (!loading) {
+      setCheckingRole(true);
       checkAdminStatus();
     }
   }, [user, loading]);
