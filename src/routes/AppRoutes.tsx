@@ -1,4 +1,3 @@
-
 import React from "react";
 import { Routes, Route } from "react-router-dom";
 import ProtectedRoute from "@/components/ProtectedRoute";
@@ -35,6 +34,7 @@ import TermsOfService from "@/pages/TermsOfService";
 import SetAvatar from "@/pages/SetAvatar";
 import ForgotPassword from "@/pages/ForgotPassword";
 import ResetPassword from "@/pages/ResetPassword";
+import MyRewardTransactions from "@/pages/MyRewardTransactions";
 
 const AppRoutes = () => {
   return (
@@ -57,7 +57,7 @@ const AppRoutes = () => {
       <Route path="/mission/:id/review" element={<ProtectedRoute><MissionReviewSubmission /></ProtectedRoute>} />
       <Route path="/mission/:id/receipt" element={<ProtectedRoute><MissionReceiptSubmission /></ProtectedRoute>} />
       <Route path="/my-missions" element={<ProtectedRoute><Missions /></ProtectedRoute>} />
-      <Route path="/my-reward-transactions" element={<ProtectedRoute><Rewards /></ProtectedRoute>} />
+      <Route path="/my-reward-transactions" element={<ProtectedRoute><MyRewardTransactions /></ProtectedRoute>} />
       
       {/* Admin routes */}
       <Route path="/admin/login" element={<AdminLogin />} />

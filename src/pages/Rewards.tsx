@@ -1,15 +1,10 @@
 
-import { useState, useEffect } from 'react';
-import { Toaster } from '@/components/ui/sonner';
-import { usePoints } from '@/contexts/PointsContext';
+import { useIsMobile } from '@/hooks/use-mobile';
 import Navbar from '@/components/Navbar';
 import RewardsList from '@/components/rewards/RewardsList';
 import { Gift } from 'lucide-react';
-import { formatNumber } from '@/lib/formatUtils';
-import { useIsMobile } from '@/hooks/use-mobile';
 
 const Rewards = () => {
-  const { userPoints } = usePoints();
   const isMobile = useIsMobile();
 
   return (
@@ -21,14 +16,6 @@ const Rewards = () => {
             <Gift className="h-6 w-6 text-brand-teal" />
             <h1 className="text-2xl font-bold text-gray-900">Rewards</h1>
           </div>
-          <div className="flex items-center gap-2 bg-brand-teal/10 rounded-full px-4 py-2">
-            <img 
-              src="/lovable-uploads/15750ea6-ed41-4d3d-83e2-299853617c30.png" 
-              alt="Points" 
-              className="h-5 w-5" 
-            />
-            <span className="font-semibold text-brand-teal">{formatNumber(userPoints)} points available</span>
-          </div>
         </div>
         
         <div className="mb-8">
@@ -39,7 +26,6 @@ const Rewards = () => {
         
         <RewardsList />
       </div>
-      <Toaster />
     </div>
   );
 };

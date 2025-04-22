@@ -36,7 +36,6 @@ const UserOwnStatsCard = ({
         if (error) throw error;
         setMissionCount(count || 0);
       } catch (error) {
-        console.error('Error fetching mission count:', error);
         setMissionCount(0);
       }
     };
@@ -53,7 +52,6 @@ const UserOwnStatsCard = ({
         if (error) throw error;
         setTransactionsCount(count || 0);
       } catch (error) {
-        console.error('Error fetching transactions count:', error);
         setTransactionsCount(0);
       }
     };
@@ -71,10 +69,10 @@ const UserOwnStatsCard = ({
           <div className="text-xs text-gray-500">Reviews</div>
         </div>
         
-        {/* Followers - clickable */}
+        {/* Followers - clickable, always to /followers */}
         <button 
           type="button"
-          onClick={() => navigate(`/user/${user.username}/followers`)}
+          onClick={() => navigate("/followers")}
           className="bg-gray-50 rounded-lg p-3 text-center flex flex-col items-center hover:bg-brand-teal/10 transition-colors"
         >
           <div className="text-lg font-semibold text-brand-slate">
@@ -83,10 +81,10 @@ const UserOwnStatsCard = ({
           <div className="text-xs text-gray-500">Followers</div>
         </button>
         
-        {/* Following - clickable */}
+        {/* Following - clickable, always to /following */}
         <button 
           type="button"
-          onClick={() => navigate(`/user/${user.username}/following`)}
+          onClick={() => navigate("/following")}
           className="bg-gray-50 rounded-lg p-3 text-center flex flex-col items-center hover:bg-brand-teal/10 transition-colors"
         >
           <div className="text-lg font-semibold text-brand-slate">
@@ -95,7 +93,7 @@ const UserOwnStatsCard = ({
           <div className="text-xs text-gray-500">Following</div>
         </button>
 
-        {/* My Missions - clickable with count */}
+        {/* My Missions - clickable, just show count */}
         <button 
           type="button"
           onClick={() => navigate("/my-missions")}
@@ -104,10 +102,9 @@ const UserOwnStatsCard = ({
           <div className="text-lg font-semibold text-brand-slate">
             {missionCount}
           </div>
-          <div className="text-xs text-gray-500">My Missions</div>
         </button>
         
-        {/* My Reward Transactions - clickable with count */}
+        {/* Reward Transactions - clickable, just show count */}
         <button
           type="button"
           onClick={() => navigate("/my-reward-transactions")}
@@ -116,7 +113,6 @@ const UserOwnStatsCard = ({
           <div className="text-lg font-semibold text-brand-slate">
             {transactionsCount}
           </div>
-          <div className="text-xs text-gray-500">Reward Transactions</div>
         </button>
 
         {/* Points */}
@@ -133,4 +129,3 @@ const UserOwnStatsCard = ({
 };
 
 export default UserOwnStatsCard;
-
