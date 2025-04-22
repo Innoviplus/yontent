@@ -3,8 +3,6 @@ import { useState } from 'react';
 import { Tabs, TabsList, TabsTrigger, TabsContent } from '@/components/ui/tabs';
 import ReviewsTab from './ReviewsTab';
 import DraftReviewsTab from './DraftReviewsTab';
-import MissionsTab from './MissionsTab';
-import TransactionsTab from './TransactionsTab';
 import { Review } from '@/lib/types';
 
 interface DashboardTabsProps {
@@ -20,8 +18,6 @@ const DashboardTabs = ({ reviews, draftReviews }: DashboardTabsProps) => {
       <TabsList className="mb-6">
         <TabsTrigger value="reviews">My Reviews</TabsTrigger>
         <TabsTrigger value="drafts">My Drafts</TabsTrigger>
-        <TabsTrigger value="missions">My Missions</TabsTrigger>
-        <TabsTrigger value="transactions">Reward Transactions</TabsTrigger>
       </TabsList>
       
       <TabsContent value="reviews">
@@ -31,16 +27,9 @@ const DashboardTabs = ({ reviews, draftReviews }: DashboardTabsProps) => {
       <TabsContent value="drafts">
         <DraftReviewsTab drafts={draftReviews} />
       </TabsContent>
-      
-      <TabsContent value="missions">
-        <MissionsTab />
-      </TabsContent>
-      
-      <TabsContent value="transactions">
-        <TransactionsTab />
-      </TabsContent>
     </Tabs>
   );
 };
 
 export default DashboardTabs;
+
