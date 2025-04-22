@@ -93,7 +93,7 @@ const UserOwnStatsCard = ({
           <div className="text-xs text-gray-500">Following</div>
         </button>
 
-        {/* My Missions - clickable, just show count */}
+        {/* My Missions - clickable, shows count */}
         <button 
           type="button"
           onClick={() => navigate("/my-missions")}
@@ -102,9 +102,10 @@ const UserOwnStatsCard = ({
           <div className="text-lg font-semibold text-brand-slate">
             {missionCount}
           </div>
+          <div className="text-xs text-gray-500">My Missions</div>
         </button>
         
-        {/* Reward Transactions - clickable, just show count */}
+        {/* Reward Transactions - clickable, shows count */}
         <button
           type="button"
           onClick={() => navigate("/my-reward-transactions")}
@@ -113,6 +114,7 @@ const UserOwnStatsCard = ({
           <div className="text-lg font-semibold text-brand-slate">
             {transactionsCount}
           </div>
+          <div className="text-xs text-gray-500">Transactions</div>
         </button>
 
         {/* Points */}
