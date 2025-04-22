@@ -44,22 +44,24 @@ const UserProfile = () => {
               reviews={reviews}
             />
 
-            {/* Reviews Section */}
-            {!isCurrentUser && (
-              <div>
-                <h2 className="text-lg font-semibold mb-4">{profile.username}&apos;s Reviews</h2>
-                {reviews.length > 0 ? (
-                  <ReviewsGrid reviews={reviews} />
-                ) : (
-                  <div className="bg-white rounded-xl p-8 text-center shadow-card">
-                    <h3 className="text-lg font-medium text-gray-900 mb-2">No reviews yet</h3>
-                    <p className="text-gray-600">
-                      {profile.username} hasn&apos;t posted any reviews yet.
-                    </p>
-                  </div>
-                )}
-              </div>
-            )}
+            {/* Reviews Section - Always show for any user */}
+            <div>
+              <h2 className="text-lg font-semibold mb-4">
+                {isCurrentUser ? 'My Reviews' : `${profile.username}'s Reviews`}
+              </h2>
+              {reviews.length > 0 ? (
+                <ReviewsGrid reviews={reviews} />
+              ) : (
+                <div className="bg-white rounded-xl p-8 text-center shadow-card">
+                  <h3 className="text-lg font-medium text-gray-900 mb-2">No reviews yet</h3>
+                  <p className="text-gray-600">
+                    {isCurrentUser 
+                      ? "You haven't posted any reviews yet." 
+                      : `${profile.username} hasn't posted any reviews yet.`}
+                  </p>
+                </div>
+              )}
+            </div>
           </>
         ) : (
           <ProfileNotFound />
