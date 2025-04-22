@@ -13,12 +13,15 @@ interface ProfileTabsProps {
 }
 
 const ProfileTabs = ({ reviews, user, profile, isCurrentUser }: ProfileTabsProps) => {
+  if (isCurrentUser) {
+    // Own profile: don't render review tab here (moved elsewhere)
+    return null;
+  }
   return (
     <Tabs defaultValue="reviews">
       <TabsList className="mb-6">
         <TabsTrigger value="reviews" className="flex-1">Reviews</TabsTrigger>
       </TabsList>
-      
       <TabsContent value="reviews">
         {reviews.length > 0 ? (
           <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
