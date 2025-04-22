@@ -1,9 +1,18 @@
-
-import { useState, useEffect } from "react";
-import { useAuth } from "@/contexts/AuthContext";
-import { supabase } from "@/integrations/supabase/client";
-import Navbar from "@/components/Navbar";
-import { format } from "date-fns";
+import { useEffect } from 'react';
+import { useNavigate } from 'react-router-dom';
+import { useAuth } from '@/contexts/AuthContext';
+import Navbar from '@/components/Navbar';
+import { supabase } from '@/integrations/supabase/client';
+import { format } from 'date-fns';
+import { 
+  Breadcrumb, 
+  BreadcrumbList, 
+  BreadcrumbItem, 
+  BreadcrumbLink, 
+  BreadcrumbSeparator, 
+  BreadcrumbPage 
+} from '@/components/ui/breadcrumb';
+import { ChevronRight } from 'lucide-react';
 
 type Transaction = {
   id: string;
@@ -17,6 +26,7 @@ const MyRewardTransactions = () => {
   const { user } = useAuth();
   const [transactions, setTransactions] = useState<Transaction[]>([]);
   const [loading, setLoading] = useState(true);
+  const navigate = useNavigate();
 
   useEffect(() => {
     const fetchTransactions = async () => {
@@ -30,14 +40,11 @@ const MyRewardTransactions = () => {
         .order("created_at", { ascending: false });
 
       if (!error && data) {
-        // Normalize transaction fields to TS type with type assertion to ensure
-        // the database values match our expected literal types
         setTransactions(
           data.map((row) => ({
             id: row.id,
             description: row.description,
             amount: row.amount,
-            // Use type assertion to ensure the type matches our expected literals
             type: row.type as Transaction["type"],
             createdAt: row.created_at,
           }))
@@ -54,6 +61,18 @@ const MyRewardTransactions = () => {
     <div className="min-h-screen bg-gray-50">
       <Navbar />
       <div className="container mx-auto px-4 pt-24 pb-16 max-w-2xl">
+        <Breadcrumb className="mb-6">
+          <BreadcrumbList>
+            <BreadcrumbItem>
+              <BreadcrumbLink href="/dashboard">Dashboard</BreadcrumbLink>
+            </BreadcrumbItem>
+            <BreadcrumbSeparator>
+              <ChevronRight />
+            </BreadcrumbSeparator>
+            <BreadcrumbPage>Reward Transactions</BreadcrumbPage>
+          </BreadcrumbList>
+        </Breadcrumb>
+
         <h1 className="text-2xl font-bold text-gray-900 mb-8">Reward Transactions</h1>
 
         {loading && (

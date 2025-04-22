@@ -4,6 +4,15 @@ import { useAuth } from '@/contexts/AuthContext';
 import Navbar from '@/components/Navbar';
 import MissionsTab from '@/components/dashboard/MissionsTab';
 import { useNavigate } from 'react-router-dom';
+import { 
+  Breadcrumb, 
+  BreadcrumbList, 
+  BreadcrumbItem, 
+  BreadcrumbLink, 
+  BreadcrumbSeparator, 
+  BreadcrumbPage 
+} from '@/components/ui/breadcrumb';
+import { ChevronRight } from 'lucide-react';
 
 const MyMissions = () => {
   const { user } = useAuth();
@@ -19,6 +28,18 @@ const MyMissions = () => {
     <div className="min-h-screen bg-gray-50">
       <Navbar />
       <div className="container mx-auto px-4 pt-24 pb-16 max-w-4xl">
+        <Breadcrumb className="mb-6">
+          <BreadcrumbList>
+            <BreadcrumbItem>
+              <BreadcrumbLink href="/dashboard">Dashboard</BreadcrumbLink>
+            </BreadcrumbItem>
+            <BreadcrumbSeparator>
+              <ChevronRight />
+            </BreadcrumbSeparator>
+            <BreadcrumbPage>My Missions</BreadcrumbPage>
+          </BreadcrumbList>
+        </Breadcrumb>
+
         <div className="flex items-center gap-3 mb-6">
           <h1 className="text-2xl font-bold text-gray-900">My Missions</h1>
         </div>
