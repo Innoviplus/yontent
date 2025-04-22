@@ -125,7 +125,7 @@ const UserOwnStatsCard = ({
             <img alt="Points" width="20" height="20" className="h-5 w-5" src="/lovable-uploads/8273d306-96cc-45cd-a7d8-ded89e18e195.png" />
             <span className="text-lg font-semibold text-brand-teal">{pointsCount}</span>
           </div>
-          <div className="text-xs text-gray-500">Reward Transactions</div>
+          <div className="text-xs text-gray-500">Point Balance</div>
         </div>
       </div>
     </div>
@@ -133,3 +133,4 @@ const UserOwnStatsCard = ({
 };
 
 export default UserOwnStatsCard;
+
