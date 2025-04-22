@@ -30,13 +30,15 @@ const MyRewardTransactions = () => {
         .order("created_at", { ascending: false });
 
       if (!error && data) {
-        // Normalize transaction fields to TS type
+        // Normalize transaction fields to TS type with type assertion to ensure
+        // the database values match our expected literal types
         setTransactions(
           data.map((row) => ({
             id: row.id,
             description: row.description,
             amount: row.amount,
-            type: row.type,
+            // Use type assertion to ensure the type matches our expected literals
+            type: row.type as Transaction["type"],
             createdAt: row.created_at,
           }))
         );
