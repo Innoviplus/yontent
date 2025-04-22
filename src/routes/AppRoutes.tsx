@@ -69,8 +69,11 @@ const AppRoutes = () => {
       <Route path="/user/:username" element={<UserProfile />} />
       <Route path="/user/:username/followers" element={<FollowersList />} />
       <Route path="/user/:username/following" element={<FollowingList />} />
+      
+      {/* Redirect to correct pages with username parameter */}
       <Route path="/followers" element={<ProtectedRoute><FollowersList /></ProtectedRoute>} />
       <Route path="/following" element={<ProtectedRoute><FollowingList /></ProtectedRoute>} />
+      
       <Route path="/rankings" element={<UserRankings />} />
       <Route path="/edit-profile" element={<ProtectedRoute><EditProfile /></ProtectedRoute>} />
       <Route path="/review-feed" element={<ReviewFeed />} />

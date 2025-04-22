@@ -69,10 +69,10 @@ const UserOwnStatsCard = ({
           <div className="text-xs text-gray-500">Reviews</div>
         </div>
         
-        {/* Followers - clickable, always to /followers */}
+        {/* Followers - clickable, with username parameter */}
         <button 
           type="button"
-          onClick={() => navigate("/followers")}
+          onClick={() => navigate(`/user/${user.username}/followers`)}
           className="bg-gray-50 rounded-lg p-3 text-center flex flex-col items-center hover:bg-brand-teal/10 transition-colors"
         >
           <div className="text-lg font-semibold text-brand-slate">
@@ -81,10 +81,10 @@ const UserOwnStatsCard = ({
           <div className="text-xs text-gray-500">Followers</div>
         </button>
         
-        {/* Following - clickable, always to /following */}
+        {/* Following - clickable, with username parameter */}
         <button 
           type="button"
-          onClick={() => navigate("/following")}
+          onClick={() => navigate(`/user/${user.username}/following`)}
           className="bg-gray-50 rounded-lg p-3 text-center flex flex-col items-center hover:bg-brand-teal/10 transition-colors"
         >
           <div className="text-lg font-semibold text-brand-slate">
