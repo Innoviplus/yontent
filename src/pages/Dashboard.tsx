@@ -1,4 +1,3 @@
-
 import { useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { useAuth } from '@/contexts/AuthContext';
@@ -9,6 +8,7 @@ import DashboardSkeleton from '@/components/dashboard/DashboardSkeleton';
 import DashboardError from '@/components/dashboard/DashboardError';
 import { useDashboardProfile } from '@/hooks/useDashboardProfile';
 import { useDashboardReviews } from '@/hooks/useDashboardReviews';
+import DashboardTabs from '@/components/dashboard/DashboardTabs';
 
 const Dashboard = () => {
   const { user: authUser } = useAuth();
@@ -52,6 +52,9 @@ const Dashboard = () => {
           followingCount={user.followingCount || 0}
           pointsCount={user.points || 0}
         />
+        <div className="mt-8">
+          <DashboardTabs reviews={userReviews} draftReviews={draftReviews} />
+        </div>
       </div>
     </div>
   );
