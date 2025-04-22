@@ -16,6 +16,7 @@ const Rewards = () => {
             <Gift className="h-6 w-6 text-brand-teal" />
             <h1 className="text-2xl font-bold text-gray-900">Rewards</h1>
           </div>
+          {/* Removed point balance from top right */}
         </div>
         
         <div className="mb-8">
