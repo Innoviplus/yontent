@@ -3,7 +3,6 @@ import { useParams, Link } from 'react-router-dom';
 import { ArrowLeft } from 'lucide-react';
 import Navbar from '@/components/Navbar';
 import ProfileHeader from '@/components/user-profile/ProfileHeader';
-import UserOwnStatsCard from '@/components/user-profile/UserOwnStatsCard';
 import UserStatsCard, { UserStats } from '@/components/user/UserStatsCard';
 import ProfileNotFound from '@/components/user-profile/ProfileNotFound';
 import ProfileSkeleton from '@/components/user-profile/ProfileSkeleton';
@@ -56,13 +55,9 @@ const UserProfile = () => {
 
             {/* Stats & Reviews */}
             {isCurrentUser ? (
-              <UserOwnStatsCard
-                user={profile}
-                reviewsCount={reviews.length}
-                followersCount={profile.followers_count || 0}
-                followingCount={profile.following_count || 0}
-                pointsCount={profile.points || 0}
-              />
+              <div className="hidden">
+                {/* This intentionally left hidden to maintain existing code structure */}
+              </div>
             ) : (
               <>
                 <UserStatsCard
@@ -103,4 +98,3 @@ const UserProfile = () => {
 };
 
 export default UserProfile;
-
