@@ -33,12 +33,13 @@ const UserProfileHeader = ({ user }: UserProfileHeaderProps) => {
 
   return (
     <div className="bg-white rounded-xl shadow-card p-6 sm:p-8 mb-8 animate-fade-in relative">
-      {/* Settings icon on top right for mobile */}
-      <div className="absolute right-4 top-4 sm:static sm:relative flex gap-2">
+      {/* Settings icon on top right */}
+      <div className="absolute right-4 top-4">
         <Link to="/settings" className="btn-outline py-2 px-3">
           <Settings className="h-5 w-5" />
         </Link>
       </div>
+      
       <div className="flex flex-col sm:flex-row items-center sm:items-start gap-6">
         {/* Avatar */}
         <div className="w-24 h-24 rounded-full bg-brand-teal/10 flex items-center justify-center text-brand-teal overflow-hidden">
@@ -52,18 +53,15 @@ const UserProfileHeader = ({ user }: UserProfileHeaderProps) => {
         {/* User info */}
         <div className="flex-1 text-center sm:text-left">
           <h1 className="text-2xl font-bold text-gray-900">{user.username}</h1>
-          {/* Bio or prompt to add bio */}
+          {/* Bio or prompt to add bio - text aligned left */}
           {bio ? (
-            <p className="text-gray-600 mt-2 mb-4">{bio}</p>
+            <p className="text-gray-600 mt-2 mb-4 text-left">{bio}</p>
           ) : (
             <Link
               to="/settings"
-              className="block text-brand-teal font-medium mt-2 mb-4 hover:underline text-left sm:text-left"
-              style={{ textAlign: 'left' }}
+              className="block text-brand-teal font-medium mt-2 mb-4 hover:underline text-left"
             >
-              <span className="block sm:inline">
-                Update your profile information to receive welcome reward points &gt;
-              </span>
+              Update your profile information to receive welcome reward points &gt;
             </Link>
           )}
 
@@ -71,7 +69,7 @@ const UserProfileHeader = ({ user }: UserProfileHeaderProps) => {
           {hasSocialMedia ? (
             <SocialMediaIcons extendedData={extendedData} className="mb-4" />
           ) : (
-            <Link to="/settings" className="block text-brand-teal text-sm mb-4 hover:underline">
+            <Link to="/settings" className="block text-brand-teal text-sm mb-4 hover:underline text-left">
               Add your social media links
             </Link>
           )}
