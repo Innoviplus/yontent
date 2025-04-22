@@ -74,7 +74,7 @@ const UserProfileHeader = ({ user }: UserProfileHeaderProps) => {
             </Link>
           )}
 
-          <UserStatsCard user={user} stats={userStats} className="mt-6" isCurrentUser={true} />
+          {/* No UserStatsCard here - moved to dedicated component */}
         </div>
       </div>
     </div>

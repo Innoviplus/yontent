@@ -19,7 +19,7 @@ import MissionDetail from "@/pages/MissionDetail";
 import MissionReviewSubmission from "@/pages/MissionReviewSubmission";
 import MissionReceiptSubmission from "@/pages/MissionReceiptSubmission";
 import AdminPanel from "@/pages/admin/AdminPanel"; 
-import AdminLogin from "@/pages/admin/AdminLogin"; // Added import for AdminLogin
+import AdminLogin from "@/pages/admin/AdminLogin";
 import Settings from "@/pages/Settings";
 import UserProfile from "@/pages/UserProfile";
 import UserRankings from "@/pages/UserRankings";
@@ -56,6 +56,8 @@ const AppRoutes = () => {
       <Route path="/mission/:id" element={<MissionDetail />} />
       <Route path="/mission/:id/review" element={<ProtectedRoute><MissionReviewSubmission /></ProtectedRoute>} />
       <Route path="/mission/:id/receipt" element={<ProtectedRoute><MissionReceiptSubmission /></ProtectedRoute>} />
+      <Route path="/my-missions" element={<ProtectedRoute><Missions /></ProtectedRoute>} />
+      <Route path="/my-reward-transactions" element={<ProtectedRoute><Rewards /></ProtectedRoute>} />
       
       {/* Admin routes */}
       <Route path="/admin/login" element={<AdminLogin />} />

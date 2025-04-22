@@ -4,7 +4,7 @@ import { useNavigate } from 'react-router-dom';
 import { useAuth } from '@/contexts/AuthContext';
 import Navbar from '@/components/Navbar';
 import UserProfileHeader from '@/components/dashboard/UserProfileHeader';
-import DashboardTabs from '@/components/dashboard/DashboardTabs';
+import UserOwnStatsCard from '@/components/user-profile/UserOwnStatsCard';
 import DashboardSkeleton from '@/components/dashboard/DashboardSkeleton';
 import DashboardError from '@/components/dashboard/DashboardError';
 import { useDashboardProfile } from '@/hooks/useDashboardProfile';
@@ -45,7 +45,13 @@ const Dashboard = () => {
       <Navbar />
       <div className="container mx-auto px-4 pt-28 pb-16 max-w-4xl">
         <UserProfileHeader user={user} />
-        <DashboardTabs reviews={userReviews} draftReviews={draftReviews} />
+        <UserOwnStatsCard 
+          user={user}
+          reviewsCount={userReviews.length}
+          followersCount={user.followersCount || 0}
+          followingCount={user.followingCount || 0}
+          pointsCount={user.points || 0}
+        />
       </div>
     </div>
   );
