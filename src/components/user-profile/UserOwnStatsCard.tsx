@@ -49,7 +49,7 @@ const UserOwnStatsCard = ({
         </div>
       </div>
       {/* Tabs for Missions and Reward Transactions */}
-      <Tabs value={tab} onValueChange={setTab} className="mt-2">
+      <Tabs value={tab} onValueChange={(value: 'missions' | 'transactions') => setTab(value)} className="mt-2">
         <TabsList className="mb-4 w-full">
           <TabsTrigger value="missions" className="flex-1">My Missions</TabsTrigger>
           <TabsTrigger value="transactions" className="flex-1">Reward Transactions</TabsTrigger>
