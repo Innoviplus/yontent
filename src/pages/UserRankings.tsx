@@ -19,7 +19,7 @@ const UserRankings = () => {
           <TabsList className="mb-8">
             <TabsTrigger value="points">Points</TabsTrigger>
             <TabsTrigger value="views">Views</TabsTrigger>
-            <TabsTrigger value="likes">Likes Ranking</TabsTrigger>
+            <TabsTrigger value="likes">Likes</TabsTrigger>
           </TabsList>
 
           <TabsContent value="points">
