@@ -18,7 +18,7 @@ const UserRankings = () => {
         <Tabs defaultValue="points" className="w-full">
           <TabsList className="mb-8">
             <TabsTrigger value="points">Points</TabsTrigger>
-            <TabsTrigger value="views">Views Ranking</TabsTrigger>
+            <TabsTrigger value="views">Views</TabsTrigger>
             <TabsTrigger value="likes">Likes Ranking</TabsTrigger>
           </TabsList>
 
