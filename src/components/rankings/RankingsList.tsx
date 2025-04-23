@@ -26,7 +26,7 @@ const RankingsList = ({ users, activeTab }: RankingsListProps) => {
   const getStatIcon = () => {
     switch (activeTab) {
       case 'points': 
-        return <img src="/images/points-coin.svg" alt="Points" className="h-4 w-4" />;
+        return <img src="/lovable-uploads/15750ea6-ed41-4d3d-83e2-299853617c30.png" alt="Points" className="h-4 w-4" />;
       case 'views': 
         return <Eye className="h-4 w-4" />;
       case 'likes': 
