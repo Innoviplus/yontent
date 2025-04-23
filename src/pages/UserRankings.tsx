@@ -1,3 +1,4 @@
+
 import React, { useEffect, useState } from 'react';
 import { useQuery } from '@tanstack/react-query';
 import { getTopUsers } from '@/lib/api';
@@ -7,10 +8,18 @@ import { Sparkles } from 'lucide-react';
 import Navbar from '@/components/Navbar';
 import { usePageTitle } from '@/hooks/usePageTitle';
 
+// Define a type for the top user data that matches what's returned from the API
+interface TopUser {
+  id: string;
+  username: string;
+  points: number;
+  avatar?: string;
+}
+
 const UserRankings = () => {
   usePageTitle('Rankings');
   const { user } = useAuth();
-  const [topUsers, setTopUsers] = useState(null);
+  const [topUsers, setTopUsers] = useState<TopUser[] | null>(null);
   const { isLoading, error, data } = useQuery({
     queryKey: ['topUsers'],
     queryFn: getTopUsers,
@@ -23,7 +32,7 @@ const UserRankings = () => {
   }, [data]);
 
   if (isLoading) return <p>Loading...</p>;
-  if (error) return <p>Error: {error.message}</p>;
+  if (error) return <p>Error: {(error as Error).message}</p>;
 
   return (
     <div className="min-h-screen bg-gray-50">

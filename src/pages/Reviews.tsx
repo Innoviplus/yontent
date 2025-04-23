@@ -1,4 +1,5 @@
-import { Suspense, lazy } from 'react';
+
+import { Suspense, lazy, useEffect } from 'react';
 import { Loader2, Filter, Star } from 'lucide-react';
 import { useAuth } from '@/contexts/AuthContext';
 import { useReviewsList, SortOption } from '@/hooks/review/useReviewsList';
