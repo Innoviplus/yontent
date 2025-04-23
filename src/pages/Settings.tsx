@@ -1,9 +1,10 @@
-
 import { SettingsLayout } from '@/components/settings/SettingsLayout';
 import { useSettings } from '@/hooks/useSettings';
 import Navbar from '@/components/Navbar';
+import { usePageTitle } from '@/hooks/usePageTitle';
 
 const Settings = () => {
+  usePageTitle('Settings');
   const {
     userProfile,
     avatarUrl,

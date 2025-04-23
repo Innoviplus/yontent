@@ -1,4 +1,3 @@
-
 import { useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { useAuth } from '@/contexts/AuthContext';
@@ -10,8 +9,10 @@ import DashboardError from '@/components/dashboard/DashboardError';
 import { useDashboardProfile } from '@/hooks/useDashboardProfile';
 import { useDashboardReviews } from '@/hooks/useDashboardReviews';
 import DashboardTabs from '@/components/dashboard/DashboardTabs';
+import { usePageTitle } from '@/hooks/usePageTitle';
 
 const Dashboard = () => {
+  usePageTitle('Dashboard');
   const { user: authUser } = useAuth();
   const navigate = useNavigate();
   const { user, loading } = useDashboardProfile(authUser?.id);

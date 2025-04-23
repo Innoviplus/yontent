@@ -1,4 +1,3 @@
-
 import { useParams, Link } from 'react-router-dom';
 import { ArrowLeft } from 'lucide-react';
 import Navbar from '@/components/Navbar';
@@ -7,9 +6,11 @@ import ProfileNotFound from '@/components/user-profile/ProfileNotFound';
 import ProfileSkeleton from '@/components/user-profile/ProfileSkeleton';
 import { useUserProfile } from '@/hooks/useUserProfile';
 import ReviewsGrid from '@/components/review/ReviewsGrid';
+import { usePageTitle } from '@/hooks/usePageTitle';
 
 const UserProfile = () => {
   const { username } = useParams<{ username: string }>();
+  usePageTitle(`Profile - ${username}`);
   const {
     profile,
     reviews,
