@@ -49,13 +49,17 @@ const UserRankings = () => {
                 {index + 1}. {topUser.username}
               </h2>
               <p className="text-gray-600">Points: {topUser.points}</p>
-              {user && user.username && user.username !== topUser.username && (
-                <Link to={`/user/${topUser.username}`} className="text-brand-teal hover:underline block mt-4">
-                  View Profile
-                </Link>
-              )}
-              {user && user.username && user.username === topUser.username && (
-                <p className="text-gray-500 mt-4">This is you!</p>
+              {user && user.email && topUser.username && (
+                <>
+                  {user.email !== topUser.username && (
+                    <Link to={`/user/${topUser.username}`} className="text-brand-teal hover:underline block mt-4">
+                      View Profile
+                    </Link>
+                  )}
+                  {user.email === topUser.username && (
+                    <p className="text-gray-500 mt-4">This is you!</p>
+                  )}
+                </>
               )}
             </div>
           ))}
