@@ -63,7 +63,7 @@ const AppRoutes = () => {
       
       {/* Admin routes */}
       <Route path="/admin/login" element={<AdminLogin />} />
-      <Route path="/admin" element={<AdminProtectedRoute><AdminPanel /></AdminProtectedRoute>} />
+      <Route path="/admin/*" element={<AdminProtectedRoute><AdminPanel /></AdminProtectedRoute>} />
       
       <Route path="/settings" element={<ProtectedRoute><Settings /></ProtectedRoute>} />
       <Route path="/user/:username" element={<UserProfile />} />
