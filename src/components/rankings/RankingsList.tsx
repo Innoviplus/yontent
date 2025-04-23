@@ -2,7 +2,7 @@
 import { Link } from 'react-router-dom';
 import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
 import { RankedUser, RankingType } from './types';
-import { Eye, Heart, Trophy, Award } from 'lucide-react';
+import { Eye, Heart, Trophy } from 'lucide-react';
 import { formatNumber } from '@/lib/formatUtils';
 import { Button } from '@/components/ui/button';
 
@@ -26,16 +26,22 @@ const RankingsList = ({ users, activeTab }: RankingsListProps) => {
   const getStatIcon = () => {
     switch (activeTab) {
       case 'points': 
-        return <Award className="h-4 w-4" />;
+        return <img src="/images/points-coin.svg" alt="Points" className="h-4 w-4" />;
       case 'views': 
         return <Eye className="h-4 w-4" />;
       case 'likes': 
-        return <Heart className="h-4 w-4" />;
+        return <Heart className="h-4 w-4 fill-red-500 text-red-500" />;
     }
   };
   
-  // Filter out Anonymous users
-  const filteredUsers = users.filter(user => user.username !== 'Anonymous');
+  // Filter out Anonymous users and users with 0 stats
+  const filteredUsers = users.filter(user => {
+    if (user.username === 'Anonymous') return false;
+    if (activeTab === 'points' && user.stats === 0) return false;
+    if (activeTab === 'views' && user.stats === 0) return false;
+    if (activeTab === 'likes' && user.stats === 0) return false;
+    return true;
+  });
   
   return (
     <div className="max-w-3xl mx-auto space-y-3">

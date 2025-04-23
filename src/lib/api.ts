@@ -10,6 +10,7 @@ export const getTopUsers = async () => {
     .select('id, username, points, avatar')
     .not('username', 'is', null)  // Filter out profiles without usernames
     .neq('username', 'Anonymous')  // Filter out Anonymous users
+    .gt('points', 0)  // Filter out users with 0 points
     .order('points', { ascending: false })
     .limit(50);
     
