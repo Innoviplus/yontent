@@ -1,9 +1,10 @@
 
 import { Suspense, lazy, useEffect } from 'react';
 import { Loader2, Filter, Star } from 'lucide-react';
-import Navbar from '@/components/Navbar';
 import { useAuth } from '@/contexts/AuthContext';
 import { useReviewsList, SortOption } from '@/hooks/review/useReviewsList';
+import { usePageTitle } from '@/hooks/usePageTitle';
+import Navbar from '@/components/Navbar';
 import ReviewSorter from '@/components/review/ReviewSorter';
 import EmptyReviews from '@/components/review/EmptyReviews';
 import ReviewsError from '@/components/review/ReviewsError';
@@ -14,6 +15,8 @@ import { useIsMobile } from '@/hooks/use-mobile';
 import { Card, CardContent } from '@/components/ui/card';
 
 const Reviews = () => {
+  usePageTitle('Reviews');
+  
   const { user } = useAuth();
   const isMobile = useIsMobile();
   const { 
@@ -29,12 +32,10 @@ const Reviews = () => {
     totalPages 
   } = useReviewsList(user?.id);
 
-  // Preload the next page of reviews when approaching the bottom for smoother pagination
   useEffect(() => {
     if (isMobile && page < totalPages) {
       const handleScroll = () => {
         if (window.innerHeight + window.scrollY >= document.body.offsetHeight - 1000) {
-          // Prefetch next page
           const nextPageReviews = (page + 1);
         }
       };
@@ -46,7 +47,7 @@ const Reviews = () => {
 
   const handleSortChange = (value: string) => {
     setSortBy(value as SortOption);
-    setPage(1); // Reset to first page when sort changes
+    setPage(1);
   };
 
   return (

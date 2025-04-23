@@ -1,47 +1,42 @@
 
-import { useState } from 'react';
-import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
+import React from 'react';
 import Navbar from '@/components/Navbar';
-import { format } from 'date-fns';
+import { usePageTitle } from '@/hooks/usePageTitle';
+import { Sparkles } from 'lucide-react';
+import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import RankingsContent from '@/components/rankings/RankingsContent';
 import { RankingType } from '@/components/rankings/types';
 
-const Rankings = () => {
-  const [activeTab, setActiveTab] = useState<RankingType>('points');
-  
+const UserRankings = () => {
+  usePageTitle('Rankings');
   return (
     <div className="min-h-screen bg-gray-50">
       <Navbar />
-      
-      <div className="container mx-auto px-4 pt-28 pb-16 max-w-4xl">
-        <div className="bg-white rounded-xl shadow-subtle p-6 mb-8">
-          <h1 className="text-3xl font-bold text-gray-900 mb-2">User Rankings</h1>
-          <p className="text-lg text-gray-600">
-            Top users ranked by monthly achievements.
-          </p>
-          
-          <Tabs 
-            defaultValue="points" 
-            className="mt-6"
-            onValueChange={(value) => setActiveTab(value as RankingType)}
-          >
-            <TabsList className="grid grid-cols-3 w-full max-w-md">
-              <TabsTrigger value="points">Points</TabsTrigger>
-              <TabsTrigger value="views">Views</TabsTrigger>
-              <TabsTrigger value="likes">Likes</TabsTrigger>
+      <div className="container mx-auto px-4 pt-28 pb-16">
+        <h1 className="text-3xl font-bold mb-8 flex items-center gap-2 text-brand-teal">
+          <Sparkles className="h-6 w-6" />
+          User Rankings
+        </h1>
+
+        <div className="flex justify-center"> {/* Added this div to center the tabs */}
+          <Tabs defaultValue="points" className="w-full max-w-md"> {/* Added max-w-md to limit width */}
+            <TabsList className="mb-8 w-full">
+              <TabsTrigger value="points">By Points</TabsTrigger>
+              <TabsTrigger value="views">By Views</TabsTrigger>
+              <TabsTrigger value="likes">By Likes</TabsTrigger>
             </TabsList>
-            
-            <div className="mt-8">
-              <div className="flex items-center mb-6">
-                <h2 className="text-xl font-semibold">
-                  Top Users by {activeTab === 'points' ? 'Monthly Points' : 
-                               activeTab === 'views' ? 'Monthly Views' : 
-                               'Monthly Likes'} - {format(new Date(), 'MMMM yyyy')}
-                </h2>
-              </div>
-              
-              <RankingsContent activeTab={activeTab} />
-            </div>
+
+            <TabsContent value="points">
+              <RankingsContent activeTab="points" />
+            </TabsContent>
+
+            <TabsContent value="views">
+              <RankingsContent activeTab="views" />
+            </TabsContent>
+
+            <TabsContent value="likes">
+              <RankingsContent activeTab="likes" />
+            </TabsContent>
           </Tabs>
         </div>
       </div>
@@ -49,4 +44,4 @@ const Rankings = () => {
   );
 };
 
-export default Rankings;
+export default UserRankings;

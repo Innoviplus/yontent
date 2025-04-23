@@ -1,4 +1,3 @@
-
 import { useEffect } from 'react';
 import { Loader2, Star } from 'lucide-react';
 import Navbar from '@/components/Navbar';
@@ -8,8 +7,10 @@ import EmptyFeed from '@/components/review/EmptyFeed';
 import ReviewsError from '@/components/review/ReviewsError';
 import { useAuth } from '@/contexts/AuthContext';
 import { useReviewsList, SortOption } from '@/hooks/review/useReviewsList';
+import { usePageTitle } from '@/hooks/usePageTitle';
 
 const ReviewFeed = () => {
+  usePageTitle('Feed');
   const { user } = useAuth();
   const { 
     reviews, 

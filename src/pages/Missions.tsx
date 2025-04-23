@@ -1,4 +1,3 @@
-
 import { useState, useEffect } from 'react';
 import { Mission } from '@/lib/types';
 import MissionCard from '@/components/MissionCard';
@@ -8,10 +7,12 @@ import { RefreshCw, Award, AlertCircle } from 'lucide-react';
 import { supabase } from '@/integrations/supabase/client';
 import { toast } from 'sonner';
 import { useIsMobile } from '@/hooks/use-mobile';
+import { usePageTitle } from '@/hooks/usePageTitle';
 
 type SortOption = 'recent' | 'expiringSoon' | 'highestReward';
 
 const Missions = () => {
+  usePageTitle('Missions');
   const [missions, setMissions] = useState<Mission[]>([]);
   const [sortBy, setSortBy] = useState<SortOption>('recent');
   const [isLoading, setIsLoading] = useState(true);

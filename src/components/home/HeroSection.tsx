@@ -1,4 +1,3 @@
-
 import { Link } from 'react-router-dom';
 import { Star, Award, Sparkles, ArrowRight } from 'lucide-react';
 import { useAuth } from '@/contexts/AuthContext';
@@ -6,7 +5,9 @@ import { Button } from '@/components/ui/button';
 
 const HeroSection = () => {
   const { user } = useAuth();
-  return <section className="w-full min-h-[85vh] relative flex items-center justify-center pt-20 pb-16 overflow-hidden">
+  
+  return (
+    <section className="w-full min-h-[85vh] relative flex items-center justify-center pt-20 pb-16 overflow-hidden">
       {/* Background with gradient and pattern */}
       <div className="absolute inset-0 bg-gradient-to-br from-brand-teal/5 via-white to-brand-slate/5">
         <div className="absolute inset-0 bg-[radial-gradient(#e5e7eb_1px,transparent_1px)] [background-size:16px_16px] opacity-40"></div>
@@ -42,17 +43,17 @@ Brand Love</span>
           animationDelay: '200ms'
         }} className="text-xl text-gray-600 mb-8 animate-fade-up max-w-2xl mx-auto text-center md:text-sm">Join our community of reviewers, share your experiences, and earn points for every completed mission</p>
           
-          {/* CTA Buttons */}
+          {/* CTA Buttons - Updated sizes and text */}
           <div className="flex flex-col sm:flex-row gap-4 justify-center mb-12 animate-fade-up" style={{
           animationDelay: '300ms'
         }}>
-            <Button asChild size="lg" className="bg-brand-teal hover:bg-brand-teal/90 text-white font-medium px-8 py-6 h-auto">
+            <Button asChild size="default" className="bg-brand-teal hover:bg-brand-teal/90 text-white font-medium">
               <Link to={user ? "/submit-review" : "/register"}>
-                {user ? "Write a Review" : "Get started - it's free"}
-                <ArrowRight className="ml-2 h-5 w-5" />
+                {user ? "Write a Review" : "Get Started"}
+                <ArrowRight className="ml-2 h-4 w-4" />
               </Link>
             </Button>
-            <Button asChild variant="outline" size="lg" className="h-auto py-6">
+            <Button asChild variant="outline" size="default">
               <Link to="/reviews">
                 Explore Reviews
               </Link>
@@ -68,6 +69,8 @@ Brand Love</span>
           </div>
         </div>
       </div>
-    </section>;
+    </section>
+  );
 };
+
 export default HeroSection;
