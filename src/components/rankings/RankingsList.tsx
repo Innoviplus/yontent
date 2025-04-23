@@ -2,9 +2,9 @@
 import { Link } from 'react-router-dom';
 import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
 import { RankedUser, RankingType } from './types';
-import { format } from 'date-fns';
 import { Eye, Heart, Trophy, Award } from 'lucide-react';
 import { formatNumber } from '@/lib/formatUtils';
+import { Button } from '@/components/ui/button';
 
 interface RankingsListProps {
   users: RankedUser[];
@@ -34,9 +34,12 @@ const RankingsList = ({ users, activeTab }: RankingsListProps) => {
     }
   };
   
+  // Filter out Anonymous users
+  const filteredUsers = users.filter(user => user.username !== 'Anonymous');
+  
   return (
-    <div className="space-y-3">
-      {users.map((user) => (
+    <div className="max-w-3xl mx-auto space-y-3">
+      {filteredUsers.map((user) => (
         <Link 
           key={user.id} 
           to={`/user/${user.username}`}
@@ -55,28 +58,19 @@ const RankingsList = ({ users, activeTab }: RankingsListProps) => {
           
           <div className="flex-1">
             <h3 className="font-medium">{user.username}</h3>
-            <p className="text-sm text-gray-500">
-              Joined {format(user.createdAt, 'MMM yyyy')}
-            </p>
+            <div className="flex items-center text-sm text-gray-600">
+              {getStatIcon()}
+              <span className="ml-1">{formatNumber(user.stats)}</span>
+            </div>
           </div>
           
-          <div className="text-right">
-            {activeTab === 'points' ? (
-              <div className="flex items-center">
-                <img 
-                  src="/lovable-uploads/87f7987e-62e4-4871-b384-8c77779df418.png" 
-                  alt="Points" 
-                  className="w-4 h-4 mr-1"
-                />
-                <span className="font-medium text-brand-teal">{formatNumber(user.stats)}</span>
-              </div>
-            ) : (
-              <div className="flex items-center gap-1 text-gray-700">
-                {getStatIcon()}
-                <span className="font-medium">{formatNumber(user.stats)}</span>
-              </div>
-            )}
-          </div>
+          <Button 
+            variant="outline" 
+            size="sm"
+            className="min-w-[100px]"
+          >
+            Follow
+          </Button>
         </Link>
       ))}
     </div>
