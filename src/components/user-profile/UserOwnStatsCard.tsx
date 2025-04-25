@@ -117,14 +117,18 @@ const UserOwnStatsCard = ({
           <div className="text-xs text-gray-500">Transactions</div>
         </button>
 
-        {/* Points */}
-        <div className="bg-gray-50 rounded-lg p-3 text-center flex flex-col items-center">
+        {/* Points - now clickable */}
+        <button
+          type="button"
+          onClick={() => navigate("/my-reward-transactions")}
+          className="bg-gray-50 rounded-lg p-3 text-center flex flex-col items-center hover:bg-brand-teal/10 transition-colors"
+        >
           <div className="flex items-center justify-center gap-1">
             <img alt="Points" width="20" height="20" className="h-5 w-5" src="/lovable-uploads/8273d306-96cc-45cd-a7d8-ded89e18e195.png" />
             <span className="text-lg font-semibold text-brand-teal">{pointsCount}</span>
           </div>
           <div className="text-xs text-gray-500">Point Balance</div>
-        </div>
+        </button>
       </div>
     </div>
   );
