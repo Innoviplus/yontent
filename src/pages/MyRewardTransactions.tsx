@@ -19,7 +19,7 @@ type Transaction = {
   id: string;
   description: string;
   amount: number;
-  type: "EARNED" | "REDEEMED" | "REFUNDED" | "ADJUSTED" | "WELCOME";
+  type: "EARNED" | "REDEEMED" | "REFUNDED" | "ADJUSTED" | "WELCOME" | "DEDUCTED";
   createdAt: string;
   source?: string;
 };
@@ -118,29 +118,37 @@ const MyRewardTransactions = () => {
         )}
 
         <div className="space-y-4">
-          {transactions.map((tx) => (
-            <div
-              key={tx.id}
-              className="flex justify-between items-center bg-white rounded-xl p-6 shadow-card"
-            >
-              <div>
-                <div className="text-lg font-semibold text-gray-900">{tx.description}</div>
-                <div className="text-gray-500 text-sm mt-1">{format(new Date(tx.createdAt), "MMM dd, yyyy")}</div>
-                {tx.source === 'ADMIN_ADJUSTMENT' && (
-                  <div className="text-gray-500 text-xs mt-1">Manual adjustment by admin</div>
-                )}
-              </div>
+          {transactions.map((tx) => {
+            // Determine if transaction is a positive or negative movement
+            const isPositive = 
+              tx.type === "EARNED" || 
+              tx.type === "WELCOME" || 
+              tx.type === "ADJUSTED" || 
+              tx.type === "REFUNDED";
+            
+            return (
               <div
-                className={
-                  "font-bold text-base " +
-                  (tx.type === "REDEEMED" ? "text-red-600" : "text-green-600")
-                }
+                key={tx.id}
+                className="flex justify-between items-center bg-white rounded-xl p-6 shadow-card"
               >
-                {tx.type === "REDEEMED" ? "-" : "+"}
-                {tx.amount} <span className="font-semibold">points</span>
+                <div>
+                  <div className="text-lg font-semibold text-gray-900">{tx.description}</div>
+                  <div className="text-gray-500 text-sm mt-1">{format(new Date(tx.createdAt), "MMM dd, yyyy")}</div>
+                  {tx.source === 'ADMIN_ADJUSTMENT' && (
+                    <div className="text-gray-500 text-xs mt-1">Manual adjustment by admin</div>
+                  )}
+                </div>
+                <div
+                  className={
+                    "font-bold text-base " +
+                    (isPositive ? "text-green-600" : "text-[#ea384c]")
+                  }
+                >
+                  {isPositive ? '+' : '-'}{Math.abs(tx.amount)} <span className="font-semibold">points</span>
+                </div>
               </div>
-            </div>
-          ))}
+            );
+          })}
         </div>
       </div>
     </div>
@@ -148,3 +156,4 @@ const MyRewardTransactions = () => {
 };
 
 export default MyRewardTransactions;
+
