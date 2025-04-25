@@ -1,4 +1,3 @@
-
 import { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { useAuth } from '@/contexts/AuthContext';
@@ -87,6 +86,34 @@ const MyRewardTransactions = () => {
     fetchTransactions();
   }, [user?.id]);
 
+  const renderTransaction = (tx: Transaction) => {
+    // Determine if transaction is positive or negative
+    const isDeduction = tx.type === "REDEEMED" || tx.type === "DEDUCTED";
+    
+    return (
+      <div
+        key={tx.id}
+        className="flex justify-between items-center bg-white rounded-xl p-6 shadow-card"
+      >
+        <div>
+          <div className="text-lg font-semibold text-gray-900">{tx.description}</div>
+          <div className="text-gray-500 text-sm mt-1">{format(new Date(tx.createdAt), "MMM dd, yyyy")}</div>
+          {tx.source === 'ADMIN_ADJUSTMENT' && (
+            <div className="text-gray-500 text-xs mt-1">Manual adjustment by admin</div>
+          )}
+        </div>
+        <div
+          className={
+            "font-bold text-base " +
+            (isDeduction ? "text-[#ea384c]" : "text-green-600")
+          }
+        >
+          {isDeduction ? '-' : '+'}{Math.abs(tx.amount)} <span className="font-semibold">points</span>
+        </div>
+      </div>
+    );
+  };
+
   return (
     <div className="min-h-screen bg-gray-50">
       <Navbar />
@@ -118,37 +145,7 @@ const MyRewardTransactions = () => {
         )}
 
         <div className="space-y-4">
-          {transactions.map((tx) => {
-            // Determine if transaction is a positive or negative movement
-            const isPositive = 
-              tx.type === "EARNED" || 
-              tx.type === "WELCOME" || 
-              tx.type === "ADJUSTED" || 
-              tx.type === "REFUNDED";
-            
-            return (
-              <div
-                key={tx.id}
-                className="flex justify-between items-center bg-white rounded-xl p-6 shadow-card"
-              >
-                <div>
-                  <div className="text-lg font-semibold text-gray-900">{tx.description}</div>
-                  <div className="text-gray-500 text-sm mt-1">{format(new Date(tx.createdAt), "MMM dd, yyyy")}</div>
-                  {tx.source === 'ADMIN_ADJUSTMENT' && (
-                    <div className="text-gray-500 text-xs mt-1">Manual adjustment by admin</div>
-                  )}
-                </div>
-                <div
-                  className={
-                    "font-bold text-base " +
-                    (isPositive ? "text-green-600" : "text-[#ea384c]")
-                  }
-                >
-                  {isPositive ? '+' : '-'}{Math.abs(tx.amount)} <span className="font-semibold">points</span>
-                </div>
-              </div>
-            );
-          })}
+          {transactions.map(renderTransaction)}
         </div>
       </div>
     </div>
@@ -156,4 +153,3 @@ const MyRewardTransactions = () => {
 };
 
 export default MyRewardTransactions;
-
