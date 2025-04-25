@@ -1,5 +1,5 @@
 
-import { FormEvent } from "react";
+import React, { useEffect } from 'react';
 import { 
   Form,
   FormControl,
@@ -51,7 +51,7 @@ const TransactionFormCard = ({
   const watchType = form.watch("type");
   
   // Update source when transaction type changes
-  React.useEffect(() => {
+  useEffect(() => {
     if (watchType === "REDEEMED") {
       form.setValue("source", "REDEMPTION");
     } else {
