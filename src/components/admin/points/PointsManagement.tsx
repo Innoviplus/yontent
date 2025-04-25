@@ -25,7 +25,7 @@ const PointsManagement = () => {
     resolver: zodResolver(transactionSchema),
     defaultValues: {
       amount: 0,
-      type: 'EARNED',
+      type: 'ADD',
       source: 'ADMIN_ADJUSTMENT',
       description: '',
       userId: ''
@@ -68,7 +68,7 @@ const PointsManagement = () => {
       setIsSubmitting(true);
       console.log('Starting transaction submission with values:', values);
 
-      const { amount, type, source, description, userId } = values;
+      const { amount, type, description, userId } = values;
       
       // First update the user's points in the profiles table
       const { data: userData, error: userError } = await supabase
@@ -85,18 +85,14 @@ const PointsManagement = () => {
       }
       
       const currentPoints = userData?.points || 0;
-      let newPoints = currentPoints;
+      const finalAmount = type === 'ADD' ? amount : -amount;
+      const newPoints = currentPoints + finalAmount;
       
-      if (type === 'EARNED' || type === 'ADJUSTED' || type === 'REFUNDED') {
-        newPoints = currentPoints + amount;
-      } else if (type === 'REDEEMED') {
-        // Check if user has enough points
-        if (currentPoints < amount) {
-          toast.error(`User only has ${currentPoints} points, cannot deduct ${amount} points.`);
-          setIsSubmitting(false);
-          return;
-        }
-        newPoints = currentPoints - amount;
+      // For deductions, check if user has enough points
+      if (type === 'DEDUCT' && currentPoints < amount) {
+        toast.error(`User only has ${currentPoints} points, cannot deduct ${amount} points.`);
+        setIsSubmitting(false);
+        return;
       }
       
       // Update the user's points in the database
@@ -115,21 +111,15 @@ const PointsManagement = () => {
       console.log('Points updated successfully. New total:', newPoints);
       
       // Make sure we properly tag the source in the description
-      let fullDescription = description.trim();
-      
-      // Always add the source tag, ensuring we don't duplicate if it already contains one
-      if (!fullDescription.includes('[')) {
-        fullDescription = `${fullDescription} [${source}]`;
-      }
+      const fullDescription = `${description.trim()} [ADMIN_ADJUSTMENT]`;
       
       // Use admin service to insert the transaction record
-      // Use explicit typing to work around the TypeScript error
       const { data: rpcResult, error: rpcError } = await supabase.rpc(
         'admin_add_point_transaction' as any,
         {
           p_user_id: userId,
-          p_amount: amount,
-          p_type: type,
+          p_amount: finalAmount,
+          p_type: type === 'ADD' ? 'ADJUSTED' : 'DEDUCTED',
           p_description: fullDescription
         }
       );
@@ -142,7 +132,7 @@ const PointsManagement = () => {
       }
       
       console.log('Transaction logged successfully via RPC:', rpcResult);
-      toast.success(`Successfully ${type === 'REDEEMED' ? 'deducted' : 'added'} ${amount} points`);
+      toast.success(`Successfully ${type === 'DEDUCT' ? 'deducted' : 'added'} ${amount} points`);
       
       // Reset form and selection
       handleClearUser();
