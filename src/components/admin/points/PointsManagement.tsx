@@ -132,12 +132,17 @@ const PointsManagement = () => {
       }
       
       console.log('Transaction logged successfully via RPC:', rpcResult);
-      toast.success(`Successfully ${type === 'DEDUCT' ? 'deducted' : 'added'} ${amount} points`);
+      toast.success(`Successfully ${type === 'ADD' ? 'added' : 'deducted'} ${amount} points`);
       
       // Reset form and selection
+      form.reset({
+        amount: 0,
+        type: 'ADD',
+        source: 'ADMIN_ADJUSTMENT',
+        description: '',
+        userId: ''
+      });
       handleClearUser();
-      form.reset();
-      form.setValue('source', 'ADMIN_ADJUSTMENT');
     } catch (error) {
       console.error('Error processing points transaction:', error);
       toast.error('Failed to process points transaction');
