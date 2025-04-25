@@ -1,5 +1,6 @@
 
 import { PointTransaction } from '@/lib/types';
+import { supabase } from '@/integrations/supabase/client';
 
 /**
  * Log a points transaction
@@ -15,20 +16,37 @@ export const logPointsTransaction = async (
   try {
     console.log(`Logging points transaction: ${amount} points for user ${userId} (${type} from ${source})`);
     
-    // Since we don't have the point_transactions table in Supabase yet,
-    // just create a mock transaction object
-    const transaction: PointTransaction = {
-      id: Date.now().toString(),
-      userId,
-      amount,
-      type,
-      source,
-      sourceId,
-      description,
-      createdAt: new Date()
-    };
+    // Insert the transaction record into the database
+    const { data, error } = await supabase
+      .from('point_transactions')
+      .insert({
+        user_id: userId,
+        amount: amount,
+        type: type,
+        source: source,
+        description: description
+      })
+      .select()
+      .single();
     
-    console.log('Transaction logged (mock):', transaction);
+    if (error) {
+      console.error('Error inserting transaction record:', error);
+      throw error;
+    }
+    
+    console.log('Transaction logged successfully:', data);
+    
+    // Transform to match our interface
+    const transaction: PointTransaction = {
+      id: data.id,
+      userId: data.user_id,
+      amount: data.amount,
+      type: data.type,
+      source: data.source,
+      sourceId,
+      description: data.description,
+      createdAt: new Date(data.created_at)
+    };
     
     return { success: true, transaction };
   } catch (error: any) {
@@ -44,27 +62,26 @@ export const getUserTransactionHistory = async (
   userId: string
 ): Promise<{ transactions: PointTransaction[]; success: boolean; error?: string }> => {
   try {
-    // Mock implementation since we don't have the point_transactions table
-    const transactions: PointTransaction[] = [
-      {
-        id: '1',
-        userId,
-        amount: 100,
-        type: 'EARNED',
-        source: 'MISSION_REVIEW',
-        description: 'Completed mission: Product Review',
-        createdAt: new Date(Date.now() - 86400000) // yesterday
-      },
-      {
-        id: '2',
-        userId,
-        amount: 50,
-        type: 'REDEEMED',
-        source: 'REDEMPTION',
-        description: 'Redeemed for Gift Card',
-        createdAt: new Date(Date.now() - 172800000) // 2 days ago
-      }
-    ];
+    const { data, error } = await supabase
+      .from('point_transactions')
+      .select('*')
+      .eq('user_id', userId)
+      .order('created_at', { ascending: false });
+    
+    if (error) {
+      throw error;
+    }
+    
+    const transactions: PointTransaction[] = (data || []).map(item => ({
+      id: item.id,
+      userId: item.user_id,
+      amount: item.amount,
+      type: item.type,
+      source: item.source || 'ADMIN_ADJUSTMENT',
+      sourceId: item.source_id,
+      description: item.description,
+      createdAt: new Date(item.created_at)
+    }));
     
     return { transactions, success: true };
   } catch (error: any) {

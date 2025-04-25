@@ -1,10 +1,10 @@
+
 import React, { useState } from 'react';
 import { useQuery } from '@tanstack/react-query';
 import { supabase } from '@/integrations/supabase/client';
 import { useAuth } from '@/contexts/AuthContext';
 import { format } from 'date-fns';
 import { Skeleton } from '@/components/ui/skeleton';
-import { PointTransaction } from '@/lib/types';
 
 const TransactionsTab = () => {
   const { user } = useAuth();
@@ -27,14 +27,15 @@ const TransactionsTab = () => {
       
       if (error) throw error;
       
-      // Transform the data to match the PointTransaction interface
+      console.log('Transactions from database:', data);
+      
+      // Transform the data to match our expected format
       return (data || []).map(item => ({
         id: item.id,
         userId: item.user_id,
         amount: item.amount,
         type: item.type,
-        source: 'ADMIN_ADJUSTMENT', // Default value since it doesn't exist in database
-        sourceId: undefined,  // Default to undefined as it's optional
+        source: item.source || 'ADMIN_ADJUSTMENT',
         description: item.description || '',
         createdAt: new Date(item.created_at)
       }));
@@ -76,8 +77,8 @@ const TransactionsTab = () => {
             </span>
           </div>
           
-          <div className={`font-semibold ${transaction.type === 'EARNED' || transaction.type === 'WELCOME' ? 'text-green-600' : 'text-red-600'}`}>
-            {transaction.type === 'EARNED' || transaction.type === 'WELCOME' ? '+' : '-'}
+          <div className={`font-semibold ${transaction.type === 'EARNED' || transaction.type === 'WELCOME' || transaction.type === 'ADJUSTED' ? 'text-green-600' : 'text-red-600'}`}>
+            {transaction.type === 'EARNED' || transaction.type === 'WELCOME' || transaction.type === 'ADJUSTED' ? '+' : '-'}
             {transaction.amount} points
           </div>
         </div>

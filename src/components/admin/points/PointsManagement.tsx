@@ -77,7 +77,8 @@ const PointsManagement = () => {
           userId, 
           amount, 
           type, 
-          source,  // Added the source parameter here
+          source === 'MISSION_REVIEW' || source === 'RECEIPT_SUBMISSION' ? 
+            source : 'ADMIN_ADJUSTMENT',  // Ensure only allowed source types are passed
           description
         );
       } else {

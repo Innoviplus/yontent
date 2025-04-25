@@ -1,3 +1,4 @@
+
 import { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { useAuth } from '@/contexts/AuthContext';
@@ -20,6 +21,7 @@ type Transaction = {
   amount: number;
   type: "EARNED" | "REDEEMED" | "REFUNDED" | "ADJUSTED" | "WELCOME";
   createdAt: string;
+  source?: string;
 };
 
 const MyRewardTransactions = () => {
@@ -40,6 +42,7 @@ const MyRewardTransactions = () => {
         .order("created_at", { ascending: false });
 
       if (!error && data) {
+        console.log("Transactions fetched:", data);
         setTransactions(
           data.map((row) => ({
             id: row.id,
@@ -47,9 +50,11 @@ const MyRewardTransactions = () => {
             amount: row.amount,
             type: row.type as Transaction["type"],
             createdAt: row.created_at,
+            source: row.source
           }))
         );
       } else {
+        console.error("Error fetching transactions:", error);
         setTransactions([]);
       }
       setLoading(false);

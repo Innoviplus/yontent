@@ -44,7 +44,7 @@ export const addPointsToUser = async (
     }
     
     // Log the transaction if successful
-    await logPointsTransaction(
+    const transactionResult = await logPointsTransaction(
       userId,
       pointsAmount,
       type,
@@ -52,6 +52,10 @@ export const addPointsToUser = async (
       description,
       sourceId
     );
+    
+    if (!transactionResult.success) {
+      console.error('Failed to log transaction:', transactionResult.error);
+    }
     
     console.log(`Successfully updated user points from ${currentPoints} to ${newPointsTotal}`);
     

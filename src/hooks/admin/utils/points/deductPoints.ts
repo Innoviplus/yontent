@@ -8,7 +8,7 @@ import { logPointsTransaction } from './transactionLog';
 export const deductPointsFromUser = async (
   userId: string, 
   pointsAmount: number,
-  source: 'REDEMPTION' | 'ADMIN_ADJUSTMENT',
+  source: 'REDEMPTION' | 'ADMIN_ADJUSTMENT' | 'MISSION_REVIEW' | 'RECEIPT_SUBMISSION',
   description: string,
   sourceId?: string
 ): Promise<{ success: boolean; newPointsTotal?: number; error?: string }> => {
@@ -50,14 +50,18 @@ export const deductPointsFromUser = async (
     }
     
     // Log the transaction if successful
-    await logPointsTransaction(
+    const transactionResult = await logPointsTransaction(
       userId,
-      -pointsAmount, // Negative amount for deduction
+      pointsAmount,
       'REDEEMED',
       source,
       description,
       sourceId
     );
+    
+    if (!transactionResult.success) {
+      console.error('Failed to log transaction:', transactionResult.error);
+    }
     
     console.log(`Successfully updated user points from ${currentPoints} to ${newPointsTotal}`);
     
