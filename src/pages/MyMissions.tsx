@@ -3,7 +3,7 @@ import { useEffect } from 'react';
 import { useAuth } from '@/contexts/AuthContext';
 import Navbar from '@/components/Navbar';
 import MissionsTab from '@/components/dashboard/MissionsTab';
-import { useNavigate } from 'react-router-dom';
+import { useNavigate, Link } from 'react-router-dom';
 import { 
   Breadcrumb, 
   BreadcrumbList, 
@@ -31,7 +31,9 @@ const MyMissions = () => {
         <Breadcrumb className="mb-6">
           <BreadcrumbList>
             <BreadcrumbItem>
-              <BreadcrumbLink href="/dashboard">Dashboard</BreadcrumbLink>
+              <Link to="/dashboard">
+                <BreadcrumbLink as="span">Dashboard</BreadcrumbLink>
+              </Link>
             </BreadcrumbItem>
             <BreadcrumbSeparator>
               <ChevronRight />
