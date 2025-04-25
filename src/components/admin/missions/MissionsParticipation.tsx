@@ -1,5 +1,5 @@
 
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import { 
   Card, 
   CardContent, 
@@ -34,6 +34,14 @@ const MissionsParticipation = ({
 }: MissionsParticipationProps) => {
   const [viewingParticipation, setViewingParticipation] = useState<MissionParticipation | null>(null);
   const [processingId, setProcessingId] = useState<string | null>(null);
+  
+  useEffect(() => {
+    console.log('MissionsParticipation rendered with:', {
+      participationsCount: participations.length,
+      isLoading,
+      isRefreshing
+    });
+  }, [participations, isLoading, isRefreshing]);
 
   const handleApprove = async (id: string) => {
     setProcessingId(id);

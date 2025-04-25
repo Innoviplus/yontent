@@ -17,6 +17,7 @@ import {
  */
 export const fetchMissionParticipations = async (): Promise<ApiResponse<MissionParticipation>> => {
   try {
+    console.log('Fetching all mission participations');
     const { data, error } = await supabase
       .from('mission_participations')
       .select(`
@@ -31,7 +32,9 @@ export const fetchMissionParticipations = async (): Promise<ApiResponse<MissionP
       return { success: false, error: error.message };
     }
 
+    console.log('Fetched mission participations raw data:', data);
     const transformedData = transformParticipationData(data || []);
+    console.log('Transformed participations data:', transformedData);
     
     return {
       success: true,
@@ -50,17 +53,20 @@ export const fetchMissionParticipationsWithFilters = async (
   filters: MissionParticipationFilters
 ): Promise<ApiResponse<MissionParticipation>> => {
   try {
+    console.log('Fetching mission participations with filters:', filters);
+    
     let query = supabase
       .from('mission_participations')
       .select(`
         *,
-        missions!inner(*),
-        profiles!inner(*)
+        missions(*),
+        profiles(*)
       `);
 
     // Apply filters
     if (filters.status) {
       query = query.eq('status', filters.status);
+      console.log(`Filtering by status: ${filters.status}`);
     }
     
     if (filters.missionId) {
@@ -88,7 +94,9 @@ export const fetchMissionParticipationsWithFilters = async (
       return { success: false, error: error.message };
     }
 
+    console.log('Fetched filtered mission participations raw data:', data);
     const transformedData = transformParticipationData(data || []);
+    console.log('Transformed filtered participations data:', transformedData);
     
     return {
       success: true,
