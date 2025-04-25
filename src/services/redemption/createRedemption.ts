@@ -47,7 +47,7 @@ export const createRedemptionRequest = async ({
       userId, 
       pointsAmount,
       'REDEMPTION',
-      `Redeemed: ${itemName}`,
+      `Redeemed: ${itemName}`, // Include the item name in the transaction description
       itemId
     );
     
