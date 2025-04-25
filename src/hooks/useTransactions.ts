@@ -15,11 +15,14 @@ export const useTransactions = (userId: string | undefined) => {
     setLoading(true);
     try {
       console.log("Fetching redemption transactions for user:", userId);
+      
+      // Using explicit type casting to avoid excessive type instantiation
+      const transactionTypes = ['REDEEMED', 'REFUNDED'] as const;
       const { data, error } = await supabase
         .from("point_transactions")
         .select("*")
         .eq("user_id", userId)
-        .in("type", ["REDEEMED", "REFUNDED"])
+        .in("type", transactionTypes)
         .eq("source", "REDEMPTION")
         .order("created_at", { ascending: false });
 
