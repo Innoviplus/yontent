@@ -61,6 +61,9 @@ export const deductPointsFromUser = async (
     
     if (!transactionResult.success) {
       console.error('Failed to log transaction:', transactionResult.error);
+      // Even if logging fails, we've already updated the points, so don't return error here
+    } else {
+      console.log('Transaction logged successfully:', transactionResult.transaction);
     }
     
     console.log(`Successfully updated user points from ${currentPoints} to ${newPointsTotal}`);

@@ -29,25 +29,28 @@ export const createRedemptionRequest = async ({
       console.error('Error fetching user data:', userError);
     }
     
+    // Get item details to include in transaction description
     const { data: itemData, error: itemError } = await supabase
       .from('redemption_items')
-      .select('name')
+      .select('name, redemption_type')
       .eq('id', itemId)
       .single();
       
     if (itemError) {
       console.error('Error fetching item data:', itemError);
+      throw new Error('Could not fetch item details');
     }
     
     const username = userData?.username || null;
     const itemName = itemData?.name || `Item ${itemId}`;
+    const redeemType = itemData?.redemption_type || 'GIFT_VOUCHER';
     
     // First deduct points from the user's account
     const deductResult = await deductPointsFromUser(
       userId, 
       pointsAmount,
       'REDEMPTION',
-      `Redeemed: ${itemName}`, // Include the item name in the transaction description
+      `${redeemType === 'CASH' ? 'Cash Out' : 'Redeemed'}: ${itemName}`, // Include the item name in the transaction description
       itemId
     );
     
