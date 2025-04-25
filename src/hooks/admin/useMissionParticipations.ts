@@ -1,5 +1,5 @@
 
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import { 
   fetchMissionParticipations,
   fetchMissionParticipationsWithFilters, 
@@ -17,17 +17,30 @@ export const useMissionParticipations = () => {
   const [loading, setLoading] = useState(true);
   const [isRefreshing, setIsRefreshing] = useState(false);
   const [error, setError] = useState('');
-  const [filter, setFilter] = useState<ParticipationStatus>('PENDING');
+  const [filter, setFilter] = useState<ParticipationStatus | null>(null);
   const [selectedParticipation, setSelectedParticipation] = useState<MissionParticipation | null>(null);
   const [processingId, setProcessingId] = useState<string | null>(null);
+
+  // Initial load of participations
+  useEffect(() => {
+    loadParticipations();
+  }, []);
 
   const loadParticipations = async (status?: ParticipationStatus) => {
     try {
       setLoading(true);
       setError('');
       
-      const filterToUse = status || filter;
-      const response = await fetchMissionParticipationsWithFilters({ status: filterToUse });
+      console.log('Loading participations with filter:', status || filter);
+
+      let response;
+      if (status || filter) {
+        response = await fetchMissionParticipationsWithFilters({ 
+          status: status || filter as ParticipationStatus 
+        });
+      } else {
+        response = await fetchMissionParticipations();
+      }
       
       if (response.success && response.participations) {
         // Transform API response to the format expected by components
@@ -46,11 +59,14 @@ export const useMissionParticipations = () => {
           missionType: p.mission.type
         }));
         
+        console.log('Setting participations:', transformedParticipations);
         setParticipations(transformedParticipations);
       } else {
+        console.error('Error response:', response);
         setError(response.error || 'Failed to load participations');
       }
     } catch (error: any) {
+      console.error('Error in loadParticipations:', error);
       setError(error.message || 'An error occurred loading participations');
     } finally {
       setLoading(false);

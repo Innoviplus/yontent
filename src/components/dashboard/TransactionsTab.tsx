@@ -1,10 +1,10 @@
+
 import React, { useState } from 'react';
 import { useQuery } from '@tanstack/react-query';
 import { supabase } from '@/integrations/supabase/client';
 import { useAuth } from '@/contexts/AuthContext';
 import { format } from 'date-fns';
 import { Skeleton } from '@/components/ui/skeleton';
-import { PointTransaction } from '@/lib/types';
 
 const TransactionsTab = () => {
   const { user } = useAuth();
@@ -16,28 +16,67 @@ const TransactionsTab = () => {
     queryFn: async () => {
       setIsLoading(true);
       
-      // Fetch all transactions including welcome bonus
-      const { data, error } = await supabase
-        .from('point_transactions')
-        .select('*')
-        .eq('user_id', user?.id)
-        .order('created_at', { ascending: false });
+      try {
+        console.log("TransactionsTab: Fetching transactions for user:", user?.id);
         
-      setIsLoading(false);
-      
-      if (error) throw error;
-      
-      // Transform the data to match the PointTransaction interface
-      return (data || []).map(item => ({
-        id: item.id,
-        userId: item.user_id,
-        amount: item.amount,
-        type: item.type,
-        source: 'ADMIN_ADJUSTMENT', // Default value since it doesn't exist in database
-        sourceId: undefined,  // Default to undefined as it's optional
-        description: item.description || '',
-        createdAt: new Date(item.created_at)
-      }));
+        // Fetch all transactions including welcome bonus and redemptions
+        const { data, error } = await supabase
+          .from('point_transactions')
+          .select('*')
+          .eq('user_id', user?.id)
+          .order('created_at', { ascending: false });
+          
+        if (error) {
+          console.error("TransactionsTab: Error fetching transactions:", error);
+          throw error;
+        }
+        
+        console.log('TransactionsTab: Transactions from database:', data);
+        
+        // Transform the data to match our expected format
+        const processedTransactions = (data || []).map(item => {
+          // Try to extract source from description [SOURCE:ID] or [SOURCE]
+          let source: 'MISSION_REVIEW' | 'RECEIPT_SUBMISSION' | 'REDEMPTION' | 'ADMIN_ADJUSTMENT' = 'ADMIN_ADJUSTMENT';
+          let sourceId: string | undefined;
+          let cleanDescription = item.description;
+          
+          const sourceMatch = item.description.match(/\[(.*?)(?::([^\]]+))?\]$/);
+          if (sourceMatch) {
+            const extractedSource = sourceMatch[1];
+            if (
+              extractedSource === 'MISSION_REVIEW' || 
+              extractedSource === 'RECEIPT_SUBMISSION' || 
+              extractedSource === 'REDEMPTION' || 
+              extractedSource === 'ADMIN_ADJUSTMENT'
+            ) {
+              source = extractedSource as any;
+            }
+            
+            sourceId = sourceMatch[2];
+            
+            // Remove the source tag from the description
+            cleanDescription = item.description.replace(/\s*\[.*?\]$/, '').trim();
+          }
+          
+          return {
+            id: item.id,
+            userId: item.user_id,
+            amount: item.amount,
+            type: item.type,
+            source,
+            description: cleanDescription || '',
+            createdAt: new Date(item.created_at)
+          };
+        });
+        
+        console.log('TransactionsTab: Processed transactions:', processedTransactions);
+        setIsLoading(false);
+        return processedTransactions;
+      } catch (error) {
+        console.error('TransactionsTab: Error in transaction processing:', error);
+        setIsLoading(false);
+        throw error;
+      }
     },
     enabled: !!user
   });
@@ -74,10 +113,20 @@ const TransactionsTab = () => {
             <span className="text-sm text-gray-500">
               {format(transaction.createdAt, 'MMM dd, yyyy')}
             </span>
+            {transaction.source === 'REDEMPTION' && (
+              <span className="text-xs text-orange-600">Points redeemed for reward</span>
+            )}
+            {transaction.source === 'ADMIN_ADJUSTMENT' && (
+              <span className="text-xs text-gray-500">Manual adjustment by admin</span>
+            )}
           </div>
           
-          <div className={`font-semibold ${transaction.type === 'EARNED' || transaction.type === 'WELCOME' ? 'text-green-600' : 'text-red-600'}`}>
-            {transaction.type === 'EARNED' || transaction.type === 'WELCOME' ? '+' : '-'}
+          <div className={`font-semibold ${
+            transaction.type === 'REDEEMED' ? 'text-red-600' : 
+            transaction.type === 'EARNED' || transaction.type === 'WELCOME' || transaction.type === 'ADJUSTED' ? 'text-green-600' : 
+            'text-red-600'
+          }`}>
+            {transaction.type === 'EARNED' || transaction.type === 'WELCOME' || transaction.type === 'ADJUSTED' ? '+' : '-'}
             {transaction.amount} points
           </div>
         </div>

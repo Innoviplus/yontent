@@ -17,21 +17,72 @@ import {
  */
 export const fetchMissionParticipations = async (): Promise<ApiResponse<MissionParticipation>> => {
   try {
-    const { data, error } = await supabase
+    console.log('Fetching all mission participations');
+    
+    // Fix: use separate queries and join the data programmatically instead of relying on Postgres joins
+    const { data: participations, error: participationsError } = await supabase
       .from('mission_participations')
-      .select(`
-        *,
-        profiles:user_id (*),
-        missions:mission_id (*)
-      `)
+      .select('*')
       .order('created_at', { ascending: false });
-
-    if (error) {
-      console.error('Error fetching mission participations:', error);
-      return { success: false, error: error.message };
+      
+    if (participationsError) {
+      console.error('Error fetching mission participations:', participationsError);
+      return { success: false, error: participationsError.message };
     }
 
-    const transformedData = transformParticipationData(data || []);
+    // Bail early if no participations are found
+    if (!participations || participations.length === 0) {
+      console.log('No mission participations found');
+      return { success: true, participations: [] };
+    }
+    
+    console.log('Found participations:', participations.length);
+    
+    // Fetch related missions
+    const missionIds = [...new Set(participations.map(p => p.mission_id))];
+    const { data: missions, error: missionsError } = await supabase
+      .from('missions')
+      .select('*')
+      .in('id', missionIds);
+      
+    if (missionsError) {
+      console.error('Error fetching related missions:', missionsError);
+      return { success: false, error: missionsError.message };
+    }
+    
+    // Fetch related user profiles
+    const userIds = [...new Set(participations.map(p => p.user_id))];
+    const { data: profiles, error: profilesError } = await supabase
+      .from('profiles')
+      .select('*')
+      .in('id', userIds);
+      
+    if (profilesError) {
+      console.error('Error fetching related profiles:', profilesError);
+      return { success: false, error: profilesError.message };
+    }
+
+    // Build a map for quick lookups
+    const missionsMap = missions ? missions.reduce((acc, mission) => {
+      acc[mission.id] = mission;
+      return acc;
+    }, {}) : {};
+    
+    const profilesMap = profiles ? profiles.reduce((acc, profile) => {
+      acc[profile.id] = profile;
+      return acc;
+    }, {}) : {};
+
+    // Combine the data
+    const enrichedData = participations.map(participation => ({
+      ...participation,
+      missions: missionsMap[participation.mission_id] || null,
+      profiles: profilesMap[participation.user_id] || null
+    }));
+
+    console.log('Fetched mission participations raw data:', enrichedData);
+    const transformedData = transformParticipationData(enrichedData || []);
+    console.log('Transformed participations data:', transformedData);
     
     return {
       success: true,
@@ -50,17 +101,17 @@ export const fetchMissionParticipationsWithFilters = async (
   filters: MissionParticipationFilters
 ): Promise<ApiResponse<MissionParticipation>> => {
   try {
+    console.log('Fetching mission participations with filters:', filters);
+    
+    // Base query for participations
     let query = supabase
       .from('mission_participations')
-      .select(`
-        *,
-        profiles:user_id (*),
-        missions:mission_id (*)
-      `);
+      .select('*');
 
     // Apply filters
     if (filters.status) {
       query = query.eq('status', filters.status);
+      console.log(`Filtering by status: ${filters.status}`);
     }
     
     if (filters.missionId) {
@@ -81,14 +132,64 @@ export const fetchMissionParticipationsWithFilters = async (
     // Order by creation date, newest first
     query = query.order('created_at', { ascending: false });
     
-    const { data, error } = await query;
+    const { data: participations, error: participationsError } = await query;
 
-    if (error) {
-      console.error('Error fetching mission participations with filters:', error);
-      return { success: false, error: error.message };
+    if (participationsError) {
+      console.error('Error fetching filtered mission participations:', participationsError);
+      return { success: false, error: participationsError.message };
     }
 
-    const transformedData = transformParticipationData(data || []);
+    // Bail early if no participations are found
+    if (!participations || participations.length === 0) {
+      console.log('No filtered mission participations found');
+      return { success: true, participations: [] };
+    }
+    
+    // Fetch related missions
+    const missionIds = [...new Set(participations.map(p => p.mission_id))];
+    const { data: missions, error: missionsError } = await supabase
+      .from('missions')
+      .select('*')
+      .in('id', missionIds);
+      
+    if (missionsError) {
+      console.error('Error fetching related missions:', missionsError);
+      return { success: false, error: missionsError.message };
+    }
+    
+    // Fetch related user profiles
+    const userIds = [...new Set(participations.map(p => p.user_id))];
+    const { data: profiles, error: profilesError } = await supabase
+      .from('profiles')
+      .select('*')
+      .in('id', userIds);
+      
+    if (profilesError) {
+      console.error('Error fetching related profiles:', profilesError);
+      return { success: false, error: profilesError.message };
+    }
+
+    // Build a map for quick lookups
+    const missionsMap = missions ? missions.reduce((acc, mission) => {
+      acc[mission.id] = mission;
+      return acc;
+    }, {}) : {};
+    
+    const profilesMap = profiles ? profiles.reduce((acc, profile) => {
+      acc[profile.id] = profile;
+      return acc;
+    }, {}) : {};
+
+    // Combine the data
+    const enrichedData = participations.map(participation => ({
+      ...participation,
+      missions: missionsMap[participation.mission_id] || null,
+      profiles: profilesMap[participation.user_id] || null
+    }));
+
+    console.log('Fetched filtered mission participations raw data:', enrichedData);
+    const transformedData = transformParticipationData(enrichedData || []);
+    console.log('Transformed filtered participations data:', transformedData);
     
     return {
       success: true,

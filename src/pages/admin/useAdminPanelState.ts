@@ -1,4 +1,3 @@
-
 import { useState, useEffect, Dispatch, SetStateAction } from 'react';
 import { useRewardsAdmin } from '@/hooks/admin/useRewardsAdmin';
 import { useMissionsAdmin } from '@/hooks/admin/missions';
@@ -82,7 +81,8 @@ export const useAdminPanelState = () => {
     isRefreshing: isRefreshingParticipations,
     refreshParticipations: originalRefreshParticipations,
     approveParticipation,
-    rejectParticipation
+    rejectParticipation,
+    error: participationsError
   } = useMissionParticipations();
 
   const refreshParticipations = async () => {
@@ -184,6 +184,7 @@ export const useAdminPanelState = () => {
     refreshParticipations,
     approveParticipation,
     rejectParticipation,
+    participationsError,
     refreshMissions,
     maxLoadingTime,
     handleRetry,

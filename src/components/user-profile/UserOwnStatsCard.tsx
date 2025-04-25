@@ -1,8 +1,8 @@
-
 import { useState, useEffect } from "react";
 import { useNavigate } from "react-router-dom";
 import { User as UserType } from '@/lib/types';
 import { supabase } from '@/integrations/supabase/client';
+import { formatNumber } from '@/lib/formatUtils';
 
 interface UserOwnStatsCardProps {
   user: UserType;
@@ -117,14 +117,18 @@ const UserOwnStatsCard = ({
           <div className="text-xs text-gray-500">Transactions</div>
         </button>
 
-        {/* Points */}
-        <div className="bg-gray-50 rounded-lg p-3 text-center flex flex-col items-center">
+        {/* Points - now using formatNumber */}
+        <button
+          type="button"
+          onClick={() => navigate("/my-reward-transactions")}
+          className="bg-gray-50 rounded-lg p-3 text-center flex flex-col items-center hover:bg-brand-teal/10 transition-colors"
+        >
           <div className="flex items-center justify-center gap-1">
             <img alt="Points" width="20" height="20" className="h-5 w-5" src="/lovable-uploads/8273d306-96cc-45cd-a7d8-ded89e18e195.png" />
-            <span className="text-lg font-semibold text-brand-teal">{pointsCount}</span>
+            <span className="text-lg font-semibold text-brand-teal">{formatNumber(pointsCount)}</span>
           </div>
           <div className="text-xs text-gray-500">Point Balance</div>
-        </div>
+        </button>
       </div>
     </div>
   );

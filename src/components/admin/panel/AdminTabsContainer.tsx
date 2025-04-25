@@ -1,4 +1,3 @@
-
 import { Tabs, TabsList, TabsTrigger, TabsContent } from '@/components/ui/tabs';
 import RewardsManagement from '@/components/admin/rewards/RewardsManagement';
 import RequestsManagement from '@/components/admin/rewards/RequestsManagement';
@@ -6,6 +5,7 @@ import MissionsManagement from '@/components/admin/missions/MissionsManagement';
 import MissionsParticipation from '@/components/admin/missions/MissionsParticipation';
 import SiteContentTab from '@/components/admin/siteContent/SiteContentTab';
 import AdminUsersManagement from "@/components/admin/panel/AdminUsersManagement";
+import PointsManagement from '@/components/admin/points/PointsManagement';
 
 interface AdminTabsContainerProps {
   activeTab: string;
@@ -36,6 +36,7 @@ interface AdminTabsContainerProps {
   rejectParticipation: any;
   refreshMissions: () => void;
   maxLoadingTime: boolean;
+  participationsError?: string;
 }
 
 const AdminTabsContainer = ({
@@ -67,6 +68,7 @@ const AdminTabsContainer = ({
   rejectParticipation,
   refreshMissions,
   maxLoadingTime,
+  participationsError,
 }: AdminTabsContainerProps) => (
   <Tabs defaultValue={activeTab} value={activeTab} onValueChange={setActiveTab} className="w-full">
     <TabsList className="mb-6">
@@ -74,6 +76,7 @@ const AdminTabsContainer = ({
       <TabsTrigger value="requests">Redemption Requests</TabsTrigger>
       <TabsTrigger value="missions">Missions</TabsTrigger>
       <TabsTrigger value="participations">Participations</TabsTrigger>
+      <TabsTrigger value="points">Points Management</TabsTrigger>
       <TabsTrigger value="site-content">Site Content</TabsTrigger>
       <TabsTrigger value="admin-users">Admin Users</TabsTrigger>
     </TabsList>
@@ -87,6 +90,7 @@ const AdminTabsContainer = ({
         onDelete={deleteReward}
       />
     </TabsContent>
+    
     <TabsContent value="requests" className="space-y-4">
       <RequestsManagement
         requests={requests}
@@ -99,6 +103,7 @@ const AdminTabsContainer = ({
         onReject={handleRejectRequest}
       />
     </TabsContent>
+    
     <TabsContent value="missions" className="space-y-4">
       <MissionsManagement
         missions={missions}
@@ -108,6 +113,7 @@ const AdminTabsContainer = ({
         onDelete={deleteMission}
       />
     </TabsContent>
+    
     <TabsContent value="participations" className="space-y-4">
       <MissionsParticipation
         participations={participations}
@@ -116,11 +122,18 @@ const AdminTabsContainer = ({
         onRefresh={refreshParticipations}
         onApprove={approveParticipation}
         onReject={rejectParticipation}
+        error={participationsError}
       />
     </TabsContent>
+    
+    <TabsContent value="points" className="space-y-4">
+      <PointsManagement />
+    </TabsContent>
+    
     <TabsContent value="site-content" className="space-y-4">
       <SiteContentTab />
     </TabsContent>
+    
     <TabsContent value="admin-users" className="space-y-4">
       <AdminUsersManagement />
     </TabsContent>

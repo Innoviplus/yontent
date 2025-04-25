@@ -1,5 +1,5 @@
 
-import { FormEvent } from "react";
+import React from 'react';
 import { 
   Form,
   FormControl,
@@ -22,11 +22,11 @@ import { UseFormReturn } from "react-hook-form";
 import { Database, Loader2 } from "lucide-react";
 import { z } from "zod";
 
-// Schema for the transaction form
+// Updated schema with simplified transaction types
 const transactionSchema = z.object({
   amount: z.coerce.number().min(1, "Amount must be at least 1"),
-  type: z.enum(["EARNED", "ADJUSTED", "REDEEMED", "REFUNDED"]),
-  source: z.enum(["MISSION_REVIEW", "RECEIPT_SUBMISSION", "REDEMPTION", "ADMIN_ADJUSTMENT"]),
+  type: z.enum(["ADD", "DEDUCT"]),
+  source: z.literal("ADMIN_ADJUSTMENT"),
   description: z.string().min(1, "Description is required"),
   userId: z.string().min(1, "User is required")
 });
@@ -46,9 +46,15 @@ const TransactionFormCard = ({
   isUserSelected, 
   isSubmitting = false 
 }: TransactionFormCardProps) => {
+  // Create a handler function to prevent default form behavior and ensure onSubmit is called
+  const handleSubmit = async (event: React.FormEvent) => {
+    // Don't prevent default here, let react-hook-form handle it
+    await form.handleSubmit(onSubmit)(event);
+  };
+  
   return (
     <Form {...form}>
-      <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-4">
+      <form onSubmit={handleSubmit} className="space-y-4">
         <FormField
           control={form.control}
           name="amount"
@@ -63,61 +69,30 @@ const TransactionFormCard = ({
           )}
         />
         
-        <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-          <FormField
-            control={form.control}
-            name="type"
-            render={({ field }) => (
-              <FormItem>
-                <FormLabel>Transaction Type</FormLabel>
-                <Select 
-                  onValueChange={field.onChange} 
-                  defaultValue={field.value}
-                >
-                  <FormControl>
-                    <SelectTrigger>
-                      <SelectValue placeholder="Select a type" />
-                    </SelectTrigger>
-                  </FormControl>
-                  <SelectContent>
-                    <SelectItem value="EARNED">Earned Points</SelectItem>
-                    <SelectItem value="ADJUSTED">Manual Adjustment</SelectItem>
-                    <SelectItem value="REDEEMED">Redeemed Points</SelectItem>
-                    <SelectItem value="REFUNDED">Refunded Points</SelectItem>
-                  </SelectContent>
-                </Select>
-                <FormMessage />
-              </FormItem>
-            )}
-          />
-          
-          <FormField
-            control={form.control}
-            name="source"
-            render={({ field }) => (
-              <FormItem>
-                <FormLabel>Source</FormLabel>
-                <Select 
-                  onValueChange={field.onChange} 
-                  defaultValue={field.value}
-                >
-                  <FormControl>
-                    <SelectTrigger>
-                      <SelectValue placeholder="Select a source" />
-                    </SelectTrigger>
-                  </FormControl>
-                  <SelectContent>
-                    <SelectItem value="MISSION_REVIEW">Mission/Review</SelectItem>
-                    <SelectItem value="RECEIPT_SUBMISSION">Receipt Submission</SelectItem>
-                    <SelectItem value="REDEMPTION">Redemption</SelectItem>
-                    <SelectItem value="ADMIN_ADJUSTMENT">Admin Adjustment</SelectItem>
-                  </SelectContent>
-                </Select>
-                <FormMessage />
-              </FormItem>
-            )}
-          />
-        </div>
+        <FormField
+          control={form.control}
+          name="type"
+          render={({ field }) => (
+            <FormItem>
+              <FormLabel>Transaction Type</FormLabel>
+              <Select 
+                onValueChange={field.onChange} 
+                defaultValue={field.value}
+              >
+                <FormControl>
+                  <SelectTrigger>
+                    <SelectValue placeholder="Select a type" />
+                  </SelectTrigger>
+                </FormControl>
+                <SelectContent>
+                  <SelectItem value="ADD">Manual Adjustment (Add Points)</SelectItem>
+                  <SelectItem value="DEDUCT">Manual Adjustment (Deduct Points)</SelectItem>
+                </SelectContent>
+              </Select>
+              <FormMessage />
+            </FormItem>
+          )}
+        />
         
         <FormField
           control={form.control}
@@ -127,7 +102,7 @@ const TransactionFormCard = ({
               <FormLabel>Description</FormLabel>
               <FormControl>
                 <Textarea 
-                  placeholder="Reason for this transaction..." 
+                  placeholder="Reason for this adjustment..." 
                   {...field} 
                 />
               </FormControl>
@@ -137,6 +112,7 @@ const TransactionFormCard = ({
         />
         
         <input type="hidden" {...form.register('userId')} />
+        <input type="hidden" {...form.register('source')} value="ADMIN_ADJUSTMENT" />
         
         <Button 
           type="submit" 
@@ -151,7 +127,7 @@ const TransactionFormCard = ({
           ) : (
             <>
               <Database className="h-4 w-4 mr-2" /> 
-              Add Transaction Record
+              Submit Points Adjustment
             </>
           )}
         </Button>

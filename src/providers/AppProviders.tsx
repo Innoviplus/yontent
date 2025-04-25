@@ -17,7 +17,13 @@ const AppProviders = ({ children }: AppProvidersProps) => {
         <AuthProvider>
           <PointsProvider>
             {children}
-            <Toaster position="top-right" />
+            <Toaster 
+              position="bottom-right" 
+              toastOptions={{
+                // Using a property that Sonner supports for deduplication
+                duration: 4000,
+              }}
+            />
           </PointsProvider>
         </AuthProvider>
       </RegistrationProvider>

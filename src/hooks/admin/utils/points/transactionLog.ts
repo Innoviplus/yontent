@@ -1,5 +1,6 @@
 
 import { PointTransaction } from '@/lib/types';
+import { supabase } from '@/integrations/supabase/client';
 
 /**
  * Log a points transaction
@@ -15,20 +16,41 @@ export const logPointsTransaction = async (
   try {
     console.log(`Logging points transaction: ${amount} points for user ${userId} (${type} from ${source})`);
     
-    // Since we don't have the point_transactions table in Supabase yet,
-    // just create a mock transaction object
-    const transaction: PointTransaction = {
-      id: Date.now().toString(),
-      userId,
-      amount,
-      type,
-      source,
-      sourceId,
-      description,
-      createdAt: new Date()
-    };
+    // Include the source information in the description to maintain this data
+    const fullDescription = sourceId 
+      ? `${description} [${source}:${sourceId}]`
+      : `${description} [${source}]`;
     
-    console.log('Transaction logged (mock):', transaction);
+    // Insert the transaction record into the database
+    const { data, error } = await supabase
+      .from('point_transactions')
+      .insert({
+        user_id: userId,
+        amount: amount,
+        type: type as string, // Cast to string as the DB accepts any string
+        description: fullDescription
+      })
+      .select()
+      .single();
+    
+    if (error) {
+      console.error('Error inserting transaction record:', error);
+      throw error;
+    }
+    
+    console.log('Transaction logged successfully:', data);
+    
+    // Transform to match our interface
+    const transaction: PointTransaction = {
+      id: data.id,
+      userId: data.user_id,
+      amount: data.amount,
+      type: data.type as any, // Type assertion as our PointTransaction type is more strict
+      source: source, // This is not stored in DB but we include it in the return object
+      sourceId, // This is not stored in DB but we include it in the return object
+      description: data.description,
+      createdAt: new Date(data.created_at)
+    };
     
     return { success: true, transaction };
   } catch (error: any) {
@@ -44,27 +66,52 @@ export const getUserTransactionHistory = async (
   userId: string
 ): Promise<{ transactions: PointTransaction[]; success: boolean; error?: string }> => {
   try {
-    // Mock implementation since we don't have the point_transactions table
-    const transactions: PointTransaction[] = [
-      {
-        id: '1',
-        userId,
-        amount: 100,
-        type: 'EARNED',
-        source: 'MISSION_REVIEW',
-        description: 'Completed mission: Product Review',
-        createdAt: new Date(Date.now() - 86400000) // yesterday
-      },
-      {
-        id: '2',
-        userId,
-        amount: 50,
-        type: 'REDEEMED',
-        source: 'REDEMPTION',
-        description: 'Redeemed for Gift Card',
-        createdAt: new Date(Date.now() - 172800000) // 2 days ago
+    const { data, error } = await supabase
+      .from('point_transactions')
+      .select('*')
+      .eq('user_id', userId)
+      .order('created_at', { ascending: false });
+    
+    if (error) {
+      throw error;
+    }
+    
+    // Parse the description field to extract source information if present
+    const transactions: PointTransaction[] = (data || []).map(item => {
+      // Try to extract source from description [SOURCE:ID] or [SOURCE]
+      let source: PointTransaction['source'] = 'ADMIN_ADJUSTMENT';
+      let sourceId: string | undefined;
+      let cleanDescription = item.description;
+      
+      const sourceMatch = item.description.match(/\[(.*?)(?::([^\]]+))?\]$/);
+      if (sourceMatch) {
+        const extractedSource = sourceMatch[1];
+        if (
+          extractedSource === 'MISSION_REVIEW' || 
+          extractedSource === 'RECEIPT_SUBMISSION' || 
+          extractedSource === 'REDEMPTION' || 
+          extractedSource === 'ADMIN_ADJUSTMENT'
+        ) {
+          source = extractedSource;
+        }
+        
+        sourceId = sourceMatch[2];
+        
+        // Remove the source tag from the description
+        cleanDescription = item.description.replace(/\s*\[.*?\]$/, '');
       }
-    ];
+      
+      return {
+        id: item.id,
+        userId: item.user_id,
+        amount: item.amount,
+        type: item.type as any, // Type assertion as our PointTransaction type is more strict
+        source,
+        sourceId,
+        description: cleanDescription,
+        createdAt: new Date(item.created_at)
+      };
+    });
     
     return { transactions, success: true };
   } catch (error: any) {

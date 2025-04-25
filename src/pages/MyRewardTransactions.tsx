@@ -1,114 +1,57 @@
-import { useState, useEffect } from 'react';
+
 import { useNavigate } from 'react-router-dom';
 import { useAuth } from '@/contexts/AuthContext';
 import Navbar from '@/components/Navbar';
-import { supabase } from '@/integrations/supabase/client';
-import { format } from 'date-fns';
-import { 
-  Breadcrumb, 
-  BreadcrumbList, 
-  BreadcrumbItem, 
-  BreadcrumbLink, 
-  BreadcrumbSeparator, 
-  BreadcrumbPage 
-} from '@/components/ui/breadcrumb';
-import { ChevronRight } from 'lucide-react';
-
-type Transaction = {
-  id: string;
-  description: string;
-  amount: number;
-  type: "EARNED" | "REDEEMED" | "REFUNDED" | "ADJUSTED" | "WELCOME";
-  createdAt: string;
-};
+import { Button } from '@/components/ui/button';
+import TransactionsList from '@/components/transactions/TransactionsList';
+import { useTransactions } from '@/hooks/useTransactions';
+import { useEffect } from 'react';
+import { usePageTitle } from '@/hooks/usePageTitle';
+import RewardHeader from '@/components/rewards/RewardHeader';
+import { RefreshCcw } from 'lucide-react';
 
 const MyRewardTransactions = () => {
   const { user } = useAuth();
-  const [transactions, setTransactions] = useState<Transaction[]>([]);
-  const [loading, setLoading] = useState(true);
   const navigate = useNavigate();
+  const { transactions, loading, refreshing, setRefreshing, fetchTransactions } = useTransactions(user?.id);
+  
+  usePageTitle('My Transactions');
 
   useEffect(() => {
-    const fetchTransactions = async () => {
-      if (!user?.id) return;
-      setLoading(true);
-
-      const { data, error } = await supabase
-        .from("point_transactions")
-        .select("*")
-        .eq("user_id", user.id)
-        .order("created_at", { ascending: false });
-
-      if (!error && data) {
-        setTransactions(
-          data.map((row) => ({
-            id: row.id,
-            description: row.description,
-            amount: row.amount,
-            type: row.type as Transaction["type"],
-            createdAt: row.created_at,
-          }))
-        );
-      } else {
-        setTransactions([]);
-      }
-      setLoading(false);
-    };
-    fetchTransactions();
+    if (user?.id) {
+      fetchTransactions();
+    }
   }, [user?.id]);
+
+  const handleRefresh = () => {
+    setRefreshing(true);
+    fetchTransactions();
+  };
 
   return (
     <div className="min-h-screen bg-gray-50">
       <Navbar />
       <div className="container mx-auto px-4 pt-24 pb-16 max-w-2xl">
-        <Breadcrumb className="mb-6">
-          <BreadcrumbList>
-            <BreadcrumbItem>
-              <BreadcrumbLink href="/dashboard">Dashboard</BreadcrumbLink>
-            </BreadcrumbItem>
-            <BreadcrumbSeparator>
-              <ChevronRight />
-            </BreadcrumbSeparator>
-            <BreadcrumbPage>Reward Transactions</BreadcrumbPage>
-          </BreadcrumbList>
-        </Breadcrumb>
-
-        <h1 className="text-2xl font-bold text-gray-900 mb-8">Reward Transactions</h1>
-
-        {loading && (
-          <div className="space-y-4">
-            {[1, 2, 3].map((i) => (
-              <div key={i} className="bg-white rounded-xl h-20 animate-pulse" />
-            ))}
-          </div>
-        )}
-
-        {!loading && transactions.length === 0 && (
-          <div className="text-gray-500 text-center mt-10">No transactions found.</div>
-        )}
-
-        <div className="space-y-4">
-          {transactions.map((tx) => (
-            <div
-              key={tx.id}
-              className="flex justify-between items-center bg-white rounded-xl p-6 shadow-card"
-            >
-              <div>
-                <div className="text-lg font-semibold text-gray-900">{tx.description}</div>
-                <div className="text-gray-500 text-sm mt-1">{format(new Date(tx.createdAt), "MMM dd, yyyy")}</div>
-              </div>
-              <div
-                className={
-                  "font-bold text-base " +
-                  (tx.type === "REDEEMED" ? "text-red-600" : "text-green-600")
-                }
-              >
-                {tx.type === "REDEEMED" ? "-" : "+"}
-                {tx.amount} <span className="font-semibold">points</span>
-              </div>
-            </div>
-          ))}
+        <RewardHeader title="Back to My Dashboard" />
+        
+        <div className="flex justify-end mb-6">
+          <Button 
+            variant="outline" 
+            size="sm"
+            onClick={handleRefresh}
+            disabled={refreshing}
+          >
+            <RefreshCcw className={`h-4 w-4 mr-2 ${refreshing ? 'animate-spin' : ''}`} />
+            Refresh
+          </Button>
         </div>
+
+        <h1 className="text-2xl font-bold text-gray-900 mb-8">My Transactions</h1>
+
+        <TransactionsList 
+          transactions={transactions} 
+          loading={loading} 
+        />
       </div>
     </div>
   );
