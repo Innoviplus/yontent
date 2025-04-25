@@ -20,8 +20,8 @@ const AppProviders = ({ children }: AppProvidersProps) => {
             <Toaster 
               position="bottom-right" 
               toastOptions={{
-                // Prevent duplicate toasts
-                id: 'single-toast'
+                // Using a property that Sonner supports for deduplication
+                duration: 4000,
               }}
             />
           </PointsProvider>
