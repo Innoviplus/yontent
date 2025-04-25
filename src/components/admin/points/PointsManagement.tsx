@@ -7,7 +7,6 @@ import { Card, CardHeader, CardTitle } from '@/components/ui/card';
 import UserSearchCard from './UserSearchCard';
 import TransactionFormCard from './TransactionFormCard';
 import { transactionSchema, type TransactionFormValues } from './TransactionFormCard';
-import { logPointsTransaction } from '@/hooks/admin/utils/points/transactionLog';
 import { supabase } from '@/integrations/supabase/client';
 
 interface UserData {
@@ -115,7 +114,6 @@ const PointsManagement = () => {
       
       console.log('Points updated successfully. New total:', newPoints);
       
-      // Now log the transaction in the point_transactions table
       // Make sure we properly tag the source in the description
       let fullDescription = description.trim();
       
@@ -124,46 +122,35 @@ const PointsManagement = () => {
         fullDescription = `${fullDescription} [${source}]`;
       }
       
-      console.log('Inserting transaction record:', {
-        user_id: userId,
-        amount: amount,
-        type: type,
-        description: fullDescription
-      });
-      
-      const { data: transactionData, error: transactionError } = await supabase
-        .from('point_transactions')
-        .insert({
-          user_id: userId,
-          amount: amount,
-          type: type,
-          description: fullDescription
-        })
-        .select();
-      
-      if (transactionError) {
-        console.error('Error logging transaction:', transactionError);
-        toast.error('Failed to log transaction');
+      // Use admin service to insert the transaction record
+      try {
+        // Use the rpc call to add point transaction which bypasses RLS
+        const { data: rpcResult, error: rpcError } = await supabase
+          .rpc('admin_add_point_transaction', {
+            p_user_id: userId,
+            p_amount: amount,
+            p_type: type,
+            p_description: fullDescription
+          });
         
-        // Revert the points update in case of error
-        await supabase
-          .from('profiles')
-          .update({ points: currentPoints })
-          .eq('id', userId);
-          
-        setIsSubmitting(false);
-        return;
+        if (rpcError) {
+          console.error('Error calling admin_add_point_transaction:', rpcError);
+          toast.error('Failed to log transaction');
+          setIsSubmitting(false);
+          return;
+        }
+        
+        console.log('Transaction logged successfully via RPC:', rpcResult);
+        toast.success(`Successfully ${type === 'REDEEMED' ? 'deducted' : 'added'} ${amount} points`);
+        
+        // Reset form and selection
+        handleClearUser();
+        form.reset();
+        form.setValue('source', 'ADMIN_ADJUSTMENT');
+      } catch (transactionError) {
+        console.error('Error in RPC transaction:', transactionError);
+        toast.error('Failed to log transaction');
       }
-      
-      console.log('Transaction logged successfully:', transactionData);
-      
-      toast.success(`Successfully ${type === 'REDEEMED' ? 'deducted' : 'added'} ${amount} points`);
-      handleClearUser();
-      form.reset();
-      
-      // Reset form with default source
-      form.setValue('source', 'ADMIN_ADJUSTMENT');
-      
     } catch (error) {
       console.error('Error processing points transaction:', error);
       toast.error('Failed to process points transaction');
