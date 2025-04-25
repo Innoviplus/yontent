@@ -1,4 +1,3 @@
-
 import { useState } from 'react';
 import { useForm } from 'react-hook-form';
 import { zodResolver } from '@hookform/resolvers/zod';
@@ -123,34 +122,30 @@ const PointsManagement = () => {
       }
       
       // Use admin service to insert the transaction record
-      try {
-        // Use the rpc call to add point transaction which bypasses RLS
-        const { data: rpcResult, error: rpcError } = await supabase
-          .rpc('admin_add_point_transaction', {
-            p_user_id: userId,
-            p_amount: amount,
-            p_type: type,
-            p_description: fullDescription
-          });
-        
-        if (rpcError) {
-          console.error('Error calling admin_add_point_transaction:', rpcError);
-          toast.error('Failed to log transaction');
-          setIsSubmitting(false);
-          return;
+      const { data: rpcResult, error: rpcError } = await supabase.rpc(
+        'admin_add_point_transaction',
+        {
+          p_user_id: userId,
+          p_amount: amount,
+          p_type: type,
+          p_description: fullDescription
         }
-        
-        console.log('Transaction logged successfully via RPC:', rpcResult);
-        toast.success(`Successfully ${type === 'REDEEMED' ? 'deducted' : 'added'} ${amount} points`);
-        
-        // Reset form and selection
-        handleClearUser();
-        form.reset();
-        form.setValue('source', 'ADMIN_ADJUSTMENT');
-      } catch (transactionError) {
-        console.error('Error in RPC transaction:', transactionError);
+      );
+      
+      if (rpcError) {
+        console.error('Error calling admin_add_point_transaction:', rpcError);
         toast.error('Failed to log transaction');
+        setIsSubmitting(false);
+        return;
       }
+      
+      console.log('Transaction logged successfully via RPC:', rpcResult);
+      toast.success(`Successfully ${type === 'REDEEMED' ? 'deducted' : 'added'} ${amount} points`);
+      
+      // Reset form and selection
+      handleClearUser();
+      form.reset();
+      form.setValue('source', 'ADMIN_ADJUSTMENT');
     } catch (error) {
       console.error('Error processing points transaction:', error);
       toast.error('Failed to process points transaction');

@@ -471,6 +471,15 @@ export type Database = {
       [_ in never]: never
     }
     Functions: {
+      admin_add_point_transaction: {
+        Args: {
+          p_user_id: string
+          p_amount: number
+          p_type: string
+          p_description: string
+        }
+        Returns: Json
+      }
       calculate_relevance_score: {
         Args: { views: number; likes: number; avg_time: number; ctr: number }
         Returns: number
