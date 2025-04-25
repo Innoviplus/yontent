@@ -17,7 +17,13 @@ const AppProviders = ({ children }: AppProvidersProps) => {
         <AuthProvider>
           <PointsProvider>
             {children}
-            <Toaster position="top-right" />
+            <Toaster 
+              position="bottom-right" 
+              toastOptions={{
+                // Prevent duplicate toasts
+                id: 'single-toast'
+              }}
+            />
           </PointsProvider>
         </AuthProvider>
       </RegistrationProvider>
