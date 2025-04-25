@@ -7,7 +7,7 @@ import { Card, CardHeader, CardTitle } from '@/components/ui/card';
 import UserSearchCard from './UserSearchCard';
 import TransactionFormCard from './TransactionFormCard';
 import { transactionSchema, type TransactionFormValues } from './TransactionFormCard';
-import { addPointsToUser, deductPointsFromUser } from '@/hooks/admin/utils/points';
+import { logPointsTransaction } from '@/hooks/admin/utils/points/transactionLog';
 import { supabase } from '@/integrations/supabase/client';
 
 interface UserData {
@@ -69,37 +69,82 @@ const PointsManagement = () => {
       setIsSubmitting(true);
 
       const { amount, type, source, description, userId } = values;
-      let result;
-
-      if (type === 'EARNED' || type === 'ADJUSTED') {
-        result = await addPointsToUser(
-          userId, 
-          amount, 
-          type, 
-          source === 'MISSION_REVIEW' || source === 'RECEIPT_SUBMISSION' || source === 'ADMIN_ADJUSTMENT' ? 
-            source : 'ADMIN_ADJUSTMENT',
-          description
-        );
-      } else {
-        result = await deductPointsFromUser(
-          userId, 
-          amount, 
-          source === 'REDEMPTION' || source === 'ADMIN_ADJUSTMENT' ? 
-            source : 'ADMIN_ADJUSTMENT',
-          description
-        );
-      }
-
-      if (result.success) {
-        toast.success(`Points ${type === 'REDEEMED' ? 'deducted' : 'added'} successfully`);
-        handleClearUser();
-        form.reset();
+      
+      // First update the user's points in the profiles table
+      const { data: userData, error: userError } = await supabase
+        .from('profiles')
+        .select('points')
+        .eq('id', userId)
+        .single();
         
-        // Reset form with default source
-        form.setValue('source', 'ADMIN_ADJUSTMENT');
-      } else {
-        toast.error(result.error || `Failed to ${type === 'REDEEMED' ? 'deduct' : 'add'} points`);
+      if (userError) {
+        console.error('Error fetching user points:', userError);
+        toast.error('Failed to fetch user points');
+        return;
       }
+      
+      const currentPoints = userData?.points || 0;
+      let newPoints = currentPoints;
+      
+      if (type === 'EARNED' || type === 'ADJUSTED' || type === 'REFUNDED') {
+        newPoints = currentPoints + amount;
+      } else if (type === 'REDEEMED') {
+        // Check if user has enough points
+        if (currentPoints < amount) {
+          toast.error(`User only has ${currentPoints} points, cannot deduct ${amount} points.`);
+          setIsSubmitting(false);
+          return;
+        }
+        newPoints = currentPoints - amount;
+      }
+      
+      // Update the user's points in the database
+      const { error: updateError } = await supabase
+        .from('profiles')
+        .update({ points: newPoints })
+        .eq('id', userId);
+        
+      if (updateError) {
+        console.error('Error updating user points:', updateError);
+        toast.error('Failed to update user points');
+        setIsSubmitting(false);
+        return;
+      }
+      
+      // Now log the transaction in the point_transactions table
+      // Include source tag in the description
+      const fullDescription = `${description} [${source}]`;
+      
+      const { error: transactionError } = await supabase
+        .from('point_transactions')
+        .insert({
+          user_id: userId,
+          amount: amount,
+          type: type,
+          description: fullDescription
+        });
+      
+      if (transactionError) {
+        console.error('Error logging transaction:', transactionError);
+        toast.error('Failed to log transaction');
+        
+        // Revert the points update in case of error
+        await supabase
+          .from('profiles')
+          .update({ points: currentPoints })
+          .eq('id', userId);
+          
+        setIsSubmitting(false);
+        return;
+      }
+      
+      toast.success(`Successfully ${type === 'REDEEMED' ? 'deducted' : 'added'} ${amount} points`);
+      handleClearUser();
+      form.reset();
+      
+      // Reset form with default source
+      form.setValue('source', 'ADMIN_ADJUSTMENT');
+      
     } catch (error) {
       console.error('Error processing points transaction:', error);
       toast.error('Failed to process points transaction');
