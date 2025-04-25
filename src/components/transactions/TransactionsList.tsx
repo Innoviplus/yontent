@@ -1,6 +1,7 @@
 
 import { Transaction } from '@/types/transactions';
 import TransactionCard from './TransactionCard';
+import { Skeleton } from '@/components/ui/skeleton';
 
 interface TransactionsListProps {
   transactions: Transaction[];

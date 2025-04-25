@@ -18,7 +18,9 @@ const MyRewardTransactions = () => {
   usePageTitle('My Transactions');
 
   useEffect(() => {
-    fetchTransactions();
+    if (user?.id) {
+      fetchTransactions();
+    }
   }, [user?.id]);
 
   const handleRefresh = () => {
