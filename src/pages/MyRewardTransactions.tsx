@@ -94,7 +94,7 @@ const MyRewardTransactions = () => {
             <BreadcrumbSeparator>
               <ChevronRight />
             </BreadcrumbSeparator>
-            <BreadcrumbPage>Reward Transactions</BreadcrumbPage>
+            <BreadcrumbPage>Transactions</BreadcrumbPage>
           </BreadcrumbList>
         </Breadcrumb>
 
