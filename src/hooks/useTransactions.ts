@@ -16,12 +16,13 @@ export const useTransactions = (userId: string | undefined) => {
     try {
       console.log("Fetching redemption transactions for user:", userId);
       
-      // Fix: Use string literal array instead of array expression to prevent excessive type instantiation
+      // Fix: Use a defined array variable with type annotation to prevent excessive type instantiation
+      const transactionTypes: string[] = ["REDEEMED", "REFUNDED"];
       const { data, error } = await supabase
         .from("point_transactions")
         .select("*")
         .eq("user_id", userId)
-        .in("type", ["REDEEMED", "REFUNDED"] as string[])
+        .in("type", transactionTypes)
         .eq("source", "REDEMPTION")
         .order("created_at", { ascending: false });
 
