@@ -16,15 +16,19 @@ export const logPointsTransaction = async (
   try {
     console.log(`Logging points transaction: ${amount} points for user ${userId} (${type} from ${source})`);
     
+    // Include the source information in the description to maintain this data
+    const fullDescription = sourceId 
+      ? `${description} [${source}:${sourceId}]`
+      : `${description} [${source}]`;
+    
     // Insert the transaction record into the database
     const { data, error } = await supabase
       .from('point_transactions')
       .insert({
         user_id: userId,
         amount: amount,
-        type: type,
-        source: source,
-        description: description
+        type: type as string, // Cast to string as the DB accepts any string
+        description: fullDescription
       })
       .select()
       .single();
@@ -41,9 +45,9 @@ export const logPointsTransaction = async (
       id: data.id,
       userId: data.user_id,
       amount: data.amount,
-      type: data.type,
-      source: data.source,
-      sourceId,
+      type: data.type as any, // Type assertion as our PointTransaction type is more strict
+      source: source, // This is not stored in DB but we include it in the return object
+      sourceId, // This is not stored in DB but we include it in the return object
       description: data.description,
       createdAt: new Date(data.created_at)
     };
@@ -72,16 +76,42 @@ export const getUserTransactionHistory = async (
       throw error;
     }
     
-    const transactions: PointTransaction[] = (data || []).map(item => ({
-      id: item.id,
-      userId: item.user_id,
-      amount: item.amount,
-      type: item.type,
-      source: item.source || 'ADMIN_ADJUSTMENT',
-      sourceId: item.source_id,
-      description: item.description,
-      createdAt: new Date(item.created_at)
-    }));
+    // Parse the description field to extract source information if present
+    const transactions: PointTransaction[] = (data || []).map(item => {
+      // Try to extract source from description [SOURCE:ID] or [SOURCE]
+      let source: PointTransaction['source'] = 'ADMIN_ADJUSTMENT';
+      let sourceId: string | undefined;
+      let cleanDescription = item.description;
+      
+      const sourceMatch = item.description.match(/\[(.*?)(?::([^\]]+))?\]$/);
+      if (sourceMatch) {
+        const extractedSource = sourceMatch[1];
+        if (
+          extractedSource === 'MISSION_REVIEW' || 
+          extractedSource === 'RECEIPT_SUBMISSION' || 
+          extractedSource === 'REDEMPTION' || 
+          extractedSource === 'ADMIN_ADJUSTMENT'
+        ) {
+          source = extractedSource;
+        }
+        
+        sourceId = sourceMatch[2];
+        
+        // Remove the source tag from the description
+        cleanDescription = item.description.replace(/\s*\[.*?\]$/, '');
+      }
+      
+      return {
+        id: item.id,
+        userId: item.user_id,
+        amount: item.amount,
+        type: item.type as any, // Type assertion as our PointTransaction type is more strict
+        source,
+        sourceId,
+        description: cleanDescription,
+        createdAt: new Date(item.created_at)
+      };
+    });
     
     return { transactions, success: true };
   } catch (error: any) {

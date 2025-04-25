@@ -44,14 +44,27 @@ const MyRewardTransactions = () => {
       if (!error && data) {
         console.log("Transactions fetched:", data);
         setTransactions(
-          data.map((row) => ({
-            id: row.id,
-            description: row.description,
-            amount: row.amount,
-            type: row.type as Transaction["type"],
-            createdAt: row.created_at,
-            source: row.source
-          }))
+          data.map((row) => {
+            // Try to extract source information from description
+            let cleanDescription = row.description;
+            let source: string | undefined = undefined;
+            
+            const sourceMatch = row.description.match(/\[(.*?)(?::([^\]]+))?\]$/);
+            if (sourceMatch) {
+              source = sourceMatch[1];
+              // Remove the source tag from the description
+              cleanDescription = row.description.replace(/\s*\[.*?\]$/, '');
+            }
+            
+            return {
+              id: row.id,
+              description: cleanDescription,
+              amount: row.amount,
+              type: row.type as Transaction["type"],
+              createdAt: row.created_at,
+              source
+            };
+          })
         );
       } else {
         console.error("Error fetching transactions:", error);

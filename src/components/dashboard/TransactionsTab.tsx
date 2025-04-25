@@ -30,15 +30,40 @@ const TransactionsTab = () => {
       console.log('Transactions from database:', data);
       
       // Transform the data to match our expected format
-      return (data || []).map(item => ({
-        id: item.id,
-        userId: item.user_id,
-        amount: item.amount,
-        type: item.type,
-        source: item.source || 'ADMIN_ADJUSTMENT',
-        description: item.description || '',
-        createdAt: new Date(item.created_at)
-      }));
+      return (data || []).map(item => {
+        // Try to extract source from description [SOURCE:ID] or [SOURCE]
+        let source: 'MISSION_REVIEW' | 'RECEIPT_SUBMISSION' | 'REDEMPTION' | 'ADMIN_ADJUSTMENT' = 'ADMIN_ADJUSTMENT';
+        let sourceId: string | undefined;
+        let cleanDescription = item.description;
+        
+        const sourceMatch = item.description.match(/\[(.*?)(?::([^\]]+))?\]$/);
+        if (sourceMatch) {
+          const extractedSource = sourceMatch[1];
+          if (
+            extractedSource === 'MISSION_REVIEW' || 
+            extractedSource === 'RECEIPT_SUBMISSION' || 
+            extractedSource === 'REDEMPTION' || 
+            extractedSource === 'ADMIN_ADJUSTMENT'
+          ) {
+            source = extractedSource as any;
+          }
+          
+          sourceId = sourceMatch[2];
+          
+          // Remove the source tag from the description
+          cleanDescription = item.description.replace(/\s*\[.*?\]$/, '');
+        }
+        
+        return {
+          id: item.id,
+          userId: item.user_id,
+          amount: item.amount,
+          type: item.type,
+          source,
+          description: cleanDescription || '',
+          createdAt: new Date(item.created_at)
+        };
+      });
     },
     enabled: !!user
   });
