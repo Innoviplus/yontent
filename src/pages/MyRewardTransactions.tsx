@@ -95,8 +95,6 @@ const MyRewardTransactions = () => {
         if ((row.type === 'REDEEMED') && !cleanDescription.toLowerCase().includes('redemption') && !cleanDescription.toLowerCase().includes('redeem')) {
           cleanDescription = `Redeemed: ${cleanDescription}`;
         }
-
-        console.log(`Transaction ${row.id} - Source: ${source}, Description: ${cleanDescription}, Item: ${itemName}`);
         
         return {
           id: row.id,
@@ -143,6 +141,9 @@ const MyRewardTransactions = () => {
         <div>
           <div className="text-lg font-semibold text-gray-900">{displayDescription}</div>
           <div className="text-gray-500 text-sm mt-1">{format(new Date(tx.createdAt), "MMM dd, yyyy")}</div>
+          {tx.source === 'REDEMPTION' && (
+            <div className="text-xs text-orange-600">Points redeemed for reward</div>
+          )}
           {tx.source === 'ADMIN_ADJUSTMENT' && (
             <div className="text-gray-500 text-xs mt-1">Manual adjustment by admin</div>
           )}
