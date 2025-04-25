@@ -15,13 +15,13 @@ const MyRewardTransactions = () => {
   const navigate = useNavigate();
   const { transactions, loading, refreshing, setRefreshing, fetchTransactions } = useTransactions(user?.id);
   
-  usePageTitle('My Reward Transactions');
+  usePageTitle('My Transactions');
 
   useEffect(() => {
     if (user?.id) {
       fetchTransactions();
     }
-  }, [user?.id, fetchTransactions]);
+  }, [user?.id]);
 
   const handleRefresh = () => {
     setRefreshing(true);
@@ -41,7 +41,7 @@ const MyRewardTransactions = () => {
               <BreadcrumbSeparator>
                 <ChevronRight />
               </BreadcrumbSeparator>
-              <BreadcrumbPage>Reward Transactions</BreadcrumbPage>
+              <BreadcrumbPage>Transactions</BreadcrumbPage>
             </BreadcrumbList>
           </Breadcrumb>
           
@@ -56,7 +56,7 @@ const MyRewardTransactions = () => {
           </Button>
         </div>
 
-        <h1 className="text-2xl font-bold text-gray-900 mb-8">My Reward Transactions</h1>
+        <h1 className="text-2xl font-bold text-gray-900 mb-8">My Transactions</h1>
 
         <TransactionsList 
           transactions={transactions} 
