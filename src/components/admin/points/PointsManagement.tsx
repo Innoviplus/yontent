@@ -80,6 +80,7 @@ const PointsManagement = () => {
       if (userError) {
         console.error('Error fetching user points:', userError);
         toast.error('Failed to fetch user points');
+        setIsSubmitting(false);
         return;
       }
       
@@ -112,17 +113,28 @@ const PointsManagement = () => {
       }
       
       // Now log the transaction in the point_transactions table
-      // Include source tag in the description
-      const fullDescription = `${description} [${source}]`;
+      // Ensure we tag the source properly in the description
+      let fullDescription = description;
+      if (!fullDescription.includes('[')) {
+        fullDescription = `${description} [${source}]`;
+      }
       
-      const { error: transactionError } = await supabase
+      console.log('Inserting transaction record:', {
+        user_id: userId,
+        amount: amount,
+        type: type,
+        description: fullDescription
+      });
+      
+      const { data: transactionData, error: transactionError } = await supabase
         .from('point_transactions')
         .insert({
           user_id: userId,
           amount: amount,
           type: type,
           description: fullDescription
-        });
+        })
+        .select();
       
       if (transactionError) {
         console.error('Error logging transaction:', transactionError);
@@ -137,6 +149,8 @@ const PointsManagement = () => {
         setIsSubmitting(false);
         return;
       }
+      
+      console.log('Transaction logged successfully:', transactionData);
       
       toast.success(`Successfully ${type === 'REDEEMED' ? 'deducted' : 'added'} ${amount} points`);
       handleClearUser();
