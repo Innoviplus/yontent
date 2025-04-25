@@ -49,7 +49,7 @@ export const createRedemptionRequest = async ({
       userId, 
       pointsAmount,
       'REDEMPTION',
-      `Redemption: ${itemName}`, // Include the item name for clarity
+      `Redeemed: ${itemName}`, // Include the item name for clarity
       itemId
     );
     

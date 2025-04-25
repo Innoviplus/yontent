@@ -41,68 +41,79 @@ const MyRewardTransactions = () => {
 
       if (error) {
         console.error("Error fetching transactions:", error);
+        toast.error("Failed to load transactions");
         setTransactions([]);
-      } else if (data) {
-        console.log("Raw transactions fetched:", data);
-        
-        // Process transactions to extract source and item information
-        const parsedTransactions = await Promise.all(data.map(async (row) => {
-          // Extract source information from description
-          let cleanDescription = row.description;
-          let source: string | undefined = undefined;
-          let itemId: string | undefined = undefined;
-          let itemName: string | undefined = undefined;
-          
-          // Parse source from description (e.g., [REDEMPTION:item_id] or [REDEMPTION])
-          const sourceMatch = row.description.match(/\[(.*?)(?::([^\]]+))?\]$/);
-          if (sourceMatch) {
-            source = sourceMatch[1];
-            itemId = sourceMatch[2];
-            
-            // Remove the source tag from the description
-            cleanDescription = row.description.replace(/\s*\[.*?\]$/, '').trim();
-          }
-          
-          // For redemptions with itemId, fetch item name from redemption_items
-          if (source === 'REDEMPTION' && itemId) {
-            try {
-              const { data: itemData } = await supabase
-                .from('redemption_items')
-                .select('name')
-                .eq('id', itemId)
-                .single();
-                
-              if (itemData) {
-                itemName = itemData.name;
-              }
-            } catch (err) {
-              console.error(`Error fetching item name for ${itemId}:`, err);
-            }
-          }
-
-          // For redemptions, ensure the description clearly shows what was redeemed
-          if ((row.type === 'REDEEMED') && !cleanDescription.toLowerCase().includes('redemption') && !cleanDescription.toLowerCase().includes('redeem')) {
-            cleanDescription = `Redeemed: ${cleanDescription}`;
-          }
-
-          console.log(`Transaction ${row.id} - Source: ${source}, Description: ${cleanDescription}, Item: ${itemName}`);
-          
-          return {
-            id: row.id,
-            description: cleanDescription,
-            amount: row.amount,
-            type: row.type as Transaction["type"],
-            createdAt: row.created_at,
-            source,
-            itemName
-          };
-        }));
-        
-        console.log("Processed transactions:", parsedTransactions);
-        setTransactions(parsedTransactions);
+        return;
       }
+      
+      if (!data || data.length === 0) {
+        console.log("No transactions found");
+        setTransactions([]);
+        setLoading(false);
+        return;
+      }
+      
+      console.log("Raw transactions fetched:", data);
+      
+      // Process transactions to extract source and item information
+      const parsedTransactions = await Promise.all(data.map(async (row) => {
+        // Extract source information from description
+        let cleanDescription = row.description;
+        let source: string | undefined = undefined;
+        let itemId: string | undefined = undefined;
+        let itemName: string | undefined = undefined;
+        
+        // Parse source from description (e.g., [REDEMPTION:item_id] or [REDEMPTION])
+        const sourceMatch = row.description.match(/\[(.*?)(?::([^\]]+))?\]$/);
+        if (sourceMatch) {
+          source = sourceMatch[1];
+          itemId = sourceMatch[2];
+          
+          // Remove the source tag from the description
+          cleanDescription = row.description.replace(/\s*\[.*?\]$/, '').trim();
+        }
+        
+        // For redemptions with itemId, fetch item name from redemption_items
+        if (source === 'REDEMPTION' && itemId) {
+          try {
+            const { data: itemData } = await supabase
+              .from('redemption_items')
+              .select('name')
+              .eq('id', itemId)
+              .single();
+              
+            if (itemData) {
+              itemName = itemData.name;
+              console.log(`Found item name for ${itemId}: ${itemName}`);
+            }
+          } catch (err) {
+            console.error(`Error fetching item name for ${itemId}:`, err);
+          }
+        }
+
+        // For redemptions, ensure the description clearly shows what was redeemed
+        if ((row.type === 'REDEEMED') && !cleanDescription.toLowerCase().includes('redemption') && !cleanDescription.toLowerCase().includes('redeem')) {
+          cleanDescription = `Redeemed: ${cleanDescription}`;
+        }
+
+        console.log(`Transaction ${row.id} - Source: ${source}, Description: ${cleanDescription}, Item: ${itemName}`);
+        
+        return {
+          id: row.id,
+          description: cleanDescription,
+          amount: row.amount,
+          type: row.type as Transaction["type"],
+          createdAt: row.created_at,
+          source,
+          itemName
+        };
+      }));
+      
+      console.log("Processed transactions:", parsedTransactions);
+      setTransactions(parsedTransactions);
     } catch (err) {
       console.error("Unexpected error fetching transactions:", err);
+      toast.error("An error occurred while loading transactions");
     } finally {
       setLoading(false);
       setRefreshing(false);
