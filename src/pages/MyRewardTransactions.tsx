@@ -53,7 +53,7 @@ const MyRewardTransactions = () => {
             if (sourceMatch) {
               source = sourceMatch[1];
               // Remove the source tag from the description
-              cleanDescription = row.description.replace(/\s*\[.*?\]$/, '');
+              cleanDescription = row.description.replace(/\s*\[.*?\]$/, '').trim();
             }
             
             return {
@@ -114,6 +114,9 @@ const MyRewardTransactions = () => {
               <div>
                 <div className="text-lg font-semibold text-gray-900">{tx.description}</div>
                 <div className="text-gray-500 text-sm mt-1">{format(new Date(tx.createdAt), "MMM dd, yyyy")}</div>
+                {tx.source === 'ADMIN_ADJUSTMENT' && (
+                  <div className="text-gray-500 text-xs mt-1">Manual adjustment by admin</div>
+                )}
               </div>
               <div
                 className={

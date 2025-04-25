@@ -51,7 +51,7 @@ const TransactionsTab = () => {
           sourceId = sourceMatch[2];
           
           // Remove the source tag from the description
-          cleanDescription = item.description.replace(/\s*\[.*?\]$/, '');
+          cleanDescription = item.description.replace(/\s*\[.*?\]$/, '').trim();
         }
         
         return {
@@ -100,6 +100,9 @@ const TransactionsTab = () => {
             <span className="text-sm text-gray-500">
               {format(transaction.createdAt, 'MMM dd, yyyy')}
             </span>
+            {transaction.source === 'ADMIN_ADJUSTMENT' && (
+              <span className="text-xs text-gray-500">Manual adjustment by admin</span>
+            )}
           </div>
           
           <div className={`font-semibold ${transaction.type === 'EARNED' || transaction.type === 'WELCOME' || transaction.type === 'ADJUSTED' ? 'text-green-600' : 'text-red-600'}`}>

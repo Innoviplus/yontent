@@ -7,8 +7,7 @@ import { Card, CardHeader, CardTitle } from '@/components/ui/card';
 import UserSearchCard from './UserSearchCard';
 import TransactionFormCard from './TransactionFormCard';
 import { transactionSchema, type TransactionFormValues } from './TransactionFormCard';
-import { addPointsToUser } from '@/hooks/admin/utils/points';
-import { deductPointsFromUser } from '@/hooks/admin/utils/points';
+import { addPointsToUser, deductPointsFromUser } from '@/hooks/admin/utils/points';
 import { supabase } from '@/integrations/supabase/client';
 
 interface UserData {
@@ -77,20 +76,26 @@ const PointsManagement = () => {
           userId, 
           amount, 
           type, 
-          source === 'MISSION_REVIEW' || source === 'RECEIPT_SUBMISSION' ? 
-            source : 'ADMIN_ADJUSTMENT',  // Ensure only allowed source types are passed
+          source === 'MISSION_REVIEW' || source === 'RECEIPT_SUBMISSION' || source === 'ADMIN_ADJUSTMENT' ? 
+            source : 'ADMIN_ADJUSTMENT',
           description
         );
       } else {
-        result = await deductPointsFromUser(userId, amount, source, description);
+        result = await deductPointsFromUser(
+          userId, 
+          amount, 
+          source === 'REDEMPTION' || source === 'ADMIN_ADJUSTMENT' ? 
+            source : 'ADMIN_ADJUSTMENT',
+          description
+        );
       }
 
       if (result.success) {
-        toast.success('Points transaction completed successfully');
+        toast.success(`Points ${type === 'REDEEMED' ? 'deducted' : 'added'} successfully`);
         handleClearUser();
         form.reset();
       } else {
-        toast.error(result.error || 'Failed to process points transaction');
+        toast.error(result.error || `Failed to ${type === 'REDEEMED' ? 'deduct' : 'add'} points`);
       }
     } catch (error) {
       console.error('Error processing points transaction:', error);
