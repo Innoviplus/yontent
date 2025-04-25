@@ -45,7 +45,6 @@ export const useTransactions = (userId: string | undefined) => {
         let itemName: string | undefined = undefined;
         
         // Extract source and itemId information from description if it follows the pattern
-        // Example: "Redeemed points [REDEMPTION:123e4567]" -> source=REDEMPTION, itemId=123e4567
         const sourceMatch = row.description.match(/\[(.*?)(?::([^\]]+))?\]$/);
         if (sourceMatch) {
           source = sourceMatch[1];
