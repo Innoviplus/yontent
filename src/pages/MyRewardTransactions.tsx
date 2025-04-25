@@ -8,6 +8,7 @@ import { useTransactions } from '@/hooks/useTransactions';
 import { useEffect } from 'react';
 import { usePageTitle } from '@/hooks/usePageTitle';
 import RewardHeader from '@/components/rewards/RewardHeader';
+import { RefreshCcw } from 'lucide-react';
 
 const MyRewardTransactions = () => {
   const { user } = useAuth();
