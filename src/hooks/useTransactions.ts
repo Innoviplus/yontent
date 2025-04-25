@@ -15,30 +15,46 @@ export const useTransactions = (userId: string | undefined) => {
     setLoading(true);
     try {
       console.log("Fetching transactions for user:", userId);
-      const { data, error } = await supabase
+      
+      // First fetch the standard point transactions
+      const { data: pointTransactions, error } = await supabase
         .from("point_transactions")
         .select("*")
         .eq("user_id", userId)
         .order("created_at", { ascending: false });
 
       if (error) {
-        console.error("Error fetching transactions:", error);
+        console.error("Error fetching point transactions:", error);
         toast.error("Failed to load transactions");
         setTransactions([]);
         return;
       }
       
-      if (!data || data.length === 0) {
-        console.log("No transactions found");
+      // Then fetch redemption requests to ensure we get all redemption records
+      const { data: redemptionRequests, error: redemptionError } = await supabase
+        .from("redemption_requests")
+        .select("*, redemption_items(name)")
+        .eq("user_id", userId)
+        .order("created_at", { ascending: false });
+        
+      if (redemptionError) {
+        console.error("Error fetching redemption requests:", redemptionError);
+        toast.error("Failed to load redemption requests");
+      }
+
+      console.log("Raw transactions fetched:", pointTransactions);
+      console.log("Redemption requests fetched:", redemptionRequests);
+      
+      if ((!pointTransactions || pointTransactions.length === 0) && 
+          (!redemptionRequests || redemptionRequests.length === 0)) {
+        console.log("No transactions or redemptions found");
         setTransactions([]);
         setLoading(false);
         return;
       }
       
-      console.log("Raw transactions fetched:", data);
-      
       // Process transactions to extract source and item information
-      const parsedTransactions = await Promise.all(data.map(async (row) => {
+      const parsedPointTransactions = await Promise.all((pointTransactions || []).map(async (row) => {
         let cleanDescription = row.description;
         let source: string | undefined = undefined;
         let itemId: string | undefined = undefined;
@@ -81,8 +97,28 @@ export const useTransactions = (userId: string | undefined) => {
         };
       }));
       
-      console.log("Processed transactions:", parsedTransactions);
-      setTransactions(parsedTransactions);
+      // Process redemption requests into transaction format
+      const parsedRedemptionRequests = (redemptionRequests || []).map(request => {
+        const itemName = request.redemption_items?.name;
+        return {
+          id: request.id,
+          description: `Redeemed: ${itemName || 'Reward item'}`,
+          amount: request.points_amount,
+          type: "REDEEMED" as Transaction["type"],
+          createdAt: request.created_at,
+          source: "REDEMPTION",
+          itemName: itemName
+        };
+      });
+      
+      // Combine both types of transactions
+      const allTransactions = [...parsedPointTransactions, ...parsedRedemptionRequests];
+      
+      // Sort by date (newest first)
+      allTransactions.sort((a, b) => new Date(b.createdAt).getTime() - new Date(a.createdAt).getTime());
+      
+      console.log("Processed transactions:", allTransactions);
+      setTransactions(allTransactions);
     } catch (err) {
       console.error("Unexpected error fetching transactions:", err);
       toast.error("An error occurred while loading transactions");
