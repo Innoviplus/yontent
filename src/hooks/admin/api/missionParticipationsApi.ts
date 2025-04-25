@@ -21,8 +21,8 @@ export const fetchMissionParticipations = async (): Promise<ApiResponse<MissionP
       .from('mission_participations')
       .select(`
         *,
-        profiles:user_id (*),
-        missions:mission_id (*)
+        missions!inner(*),
+        profiles!inner(*)
       `)
       .order('created_at', { ascending: false });
 
@@ -54,8 +54,8 @@ export const fetchMissionParticipationsWithFilters = async (
       .from('mission_participations')
       .select(`
         *,
-        profiles:user_id (*),
-        missions:mission_id (*)
+        missions!inner(*),
+        profiles!inner(*)
       `);
 
     // Apply filters
