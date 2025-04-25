@@ -22,6 +22,7 @@ interface MissionsParticipationProps {
   onRefresh: () => Promise<void>;
   onApprove: (id: string) => Promise<boolean>;
   onReject: (id: string) => Promise<boolean>;
+  error?: string;
 }
 
 const MissionsParticipation = ({
@@ -30,7 +31,8 @@ const MissionsParticipation = ({
   isRefreshing,
   onRefresh,
   onApprove,
-  onReject
+  onReject,
+  error
 }: MissionsParticipationProps) => {
   const [viewingParticipation, setViewingParticipation] = useState<MissionParticipation | null>(null);
   const [processingId, setProcessingId] = useState<string | null>(null);
@@ -39,9 +41,10 @@ const MissionsParticipation = ({
     console.log('MissionsParticipation rendered with:', {
       participationsCount: participations.length,
       isLoading,
-      isRefreshing
+      isRefreshing,
+      error
     });
-  }, [participations, isLoading, isRefreshing]);
+  }, [participations, isLoading, isRefreshing, error]);
 
   const handleApprove = async (id: string) => {
     setProcessingId(id);
@@ -88,7 +91,7 @@ const MissionsParticipation = ({
         </CardHeader>
         <CardContent>
           {participations.length === 0 ? (
-            <EmptyParticipations />
+            <EmptyParticipations onRefreshClick={onRefresh} error={error} />
           ) : (
             <div className="space-y-4">
               {participations.map(participation => (

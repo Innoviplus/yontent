@@ -36,6 +36,7 @@ interface AdminTabsContainerProps {
   rejectParticipation: any;
   refreshMissions: () => void;
   maxLoadingTime: boolean;
+  participationsError?: string;
 }
 
 const AdminTabsContainer = ({
@@ -67,6 +68,7 @@ const AdminTabsContainer = ({
   rejectParticipation,
   refreshMissions,
   maxLoadingTime,
+  participationsError,
 }: AdminTabsContainerProps) => (
   <Tabs defaultValue={activeTab} value={activeTab} onValueChange={setActiveTab} className="w-full">
     <TabsList className="mb-6">
@@ -87,6 +89,7 @@ const AdminTabsContainer = ({
         onDelete={deleteReward}
       />
     </TabsContent>
+    
     <TabsContent value="requests" className="space-y-4">
       <RequestsManagement
         requests={requests}
@@ -99,6 +102,7 @@ const AdminTabsContainer = ({
         onReject={handleRejectRequest}
       />
     </TabsContent>
+    
     <TabsContent value="missions" className="space-y-4">
       <MissionsManagement
         missions={missions}
@@ -108,6 +112,7 @@ const AdminTabsContainer = ({
         onDelete={deleteMission}
       />
     </TabsContent>
+    
     <TabsContent value="participations" className="space-y-4">
       <MissionsParticipation
         participations={participations}
@@ -116,11 +121,14 @@ const AdminTabsContainer = ({
         onRefresh={refreshParticipations}
         onApprove={approveParticipation}
         onReject={rejectParticipation}
+        error={participationsError}
       />
     </TabsContent>
+    
     <TabsContent value="site-content" className="space-y-4">
       <SiteContentTab />
     </TabsContent>
+    
     <TabsContent value="admin-users" className="space-y-4">
       <AdminUsersManagement />
     </TabsContent>

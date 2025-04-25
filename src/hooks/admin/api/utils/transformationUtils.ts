@@ -34,6 +34,9 @@ export const transformParticipationData = (data: any[]): MissionParticipation[] 
       missions: item.missions
     });
     
+    const profiles = item.profiles || {};
+    const missions = item.missions || {};
+    
     return {
       id: item.id,
       missionId: item.mission_id,
@@ -43,17 +46,17 @@ export const transformParticipationData = (data: any[]): MissionParticipation[] 
       updatedAt: item.updated_at,
       submissionData: item.submission_data,
       user: {
-        id: item.profiles?.id || item.user_id,
-        username: item.profiles?.username || 'Anonymous',
-        email: item.profiles?.email,
-        avatar: extractAvatarUrl(item.profiles)
+        id: profiles.id || item.user_id,
+        username: profiles.username || 'Anonymous',
+        email: profiles.email,
+        avatar: extractAvatarUrl(profiles)
       },
       mission: {
-        id: item.missions?.id || item.mission_id,
-        title: item.missions?.title || 'Unknown Mission',
-        description: item.missions?.description || '',
-        pointsReward: item.missions?.points_reward || 0,
-        type: item.missions?.type || 'REVIEW'
+        id: missions.id || item.mission_id,
+        title: missions.title || 'Unknown Mission',
+        description: missions.description || '',
+        pointsReward: missions.points_reward || 0,
+        type: missions.type || 'REVIEW'
       }
     };
   });

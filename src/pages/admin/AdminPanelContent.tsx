@@ -47,6 +47,7 @@ const AdminPanelContent = ({ state }: AdminPanelContentProps) => {
     approveParticipation,
     rejectParticipation,
     refreshMissions: tabsRefreshMissions,
+    participationsError,
   } = state;
 
   if (isLoading && !maxLoadingTime && retryCount <= 1) {
@@ -132,6 +133,7 @@ const AdminPanelContent = ({ state }: AdminPanelContentProps) => {
             rejectParticipation={rejectParticipation}
             refreshMissions={tabsRefreshMissions}
             maxLoadingTime={maxLoadingTime}
+            participationsError={participationsError}
           />
         </div>
       </div>
