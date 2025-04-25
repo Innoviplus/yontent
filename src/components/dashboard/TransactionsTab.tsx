@@ -16,54 +16,69 @@ const TransactionsTab = () => {
     queryFn: async () => {
       setIsLoading(true);
       
-      // Fetch all transactions including welcome bonus
-      const { data, error } = await supabase
-        .from('point_transactions')
-        .select('*')
-        .eq('user_id', user?.id)
-        .order('created_at', { ascending: false });
+      try {
+        console.log("TransactionsTab: Fetching transactions for user:", user?.id);
         
-      setIsLoading(false);
-      
-      if (error) throw error;
-      
-      console.log('Transactions from database:', data);
-      
-      // Transform the data to match our expected format
-      return (data || []).map(item => {
-        // Try to extract source from description [SOURCE:ID] or [SOURCE]
-        let source: 'MISSION_REVIEW' | 'RECEIPT_SUBMISSION' | 'REDEMPTION' | 'ADMIN_ADJUSTMENT' = 'ADMIN_ADJUSTMENT';
-        let sourceId: string | undefined;
-        let cleanDescription = item.description;
-        
-        const sourceMatch = item.description.match(/\[(.*?)(?::([^\]]+))?\]$/);
-        if (sourceMatch) {
-          const extractedSource = sourceMatch[1];
-          if (
-            extractedSource === 'MISSION_REVIEW' || 
-            extractedSource === 'RECEIPT_SUBMISSION' || 
-            extractedSource === 'REDEMPTION' || 
-            extractedSource === 'ADMIN_ADJUSTMENT'
-          ) {
-            source = extractedSource as any;
-          }
+        // Fetch all transactions including welcome bonus
+        const { data, error } = await supabase
+          .from('point_transactions')
+          .select('*')
+          .eq('user_id', user?.id)
+          .order('created_at', { ascending: false });
           
-          sourceId = sourceMatch[2];
-          
-          // Remove the source tag from the description
-          cleanDescription = item.description.replace(/\s*\[.*?\]$/, '').trim();
+        if (error) {
+          console.error("TransactionsTab: Error fetching transactions:", error);
+          throw error;
         }
         
-        return {
-          id: item.id,
-          userId: item.user_id,
-          amount: item.amount,
-          type: item.type,
-          source,
-          description: cleanDescription || '',
-          createdAt: new Date(item.created_at)
-        };
-      });
+        console.log('TransactionsTab: Transactions from database:', data);
+        
+        // Transform the data to match our expected format
+        const processedTransactions = (data || []).map(item => {
+          // Try to extract source from description [SOURCE:ID] or [SOURCE]
+          let source: 'MISSION_REVIEW' | 'RECEIPT_SUBMISSION' | 'REDEMPTION' | 'ADMIN_ADJUSTMENT' = 'ADMIN_ADJUSTMENT';
+          let sourceId: string | undefined;
+          let cleanDescription = item.description;
+          
+          const sourceMatch = item.description.match(/\[(.*?)(?::([^\]]+))?\]$/);
+          if (sourceMatch) {
+            const extractedSource = sourceMatch[1];
+            if (
+              extractedSource === 'MISSION_REVIEW' || 
+              extractedSource === 'RECEIPT_SUBMISSION' || 
+              extractedSource === 'REDEMPTION' || 
+              extractedSource === 'ADMIN_ADJUSTMENT'
+            ) {
+              source = extractedSource as any;
+            }
+            
+            sourceId = sourceMatch[2];
+            
+            // Remove the source tag from the description
+            cleanDescription = item.description.replace(/\s*\[.*?\]$/, '').trim();
+          }
+          
+          console.log(`TransactionsTab: Processed transaction ${item.id} - Source: ${source}, Description: ${cleanDescription}`);
+          
+          return {
+            id: item.id,
+            userId: item.user_id,
+            amount: item.amount,
+            type: item.type,
+            source,
+            description: cleanDescription || '',
+            createdAt: new Date(item.created_at)
+          };
+        });
+        
+        console.log('TransactionsTab: Processed transactions:', processedTransactions);
+        setIsLoading(false);
+        return processedTransactions;
+      } catch (error) {
+        console.error('TransactionsTab: Error in transaction processing:', error);
+        setIsLoading(false);
+        throw error;
+      }
     },
     enabled: !!user
   });

@@ -67,6 +67,7 @@ const PointsManagement = () => {
   const onSubmit = async (values: TransactionFormValues) => {
     try {
       setIsSubmitting(true);
+      console.log('Starting transaction submission with values:', values);
 
       const { amount, type, source, description, userId } = values;
       
@@ -112,11 +113,15 @@ const PointsManagement = () => {
         return;
       }
       
+      console.log('Points updated successfully. New total:', newPoints);
+      
       // Now log the transaction in the point_transactions table
-      // Ensure we tag the source properly in the description
-      let fullDescription = description;
+      // Make sure we properly tag the source in the description
+      let fullDescription = description.trim();
+      
+      // Always add the source tag, ensuring we don't duplicate if it already contains one
       if (!fullDescription.includes('[')) {
-        fullDescription = `${description} [${source}]`;
+        fullDescription = `${fullDescription} [${source}]`;
       }
       
       console.log('Inserting transaction record:', {

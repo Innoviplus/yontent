@@ -35,17 +35,23 @@ const MyRewardTransactions = () => {
       if (!user?.id) return;
       setLoading(true);
 
-      const { data, error } = await supabase
-        .from("point_transactions")
-        .select("*")
-        .eq("user_id", user.id)
-        .order("created_at", { ascending: false });
+      try {
+        console.log("Fetching transactions for user:", user.id);
+        
+        const { data, error } = await supabase
+          .from("point_transactions")
+          .select("*")
+          .eq("user_id", user.id)
+          .order("created_at", { ascending: false });
 
-      if (!error && data) {
-        console.log("Transactions fetched:", data);
-        setTransactions(
-          data.map((row) => {
-            // Try to extract source information from description
+        if (error) {
+          console.error("Error fetching transactions:", error);
+          setTransactions([]);
+        } else if (data) {
+          console.log("Raw transactions fetched:", data);
+          
+          const parsedTransactions = data.map((row) => {
+            // Extract source information from description
             let cleanDescription = row.description;
             let source: string | undefined = undefined;
             
@@ -56,6 +62,8 @@ const MyRewardTransactions = () => {
               cleanDescription = row.description.replace(/\s*\[.*?\]$/, '').trim();
             }
             
+            console.log(`Transaction ${row.id} - Source: ${source}, Description: ${cleanDescription}`);
+            
             return {
               id: row.id,
               description: cleanDescription,
@@ -64,14 +72,18 @@ const MyRewardTransactions = () => {
               createdAt: row.created_at,
               source
             };
-          })
-        );
-      } else {
-        console.error("Error fetching transactions:", error);
-        setTransactions([]);
+          });
+          
+          console.log("Processed transactions:", parsedTransactions);
+          setTransactions(parsedTransactions);
+        }
+      } catch (err) {
+        console.error("Unexpected error fetching transactions:", err);
+      } finally {
+        setLoading(false);
       }
-      setLoading(false);
     };
+    
     fetchTransactions();
   }, [user?.id]);
 
