@@ -31,9 +31,7 @@ const MyMissions = () => {
         <Breadcrumb className="mb-6">
           <BreadcrumbList>
             <BreadcrumbItem>
-              <Link to="/dashboard">
-                <BreadcrumbLink as="span">Dashboard</BreadcrumbLink>
-              </Link>
+              <Link to="/dashboard">Dashboard</Link>
             </BreadcrumbItem>
             <BreadcrumbSeparator>
               <ChevronRight />
