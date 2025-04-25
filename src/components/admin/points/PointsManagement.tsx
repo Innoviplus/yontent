@@ -94,6 +94,9 @@ const PointsManagement = () => {
         toast.success(`Points ${type === 'REDEEMED' ? 'deducted' : 'added'} successfully`);
         handleClearUser();
         form.reset();
+        
+        // Reset form with default source
+        form.setValue('source', 'ADMIN_ADJUSTMENT');
       } else {
         toast.error(result.error || `Failed to ${type === 'REDEEMED' ? 'deduct' : 'add'} points`);
       }

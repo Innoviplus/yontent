@@ -46,6 +46,20 @@ const TransactionFormCard = ({
   isUserSelected, 
   isSubmitting = false 
 }: TransactionFormCardProps) => {
+  
+  // Listen for changes in the transaction type to update source automatically
+  const watchType = form.watch("type");
+  
+  // Update source when transaction type changes
+  React.useEffect(() => {
+    if (watchType === "REDEEMED") {
+      form.setValue("source", "REDEMPTION");
+    } else {
+      // For other transaction types, default to ADMIN_ADJUSTMENT
+      form.setValue("source", "ADMIN_ADJUSTMENT");
+    }
+  }, [watchType, form]);
+  
   return (
     <Form {...form}>
       <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-4">
@@ -99,7 +113,7 @@ const TransactionFormCard = ({
                 <FormLabel>Source</FormLabel>
                 <Select 
                   onValueChange={field.onChange} 
-                  defaultValue={field.value}
+                  value={field.value}
                 >
                   <FormControl>
                     <SelectTrigger>
