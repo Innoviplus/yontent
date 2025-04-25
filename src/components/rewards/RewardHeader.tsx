@@ -13,7 +13,7 @@ const RewardHeader: React.FC<RewardHeaderProps> = ({ title }) => {
   const isMobile = useIsMobile();
   
   const handleNavigate = () => {
-    navigate('/rewards');
+    navigate('/dashboard');
   };
 
   return (
@@ -32,3 +32,4 @@ const RewardHeader: React.FC<RewardHeaderProps> = ({ title }) => {
 };
 
 export default RewardHeader;
+
