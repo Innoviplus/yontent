@@ -49,11 +49,11 @@ export const deductPointsFromUser = async (
       throw pointsError;
     }
     
-    // Log the transaction if successful
+    // Log the transaction with proper type and description
     const transactionResult = await logPointsTransaction(
       userId,
-      pointsAmount,
-      'REDEEMED',
+      pointsAmount, // Always pass the positive amount, the REDEEMED type indicates it's a deduction
+      'REDEEMED', // Use REDEEMED type for all redemptions
       source,
       description,
       sourceId

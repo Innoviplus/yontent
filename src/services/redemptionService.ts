@@ -3,6 +3,7 @@ import { RedemptionItem } from '@/types/redemption';
 import { getRedemptionItems, getRedeemedPoints } from './redemption';
 import { supabase } from '@/integrations/supabase/client';
 import { deductPointsFromUser } from '@/hooks/admin/utils/points';
+import { toast } from 'sonner';
 
 // Create a new redemption request
 export const createRedemptionRequest = async ({
@@ -30,14 +31,25 @@ export const createRedemptionRequest = async ({
       console.error('Error fetching user data:', userError);
     }
     
+    const { data: itemData, error: itemError } = await supabase
+      .from('redemption_items')
+      .select('name')
+      .eq('id', itemId)
+      .single();
+      
+    if (itemError) {
+      console.error('Error fetching item data:', itemError);
+    }
+    
     const username = userData?.username || null;
+    const itemName = itemData?.name || `Item ${itemId}`;
     
     // First deduct points from the user's account
     const deductResult = await deductPointsFromUser(
       userId, 
       pointsAmount,
       'REDEMPTION',
-      `Redemption request for item ${itemId}`,
+      `Redemption: ${itemName}`, // Include the item name for clarity
       itemId
     );
     
@@ -137,7 +149,7 @@ export const rejectRedemptionRequest = async (requestId: string) => {
     // Get the request details
     const { data: request, error: requestError } = await supabase
       .from('redemption_requests')
-      .select('user_id, points_amount, status')
+      .select('user_id, points_amount, status, item_id')
       .eq('id', requestId)
       .single();
       
@@ -150,10 +162,28 @@ export const rejectRedemptionRequest = async (requestId: string) => {
       throw new Error(`Cannot reject request with status ${request.status}`);
     }
     
-    // Return points to user
-    const { addPointsToUser, returnPointsToUser } = await import('@/hooks/admin/utils/points');
+    // Get item name for the refund description
+    const { data: itemData } = await supabase
+      .from('redemption_items')
+      .select('name')
+      .eq('id', request.item_id)
+      .single();
+      
+    const itemName = itemData?.name || `Item ${request.item_id}`;
     
-    await returnPointsToUser(request.user_id, request.points_amount);
+    // Return points to user
+    const { returnPointsToUser } = await import('@/hooks/admin/utils/points');
+    
+    const refundResult = await returnPointsToUser(
+      request.user_id, 
+      request.points_amount, 
+      `Refund: ${itemName}`, // Include the item name for clarity
+      request.item_id
+    );
+    
+    if (!refundResult.success) {
+      throw new Error(refundResult.error || 'Failed to return points to user');
+    }
     
     // Update request status to REJECTED
     const { data, error } = await supabase
