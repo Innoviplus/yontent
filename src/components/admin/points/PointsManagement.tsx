@@ -1,3 +1,4 @@
+
 import { useState } from 'react';
 import { useForm } from 'react-hook-form';
 import { zodResolver } from '@hookform/resolvers/zod';
@@ -122,8 +123,9 @@ const PointsManagement = () => {
       }
       
       // Use admin service to insert the transaction record
+      // Use explicit typing to work around the TypeScript error
       const { data: rpcResult, error: rpcError } = await supabase.rpc(
-        'admin_add_point_transaction',
+        'admin_add_point_transaction' as any,
         {
           p_user_id: userId,
           p_amount: amount,
