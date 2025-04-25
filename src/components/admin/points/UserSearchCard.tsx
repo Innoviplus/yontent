@@ -1,6 +1,5 @@
 
-import { useState } from "react";
-import { useNavigate } from "react-router-dom";
+import { useState, useEffect } from "react";
 import { 
   Card, 
   CardContent, 
@@ -25,6 +24,7 @@ interface UserSearchCardProps {
   selectedUser: UserData | null;
   onSelectUser: (user: UserData) => void;
   onClearUser: () => void;
+  onSearch: (query: string) => void;
 }
 
 const UserSearchCard = ({ 
@@ -32,14 +32,19 @@ const UserSearchCard = ({
   isLoading, 
   selectedUser, 
   onSelectUser, 
-  onClearUser 
+  onClearUser,
+  onSearch
 }: UserSearchCardProps) => {
   const [searchQuery, setSearchQuery] = useState("");
   
-  // Filter users based on search query
-  const filteredUsers = users?.filter(user => 
-    user.username?.toLowerCase().includes(searchQuery.toLowerCase())
-  );
+  // Effect to trigger search when query changes
+  useEffect(() => {
+    const timer = setTimeout(() => {
+      onSearch(searchQuery);
+    }, 300);
+    
+    return () => clearTimeout(timer);
+  }, [searchQuery, onSearch]);
 
   return (
     <Card>
@@ -82,13 +87,17 @@ const UserSearchCard = ({
             </div>
             
             <div className="border rounded-md max-h-60 overflow-y-auto">
-              {filteredUsers?.length === 0 ? (
+              {isLoading ? (
+                <div className="p-4 text-center text-sm text-gray-500">
+                  Loading...
+                </div>
+              ) : users?.length === 0 ? (
                 <div className="p-4 text-center text-sm text-gray-500">
                   No users found
                 </div>
               ) : (
                 <div className="divide-y">
-                  {filteredUsers?.map(user => (
+                  {users?.map(user => (
                     <div 
                       key={user.id} 
                       className="p-3 flex items-center hover:bg-gray-50 cursor-pointer"

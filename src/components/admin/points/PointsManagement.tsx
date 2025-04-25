@@ -69,13 +69,19 @@ const PointsManagement = () => {
     try {
       setIsSubmitting(true);
 
-      const { amount, type, description, userId } = values;
+      const { amount, type, source, description, userId } = values;
       let result;
 
       if (type === 'EARNED' || type === 'ADJUSTED') {
-        result = await addPointsToUser(userId, amount, type, description);
+        result = await addPointsToUser(
+          userId, 
+          amount, 
+          type, 
+          source,  // Added the source parameter here
+          description
+        );
       } else {
-        result = await deductPointsFromUser(userId, amount, 'ADMIN_ADJUSTMENT', description);
+        result = await deductPointsFromUser(userId, amount, source, description);
       }
 
       if (result.success) {
@@ -108,6 +114,7 @@ const PointsManagement = () => {
           selectedUser={selectedUser}
           onSelectUser={handleSelectUser}
           onClearUser={handleClearUser}
+          onSearch={searchUsers}
         />
 
         <TransactionFormCard
