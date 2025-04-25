@@ -2,13 +2,12 @@
 import { useNavigate } from 'react-router-dom';
 import { useAuth } from '@/contexts/AuthContext';
 import Navbar from '@/components/Navbar';
-import { Breadcrumb, BreadcrumbList, BreadcrumbItem, BreadcrumbLink, BreadcrumbSeparator, BreadcrumbPage } from '@/components/ui/breadcrumb';
-import { ChevronRight, RefreshCcw } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import TransactionsList from '@/components/transactions/TransactionsList';
 import { useTransactions } from '@/hooks/useTransactions';
 import { useEffect } from 'react';
 import { usePageTitle } from '@/hooks/usePageTitle';
+import RewardHeader from '@/components/rewards/RewardHeader';
 
 const MyRewardTransactions = () => {
   const { user } = useAuth();
@@ -32,19 +31,9 @@ const MyRewardTransactions = () => {
     <div className="min-h-screen bg-gray-50">
       <Navbar />
       <div className="container mx-auto px-4 pt-24 pb-16 max-w-2xl">
-        <div className="flex justify-between items-center mb-6">
-          <Breadcrumb>
-            <BreadcrumbList>
-              <BreadcrumbItem>
-                <BreadcrumbLink href="/dashboard">Dashboard</BreadcrumbLink>
-              </BreadcrumbItem>
-              <BreadcrumbSeparator>
-                <ChevronRight />
-              </BreadcrumbSeparator>
-              <BreadcrumbPage>Transactions</BreadcrumbPage>
-            </BreadcrumbList>
-          </Breadcrumb>
-          
+        <RewardHeader title="Back to My Dashboard" />
+        
+        <div className="flex justify-end mb-6">
           <Button 
             variant="outline" 
             size="sm"
