@@ -2,7 +2,6 @@
 import React from 'react';
 import { useNavigate } from 'react-router-dom';
 import { ArrowLeft } from 'lucide-react';
-import { Button } from '@/components/ui/button';
 import { useIsMobile } from '@/hooks/use-mobile';
 
 interface RewardHeaderProps {
@@ -13,17 +12,21 @@ const RewardHeader: React.FC<RewardHeaderProps> = ({ title }) => {
   const navigate = useNavigate();
   const isMobile = useIsMobile();
   
+  const handleNavigate = () => {
+    navigate('/rewards');
+  };
+
   return (
-    <div className={`flex items-center gap-2 ${isMobile ? 'mb-4' : 'mb-8'}`}>
-      <Button 
-        variant="ghost" 
-        size="icon" 
-        onClick={() => navigate('/rewards')}
-        className="rounded-full"
+    <div 
+      onClick={handleNavigate} 
+      className={`flex items-center gap-2 cursor-pointer ${isMobile ? 'mb-4' : 'mb-8'}`}
+    >
+      <ArrowLeft className="h-4 w-4 text-brand-teal" />
+      <h1 
+        className={`${isMobile ? 'text-sm' : 'text-base'} font-semibold text-brand-teal hover:underline`}
       >
-        <ArrowLeft className="h-5 w-5" />
-      </Button>
-      <h1 className={`${isMobile ? 'text-xl' : 'text-2xl'} font-bold text-gray-900 line-clamp-2`}>{title}</h1>
+        {title}
+      </h1>
     </div>
   );
 };
