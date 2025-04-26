@@ -1,4 +1,3 @@
-
 import { useState } from 'react';
 import { useForm } from 'react-hook-form';
 import { zodResolver } from '@hookform/resolvers/zod';
@@ -38,8 +37,8 @@ export const useReviewForm = () => {
   const handleImageSelection = (files: FileList | null) => {
     if (!files) return;
     
-    if (selectedImages.length + files.length > 10) {
-      setImageError('You can only upload up to 10 images in total');
+    if (selectedImages.length + files.length > 12) {
+      setImageError('You can only upload up to 12 images in total');
       return;
     }
     

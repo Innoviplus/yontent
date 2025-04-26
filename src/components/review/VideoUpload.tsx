@@ -1,4 +1,3 @@
-
 import { useState, useRef } from 'react';
 import { Upload, X, Video, Clock, AlertCircle } from 'lucide-react';
 import { Button } from '@/components/ui/button';
@@ -20,7 +19,7 @@ const VideoUpload = ({
   onRemoveVideo,
   error,
   uploading,
-  maxDuration = 45
+  maxDuration = 60
 }: VideoUploadProps) => {
   const fileInputRef = useRef<HTMLInputElement>(null);
   const [validating, setValidating] = useState(false);
@@ -33,19 +32,16 @@ const VideoUpload = ({
     
     const file = e.target.files[0];
     
-    // Validate file type
     if (!file.type.startsWith('video/')) {
       setValidationError('Please select a video file');
       return;
     }
     
-    // Validate file size (100MB max)
     if (file.size > 100 * 1024 * 1024) {
       setValidationError('Video file size must be less than 100MB');
       return;
     }
     
-    // Validate video duration
     setValidating(true);
     setValidationProgress(10);
     
@@ -62,12 +58,10 @@ const VideoUpload = ({
           return;
         }
         
-        // Generate thumbnail from video
-        video.currentTime = 0.1; // Set to slightly after start for better thumbnail
+        video.currentTime = 0.1;
         
         video.onseeked = () => {
           try {
-            // Create canvas and draw video frame
             const canvas = document.createElement('canvas');
             canvas.width = video.videoWidth;
             canvas.height = video.videoHeight;
@@ -79,12 +73,10 @@ const VideoUpload = ({
               setThumbnailUrl(thumbnailDataUrl);
             }
             
-            // Video validation passed
             setValidationProgress(100);
             setValidationError(null);
             setValidating(false);
             onFileSelect(e.target.files);
-            
           } catch (err) {
             console.error('Error generating thumbnail:', err);
             setValidationError('Could not generate video preview');
@@ -92,18 +84,14 @@ const VideoUpload = ({
           }
         };
         
-        // Trigger seeking to generate thumbnail
-        video.currentTime = 0.1;
+        video.onerror = () => {
+          setValidationError('Could not validate video. Please try another file.');
+          setValidating(false);
+        };
+        
+        video.src = URL.createObjectURL(file);
+        setValidationProgress(30);
       };
-      
-      video.onerror = () => {
-        setValidationError('Could not validate video. Please try another file.');
-        setValidating(false);
-      };
-      
-      // Set the video source to the file
-      video.src = URL.createObjectURL(file);
-      setValidationProgress(30);
     } catch (error) {
       console.error('Video validation error:', error);
       setValidationError('Error validating video');
@@ -119,12 +107,11 @@ const VideoUpload = ({
 
   return (
     <div className="space-y-4">
-      {/* Video upload area */}
       <div className="border-2 border-dashed rounded-xl p-6 text-center transition-colors hover:border-gray-400">
         <div className="flex flex-col items-center justify-center space-y-2 text-gray-500">
           <Video className="h-8 w-8 text-brand-slate/60" />
           <p className="text-sm font-medium">Upload a video of your experience</p>
-          <p className="text-xs">Maximum 1 video • Max 45 seconds • MP4, MOV, WEBM formats</p>
+          <p className="text-xs">Maximum 1 video • Max 60 seconds • MP4, MOV, WEBM formats</p>
         </div>
         
         <input
@@ -147,7 +134,6 @@ const VideoUpload = ({
         </Button>
       </div>
       
-      {/* Validation progress */}
       {validating && (
         <div className="space-y-2">
           <div className="flex items-center justify-between">
@@ -158,7 +144,6 @@ const VideoUpload = ({
         </div>
       )}
       
-      {/* Error display */}
       {(error || validationError) && (
         <Alert className="bg-red-50 border-red-200 text-red-800">
           <AlertCircle className="h-4 w-4" />
@@ -168,7 +153,6 @@ const VideoUpload = ({
         </Alert>
       )}
       
-      {/* Video previews */}
       {videoPreviewUrls.length > 0 && (
         <div className="space-y-4">
           <h3 className="text-sm font-medium">Uploaded Video:</h3>
@@ -192,7 +176,7 @@ const VideoUpload = ({
             </div>
             <div className="absolute bottom-2 left-2 bg-black/70 text-white px-2 py-1 rounded-md text-xs flex items-center">
               <Clock className="h-3 w-3 mr-1" />
-              <span>Max 45s</span>
+              <span>Max 60s</span>
             </div>
           </div>
         </div>

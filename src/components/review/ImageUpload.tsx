@@ -19,7 +19,7 @@ const ImageUpload: React.FC<ImageUploadProps> = ({
   onReorderImages,
   error, 
   uploading,
-  maxImages = 10
+  maxImages = 12  // Changed from 10 to 12
 }) => {
   const [draggedIndex, setDraggedIndex] = useState<number | null>(null);
   

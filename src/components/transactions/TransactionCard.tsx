@@ -32,7 +32,7 @@ const TransactionCard = ({ transaction }: TransactionCardProps) => {
         )}
       </div>
       <div className="flex flex-col items-end gap-1">
-        <div className={"font-bold text-base " + (isDeduction ? "text-[#ea384c]" : "text-green-600")}>
+        <div className={"font-bold text-base " + (isDeduction ? "text-gray-900" : "text-green-600")}>
           {isDeduction ? '-' : '+'}{Math.abs(transaction.amount)} <span className="font-semibold">points</span>
         </div>
         {isRejectedRedemption && (
