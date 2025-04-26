@@ -1,12 +1,16 @@
+
 import { Link } from 'react-router-dom';
 import { Star, Users, Gift, ArrowUpRight } from 'lucide-react';
 import { useAuth } from '@/contexts/AuthContext';
 import { Button } from '@/components/ui/button';
+
 const HowItWorksSection = () => {
   const {
     user
   } = useAuth();
-  return <section className="py-16 md:py-24">
+  
+  return (
+    <section className="py-16 md:py-24">
       <div className="container mx-auto px-4 sm:px-6">
         <div className="max-w-4xl mx-auto">
           <div className="text-center mb-12">
@@ -23,8 +27,8 @@ const HowItWorksSection = () => {
           <div className="grid md:grid-cols-3 gap-8">
             {/* Complete Missions */}
             <div className="bg-white rounded-xl p-8 shadow-card text-center hover:-translate-y-1 transition-transform duration-300">
-              <div className="bg-indigo-100 w-16 h-16 rounded-xl flex items-center justify-center mx-auto mb-5">
-                <Star className="h-7 w-7 text-indigo-600" />
+              <div className="bg-brand-teal/10 w-16 h-16 rounded-xl flex items-center justify-center mx-auto mb-5">
+                <Star className="h-7 w-7 text-brand-teal" />
               </div>
               <h3 className="text-xl font-semibold mb-3 text-center">Complete Missions</h3>
               <p className="text-gray-600 text-center">
@@ -34,8 +38,8 @@ const HowItWorksSection = () => {
             
             {/* Join Communities */}
             <div className="bg-white rounded-xl p-8 shadow-card text-center hover:-translate-y-1 transition-transform duration-300">
-              <div className="bg-indigo-100 w-16 h-16 rounded-xl flex items-center justify-center mx-auto mb-5">
-                <Users className="h-7 w-7 text-indigo-600" />
+              <div className="bg-brand-teal/10 w-16 h-16 rounded-xl flex items-center justify-center mx-auto mb-5">
+                <Users className="h-7 w-7 text-brand-teal" />
               </div>
               <h3 className="text-xl font-semibold mb-3 text-center">Join Communities</h3>
               <p className="text-gray-600 text-center">
@@ -45,8 +49,8 @@ const HowItWorksSection = () => {
             
             {/* Redeem Rewards */}
             <div className="bg-white rounded-xl p-8 shadow-card text-center hover:-translate-y-1 transition-transform duration-300">
-              <div className="bg-indigo-100 w-16 h-16 rounded-xl flex items-center justify-center mx-auto mb-5">
-                <Gift className="h-7 w-7 text-indigo-600" />
+              <div className="bg-brand-teal/10 w-16 h-16 rounded-xl flex items-center justify-center mx-auto mb-5">
+                <Gift className="h-7 w-7 text-brand-teal" />
               </div>
               <h3 className="text-xl font-semibold mb-3 text-center">Redeem Rewards</h3>
               <p className="text-gray-600 text-center">
@@ -65,6 +69,8 @@ const HowItWorksSection = () => {
           </div>
         </div>
       </div>
-    </section>;
+    </section>
+  );
 };
+
 export default HowItWorksSection;
