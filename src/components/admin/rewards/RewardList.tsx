@@ -1,4 +1,3 @@
-
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@/components/ui/table';
 import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
@@ -28,17 +27,15 @@ const RewardList = ({
   
   const getRedemptionTypeIcon = (type?: string) => {
     if (!type || type === 'GIFT_VOUCHER') {
-      return <Gift className="h-4 w-4 text-purple-500" />;
+      return <Gift className="h-4 w-4 text-brand-teal" />;
     } else {
-      return <Wallet className="h-4 w-4 text-blue-500" />;
+      return <Wallet className="h-4 w-4 text-brand-teal" />;
     }
   };
 
   const handleUpdateOrder = async (id: string, direction: 'up' | 'down') => {
-    // Prevent multiple clicks while processing
     if (processingOrderIds[id]) return;
     
-    // Mark this reward as being processed
     setProcessingOrderIds(prev => ({ ...prev, [id]: true }));
     
     try {
@@ -46,7 +43,6 @@ const RewardList = ({
     } catch (error) {
       console.error("Error updating reward order:", error);
     } finally {
-      // Clear processing state
       setProcessingOrderIds(prev => ({ ...prev, [id]: false }));
     }
   };
