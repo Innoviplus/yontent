@@ -1,3 +1,4 @@
+
 import { useState, useEffect } from "react";
 import { useNavigate } from "react-router-dom";
 import { User as UserType } from '@/lib/types';
@@ -10,6 +11,7 @@ interface UserOwnStatsCardProps {
   followersCount: number;
   followingCount: number;
   pointsCount: number;
+  transactionsCount?: number;
 }
 
 const UserOwnStatsCard = ({
@@ -18,10 +20,11 @@ const UserOwnStatsCard = ({
   followersCount,
   followingCount,
   pointsCount,
+  transactionsCount = 0,
 }: UserOwnStatsCardProps) => {
   const navigate = useNavigate();
   const [missionCount, setMissionCount] = useState<number>(0);
-  const [transactionsCount, setTransactionsCount] = useState<number>(0);
+  const [actualTransactionsCount, setActualTransactionsCount] = useState<number>(transactionsCount);
 
   useEffect(() => {
     const fetchMissionCount = async () => {
@@ -44,21 +47,33 @@ const UserOwnStatsCard = ({
       if (!user?.id) return;
       
       try {
-        const { count, error } = await supabase
+        // Fetch count for point transactions
+        const { count: pointTransactionsCount, error: pointError } = await supabase
           .from('point_transactions')
           .select('*', { count: 'exact', head: true })
           .eq('user_id', user.id);
           
-        if (error) throw error;
-        setTransactionsCount(count || 0);
+        if (pointError) throw pointError;
+        
+        // Fetch count for redemption requests
+        const { count: redemptionRequestsCount, error: redemptionError } = await supabase
+          .from('redemption_requests')
+          .select('*', { count: 'exact', head: true })
+          .eq('user_id', user.id);
+          
+        if (redemptionError) throw redemptionError;
+        
+        // Sum both counts for total transactions
+        setActualTransactionsCount((pointTransactionsCount || 0) + (redemptionRequestsCount || 0));
       } catch (error) {
-        setTransactionsCount(0);
+        console.error("Error fetching transactions count:", error);
+        setActualTransactionsCount(transactionsCount);
       }
     };
     
     fetchMissionCount();
     fetchTransactionsCount();
-  }, [user?.id]);
+  }, [user?.id, transactionsCount]);
 
   return (
     <div className="bg-white rounded-xl shadow-card p-4 mt-6">
@@ -112,7 +127,7 @@ const UserOwnStatsCard = ({
           className="bg-gray-50 rounded-lg p-3 text-center flex flex-col items-center hover:bg-brand-teal/10 transition-colors"
         >
           <div className="text-lg font-semibold text-brand-slate">
-            {transactionsCount}
+            {actualTransactionsCount}
           </div>
           <div className="text-xs text-gray-500">Transactions</div>
         </button>

@@ -1,3 +1,4 @@
+
 import { useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { useAuth } from '@/contexts/AuthContext';
@@ -53,6 +54,7 @@ const Dashboard = () => {
           followersCount={user.followersCount || 0}
           followingCount={user.followingCount || 0}
           pointsCount={user.points || 0}
+          transactionsCount={user.transactionsCount || 0}
         />
         <div className="mt-8">
           <DashboardTabs reviews={userReviews} draftReviews={draftReviews} />
