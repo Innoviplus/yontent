@@ -38,6 +38,16 @@ export const useMissionSubmission = (
           return;
         }
         
+        // Check the mission quota - count ALL submissions regardless of status
+        const { count: totalSubmissions, error: countError } = await supabase
+          .from('mission_participations')
+          .select('*', { count: 'exact', head: true })
+          .eq('mission_id', id);
+          
+        if (countError) throw countError;
+        
+        console.log(`Total submissions for mission ${id}: ${totalSubmissions}`);
+        
         // Fetch mission details
         const { data, error } = await supabase
           .from('missions')
@@ -51,6 +61,13 @@ export const useMissionSubmission = (
         if (!data) {
           setError(`${missionType} mission not found`);
           navigate('/missions');
+          return;
+        }
+        
+        // Check if the mission quota has been reached
+        if (data.total_max_submissions && totalSubmissions && totalSubmissions >= data.total_max_submissions) {
+          toast.error("This mission has reached its maximum number of submissions");
+          navigate(`/mission/${id}`);
           return;
         }
         
@@ -70,7 +87,8 @@ export const useMissionSubmission = (
           startDate: new Date(data.start_date),
           expiresAt: data.expires_at ? new Date(data.expires_at) : undefined,
           createdAt: new Date(data.created_at),
-          updatedAt: new Date(data.updated_at)
+          updatedAt: new Date(data.updated_at),
+          totalMaxSubmissions: data.total_max_submissions
         };
         
         setMission(transformedMission);

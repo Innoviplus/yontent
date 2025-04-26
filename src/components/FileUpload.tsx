@@ -1,5 +1,5 @@
 
-import { useState, useRef } from 'react';
+import { useState, useRef, useEffect } from 'react';
 import { Upload, X, Image as ImageIcon, Check } from 'lucide-react';
 import { cn } from '@/lib/utils';
 
@@ -22,6 +22,11 @@ const FileUpload = ({
   const [previews, setPreviews] = useState<string[]>(previewUrls);
   const [files, setFiles] = useState<File[]>([]);
   const inputRef = useRef<HTMLInputElement>(null);
+  
+  // Update the previews when previewUrls changes
+  useEffect(() => {
+    setPreviews(previewUrls);
+  }, [previewUrls]);
   
   const handleDrag = (e: React.DragEvent) => {
     e.preventDefault();
@@ -92,6 +97,8 @@ const FileUpload = ({
     }
   };
 
+  const remainingSlots = maxFiles - files.length;
+
   return (
     <div className={cn("space-y-4", className)}>
       <div 
@@ -101,10 +108,10 @@ const FileUpload = ({
           dragActive 
             ? "border-brand-teal bg-brand-teal/5" 
             : "border-gray-300 hover:border-gray-400",
-          previews.length >= maxFiles ? "opacity-50 pointer-events-none" : ""
+          remainingSlots <= 0 ? "opacity-50 pointer-events-none" : ""
         )}
       >
-        {previews.length >= maxFiles ? (
+        {remainingSlots <= 0 ? (
           <div className="flex flex-col items-center justify-center space-y-2 text-gray-500">
             <Check className="h-8 w-8 text-brand-teal" />
             <p className="text-sm font-medium">Maximum number of files reached</p>

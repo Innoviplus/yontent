@@ -1,5 +1,6 @@
 
-import DOMPurify from 'dompurify';
+import { useSanitizedContent } from '@/hooks/useSanitizedContent';
+import { useEffect } from 'react';
 
 interface HTMLContentProps {
   content: string;
@@ -7,27 +8,49 @@ interface HTMLContentProps {
 }
 
 const HTMLContent = ({ content, className = '' }: HTMLContentProps) => {
-  // Configure DOMPurify to allow Quill's formatting tags
-  const sanitizeConfig = {
-    ALLOWED_TAGS: [
-      'p', 'br', 'div', 'span', 'h1', 'h2', 'h3', 'h4', 'h5', 'h6',
-      'b', 'i', 'u', 'strong', 'em', 'strike', 'a', 'ul', 'ol', 'li',
-      'blockquote', 'pre', 'code'
-    ],
-    ALLOWED_ATTR: ['href', 'target', 'rel', 'class', 'style'],
-    ALLOWED_STYLES: [
-      'color', 'background-color', 'text-align', 'font-size',
-      'font-family', 'margin', 'padding', 'text-decoration'
-    ]
-  };
+  const sanitizedContent = useSanitizedContent(content);
   
-  // Ensure content is sanitized before rendering
-  const sanitizedContent = content ? DOMPurify.sanitize(content, sanitizeConfig) : '';
+  // Add the CSS styles for links to the document head
+  useEffect(() => {
+    // Create a style element
+    const styleElement = document.createElement('style');
+    styleElement.innerHTML = `
+      .prose a {
+        color: #39C494 !important;  /* Brand Teal Green with !important */
+        text-decoration: underline;
+        transition: color 0.3s ease;
+      }
+      .prose a:hover {
+        color: #2DAB7E !important;  /* Darker Green on Hover with !important */
+      }
+    `;
+    
+    // Add an id to identify this specific style
+    styleElement.id = 'html-content-link-styles';
+    
+    // Check if the style already exists
+    const existingStyle = document.getElementById('html-content-link-styles');
+    if (!existingStyle) {
+      // If not, append it to the head
+      document.head.appendChild(styleElement);
+    }
+    
+    // Clean up function to remove the style when the component unmounts
+    return () => {
+      const remainingComponents = document.querySelectorAll('.prose');
+      if (remainingComponents.length <= 1) {
+        const style = document.getElementById('html-content-link-styles');
+        if (style) {
+          document.head.removeChild(style);
+        }
+      }
+    };
+  }, []);
   
   return (
     <div 
-      className={className} 
-      dangerouslySetInnerHTML={{ __html: sanitizedContent }} 
+      className={`${className} prose`} 
+      dangerouslySetInnerHTML={{ __html: sanitizedContent }}
     />
   );
 };

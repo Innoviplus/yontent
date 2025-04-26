@@ -39,7 +39,7 @@ const MissionsManagement = ({
     const success = await onAdd(mission);
     if (success) {
       setShowAddForm(false);
-      toast.success("Mission added successfully");
+      // No toast here as it's handled by useMissionOperations
     }
     return success;
   };
@@ -50,7 +50,7 @@ const MissionsManagement = ({
     const success = await onUpdate(editingMission.id, updates);
     if (success) {
       setEditingMission(null);
-      toast.success("Mission updated successfully");
+      // No toast here as it's handled by useMissionOperations
     }
     return success;
   };
@@ -61,7 +61,7 @@ const MissionsManagement = ({
     const success = await onDelete(deletingMissionId);
     if (success) {
       setDeletingMissionId(null);
-      toast.success("Mission deleted successfully");
+      // No toast here as it's handled by useMissionOperations
     }
     return success;
   };
@@ -70,11 +70,42 @@ const MissionsManagement = ({
     const newStatus = mission.status === 'ACTIVE' ? 'DRAFT' : 'ACTIVE';
     const success = await onUpdate(mission.id, { status: newStatus });
     
-    if (success) {
-      const actionText = newStatus === 'ACTIVE' ? 'activated' : 'deactivated';
-      toast.success(`Mission ${actionText} successfully`);
-    }
+    // No toast here as it's handled by useMissionOperations
+    return success;
+  };
+
+  const handleDuplicate = async (mission: Mission) => {
+    // Create a shallow copy of the mission object
+    const duplicatedMission = {
+      ...mission,
+      title: `${mission.title} (Copy)`,
+      status: 'DRAFT' as const,
+    };
     
+    // Create a type-safe version without the fields we want to exclude
+    const missionToAdd: Omit<Mission, 'id' | 'createdAt' | 'updatedAt'> = {
+      title: duplicatedMission.title,
+      description: mission.description,
+      pointsReward: mission.pointsReward,
+      type: mission.type,
+      status: duplicatedMission.status,
+      startDate: mission.startDate,
+      expiresAt: mission.expiresAt,
+      requirementDescription: mission.requirementDescription,
+      merchantName: mission.merchantName,
+      merchantLogo: mission.merchantLogo,
+      bannerImage: mission.bannerImage,
+      maxSubmissionsPerUser: mission.maxSubmissionsPerUser,
+      totalMaxSubmissions: mission.totalMaxSubmissions,
+      termsConditions: mission.termsConditions,
+      completionSteps: mission.completionSteps,
+      productDescription: mission.productDescription,
+      productImages: mission.productImages,
+      faqContent: mission.faqContent
+    };
+    
+    const success = await onAdd(missionToAdd);
+    // No toast here as it's handled by useMissionOperations
     return success;
   };
 
@@ -101,6 +132,7 @@ const MissionsManagement = ({
             onEdit={setEditingMission}
             onDelete={setDeletingMissionId}
             onToggleStatus={handleToggleStatus}
+            onDuplicate={handleDuplicate}
           />
         </CardContent>
       </Card>

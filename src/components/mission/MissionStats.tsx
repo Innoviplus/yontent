@@ -1,3 +1,4 @@
+
 import { useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { Mission } from '@/lib/types';
@@ -30,6 +31,9 @@ const MissionStats = ({
   const navigate = useNavigate();
   const isExpired = mission.expiresAt ? isPast(mission.expiresAt) : false;
   const isCompleted = participationStatus === 'APPROVED';
+  const isQuotaReached = mission.totalMaxSubmissions !== undefined && 
+                        mission.totalMaxSubmissions > 0 && 
+                        currentSubmissions >= mission.totalMaxSubmissions;
 
   const handleMissionParticipation = async () => {
     if (!userId) {
@@ -38,6 +42,12 @@ const MissionStats = ({
     }
     try {
       setLoading(true);
+
+      // Check mission quota before proceeding
+      if (isQuotaReached) {
+        toast.error('This mission has reached its maximum number of submissions');
+        return;
+      }
 
       // For receipt and review type missions, navigate to the appropriate submission page
       if (mission.type === 'RECEIPT') {
@@ -84,8 +94,13 @@ const MissionStats = ({
           {participationStatus === 'PENDING' ? 'Submission Pending' : 'Already Joined'}
         </Button>;
     }
-    return <Button onClick={handleMissionParticipation} disabled={loading || !userId} className="w-full bg-brand-teal hover:bg-brand-teal/90">
-        {userId ? 'Join Mission' : 'Log in to Join'}
+    if (isQuotaReached) {
+      return <Button disabled className="w-full">
+          Mission Quota Reached
+        </Button>;
+    }
+    return <Button onClick={handleMissionParticipation} disabled={loading || !userId || isQuotaReached} className="w-full bg-brand-teal hover:bg-brand-teal/90">
+        {userId ? (isQuotaReached ? 'Mission Quota Reached' : 'Join Mission') : 'Log in to Join'}
       </Button>;
   };
 
@@ -129,7 +144,8 @@ const MissionStats = ({
               <div>
                 <p className="text-sm text-gray-500">Mission Quota</p>
                 <p className="font-medium">
-                  {mission.totalMaxSubmissions} ({currentSubmissions === 1 ? '1 user' : `${currentSubmissions} users`} submitted)
+                  {mission.totalMaxSubmissions} ({currentSubmissions} {currentSubmissions === 1 ? 'user' : 'users'} submitted)
+                  {isQuotaReached && <span className="text-red-500 ml-2 font-bold">FULL</span>}
                 </p>
               </div>
             </div>}

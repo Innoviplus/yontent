@@ -29,7 +29,8 @@ const MissionFormWrapper = ({
         requirementDescription: mission.requirementDescription?.substring(0, 50) + '...',
         termsConditions: mission.termsConditions?.substring(0, 50) + '...',
         completionSteps: mission.completionSteps?.substring(0, 50) + '...',
-        productDescription: mission.productDescription?.substring(0, 50) + '...'
+        productDescription: mission.productDescription?.substring(0, 50) + '...',
+        productImages: mission.productImages?.length || 0
       });
     }
   }, [mission]);
@@ -48,6 +49,8 @@ const MissionFormWrapper = ({
       const fileName = `${Math.random().toString(36).substring(2, 15)}.${fileExt}`;
       const filePath = `${path}/${fileName}`;
       
+      console.log(`Uploading to bucket: missions, path: ${filePath}`);
+      
       // Upload the file to Supabase storage
       const { error: uploadError } = await supabase.storage
         .from('missions')
@@ -65,7 +68,9 @@ const MissionFormWrapper = ({
       return data.publicUrl;
     } catch (error: any) {
       console.error('Error uploading image:', error.message);
-      toast.error('Failed to upload image.');
+      toast.error('Failed to upload image.', {
+        id: 'image-upload-error',
+      });
       return null;
     } finally {
       setIsUploading(false);
@@ -108,7 +113,9 @@ const MissionFormWrapper = ({
       return uploadedUrls;
     } catch (error: any) {
       console.error('Error uploading images:', error.message);
-      toast.error('Some images failed to upload.');
+      toast.error('Some images failed to upload.', {
+        id: 'images-upload-error',
+      });
       return [];
     } finally {
       setIsUploading(false);
@@ -137,15 +144,16 @@ const MissionFormWrapper = ({
       }
     }
     
+    // Respect what's currently in the form data for product images
+    // This ensures deleted images are properly removed
+    
+    // Now add any newly uploaded images
     if (files.productImages && files.productImages.length > 0) {
       const productImageUrls = await uploadMultipleImages(files.productImages);
       if (productImageUrls.length > 0) {
-        // Combine with any existing product images if we're editing
-        let existingImages: string[] = [];
-        if (mission?.productImages) {
-          existingImages = mission.productImages;
-        }
-        updatedData.productImages = [...existingImages, ...productImageUrls];
+        // If updatedData.productImages is undefined, initialize it as an empty array
+        updatedData.productImages = updatedData.productImages || [];
+        updatedData.productImages = [...updatedData.productImages, ...productImageUrls];
       }
     }
     
@@ -154,7 +162,8 @@ const MissionFormWrapper = ({
       requirementDescription: updatedData.requirementDescription?.substring(0, 100),
       termsConditions: updatedData.termsConditions?.substring(0, 100),
       completionSteps: updatedData.completionSteps?.substring(0, 100),
-      productDescription: updatedData.productDescription?.substring(0, 100)
+      productDescription: updatedData.productDescription?.substring(0, 100),
+      productImages: updatedData.productImages?.length || 0
     });
     
     // Then submit the form data with the uploaded image URLs

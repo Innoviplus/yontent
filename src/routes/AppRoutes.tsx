@@ -1,4 +1,3 @@
-
 import React from "react";
 import { Routes, Route } from "react-router-dom";
 import ProtectedRoute from "@/components/ProtectedRoute";
@@ -53,7 +52,8 @@ const AppRoutes = () => {
       <Route path="/submit-review" element={<ProtectedRoute><SubmitReview /></ProtectedRoute>} />
       <Route path="/create-review" element={<ProtectedRoute><CreateReview /></ProtectedRoute>} />
       <Route path="/rewards" element={<ProtectedRoute><Rewards /></ProtectedRoute>} />
-      <Route path="/rewards/:id" element={<ProtectedRoute><RewardDetail /></ProtectedRoute>} />
+      <Route path="/rewards/:id" element={<ProtectedRoute><RewardDetail /></ProtectedRoute>}
+      />
       <Route path="/missions" element={<Missions />} />
       <Route path="/mission/:id" element={<MissionDetail />} />
       <Route path="/mission/:id/review" element={<ProtectedRoute><MissionReviewSubmission /></ProtectedRoute>} />

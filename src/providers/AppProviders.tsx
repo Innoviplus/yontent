@@ -20,9 +20,13 @@ const AppProviders = ({ children }: AppProvidersProps) => {
             <Toaster 
               position="bottom-right" 
               toastOptions={{
-                // Using a property that Sonner supports for deduplication
                 duration: 4000,
+                closeButton: true,
+                // Add custom styling to make toasts more visible
+                className: "rounded-lg shadow-md",
               }}
+              // Set this to prevent multiple toasts with same content
+              richColors
             />
           </PointsProvider>
         </AuthProvider>

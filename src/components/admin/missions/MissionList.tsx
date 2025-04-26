@@ -1,9 +1,8 @@
-
 import React from 'react';
 import { Mission } from '@/lib/types';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
-import { Pencil, Trash2, Award, Clock, Tag, CalendarDays, Users, ToggleLeft, ToggleRight } from 'lucide-react';
+import { Pencil, Trash2, Award, Clock, Tag, CalendarDays, Users, ToggleLeft, ToggleRight, Copy } from 'lucide-react';
 import { format, isPast, isAfter } from 'date-fns';
 import { Badge } from '@/components/ui/badge';
 import { Avatar, AvatarImage, AvatarFallback } from '@/components/ui/avatar';
@@ -14,13 +13,15 @@ interface MissionListProps {
   onEdit: (mission: Mission) => void;
   onDelete: (id: string) => void;
   onToggleStatus?: (mission: Mission) => Promise<boolean>;
+  onDuplicate?: (mission: Mission) => void;
 }
 
 const MissionList: React.FC<MissionListProps> = ({ 
   missions, 
   onEdit, 
   onDelete,
-  onToggleStatus 
+  onToggleStatus,
+  onDuplicate 
 }) => {
   const getMissionStatusColor = (status: string, expiresAt?: Date) => {
     if (status === 'DRAFT') return 'bg-gray-200 text-gray-800';
@@ -49,7 +50,6 @@ const MissionList: React.FC<MissionListProps> = ({
     return mission.status;
   };
 
-  // Helper function to strip HTML tags for the preview
   const stripHtml = (html: string) => {
     const doc = new DOMParser().parseFromString(html, 'text/html');
     return doc.body.textContent || '';
@@ -115,6 +115,17 @@ const MissionList: React.FC<MissionListProps> = ({
                           Activate
                         </>
                       )}
+                    </Button>
+                  )}
+                  {onDuplicate && (
+                    <Button 
+                      variant="outline" 
+                      size="sm"
+                      onClick={() => onDuplicate(mission)}
+                      title="Duplicate mission"
+                    >
+                      <Copy className="h-4 w-4 mr-1" />
+                      Duplicate
                     </Button>
                   )}
                   <Button variant="outline" size="sm" onClick={() => onEdit(mission)}>
