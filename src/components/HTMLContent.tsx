@@ -26,10 +26,11 @@ const HTMLContent = ({ content, className = '' }: HTMLContentProps) => {
   
   return (
     <div 
-      className={className} 
+      className={`${className} prose`} 
       dangerouslySetInnerHTML={{ __html: sanitizedContent }} 
     />
   );
 };
 
 export default HTMLContent;
+
