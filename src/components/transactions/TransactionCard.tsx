@@ -12,8 +12,6 @@ const TransactionCard = ({ transaction }: TransactionCardProps) => {
     ? `Redeemed: ${transaction.itemName}` 
     : transaction.description;
   
-  const isRejectedRedemption = transaction.source === 'REDEMPTION' && transaction.redemptionStatus === 'REJECTED';
-
   return (
     <div className="flex justify-between items-start bg-white rounded-xl p-6 shadow-card">
       <div>
@@ -22,8 +20,14 @@ const TransactionCard = ({ transaction }: TransactionCardProps) => {
         {transaction.source === 'REDEMPTION' && (
           <>
             <div className="text-xs text-orange-600">Points redeemed for reward</div>
-            {isRejectedRedemption && (
-              <div className="text-xs text-red-600 mt-0.5">Redemption Rejected</div>
+            {transaction.redemptionStatus && (
+              <div className={`text-xs mt-0.5 ${
+                transaction.redemptionStatus === 'REJECTED' ? 'text-red-600' :
+                transaction.redemptionStatus === 'APPROVED' ? 'text-green-600' :
+                'text-blue-600'
+              }`}>
+                {`Redemption ${transaction.redemptionStatus.charAt(0) + transaction.redemptionStatus.slice(1).toLowerCase()}`}
+              </div>
             )}
           </>
         )}
@@ -35,7 +39,7 @@ const TransactionCard = ({ transaction }: TransactionCardProps) => {
         <div className={"font-bold text-base " + (isDeduction ? "text-gray-900" : "text-green-600")}>
           {isDeduction ? '-' : '+'}{Math.abs(transaction.amount)} <span className="font-semibold">points</span>
         </div>
-        {isRejectedRedemption && (
+        {transaction.source === 'REDEMPTION' && transaction.redemptionStatus === 'REJECTED' && (
           <div className="font-bold text-base text-green-600">
             +{Math.abs(transaction.amount)} <span className="font-semibold">points</span>
           </div>
