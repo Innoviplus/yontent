@@ -29,6 +29,8 @@ const ProductImagesSection = () => {
     const updatedImages = [...existingImages];
     updatedImages.splice(index, 1);
     form.setValue('productImages', updatedImages);
+    
+    console.log('Image removed, remaining images:', updatedImages.length);
   };
 
   return (

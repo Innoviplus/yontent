@@ -39,7 +39,7 @@ const MissionsManagement = ({
     const success = await onAdd(mission);
     if (success) {
       setShowAddForm(false);
-      toast.success("Mission added successfully");
+      // No toast here as it's handled by useMissionOperations
     }
     return success;
   };
@@ -50,7 +50,7 @@ const MissionsManagement = ({
     const success = await onUpdate(editingMission.id, updates);
     if (success) {
       setEditingMission(null);
-      toast.success("Mission updated successfully");
+      // No toast here as it's handled by useMissionOperations
     }
     return success;
   };
@@ -61,7 +61,7 @@ const MissionsManagement = ({
     const success = await onDelete(deletingMissionId);
     if (success) {
       setDeletingMissionId(null);
-      toast.success("Mission deleted successfully");
+      // No toast here as it's handled by useMissionOperations
     }
     return success;
   };
@@ -70,11 +70,7 @@ const MissionsManagement = ({
     const newStatus = mission.status === 'ACTIVE' ? 'DRAFT' : 'ACTIVE';
     const success = await onUpdate(mission.id, { status: newStatus });
     
-    if (success) {
-      const actionText = newStatus === 'ACTIVE' ? 'activated' : 'deactivated';
-      toast.success(`Mission ${actionText} successfully`);
-    }
-    
+    // No toast here as it's handled by useMissionOperations
     return success;
   };
 
@@ -83,7 +79,7 @@ const MissionsManagement = ({
     const duplicatedMission = {
       ...mission,
       title: `${mission.title} (Copy)`,
-      status: 'DRAFT' as const, // Use 'as const' to ensure TypeScript knows this is a literal type
+      status: 'DRAFT' as const,
     };
     
     // Create a type-safe version without the fields we want to exclude
@@ -109,9 +105,7 @@ const MissionsManagement = ({
     };
     
     const success = await onAdd(missionToAdd);
-    if (success) {
-      toast.success("Mission duplicated successfully");
-    }
+    // No toast here as it's handled by useMissionOperations
     return success;
   };
 

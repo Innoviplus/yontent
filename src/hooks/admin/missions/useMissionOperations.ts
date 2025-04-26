@@ -26,12 +26,18 @@ export const useMissionOperations = (refreshMissions: () => Promise<void>) => {
         throw error;
       }
 
-      toast.success("Mission added successfully");
+      // Use a unique ID for the toast to prevent duplicates
+      toast.success("Mission added successfully", {
+        id: "mission-added",
+      });
+      
       await refreshMissions();
       return true;
     } catch (error: any) {
       console.error('Error adding mission:', error.message);
-      toast.error('Failed to add mission');
+      toast.error('Failed to add mission', {
+        id: "mission-add-error",
+      });
       return false;
     }
   };
@@ -59,12 +65,18 @@ export const useMissionOperations = (refreshMissions: () => Promise<void>) => {
         throw error;
       }
 
-      toast.success("Mission updated successfully");
+      // Use a unique ID for the toast to prevent duplicates
+      toast.success("Mission updated successfully", {
+        id: `mission-updated-${id}`,
+      });
+      
       await refreshMissions();
       return true;
     } catch (error: any) {
       console.error('Error updating mission:', error.message);
-      toast.error('Failed to update mission');
+      toast.error('Failed to update mission', {
+        id: `mission-update-error-${id}`,
+      });
       return false;
     }
   };
@@ -80,12 +92,18 @@ export const useMissionOperations = (refreshMissions: () => Promise<void>) => {
         throw error;
       }
 
-      toast.success("Mission deleted successfully");
+      // Use a unique ID for the toast to prevent duplicates
+      toast.success("Mission deleted successfully", {
+        id: `mission-deleted-${id}`,
+      });
+      
       await refreshMissions();
       return true;
     } catch (error: any) {
       console.error('Error deleting mission:', error.message);
-      toast.error('Failed to delete mission');
+      toast.error('Failed to delete mission', {
+        id: `mission-delete-error-${id}`,
+      });
       return false;
     }
   };

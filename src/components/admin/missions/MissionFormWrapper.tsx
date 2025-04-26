@@ -68,7 +68,9 @@ const MissionFormWrapper = ({
       return data.publicUrl;
     } catch (error: any) {
       console.error('Error uploading image:', error.message);
-      toast.error('Failed to upload image.');
+      toast.error('Failed to upload image.', {
+        id: 'image-upload-error',
+      });
       return null;
     } finally {
       setIsUploading(false);
@@ -111,7 +113,9 @@ const MissionFormWrapper = ({
       return uploadedUrls;
     } catch (error: any) {
       console.error('Error uploading images:', error.message);
-      toast.error('Some images failed to upload.');
+      toast.error('Some images failed to upload.', {
+        id: 'images-upload-error',
+      });
       return [];
     } finally {
       setIsUploading(false);
@@ -140,14 +144,15 @@ const MissionFormWrapper = ({
       }
     }
     
-    // For product images, we respect what's currently in the form
+    // Respect what's currently in the form data for product images
     // This ensures deleted images are properly removed
-    updatedData.productImages = data.productImages || [];
     
     // Now add any newly uploaded images
     if (files.productImages && files.productImages.length > 0) {
       const productImageUrls = await uploadMultipleImages(files.productImages);
       if (productImageUrls.length > 0) {
+        // If updatedData.productImages is undefined, initialize it as an empty array
+        updatedData.productImages = updatedData.productImages || [];
         updatedData.productImages = [...updatedData.productImages, ...productImageUrls];
       }
     }
