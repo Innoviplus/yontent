@@ -1,4 +1,3 @@
-
 import { useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { Mission } from '@/lib/types';
@@ -142,7 +141,7 @@ const MissionStats = ({
               <div>
                 <p className="text-sm text-gray-500">Mission Quota</p>
                 <p className="font-medium">
-                  {mission.totalMaxSubmissions} ({currentSubmissions} {currentSubmissions === 1 ? 'user' : 'users'} submitted)
+                  {mission.totalMaxSubmissions} ({currentSubmissions || 0} {currentSubmissions === 1 ? 'user' : 'users'} submitted)
                   {isQuotaReached && <span className="text-red-500 ml-2 font-bold">FULL</span>}
                 </p>
               </div>
