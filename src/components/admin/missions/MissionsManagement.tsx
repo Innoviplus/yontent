@@ -1,4 +1,3 @@
-
 import { useState } from 'react';
 import { 
   Card, 
@@ -78,6 +77,24 @@ const MissionsManagement = ({
     return success;
   };
 
+  const handleDuplicate = async (mission: Mission) => {
+    const duplicatedMission = {
+      ...mission,
+      title: `${mission.title} (Copy)`,
+      status: 'DRAFT',
+    };
+    
+    delete duplicatedMission.id;
+    delete duplicatedMission.createdAt;
+    delete duplicatedMission.updatedAt;
+    
+    const success = await onAdd(duplicatedMission);
+    if (success) {
+      toast.success("Mission duplicated successfully");
+    }
+    return success;
+  };
+
   if (isLoading) {
     return <MissionsLoadingState />;
   }
@@ -101,6 +118,7 @@ const MissionsManagement = ({
             onEdit={setEditingMission}
             onDelete={setDeletingMissionId}
             onToggleStatus={handleToggleStatus}
+            onDuplicate={handleDuplicate}
           />
         </CardContent>
       </Card>
