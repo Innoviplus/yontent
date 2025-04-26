@@ -1,3 +1,4 @@
+
 import { useState } from 'react';
 import { 
   Card, 
@@ -78,17 +79,36 @@ const MissionsManagement = ({
   };
 
   const handleDuplicate = async (mission: Mission) => {
+    // Create a shallow copy of the mission object
     const duplicatedMission = {
       ...mission,
       title: `${mission.title} (Copy)`,
-      status: 'DRAFT',
+      status: 'DRAFT' as const, // Use 'as const' to ensure TypeScript knows this is a literal type
     };
     
-    delete duplicatedMission.id;
-    delete duplicatedMission.createdAt;
-    delete duplicatedMission.updatedAt;
+    // Create a type-safe version without the fields we want to exclude
+    const missionToAdd: Omit<Mission, 'id' | 'createdAt' | 'updatedAt'> = {
+      title: duplicatedMission.title,
+      description: mission.description,
+      pointsReward: mission.pointsReward,
+      type: mission.type,
+      status: duplicatedMission.status,
+      startDate: mission.startDate,
+      expiresAt: mission.expiresAt,
+      requirementDescription: mission.requirementDescription,
+      merchantName: mission.merchantName,
+      merchantLogo: mission.merchantLogo,
+      bannerImage: mission.bannerImage,
+      maxSubmissionsPerUser: mission.maxSubmissionsPerUser,
+      totalMaxSubmissions: mission.totalMaxSubmissions,
+      termsConditions: mission.termsConditions,
+      completionSteps: mission.completionSteps,
+      productDescription: mission.productDescription,
+      productImages: mission.productImages,
+      faqContent: mission.faqContent
+    };
     
-    const success = await onAdd(duplicatedMission);
+    const success = await onAdd(missionToAdd);
     if (success) {
       toast.success("Mission duplicated successfully");
     }
