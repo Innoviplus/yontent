@@ -10,5 +10,10 @@ export const sanitizerConfig = {
   ALLOWED_STYLES: [
     'color', 'background-color', 'text-align', 'font-size',
     'font-family', 'margin', 'padding', 'text-decoration'
-  ]
+  ],
+  ADD_ATTR: ['target'],  // Allow target attribute (for _blank links)
+  FORCE_HTTPS: true,     // Convert http to https for security
+  RETURN_DOM: false,     // Return HTML as string
+  RETURN_DOM_FRAGMENT: false,
+  RETURN_DOM_IMPORT: false
 };

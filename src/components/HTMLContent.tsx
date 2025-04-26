@@ -16,12 +16,12 @@ const HTMLContent = ({ content, className = '' }: HTMLContentProps) => {
     const styleElement = document.createElement('style');
     styleElement.innerHTML = `
       .prose a {
-        color: #39C494;  /* Brand Teal Green */
+        color: #39C494 !important;  /* Brand Teal Green with !important */
         text-decoration: underline;
         transition: color 0.3s ease;
       }
       .prose a:hover {
-        color: #2DAB7E;  /* Darker Green on Hover */
+        color: #2DAB7E !important;  /* Darker Green on Hover with !important */
       }
     `;
     
