@@ -11,21 +11,35 @@ const TransactionCard = ({ transaction }: TransactionCardProps) => {
   const displayDescription = transaction.itemName && transaction.source === 'REDEMPTION' 
     ? `Redeemed: ${transaction.itemName}` 
     : transaction.description;
+  
+  const isRejectedRedemption = transaction.source === 'REDEMPTION' && transaction.redemptionStatus === 'REJECTED';
 
   return (
-    <div className="flex justify-between items-center bg-white rounded-xl p-6 shadow-card">
+    <div className="flex justify-between items-start bg-white rounded-xl p-6 shadow-card">
       <div>
         <div className="text-lg font-semibold text-gray-900">{displayDescription}</div>
         <div className="text-gray-500 text-sm mt-1">{format(new Date(transaction.createdAt), "MMM dd, yyyy")}</div>
         {transaction.source === 'REDEMPTION' && (
-          <div className="text-xs text-orange-600">Points redeemed for reward</div>
+          <>
+            <div className="text-xs text-orange-600">Points redeemed for reward</div>
+            {isRejectedRedemption && (
+              <div className="text-xs text-red-600 mt-0.5">Redemption Rejected</div>
+            )}
+          </>
         )}
         {transaction.source === 'ADMIN_ADJUSTMENT' && (
           <div className="text-gray-500 text-xs mt-1">Manual adjustment by admin</div>
         )}
       </div>
-      <div className={"font-bold text-base " + (isDeduction ? "text-[#ea384c]" : "text-green-600")}>
-        {isDeduction ? '-' : '+'}{Math.abs(transaction.amount)} <span className="font-semibold">points</span>
+      <div className="flex flex-col items-end gap-1">
+        <div className={"font-bold text-base " + (isDeduction ? "text-[#ea384c]" : "text-green-600")}>
+          {isDeduction ? '-' : '+'}{Math.abs(transaction.amount)} <span className="font-semibold">points</span>
+        </div>
+        {isRejectedRedemption && (
+          <div className="font-bold text-base text-green-600">
+            +{Math.abs(transaction.amount)} <span className="font-semibold">points</span>
+          </div>
+        )}
       </div>
     </div>
   );
