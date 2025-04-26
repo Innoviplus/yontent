@@ -97,8 +97,8 @@ const MissionStats = ({
           Mission Quota Reached
         </Button>;
     }
-    return <Button onClick={handleMissionParticipation} disabled={loading || !userId} className="w-full bg-brand-teal hover:bg-brand-teal/90">
-        {userId ? 'Join Mission' : 'Log in to Join'}
+    return <Button onClick={handleMissionParticipation} disabled={loading || !userId || isQuotaReached} className="w-full bg-brand-teal hover:bg-brand-teal/90">
+        {userId ? (isQuotaReached ? 'Mission Quota Reached' : 'Join Mission') : 'Log in to Join'}
       </Button>;
   };
 
@@ -142,7 +142,7 @@ const MissionStats = ({
               <div>
                 <p className="text-sm text-gray-500">Mission Quota</p>
                 <p className="font-medium">
-                  {mission.totalMaxSubmissions} ({currentSubmissions === 1 ? '1 user' : `${currentSubmissions} users`} submitted)
+                  {mission.totalMaxSubmissions} ({currentSubmissions} {currentSubmissions === 1 ? 'user' : 'users'} submitted)
                   {isQuotaReached && <span className="text-red-500 ml-2 font-bold">FULL</span>}
                 </p>
               </div>

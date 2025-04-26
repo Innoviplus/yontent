@@ -38,7 +38,7 @@ export const useMissionSubmission = (
           return;
         }
         
-        // Check the mission quota
+        // Check the mission quota - count ALL submissions regardless of status
         const { count: totalSubmissions, error: countError } = await supabase
           .from('mission_participations')
           .select('*', { count: 'exact', head: true })
