@@ -1,4 +1,3 @@
-
 export interface User {
   id: string;
   username: string;
@@ -6,6 +5,7 @@ export interface User {
   avatar?: string;
   points: number;
   createdAt: Date;
+  transactionsCount?: number;
 }
 
 export interface Review {

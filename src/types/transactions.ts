@@ -7,4 +7,5 @@ export type Transaction = {
   createdAt: string;
   source?: string;
   itemName?: string;
+  redemptionStatus?: "PENDING" | "APPROVED" | "REJECTED";
 };

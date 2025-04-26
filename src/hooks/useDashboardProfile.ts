@@ -55,6 +55,29 @@ export const useDashboardProfile = (userId: string | undefined) => {
         if (missionsError) {
           console.error('Error fetching missions count:', missionsError);
         }
+        
+        // Fetch point transactions count
+        const { count: pointTransactionsCount, error: pointTransactionsError } = await supabase
+          .from('point_transactions')
+          .select('*', { count: 'exact', head: true })
+          .eq('user_id', userId);
+          
+        if (pointTransactionsError) {
+          console.error('Error fetching point transactions count:', pointTransactionsError);
+        }
+        
+        // Fetch redemption requests count
+        const { count: redemptionRequestsCount, error: redemptionRequestsError } = await supabase
+          .from('redemption_requests')
+          .select('*', { count: 'exact', head: true })
+          .eq('user_id', userId);
+          
+        if (redemptionRequestsError) {
+          console.error('Error fetching redemption requests count:', redemptionRequestsError);
+        }
+        
+        // Calculate total transactions count
+        const totalTransactionsCount = (pointTransactionsCount || 0) + (redemptionRequestsCount || 0);
 
         // Transform the profile data to match the User type with counts
         const userWithCounts: ProfileWithCounts = {
@@ -68,7 +91,8 @@ export const useDashboardProfile = (userId: string | undefined) => {
           completedMissions: missionsCount || 0,
           extendedData: profile.extended_data || {},
           followersCount: profile.followers_count || 0,
-          followingCount: profile.following_count || 0
+          followingCount: profile.following_count || 0,
+          transactionsCount: totalTransactionsCount || 0
         };
 
         setUser(userWithCounts);

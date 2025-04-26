@@ -30,10 +30,13 @@ export const useTransactions = (userId: string | undefined) => {
         return;
       }
       
-      // Then fetch redemption requests to ensure we get all redemption records
+      // Fetch redemption requests with their status and item names
       const { data: redemptionRequests, error: redemptionError } = await supabase
         .from("redemption_requests")
-        .select("*, redemption_items(name)")
+        .select(`
+          *,
+          redemption_items(name)
+        `)
         .eq("user_id", userId)
         .order("created_at", { ascending: false });
         
@@ -93,7 +96,8 @@ export const useTransactions = (userId: string | undefined) => {
           type: row.type as Transaction["type"],
           createdAt: row.created_at,
           source,
-          itemName
+          itemName,
+          redemptionStatus: undefined
         };
       }));
       
@@ -107,7 +111,8 @@ export const useTransactions = (userId: string | undefined) => {
           type: "REDEEMED" as Transaction["type"],
           createdAt: request.created_at,
           source: "REDEMPTION",
-          itemName: itemName
+          itemName: itemName,
+          redemptionStatus: request.status
         };
       });
       
