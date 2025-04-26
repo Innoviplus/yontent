@@ -10,7 +10,7 @@ interface HTMLContentProps {
 const HTMLContent = ({ content, className = '' }: HTMLContentProps) => {
   const sanitizedContent = useSanitizedContent(content);
   
-  // Add the CSS styles for links to the document head instead of as a child
+  // Add the CSS styles for links to the document head
   useEffect(() => {
     // Create a style element
     const styleElement = document.createElement('style');
@@ -37,8 +37,6 @@ const HTMLContent = ({ content, className = '' }: HTMLContentProps) => {
     
     // Clean up function to remove the style when the component unmounts
     return () => {
-      // Only remove if no other HTMLContent components are still mounted
-      // This is a simplistic approach; for more complex cases, a counter could be used
       const remainingComponents = document.querySelectorAll('.prose');
       if (remainingComponents.length <= 1) {
         const style = document.getElementById('html-content-link-styles');
