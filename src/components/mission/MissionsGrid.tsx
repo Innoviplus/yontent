@@ -1,6 +1,7 @@
 
 import { Mission } from '@/lib/types';
 import MissionCard from '@/components/MissionCard';
+import { useMissionsList } from '@/hooks/mission/useMissionsList';
 
 interface MissionsGridProps {
   missions: Mission[];
@@ -8,6 +9,8 @@ interface MissionsGridProps {
 }
 
 const MissionsGrid = ({ missions, isLoading }: MissionsGridProps) => {
+  const { getParticipationCount } = useMissionsList();
+
   if (isLoading) {
     return (
       <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
@@ -32,7 +35,12 @@ const MissionsGrid = ({ missions, isLoading }: MissionsGridProps) => {
   return (
     <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
       {missions.map((mission) => (
-        <MissionCard key={mission.id} mission={mission} className="h-full" />
+        <MissionCard 
+          key={mission.id} 
+          mission={mission} 
+          className="h-full" 
+          participationCount={getParticipationCount(mission.id)}
+        />
       ))}
     </div>
   );
