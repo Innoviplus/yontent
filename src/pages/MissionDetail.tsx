@@ -105,6 +105,7 @@ const MissionDetail = () => {
           if (countError) {
             console.error('Error counting submissions:', countError);
           } else {
+            console.log(`Found ${count} submissions for mission ${id}`);
             setCurrentSubmissions(count || 0);
           }
         }

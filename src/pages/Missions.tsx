@@ -20,6 +20,7 @@ const Missions = () => {
   const [activeMissionsCount, setActiveMissionsCount] = useState(0);
   const isMobile = useIsMobile();
   const [loadAttempts, setLoadAttempts] = useState(0);
+  const [missionParticipationCounts, setMissionParticipationCounts] = useState<Record<string, number>>({});
 
   const fetchMissions = async () => {
     setIsLoading(true);
@@ -74,6 +75,9 @@ const Missions = () => {
       
       setActiveMissionsCount(activeCount);
       
+      // Get participation counts for all missions
+      await fetchParticipationCounts(transformedMissions.map(m => m.id));
+      
       // Sort the missions - first by expiration (expired at bottom), then by selected sort
       const sortedMissions = sortMissionsByExpiration(transformedMissions);
       setMissions(sortedMissions);
@@ -91,6 +95,39 @@ const Missions = () => {
       setLoadAttempts(prev => prev + 1);
     } finally {
       setIsLoading(false);
+    }
+  };
+  
+  const fetchParticipationCounts = async (missionIds: string[]) => {
+    if (!missionIds.length) return;
+    
+    try {
+      // For each mission, get the participation count
+      const participationCountsPromises = missionIds.map(async (missionId) => {
+        const { count, error } = await supabase
+          .from('mission_participations')
+          .select('*', { count: 'exact', head: true })
+          .eq('mission_id', missionId);
+          
+        if (error) {
+          console.error(`Error fetching participation count for mission ${missionId}:`, error);
+          return { missionId, count: 0 };
+        }
+        
+        return { missionId, count: count || 0 };
+      });
+      
+      const participationCounts = await Promise.all(participationCountsPromises);
+      const countsMap: Record<string, number> = {};
+      
+      participationCounts.forEach(({ missionId, count }) => {
+        countsMap[missionId] = count;
+      });
+      
+      console.log('Participation counts:', countsMap);
+      setMissionParticipationCounts(countsMap);
+    } catch (error) {
+      console.error('Error fetching participation counts:', error);
     }
   };
 
@@ -156,6 +193,11 @@ const Missions = () => {
   useEffect(() => {
     setMissions(sortMissionsByExpiration([...missions]));
   }, [sortBy]);
+  
+  // Helper function to get participation count for a mission
+  const getParticipationCount = (missionId: string): number => {
+    return missionParticipationCounts[missionId] || 0;
+  };
 
   return (
     <div className="min-h-screen bg-gray-50">

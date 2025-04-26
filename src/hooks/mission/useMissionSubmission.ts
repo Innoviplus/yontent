@@ -46,6 +46,8 @@ export const useMissionSubmission = (
           
         if (countError) throw countError;
         
+        console.log(`Total submissions for mission ${id}: ${totalSubmissions}`);
+        
         // Fetch mission details
         const { data, error } = await supabase
           .from('missions')
@@ -85,7 +87,8 @@ export const useMissionSubmission = (
           startDate: new Date(data.start_date),
           expiresAt: data.expires_at ? new Date(data.expires_at) : undefined,
           createdAt: new Date(data.created_at),
-          updatedAt: new Date(data.updated_at)
+          updatedAt: new Date(data.updated_at),
+          totalMaxSubmissions: data.total_max_submissions
         };
         
         setMission(transformedMission);
