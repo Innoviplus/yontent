@@ -96,7 +96,7 @@ const MissionDetail = () => {
             setParticipationStatus(participationData.status);
           }
           
-          // Get total submissions count for this mission
+          // Get total submissions count for this mission - count ALL submissions regardless of status
           const { count, error: countError } = await supabase
             .from('mission_participations')
             .select('*', { count: 'exact', head: true })
@@ -122,6 +122,11 @@ const MissionDetail = () => {
   const handleParticipationUpdate = (isParticipating: boolean, status: string) => {
     setParticipating(isParticipating);
     setParticipationStatus(status);
+    
+    // Also update the current submissions count when a new participation is added
+    if (isParticipating && !participating) {
+      setCurrentSubmissions(prevCount => prevCount + 1);
+    }
   };
 
   if (loading) {

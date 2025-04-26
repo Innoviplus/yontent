@@ -1,3 +1,4 @@
+
 import { useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { Mission } from '@/lib/types';
@@ -30,6 +31,7 @@ const MissionStats = ({
   const navigate = useNavigate();
   const isExpired = mission.expiresAt ? isPast(mission.expiresAt) : false;
   const isCompleted = participationStatus === 'APPROVED';
+  const isQuotaReached = mission.totalMaxSubmissions !== undefined && currentSubmissions >= mission.totalMaxSubmissions;
 
   const handleMissionParticipation = async () => {
     if (!userId) {
@@ -38,6 +40,12 @@ const MissionStats = ({
     }
     try {
       setLoading(true);
+
+      // Check mission quota before proceeding
+      if (isQuotaReached) {
+        toast.error('This mission has reached its maximum number of submissions');
+        return;
+      }
 
       // For receipt and review type missions, navigate to the appropriate submission page
       if (mission.type === 'RECEIPT') {
@@ -82,6 +90,11 @@ const MissionStats = ({
     if (participating) {
       return <Button disabled={loading} variant="outline" className="w-full border-brand-teal text-brand-teal bg-white hover:bg-gray-50">
           {participationStatus === 'PENDING' ? 'Submission Pending' : 'Already Joined'}
+        </Button>;
+    }
+    if (isQuotaReached) {
+      return <Button disabled className="w-full">
+          Mission Quota Reached
         </Button>;
     }
     return <Button onClick={handleMissionParticipation} disabled={loading || !userId} className="w-full bg-brand-teal hover:bg-brand-teal/90">
@@ -130,6 +143,7 @@ const MissionStats = ({
                 <p className="text-sm text-gray-500">Mission Quota</p>
                 <p className="font-medium">
                   {mission.totalMaxSubmissions} ({currentSubmissions === 1 ? '1 user' : `${currentSubmissions} users`} submitted)
+                  {isQuotaReached && <span className="text-red-500 ml-2 font-bold">FULL</span>}
                 </p>
               </div>
             </div>}
