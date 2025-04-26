@@ -21,9 +21,9 @@ const TransactionsList = ({ transactions, loading }: TransactionsListProps) => {
 
   if (transactions.length === 0) {
     return (
-      <div className="text-gray-500 text-center py-16 bg-white rounded-xl">
-        <p className="mb-4 text-lg font-medium">No transactions found.</p>
-        <p className="text-sm text-gray-600 px-6">When you earn or redeem points, they will appear here.</p>
+      <div className="text-gray-500 text-center py-16 bg-white rounded-xl space-y-4">
+        <p className="text-lg font-medium">No transactions found.</p>
+        <p className="text-sm text-gray-600 px-8">When you earn or redeem points, they will appear here.</p>
       </div>
     );
   }
