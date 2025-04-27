@@ -15,7 +15,7 @@ interface Participation {
   mission: {
     title: string;
   };
-  profile: {
+  profile?: {
     username: string;
   };
   submission_data: {
@@ -38,8 +38,7 @@ const ParticipationsTable = ({ filterStatus }: ParticipationsTableProps) => {
         .from('mission_participations')
         .select(`
           *,
-          mission:missions(title),
-          profile:profiles(username)
+          mission:missions(title)
         `)
         .order('created_at', { ascending: false });
 
@@ -50,7 +49,25 @@ const ParticipationsTable = ({ filterStatus }: ParticipationsTableProps) => {
       const { data, error } = await query;
 
       if (error) throw error;
-      setParticipations(data || []);
+      
+      // Process data and fetch usernames separately since the relation doesn't exist
+      const processedData = await Promise.all((data || []).map(async (participation) => {
+        // Fetch the username from profiles table based on user_id
+        const { data: profileData } = await supabase
+          .from('profiles')
+          .select('username')
+          .eq('id', participation.user_id)
+          .single();
+          
+        return {
+          ...participation,
+          profile: {
+            username: profileData?.username || 'Unknown User'
+          }
+        };
+      }));
+      
+      setParticipations(processedData);
     } catch (error) {
       console.error('Error fetching participations:', error);
       toast.error('Failed to load participations');
