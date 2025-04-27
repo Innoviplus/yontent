@@ -86,13 +86,16 @@ export const transformParticipationData = (data: any[]): MissionParticipation[] 
         avatar: extractAvatarUrl(user)
       };
       
+      // Ensure mission type is always "REVIEW" or "RECEIPT"
+      const missionType = mission.type === 'RECEIPT' ? 'RECEIPT' : 'REVIEW';
+      
       // Transform mission data to match Mission type with fallbacks
       const missionData: Mission = {
         id: missionId,
         title: mission.title || `Mission-${missionId.substring(0, 6)}`,
         description: mission.description || 'No description available',
         pointsReward: mission.points_reward || 0,
-        type: mission.type || 'REVIEW'
+        type: missionType
       };
       
       // Return the transformed participation with all required fields
@@ -110,7 +113,7 @@ export const transformParticipationData = (data: any[]): MissionParticipation[] 
     } catch (error) {
       console.error('[transformParticipationData] Error transforming participation item:', item, error);
       
-      // Return a minimal valid object in case of error
+      // Return a minimal valid object in case of error - make sure type is valid
       return {
         id: item.id || 'error-id',
         missionId: item.mission_id || '',
@@ -130,7 +133,7 @@ export const transformParticipationData = (data: any[]): MissionParticipation[] 
           title: 'Error processing mission',
           description: '',
           pointsReward: 0,
-          type: 'REVIEW'
+          type: 'REVIEW' // Default to 'REVIEW' as a safe fallback
         }
       };
     }
