@@ -4,7 +4,7 @@ import { Card, CardContent } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
 import { Loader2, Eye, Check, X, ExternalLink, FileImage, Award, Tag } from 'lucide-react';
-import { MissionParticipation } from '@/hooks/admin/types/missionParticipationTypes';
+import { MissionParticipation } from '@/hooks/admin/api/types/participationTypes';
 import ParticipationStatusBadge from './ParticipationStatusBadge';
 import PointsBadge from '@/components/PointsBadge';
 
@@ -41,10 +41,20 @@ const ParticipationCard: React.FC<ParticipationCardProps> = ({
         ? new Date(participation.createdAt).toLocaleDateString()
         : 'Unknown date');
 
+  // Get user data from the user object
+  const userName = participation.user?.username || "Unknown User";
+  const userAvatar = participation.user?.avatar;
+  
+  // Get mission data from the mission object
+  const missionTitle = participation.mission?.title || "Unknown Mission";
+  const missionDescription = participation.mission?.description || "No description available";
+  const missionPointsReward = participation.mission?.pointsReward || 0;
+  const missionType = participation.mission?.type || "REVIEW";
+
   // Log for debugging
   console.log('Rendering card for participation:', {
     id: participation.id,
-    userName: participation.userName,
+    userName,
     date: formattedDate,
     status: participation.status,
     createdAt: participation.createdAt
@@ -57,13 +67,13 @@ const ParticipationCard: React.FC<ParticipationCardProps> = ({
           <div className="flex flex-wrap justify-between items-start gap-2">
             <div className="flex items-center gap-2">
               <Avatar className="h-10 w-10">
-                {participation.userAvatar ? (
-                  <AvatarImage src={participation.userAvatar} alt={participation.userName || ""} />
+                {userAvatar ? (
+                  <AvatarImage src={userAvatar} alt={userName || ""} />
                 ) : null}
-                <AvatarFallback>{getInitials(participation.userName || "")}</AvatarFallback>
+                <AvatarFallback>{getInitials(userName || "")}</AvatarFallback>
               </Avatar>
               <div>
-                <h4 className="font-medium">{participation.userName || "Unknown User"}</h4>
+                <h4 className="font-medium">{userName || "Unknown User"}</h4>
                 <p className="text-sm text-muted-foreground">
                   {formattedDate}
                 </p>
@@ -74,24 +84,24 @@ const ParticipationCard: React.FC<ParticipationCardProps> = ({
           
           <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
             <div>
-              <h4 className="font-medium mb-1">{participation.missionTitle || "Unknown Mission"}</h4>
+              <h4 className="font-medium mb-1">{missionTitle || "Unknown Mission"}</h4>
               <div className="text-sm text-muted-foreground line-clamp-3">
-                {participation.missionDescription || "No description available"}
+                {missionDescription || "No description available"}
               </div>
             </div>
             <div className="flex flex-col space-y-2">
               <div className="flex items-center">
                 <Award className="h-4 w-4 mr-2 text-brand-teal" />
-                <PointsBadge points={participation.missionPointsReward || 0} size="sm" />
+                <PointsBadge points={missionPointsReward || 0} size="sm" />
               </div>
               <div className="flex items-center">
                 <Tag className="h-4 w-4 mr-2" />
                 <span className="text-sm">
-                  {participation.missionType === 'RECEIPT' ? 'Receipt Submission' : 'Review'}
+                  {missionType === 'RECEIPT' ? 'Receipt Submission' : 'Review'}
                 </span>
               </div>
               <div className="flex items-center">
-                {participation.missionType === 'RECEIPT' ? (
+                {missionType === 'RECEIPT' ? (
                   <>
                     <FileImage className="h-4 w-4 mr-2" />
                     <span className="text-sm">

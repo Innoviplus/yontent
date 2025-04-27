@@ -1,5 +1,5 @@
 
-import { MissionParticipation } from '../types/participationTypes';
+import { MissionParticipation, UserProfile, Mission } from '../types/participationTypes';
 
 // Helper to extract avatar URL from profile data
 export const extractAvatarUrl = (profileData: any): string | null => {
@@ -55,6 +55,23 @@ export const transformParticipationData = (data: any[]): MissionParticipation[] 
         updatedAt: updatedAt.toString()
       });
       
+      // Transform user data to match UserProfile type
+      const userProfile: UserProfile = {
+        id: userId,
+        username: username,
+        email: user.email,
+        avatar: extractAvatarUrl(user)
+      };
+      
+      // Transform mission data to match Mission type
+      const missionData: Mission = {
+        id: missionId,
+        title: missionTitle,
+        description: mission.description || '',
+        pointsReward: mission.points_reward || 0,
+        type: mission.type || 'REVIEW'
+      };
+      
       // Ensure data types match expected MissionParticipation type
       return {
         id: item.id,
@@ -64,15 +81,12 @@ export const transformParticipationData = (data: any[]): MissionParticipation[] 
         createdAt: createdAt,
         updatedAt: updatedAt,
         submissionData: item.submission_data || null,
-        userName: username,
-        userAvatar: extractAvatarUrl(user),
-        missionTitle: missionTitle,
-        missionDescription: mission.description || '',
-        missionPointsReward: mission.points_reward || 0,
-        missionType: mission.type || 'REVIEW'
+        user: userProfile,
+        mission: missionData
       };
     } catch (error) {
       console.error('Error transforming participation item:', item, error);
+      
       // Return a minimal valid object in case of error
       return {
         id: item.id || 'error-id',
@@ -82,12 +96,19 @@ export const transformParticipationData = (data: any[]): MissionParticipation[] 
         createdAt: new Date(),
         updatedAt: new Date(),
         submissionData: null,
-        userName: 'Error processing user',
-        userAvatar: null,
-        missionTitle: 'Error processing mission',
-        missionDescription: '',
-        missionPointsReward: 0,
-        missionType: 'REVIEW'
+        user: {
+          id: item.user_id || '',
+          username: 'Error processing user',
+          email: '',
+          avatar: null
+        },
+        mission: {
+          id: item.mission_id || '',
+          title: 'Error processing mission',
+          description: '',
+          pointsReward: 0,
+          type: 'REVIEW'
+        }
       };
     }
   });

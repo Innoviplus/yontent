@@ -7,10 +7,9 @@ import {
   rejectParticipation,
   updateMissionParticipationStatus
 } from './api/missionParticipationsApi';
-import { ParticipationStatus } from './api/types/participationTypes';
-import { MissionParticipation } from './types/missionParticipationTypes';
+import { ParticipationStatus, MissionParticipation } from './api/types/participationTypes';
 
-export type { MissionParticipation } from './types/missionParticipationTypes';
+export type { MissionParticipation } from './api/types/participationTypes';
 
 export const useMissionParticipations = () => {
   const [participations, setParticipations] = useState<MissionParticipation[]>([]);
