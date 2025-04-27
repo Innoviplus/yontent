@@ -14,6 +14,13 @@ const ParticipationsTable = ({ filterStatus }: ParticipationsTableProps) => {
   const [selectedParticipation, setSelectedParticipation] = useState<Participation | null>(null);
   const { participations, loading, handleUpdateStatus } = useParticipations(filterStatus);
 
+  // Add more detailed logging
+  console.log('ParticipationsTable render:', {
+    filterStatus,
+    loading,
+    participationsCount: participations?.length || 0
+  });
+
   if (loading) {
     return <ParticipationsLoading />;
   }
@@ -41,9 +48,17 @@ const ParticipationsTable = ({ filterStatus }: ParticipationsTableProps) => {
             ) : (
               participations.map((participation) => (
                 <TableRow key={participation.id}>
-                  <TableCell>{participation.mission?.title}</TableCell>
-                  <TableCell>{participation.profile?.username}</TableCell>
-                  <TableCell>{participation.status}</TableCell>
+                  <TableCell>{participation.mission?.title || 'Unknown Mission'}</TableCell>
+                  <TableCell>{participation.profile?.username || 'Unknown User'}</TableCell>
+                  <TableCell>
+                    <span className={`inline-block px-2 py-1 rounded text-xs ${
+                      participation.status === 'APPROVED' ? 'bg-green-100 text-green-800' :
+                      participation.status === 'REJECTED' ? 'bg-red-100 text-red-800' :
+                      'bg-yellow-100 text-yellow-800'
+                    }`}>
+                      {participation.status}
+                    </span>
+                  </TableCell>
                   <TableCell>{new Date(participation.created_at).toLocaleDateString()}</TableCell>
                   <TableCell>
                     <ParticipationActions
