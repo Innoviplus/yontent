@@ -24,6 +24,13 @@ export const useMissionParticipations = () => {
   // Initial load of participations
   useEffect(() => {
     loadParticipations();
+    // Set up auto-refresh interval (every 60 seconds)
+    const intervalId = setInterval(() => {
+      console.log("Auto-refreshing participations...");
+      refreshParticipations(true);
+    }, 60000);
+    
+    return () => clearInterval(intervalId);
   }, []);
 
   const loadParticipations = async (status?: ParticipationStatus) => {
@@ -43,24 +50,8 @@ export const useMissionParticipations = () => {
       }
       
       if (response.success && response.participations) {
-        // Transform API response to the format expected by components
-        const transformedParticipations: MissionParticipation[] = response.participations.map(p => ({
-          id: p.id,
-          userId: p.userId,
-          missionId: p.missionId,
-          status: p.status,
-          submissionData: p.submissionData,
-          createdAt: new Date(p.createdAt),
-          userName: p.user.username,
-          userAvatar: p.user.avatar || undefined,
-          missionTitle: p.mission.title,
-          missionDescription: p.mission.description,
-          missionPointsReward: p.mission.pointsReward,
-          missionType: p.mission.type
-        }));
-        
-        console.log('Setting participations:', transformedParticipations);
-        setParticipations(transformedParticipations);
+        console.log('Setting participations:', response.participations);
+        setParticipations(response.participations);
       } else {
         console.error('Error response:', response);
         setError(response.error || 'Failed to load participations');
@@ -73,10 +64,10 @@ export const useMissionParticipations = () => {
     }
   };
   
-  const refreshParticipations = async () => {
-    setIsRefreshing(true);
+  const refreshParticipations = async (silent: boolean = false) => {
+    if (!silent) setIsRefreshing(true);
     await loadParticipations();
-    setIsRefreshing(false);
+    if (!silent) setIsRefreshing(false);
   };
   
   const handleApproveParticipation = async (id: string) => {

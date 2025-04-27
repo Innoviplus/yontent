@@ -25,17 +25,9 @@ export const transformParticipationData = (data: any[]): MissionParticipation[] 
   console.log('Transforming participation data:', data);
   
   return data.map(item => {
-    // Log the structure of each item to help debug
-    console.log('Item structure:', {
-      id: item.id,
-      mission_id: item.mission_id,
-      user_id: item.user_id,
-      profiles: item.profiles,
-      missions: item.missions
-    });
-    
-    const profiles = item.profiles || {};
-    const missions = item.missions || {};
+    // For direct join queries, the data structure is different
+    const user = item.user || {};
+    const mission = item.mission || {};
     
     return {
       id: item.id,
@@ -46,17 +38,17 @@ export const transformParticipationData = (data: any[]): MissionParticipation[] 
       updatedAt: item.updated_at,
       submissionData: item.submission_data,
       user: {
-        id: profiles.id || item.user_id,
-        username: profiles.username || 'Anonymous',
-        email: profiles.email,
-        avatar: extractAvatarUrl(profiles)
+        id: user.id || item.user_id,
+        username: user.username || 'Anonymous',
+        email: user.email,
+        avatar: extractAvatarUrl(user)
       },
       mission: {
-        id: missions.id || item.mission_id,
-        title: missions.title || 'Unknown Mission',
-        description: missions.description || '',
-        pointsReward: missions.points_reward || 0,
-        type: missions.type || 'REVIEW'
+        id: mission.id || item.mission_id,
+        title: mission.title || 'Unknown Mission',
+        description: mission.description || '',
+        pointsReward: mission.points_reward || 0,
+        type: mission.type || 'REVIEW'
       }
     };
   });
