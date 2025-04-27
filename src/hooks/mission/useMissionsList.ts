@@ -1,3 +1,4 @@
+
 import { useState, useEffect } from 'react';
 import { Mission } from '@/lib/types';
 import { supabase } from '@/integrations/supabase/client';
@@ -18,26 +19,33 @@ export const useMissionsList = () => {
     if (!missionIds.length) return;
     
     try {
-      const participationCountsPromises = missionIds.map(async (missionId) => {
-        const { count, error } = await supabase
-          .from('mission_participations')
-          .select('*', { count: 'exact', head: true })
-          .eq('mission_id', missionId);
-          
-        if (error) {
-          console.error(`Error fetching participation count for mission ${missionId}:`, error);
-          return { missionId, count: 0 };
-        }
-        
-        return { missionId, count: count || 0 };
-      });
+      console.log("Fetching participation counts for missions:", missionIds);
       
-      const participationCounts = await Promise.all(participationCountsPromises);
+      // Use a single query to get all participation counts at once
+      const { data, error } = await supabase
+        .from('mission_participations')
+        .select('mission_id')
+        .in('mission_id', missionIds);
+        
+      if (error) {
+        throw error;
+      }
+      
+      // Count participations by mission_id
       const countsMap: Record<string, number> = {};
       
-      participationCounts.forEach(({ missionId, count }) => {
-        countsMap[missionId] = count;
+      // Initialize all mission IDs with zero count
+      missionIds.forEach(id => {
+        countsMap[id] = 0;
       });
+      
+      // Update counts based on data
+      if (data) {
+        data.forEach(participation => {
+          const missionId = participation.mission_id;
+          countsMap[missionId] = (countsMap[missionId] || 0) + 1;
+        });
+      }
       
       console.log('Updated participation counts:', countsMap);
       setMissionParticipationCounts(countsMap);
@@ -98,7 +106,9 @@ export const useMissionsList = () => {
       
       setActiveMissionsCount(activeCount);
       
-      await fetchParticipationCounts(transformedMissions.map(m => m.id));
+      // Extract mission IDs and fetch participation counts
+      const missionIds = transformedMissions.map(m => m.id);
+      await fetchParticipationCounts(missionIds);
       
       const sortedMissions = sortMissionsByExpiration(transformedMissions);
       setMissions(sortedMissions);

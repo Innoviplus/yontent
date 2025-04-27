@@ -6,15 +6,14 @@ import { Link } from 'react-router-dom';
 import { format, isPast } from 'date-fns';
 import { Button } from './ui/button';
 import HTMLContent from './HTMLContent';
-import { useMissionsList } from '@/hooks/mission/useMissionsList';
 
 interface MissionCardProps {
   mission: Mission;
   className?: string;
-  participationCount?: number;
+  participationCount: number;
 }
 
-const MissionCard = ({ mission, className, participationCount }: MissionCardProps) => {
+const MissionCard = ({ mission, className, participationCount = 0 }: MissionCardProps) => {
   // Force a re-evaluation of expiration date on each render
   const now = new Date();
   const isExpired = mission.expiresAt ? now > mission.expiresAt : false;
@@ -23,9 +22,7 @@ const MissionCard = ({ mission, className, participationCount }: MissionCardProp
   // Check if mission quota is reached
   const isQuotaReached = mission.totalMaxSubmissions !== undefined && 
                          mission.totalMaxSubmissions > 0 && 
-                         (participationCount !== undefined ? 
-                          participationCount >= mission.totalMaxSubmissions : 
-                          false);
+                         participationCount >= mission.totalMaxSubmissions;
   
   return (
     <div 
@@ -104,7 +101,7 @@ const MissionCard = ({ mission, className, participationCount }: MissionCardProp
               <Users className="h-3 w-3 mr-1 flex-shrink-0" />
               <span>
                 Total max submissions: {mission.totalMaxSubmissions}
-                {participationCount !== undefined && ` (${participationCount} submitted)`}
+                {` (${participationCount} submitted)`}
                 {isQuotaReached && <span className="text-red-500 ml-1 font-bold">FULL</span>}
               </span>
             </div>
