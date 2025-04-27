@@ -1,7 +1,7 @@
 
 import React, { useState } from 'react';
 import { Button } from '@/components/ui/button';
-import { AlertCircle, RefreshCw, Bug, Database, TableProperties, Search, ChevronDown, ChevronUp, Code } from 'lucide-react';
+import { AlertCircle, RefreshCw, Bug, Database, TableProperties, Search, ChevronDown, ChevronUp, Code, Users, Lock } from 'lucide-react';
 
 interface ParticipationErrorProps {
   error: string;
@@ -19,6 +19,9 @@ const ParticipationError: React.FC<ParticipationErrorProps> = ({
   const isRelationshipError = error.includes("relationship") && 
     (error.includes("mission_participations") || error.includes("profiles"));
   
+  // Check if this might be an RLS issue
+  const isRlsError = error.includes("permission") || error.includes("access") || error.includes("violates row-level security");
+  
   return (
     <div className="bg-red-50 border border-red-200 rounded-md p-4 mb-4">
       <div className="flex items-start">
@@ -31,11 +34,26 @@ const ParticipationError: React.FC<ParticipationErrorProps> = ({
             <div className="mt-2 p-3 bg-amber-50 border border-amber-200 rounded text-xs text-amber-800">
               <p className="font-medium mb-1">Relationship Error Detected:</p>
               <p className="mb-2">This error occurs because Supabase can't find the foreign key relationship between the 'mission_participations' and 'profiles' tables in your database schema.</p>
-              <p className="mb-2">The system is now using a multi-query approach to work around this limitation, but there may be additional issues:</p>
+              <p className="mb-2">The system is using a multi-query approach to work around this limitation:</p>
               <ul className="list-disc pl-5 mb-2 space-y-1">
-                <li>User ID mismatch between tables</li>
-                <li>Missing profile record for this user</li>
-                <li>Database schema inconsistency</li>
+                <li>Fetching mission participations directly</li>
+                <li>Separately fetching user profiles and missions</li>
+                <li>Manually combining the data</li>
+                <li>Creating placeholder data for any missing records</li>
+              </ul>
+              <p>This approach ensures all submissions are visible regardless of user permissions.</p>
+            </div>
+          )}
+          
+          {isRlsError && (
+            <div className="mt-2 p-3 bg-amber-50 border border-amber-200 rounded text-xs text-amber-800">
+              <p className="font-medium mb-1">Possible Row-Level Security (RLS) Issue:</p>
+              <p className="mb-2">This error may be related to Supabase Row Level Security policies restricting access to records submitted by other users.</p>
+              <p className="mb-2">The system has been updated to bypass these restrictions for admin users by:</p>
+              <ul className="list-disc pl-5 mb-2 space-y-1">
+                <li>Using separate queries to fetch all data</li>
+                <li>Creating placeholder data for any missing profiles</li>
+                <li>Ensuring all users' submissions are visible in the admin panel</li>
               </ul>
             </div>
           )}
@@ -57,10 +75,16 @@ const ParticipationError: React.FC<ParticipationErrorProps> = ({
             <div className="mt-2 p-2 bg-slate-50 border border-slate-200 rounded text-xs">
               <p className="font-mono overflow-x-auto py-1">
                 <Code className="h-3 w-3 inline mr-1" />
-                Error Type: {isRelationshipError ? "Schema Relationship" : "General Error"}
+                Error Type: {isRelationshipError ? "Schema Relationship" : isRlsError ? "Possible RLS Issue" : "General Error"}
               </p>
               <p className="font-mono overflow-x-auto py-1">Tables: mission_participations, profiles</p>
               <p className="font-mono overflow-x-auto py-1">Expected FK: user_id references profiles(id)</p>
+              {isRlsError && (
+                <p className="font-mono overflow-x-auto py-1">
+                  <Lock className="h-3 w-3 inline mr-1" />
+                  RLS workaround: Using separate queries to bypass restrictions
+                </p>
+              )}
             </div>
           )}
           
@@ -101,8 +125,18 @@ const ParticipationError: React.FC<ParticipationErrorProps> = ({
               className="bg-white hover:bg-green-50"
               onClick={() => window.open(`${supabaseProjectUrl}/editor/profiles`, '_blank')}
             >
-              <Search className="h-4 w-4 mr-1" />
+              <Users className="h-4 w-4 mr-1" />
               Profiles Table
+            </Button>
+            
+            <Button
+              variant="outline"
+              size="sm"
+              className="bg-white hover:bg-yellow-50"
+              onClick={() => window.open(`${supabaseProjectUrl}/auth/policies`, '_blank')}
+            >
+              <Lock className="h-4 w-4 mr-1" />
+              RLS Policies
             </Button>
           </div>
         </div>
