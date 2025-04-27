@@ -6,8 +6,8 @@ export interface MissionParticipation {
   missionId: string;
   userId: string;
   status: ParticipationStatus;
-  createdAt: string;
-  updatedAt: string;
+  createdAt: Date;
+  updatedAt: Date;
   submissionData?: SubmissionData;
   user: UserProfile;
   mission: Mission;

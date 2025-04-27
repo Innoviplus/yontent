@@ -12,8 +12,8 @@ interface ParticipationCardProps {
   participation: MissionParticipation;
   processingId: string | null;
   onViewDetails: (participation: MissionParticipation) => void;
-  onApprove: (id: string) => Promise<void>;
-  onReject: (id: string) => Promise<void>;
+  onApprove: (id: string) => Promise<boolean>;
+  onReject: (id: string) => Promise<boolean>;
   openReviewLink: (reviewId: string) => void;
 }
 
@@ -33,6 +33,11 @@ const ParticipationCard: React.FC<ParticipationCardProps> = ({
       .toUpperCase();
   };
 
+  // Format the date properly
+  const formattedDate = participation.createdAt instanceof Date 
+    ? participation.createdAt.toLocaleDateString() 
+    : new Date(participation.createdAt).toLocaleDateString();
+
   return (
     <Card key={participation.id} className="overflow-hidden">
       <CardContent className="p-4">
@@ -48,7 +53,7 @@ const ParticipationCard: React.FC<ParticipationCardProps> = ({
               <div>
                 <h4 className="font-medium">{participation.userName}</h4>
                 <p className="text-sm text-muted-foreground">
-                  {participation.createdAt.toLocaleDateString()}
+                  {formattedDate}
                 </p>
               </div>
             </div>

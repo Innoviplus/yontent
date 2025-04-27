@@ -51,7 +51,27 @@ export const useMissionParticipations = () => {
       
       if (response.success && response.participations) {
         console.log('Setting participations:', response.participations);
-        setParticipations(response.participations);
+        
+        // Map the API response to our component format
+        const mappedParticipations: MissionParticipation[] = response.participations.map((p: any) => {
+          return {
+            id: p.id,
+            userId: p.userId,
+            missionId: p.missionId,
+            status: p.status,
+            submissionData: p.submissionData,
+            createdAt: p.createdAt,
+            updatedAt: p.updatedAt,
+            userName: p.user?.username || 'Anonymous',
+            userAvatar: p.user?.avatar,
+            missionTitle: p.mission?.title || 'Unknown Mission',
+            missionDescription: p.mission?.description || '',
+            missionPointsReward: p.mission?.pointsReward || 0,
+            missionType: p.mission?.type || 'REVIEW'
+          };
+        });
+        
+        setParticipations(mappedParticipations);
       } else {
         console.error('Error response:', response);
         setError(response.error || 'Failed to load participations');

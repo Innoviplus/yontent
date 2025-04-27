@@ -14,7 +14,6 @@ import ParticipationsLoadingState from './ParticipationsLoadingState';
 import ParticipationCard from './ParticipationCard';
 import ParticipationDetailsDialog from './ParticipationDetailsDialog';
 import EmptyParticipations from './EmptyParticipations';
-import { Badge } from '@/components/ui/badge';
 
 interface MissionsParticipationProps {
   participations: MissionParticipation[];
