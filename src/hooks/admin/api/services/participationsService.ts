@@ -1,5 +1,6 @@
+
 import { supabase } from '@/integrations/supabase/client';
-import { ApiResponse, MissionParticipation } from '../types/participationTypes';
+import { ApiResponse, MissionParticipation, MissionParticipationFilters } from '../types/participationTypes';
 import { transformParticipationData } from '../utils/transformationUtils';
 
 export const fetchMissionParticipations = async () => {
