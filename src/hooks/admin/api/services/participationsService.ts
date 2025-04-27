@@ -1,24 +1,27 @@
-
 import { supabase } from '@/integrations/supabase/client';
 import { MissionParticipationFilters, ApiResponse, MissionParticipation } from '../types/participationTypes';
 import { transformParticipationData } from '../utils/transformationUtils';
 
 export const fetchMissionParticipations = async (): Promise<ApiResponse<MissionParticipation>> => {
   try {
-    console.log('[fetchMissionParticipations] Fetching mission participations');
+    console.log('[fetchMissionParticipations] Fetching mission participations for admin');
     
-    // Enable and log RLS debugging
-    console.log('[fetchMissionParticipations] Admin user accessing participations with RLS');
-    
-    // Fetch mission participations with a simple query first - no joins to avoid column ambiguity
+    // Fetch mission participations with comprehensive data
     const { data: participations, error: participationsError } = await supabase
       .from('mission_participations')
-      .select('*')
+      .select(`
+        *,
+        user:profiles!inner(id, username, email, avatar),
+        mission:missions!inner(id, title, description, points_reward, type)
+      `)
       .order('created_at', { ascending: false });
     
     if (participationsError) {
       console.error('[fetchMissionParticipations] Error fetching participations:', participationsError);
-      return { success: false, error: participationsError.message };
+      return { 
+        success: false, 
+        error: participationsError.message || 'Failed to fetch mission participations' 
+      };
     }
 
     console.log('[fetchMissionParticipations] Successfully fetched participations:', 
@@ -27,71 +30,19 @@ export const fetchMissionParticipations = async (): Promise<ApiResponse<MissionP
     if (!participations || participations.length === 0) {
       return { success: true, participations: [] };
     }
-
-    // Extract user IDs and mission IDs for separate queries
-    const userIds = [...new Set(participations.map(p => p.user_id))];
-    const missionIds = [...new Set(participations.map(p => p.mission_id))];
     
-    console.log(`[fetchMissionParticipations] Fetching ${userIds.length} profiles and ${missionIds.length} missions`);
-    
-    // Fetch profiles separately
-    const { data: profiles, error: profilesError } = await supabase
-      .from('profiles')
-      .select('id, username, email, avatar')
-      .in('id', userIds);
-      
-    if (profilesError) {
-      console.error('[fetchMissionParticipations] Error fetching profiles:', profilesError);
-      // Continue without profiles instead of failing completely
-    } else {
-      console.log('[fetchMissionParticipations] Successfully fetched profiles:', 
-        profiles ? profiles.length : 0);
-    }
-    
-    // Fetch missions separately
-    const { data: missions, error: missionsError } = await supabase
-      .from('missions')
-      .select('id, title, description, points_reward, type')
-      .in('id', missionIds);
-    
-    if (missionsError) {
-      console.error('[fetchMissionParticipations] Error fetching missions:', missionsError);
-      // Continue without missions instead of failing completely
-    } else {
-      console.log('[fetchMissionParticipations] Successfully fetched missions:', 
-        missions ? missions.length : 0);
-    }
-    
-    // Create lookup maps for faster access
-    const profilesMap = (profiles || []).reduce((acc, profile) => {
-      acc[profile.id] = profile;
-      return acc;
-    }, {});
-    
-    const missionsMap = (missions || []).reduce((acc, mission) => {
-      acc[mission.id] = mission;
-      return acc;
-    }, {});
-    
-    // Combine the data manually
-    const combinedData = participations.map(participation => {
-      return {
-        ...participation,
-        profiles: profilesMap[participation.user_id] || null,
-        missions: missionsMap[participation.mission_id] || null
-      };
-    });
-    
-    console.log('[fetchMissionParticipations] Raw data count:', combinedData.length);
-    
-    const transformedData = transformParticipationData(combinedData);
+    // Transform and return the data
+    const transformedData = transformParticipationData(participations);
     return {
       success: true,
       participations: transformedData
     };
   } catch (error: any) {
-    console.error('[fetchMissionParticipations] Exception:', error);
-    return { success: false, error: error.message };
+    console.error('[fetchMissionParticipations] Unexpected error:', error);
+    return { 
+      success: false, 
+      error: error.message || 'An unexpected error occurred while fetching mission participations' 
+    };
   }
 };
 
