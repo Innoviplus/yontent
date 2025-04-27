@@ -4,6 +4,7 @@ import { Navigate, useLocation } from "react-router-dom";
 import { useAuth } from "@/contexts/auth";
 import { checkIsAdmin } from "@/services/admin/users";
 import { Loader2 } from "lucide-react";
+import { toast } from "sonner";
 
 interface AdminProtectedRouteProps {
   children: React.ReactNode;
@@ -27,9 +28,19 @@ const AdminProtectedRoute = ({ children }: AdminProtectedRouteProps) => {
         // Use the checkIsAdmin function which handles error cases better
         const isAdminUser = await checkIsAdmin(user.id);
         setIsAdmin(isAdminUser);
+        
+        if (!isAdminUser) {
+          toast.error("Access denied: You do not have admin privileges", {
+            id: "admin-access-denied", // Prevent duplicate toasts
+            duration: 5000
+          });
+        }
       } catch (error) {
         console.error("Error checking admin status:", error);
         setIsAdmin(false);
+        toast.error("Failed to verify admin status", {
+          description: "Please try again or contact support"
+        });
       } finally {
         setCheckingRole(false);
       }

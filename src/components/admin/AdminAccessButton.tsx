@@ -4,21 +4,31 @@ import { Button } from "@/components/ui/button";
 import { Shield, Loader2 } from "lucide-react";
 import { grantAdminToUser } from "@/scripts/grantAdminToUser";
 import { useAuth } from "@/contexts/AuthContext";
+import { toast } from "sonner";
 
 const AdminAccessButton = () => {
   const [isProcessing, setIsProcessing] = useState(false);
-  const { user } = useAuth();
+  const { user, refreshUserProfile } = useAuth();
 
   const handleGrantAdmin = async () => {
     if (!user?.user_metadata?.username) {
+      toast.error("Username not found. Please ensure your profile has a username.");
       return;
     }
 
     setIsProcessing(true);
     try {
-      await grantAdminToUser(user.user_metadata.username);
+      const result = await grantAdminToUser(user.user_metadata.username);
+      if (result) {
+        toast.success("Admin access granted successfully!");
+        // Refresh the user profile to update any UI elements that depend on user role
+        await refreshUserProfile();
+        // Redirect to admin panel
+        window.location.href = "/admin";
+      }
     } catch (error) {
       console.error("Error granting admin access:", error);
+      toast.error("Failed to grant admin access. Please try again.");
     } finally {
       setIsProcessing(false);
     }
