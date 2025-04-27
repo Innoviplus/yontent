@@ -1,12 +1,7 @@
 
-import { 
-  fetchParticipationsData,
-  fetchUserProfiles, 
-  fetchMissions 
-} from '../clients/participationsApiClient';
-import { transformParticipationData } from '../utils/transformationUtils';
-import { MissionParticipationFilters, ApiResponse, MissionParticipation } from '../types/participationTypes';
 import { supabase } from '@/integrations/supabase/client';
+import { MissionParticipationFilters, ApiResponse, MissionParticipation } from '../types/participationTypes';
+import { transformParticipationData } from '../utils/transformationUtils';
 
 export const fetchMissionParticipations = async (): Promise<ApiResponse<MissionParticipation>> => {
   try {
@@ -34,10 +29,20 @@ export const fetchMissionParticipations = async (): Promise<ApiResponse<MissionP
     const userIds = [...new Set(participations.map(p => p.user_id))];
     const missionIds = [...new Set(participations.map(p => p.mission_id))];
     
-    console.log('[fetchMissionParticipations] Fetching data for users:', userIds);
-    console.log('[fetchMissionParticipations] Fetching data for missions:', missionIds);
+    console.log('[fetchMissionParticipations] User IDs found:', userIds);
+    console.log('[fetchMissionParticipations] Mission IDs found:', missionIds);
 
-    // Fetch profiles separately
+    // Log the first participation details for debugging
+    if (participations.length > 0) {
+      console.log('[fetchMissionParticipations] First participation details:', {
+        id: participations[0].id,
+        user_id: participations[0].user_id,
+        mission_id: participations[0].mission_id,
+        status: participations[0].status
+      });
+    }
+
+    // Fetch profiles separately - try direct user_id lookup
     const { data: profiles, error: profilesError } = await supabase
       .from('profiles')
       .select('*')
@@ -45,6 +50,7 @@ export const fetchMissionParticipations = async (): Promise<ApiResponse<MissionP
       
     if (profilesError) {
       console.error('[fetchMissionParticipations] Failed to fetch profiles:', profilesError);
+      return { success: false, error: `Error fetching user profiles: ${profilesError.message}` };
     }
 
     // Fetch missions separately
@@ -55,9 +61,25 @@ export const fetchMissionParticipations = async (): Promise<ApiResponse<MissionP
       
     if (missionsError) {
       console.error('[fetchMissionParticipations] Failed to fetch missions:', missionsError);
+      return { success: false, error: `Error fetching missions: ${missionsError.message}` };
     }
 
     console.log('[fetchMissionParticipations] Profiles fetched:', profiles?.length || 0);
+    if (profiles && profiles.length > 0) {
+      console.log('[fetchMissionParticipations] Sample profile:', {
+        id: profiles[0].id,
+        username: profiles[0].username
+      });
+      
+      // Check for missing user profiles
+      const profileIdsSet = new Set(profiles.map(p => p.id));
+      const missingUserIds = userIds.filter(id => !profileIdsSet.has(id));
+      
+      if (missingUserIds.length > 0) {
+        console.warn('[fetchMissionParticipations] Missing profiles for users:', missingUserIds);
+      }
+    }
+    
     console.log('[fetchMissionParticipations] Missions fetched:', missions?.length || 0);
     
     // Create lookup maps for faster access
@@ -67,11 +89,23 @@ export const fetchMissionParticipations = async (): Promise<ApiResponse<MissionP
     const missionsMap = new Map();
     missions?.forEach(mission => missionsMap.set(mission.id, mission));
     
-    // Combine the data manually
+    // Combine the data manually with thorough logging
     const combinedData = participations.map(participation => {
+      const userId = participation.user_id;
+      const userProfile = profilesMap.get(userId);
+      
+      if (!userProfile) {
+        console.warn(`[fetchMissionParticipations] Missing profile for user ID: ${userId}`);
+      }
+      
       return {
         ...participation,
-        user: profilesMap.get(participation.user_id) || null,
+        user: userProfile || {
+          id: userId,
+          username: `User-${userId.substring(0, 8)}`,
+          email: "",
+          avatar: null
+        },
         mission: missionsMap.get(participation.mission_id) || null
       };
     });
@@ -81,7 +115,7 @@ export const fetchMissionParticipations = async (): Promise<ApiResponse<MissionP
     // Now transform the combined data
     const transformedData = transformParticipationData(combinedData);
     
-    console.log('[fetchMissionParticipations] Transformed participations data:', transformedData);
+    console.log('[fetchMissionParticipations] Transformed participations data:', transformedData.length);
     
     return {
       success: true,
@@ -132,7 +166,7 @@ export const fetchMissionParticipationsWithFilters = async (
       return { success: false, error: error.message };
     }
 
-    console.log('[fetchMissionParticipationsWithFilters] Raw filtered participations:', participations);
+    console.log('[fetchMissionParticipationsWithFilters] Raw filtered participations:', participations?.length || 0);
 
     if (!participations || participations.length === 0) {
       return { success: true, participations: [] };
@@ -142,7 +176,9 @@ export const fetchMissionParticipationsWithFilters = async (
     const userIds = [...new Set(participations.map(p => p.user_id))];
     const missionIds = [...new Set(participations.map(p => p.mission_id))];
     
-    // Fetch profiles separately
+    console.log('[fetchMissionParticipationsWithFilters] User IDs to fetch:', userIds);
+    
+    // Fetch profiles separately with enhanced error logging
     const { data: profiles, error: profilesError } = await supabase
       .from('profiles')
       .select('*')
@@ -150,6 +186,7 @@ export const fetchMissionParticipationsWithFilters = async (
       
     if (profilesError) {
       console.error('[fetchMissionParticipationsWithFilters] Failed to fetch profiles:', profilesError);
+      // Continue with empty profiles rather than failing completely
     }
 
     // Fetch missions separately
@@ -160,21 +197,53 @@ export const fetchMissionParticipationsWithFilters = async (
       
     if (missionsError) {
       console.error('[fetchMissionParticipationsWithFilters] Failed to fetch missions:', missionsError);
+      // Continue with empty missions rather than failing completely
     }
     
-    // Create lookup maps for faster access
+    // Log profile fetch results
+    console.log(
+      '[fetchMissionParticipationsWithFilters] Profiles fetched:', 
+      profiles?.length || 0, 
+      'for', userIds.length, 'users'
+    );
+    
+    // Create lookup maps for faster access with fallbacks
     const profilesMap = new Map();
     profiles?.forEach(profile => profilesMap.set(profile.id, profile));
     
     const missionsMap = new Map();
     missions?.forEach(mission => missionsMap.set(mission.id, mission));
     
+    // Check for missing profiles and create placeholders
+    userIds.forEach(userId => {
+      if (!profilesMap.has(userId)) {
+        console.log(`[fetchMissionParticipationsWithFilters] Creating placeholder for missing profile: ${userId}`);
+        profilesMap.set(userId, {
+          id: userId,
+          username: `User-${userId.substring(0, 8)}`,
+          email: "",
+          avatar: null
+        });
+      }
+    });
+    
     // Combine the data manually
     const combinedData = participations.map(participation => {
       return {
         ...participation,
-        user: profilesMap.get(participation.user_id) || null,
-        mission: missionsMap.get(participation.mission_id) || null
+        user: profilesMap.get(participation.user_id) || {
+          id: participation.user_id,
+          username: `User-${participation.user_id.substring(0, 8)}`,
+          email: "",
+          avatar: null
+        },
+        mission: missionsMap.get(participation.mission_id) || {
+          id: participation.mission_id,
+          title: `Unknown Mission (${participation.mission_id.substring(0, 8)})`,
+          description: "Mission details not available",
+          pointsReward: 0,
+          type: "REVIEW"
+        }
       };
     });
 

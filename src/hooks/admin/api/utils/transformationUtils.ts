@@ -22,7 +22,6 @@ export const extractAvatarUrl = (profileData: any): string | null => {
 };
 
 export const transformParticipationData = (data: any[]): MissionParticipation[] => {
-  console.log('[transformParticipationData] Input data:', data);
   console.log('[transformParticipationData] Input data length:', data ? data.length : 0);
   
   if (!Array.isArray(data)) {
@@ -86,10 +85,12 @@ export const transformParticipationData = (data: any[]): MissionParticipation[] 
         avatar: extractAvatarUrl(user)
       };
       
-      // Ensure mission type is always "REVIEW" or "RECEIPT" and properly typed
-      const missionTypeValue = mission.type || 'REVIEW';
-      // Validate the mission type and ensure it's one of the allowed values
-      const missionType: 'REVIEW' | 'RECEIPT' = 
+      // Get the mission type string value from the mission object
+      let missionTypeValue = mission.type || 'REVIEW';
+      
+      // Validate and ensure the mission type is one of the allowed values
+      // This explicitly handles the TypeScript union type requirement
+      const validMissionType: 'REVIEW' | 'RECEIPT' = 
         missionTypeValue === 'RECEIPT' ? 'RECEIPT' : 'REVIEW';
       
       // Transform mission data to match Mission type with fallbacks
@@ -97,8 +98,8 @@ export const transformParticipationData = (data: any[]): MissionParticipation[] 
         id: missionId,
         title: mission.title || `Mission-${missionId.substring(0, 6)}`,
         description: mission.description || 'No description available',
-        pointsReward: mission.points_reward || 0,
-        type: missionType
+        pointsReward: typeof mission.points_reward === 'number' ? mission.points_reward : 0,
+        type: validMissionType
       };
       
       // Return the transformed participation with all required fields
@@ -115,9 +116,6 @@ export const transformParticipationData = (data: any[]): MissionParticipation[] 
       };
     } catch (error) {
       console.error('[transformParticipationData] Error transforming participation item:', item, error);
-      
-      // Define a correctly typed fallback mission type
-      const fallbackMissionType: 'REVIEW' | 'RECEIPT' = 'REVIEW';
       
       // Return a minimal valid object in case of error with correct typing
       return {
@@ -139,7 +137,7 @@ export const transformParticipationData = (data: any[]): MissionParticipation[] 
           title: 'Error processing mission',
           description: '',
           pointsReward: 0,
-          type: fallbackMissionType
+          type: 'REVIEW' as 'REVIEW' | 'RECEIPT'
         }
       };
     }

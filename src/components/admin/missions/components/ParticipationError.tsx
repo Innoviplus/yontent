@@ -1,7 +1,7 @@
 
-import React from 'react';
+import React, { useState } from 'react';
 import { Button } from '@/components/ui/button';
-import { AlertCircle, RefreshCw, Bug, Database, TableProperties, Search } from 'lucide-react';
+import { AlertCircle, RefreshCw, Bug, Database, TableProperties, Search, ChevronDown, ChevronUp, Code } from 'lucide-react';
 
 interface ParticipationErrorProps {
   error: string;
@@ -12,10 +12,12 @@ const ParticipationError: React.FC<ParticipationErrorProps> = ({
   error,
   onRefresh
 }) => {
+  const [showDebugInfo, setShowDebugInfo] = useState(false);
   const supabaseProjectUrl = "https://supabase.com/dashboard/project/qoycoypkyqxrcqdpfqhd";
 
   // Check if the error is related to the relationship issue
-  const isRelationshipError = error.includes("relationship") && error.includes("mission_participations") && error.includes("profiles");
+  const isRelationshipError = error.includes("relationship") && 
+    (error.includes("mission_participations") || error.includes("profiles"));
   
   return (
     <div className="bg-red-50 border border-red-200 rounded-md p-4 mb-4">
@@ -27,9 +29,38 @@ const ParticipationError: React.FC<ParticipationErrorProps> = ({
           
           {isRelationshipError && (
             <div className="mt-2 p-3 bg-amber-50 border border-amber-200 rounded text-xs text-amber-800">
-              <p className="font-medium mb-1">Potential cause:</p>
-              <p className="mb-2">This error typically occurs when Supabase can't find the foreign key relationship between the 'mission_participations' and 'profiles' tables.</p>
-              <p>The system is now using a multi-query approach to work around this limitation.</p>
+              <p className="font-medium mb-1">Relationship Error Detected:</p>
+              <p className="mb-2">This error occurs because Supabase can't find the foreign key relationship between the 'mission_participations' and 'profiles' tables in your database schema.</p>
+              <p className="mb-2">The system is now using a multi-query approach to work around this limitation, but there may be additional issues:</p>
+              <ul className="list-disc pl-5 mb-2 space-y-1">
+                <li>User ID mismatch between tables</li>
+                <li>Missing profile record for this user</li>
+                <li>Database schema inconsistency</li>
+              </ul>
+            </div>
+          )}
+          
+          <Button 
+            variant="outline" 
+            size="sm"
+            onClick={() => setShowDebugInfo(!showDebugInfo)}
+            className="mt-2 flex items-center text-xs"
+          >
+            {showDebugInfo ? (
+              <><ChevronUp className="h-3 w-3 mr-1" /> Hide Debug Info</>
+            ) : (
+              <><ChevronDown className="h-3 w-3 mr-1" /> Show Debug Info</>
+            )}
+          </Button>
+          
+          {showDebugInfo && (
+            <div className="mt-2 p-2 bg-slate-50 border border-slate-200 rounded text-xs">
+              <p className="font-mono overflow-x-auto py-1">
+                <Code className="h-3 w-3 inline mr-1" />
+                Error Type: {isRelationshipError ? "Schema Relationship" : "General Error"}
+              </p>
+              <p className="font-mono overflow-x-auto py-1">Tables: mission_participations, profiles</p>
+              <p className="font-mono overflow-x-auto py-1">Expected FK: user_id references profiles(id)</p>
             </div>
           )}
           
@@ -42,16 +73,6 @@ const ParticipationError: React.FC<ParticipationErrorProps> = ({
             >
               <RefreshCw className="h-4 w-4 mr-1" />
               Retry
-            </Button>
-            
-            <Button
-              variant="outline"
-              size="sm"
-              className="bg-white hover:bg-amber-50"
-              onClick={() => console.log('Debugging participations issue')}
-            >
-              <Bug className="h-4 w-4 mr-1" />
-              Debug Info
             </Button>
             
             <Button
