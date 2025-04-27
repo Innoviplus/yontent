@@ -40,13 +40,17 @@ export const transformParticipationData = (data: any[]): MissionParticipation[] 
     const missionId = item.mission_id || '';
     const missionTitle = mission.title || 'Unknown Mission';
     
+    // Ensure dates are properly converted to Date objects
+    const createdAt = item.created_at ? new Date(item.created_at) : new Date();
+    const updatedAt = item.updated_at ? new Date(item.updated_at) : new Date();
+    
     return {
       id: item.id,
       missionId: missionId,
       userId: userId,
       status: item.status,
-      createdAt: item.created_at,
-      updatedAt: item.updated_at,
+      createdAt: createdAt,
+      updatedAt: updatedAt,
       submissionData: item.submission_data,
       user: {
         id: user.id || userId,
