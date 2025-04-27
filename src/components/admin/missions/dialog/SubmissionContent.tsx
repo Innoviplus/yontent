@@ -50,6 +50,7 @@ const SubmissionContent: React.FC<SubmissionContentProps> = ({
       <ReviewSubmissionContent 
         reviewId={submissionData?.review_id} 
         reviewImages={submissionData?.review_images || []}
+        openReviewLink={openReviewLink}
       />
     </div>
   );

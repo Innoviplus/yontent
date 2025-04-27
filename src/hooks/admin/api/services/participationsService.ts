@@ -10,23 +10,35 @@ import { supabase } from '@/integrations/supabase/client';
 
 export const fetchMissionParticipations = async (): Promise<ApiResponse<MissionParticipation>> => {
   try {
+    console.log('Fetching all mission participations');
+    
     const { success, data: participations, error } = await fetchParticipationsData();
     
     if (!success || !participations) {
+      console.error('Failed to fetch participations:', error);
       return { success: false, error: error || 'Failed to fetch participations' };
     }
 
+    console.log('Raw participations data:', participations.length, participations);
+
     if (participations.length === 0) {
+      console.log('No participations found in the database');
       return { success: true, participations: [] };
     }
 
     const userIds = [...new Set(participations.map(p => p.user_id))];
     const missionIds = [...new Set(participations.map(p => p.mission_id))];
     
+    console.log('Will fetch data for userIds:', userIds);
+    console.log('Will fetch data for missionIds:', missionIds);
+    
     const [userProfiles, missions] = await Promise.all([
       fetchUserProfiles(userIds),
       fetchMissions(missionIds)
     ]);
+    
+    console.log('Fetched user profiles:', userProfiles.length, userProfiles);
+    console.log('Fetched missions:', missions.length, missions);
     
     // Create lookup maps
     const userMap = new Map(userProfiles.map(user => [user.id, user]));
@@ -36,18 +48,24 @@ export const fetchMissionParticipations = async (): Promise<ApiResponse<MissionP
     const enrichedParticipations = participations.map(participation => ({
       ...participation,
       user: userMap.get(participation.user_id) || { 
+        id: participation.user_id,
         username: 'Unknown User',
         avatar: null
       },
       mission: missionMap.get(participation.mission_id) || {
+        id: participation.mission_id,
         title: 'Unknown Mission',
         description: '',
-        points_reward: 0,
+        pointsReward: 0,
         type: 'REVIEW'
       }
     }));
     
+    console.log('Enriched participations before transform:', enrichedParticipations);
+    
     const transformedData = transformParticipationData(enrichedParticipations);
+    
+    console.log('Transformed participations data:', transformedData);
     
     return {
       success: true,
@@ -90,8 +108,11 @@ export const fetchMissionParticipationsWithFilters = async (
     query = query.order('created_at', { ascending: false });
     
     const { data: participations, error: participationsError } = await query;
+    
+    console.log('Raw filtered participations:', participations);
 
     if (participationsError) {
+      console.error('Error fetching filtered participations:', participationsError);
       return { success: false, error: participationsError.message };
     }
 
@@ -102,18 +123,35 @@ export const fetchMissionParticipationsWithFilters = async (
     const userIds = [...new Set(participations.map(p => p.user_id))];
     const missionIds = [...new Set(participations.map(p => p.mission_id))];
     
+    console.log('Will fetch profiles for user IDs:', userIds);
+    console.log('Will fetch missions for mission IDs:', missionIds);
+    
     const [userProfiles, missions] = await Promise.all([
       fetchUserProfiles(userIds),
       fetchMissions(missionIds)
     ]);
+    
+    console.log('Fetched user profiles for filter:', userProfiles.length);
+    console.log('Fetched missions for filter:', missions.length);
     
     const userMap = new Map(userProfiles.map(user => [user.id, user]));
     const missionMap = new Map(missions.map(mission => [mission.id, mission]));
     
     const enrichedParticipations = participations.map(participation => ({
       ...participation,
-      user: userMap.get(participation.user_id) || {},
-      mission: missionMap.get(participation.mission_id) || {}
+      user: userMap.get(participation.user_id) || {
+        id: participation.user_id,
+        username: 'Unknown User',
+        email: '',
+        avatar: null
+      },
+      mission: missionMap.get(participation.mission_id) || {
+        id: participation.mission_id,
+        title: 'Unknown Mission',
+        description: '',
+        pointsReward: 0,
+        type: 'REVIEW'
+      }
     }));
     
     const transformedData = transformParticipationData(enrichedParticipations);

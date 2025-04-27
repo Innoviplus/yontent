@@ -34,12 +34,10 @@ export const transformParticipationData = (data: any[]): MissionParticipation[] 
       // Handle user data
       const user = item.user || {};
       const userId = item.user_id || '';
-      const username = user.username || 'Unknown User';
       
       // Handle mission data
       const mission = item.mission || {};
       const missionId = item.mission_id || '';
-      const missionTitle = mission.title || 'Unknown Mission';
       
       // Make sure dates are properly parsed to Date objects
       const createdAt = item.created_at ? new Date(item.created_at) : new Date();
@@ -48,7 +46,7 @@ export const transformParticipationData = (data: any[]): MissionParticipation[] 
       // Debug logging for this specific item
       console.log(`Transform item ${item.id}:`, {
         userId,
-        username: username,
+        username: user.username,
         status: item.status,
         submissionData: item.submission_data,
         createdAt: createdAt.toString(),
@@ -58,7 +56,7 @@ export const transformParticipationData = (data: any[]): MissionParticipation[] 
       // Transform user data to match UserProfile type
       const userProfile: UserProfile = {
         id: userId,
-        username: username,
+        username: user.username || 'Unknown User',
         email: user.email,
         avatar: extractAvatarUrl(user)
       };
@@ -66,7 +64,7 @@ export const transformParticipationData = (data: any[]): MissionParticipation[] 
       // Transform mission data to match Mission type
       const missionData: Mission = {
         id: missionId,
-        title: missionTitle,
+        title: mission.title || 'Unknown Mission',
         description: mission.description || '',
         pointsReward: mission.points_reward || 0,
         type: mission.type || 'REVIEW'
@@ -74,7 +72,7 @@ export const transformParticipationData = (data: any[]): MissionParticipation[] 
       
       // Ensure data types match expected MissionParticipation type
       return {
-        id: item.id,
+        id: item.id || '',
         missionId: missionId,
         userId: userId,
         status: item.status || 'PENDING',

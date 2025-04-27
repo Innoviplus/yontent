@@ -1,5 +1,5 @@
 
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useCallback } from 'react';
 import { 
   fetchMissionParticipations,
   fetchMissionParticipationsWithFilters, 
@@ -8,6 +8,7 @@ import {
   updateMissionParticipationStatus
 } from './api/missionParticipationsApi';
 import { ParticipationStatus, MissionParticipation } from './api/types/participationTypes';
+import { toast } from 'sonner';
 
 export type { MissionParticipation } from './api/types/participationTypes';
 
@@ -23,6 +24,7 @@ export const useMissionParticipations = () => {
   // Initial load of participations
   useEffect(() => {
     loadParticipations();
+    
     // Set up auto-refresh interval (every 60 seconds)
     const intervalId = setInterval(() => {
       console.log("Auto-refreshing participations...");
@@ -32,7 +34,7 @@ export const useMissionParticipations = () => {
     return () => clearInterval(intervalId);
   }, []);
 
-  const loadParticipations = async (status?: ParticipationStatus) => {
+  const loadParticipations = useCallback(async (status?: ParticipationStatus) => {
     try {
       setLoading(true);
       setError('');
@@ -54,29 +56,45 @@ export const useMissionParticipations = () => {
       } else {
         console.error('Error response:', response);
         setError(response.error || 'Failed to load participations');
+        toast.error('Failed to load mission participations. Please try again.');
       }
     } catch (error: any) {
       console.error('Error in loadParticipations:', error);
       setError(error.message || 'An error occurred loading participations');
+      toast.error('Error loading mission participations');
     } finally {
       setLoading(false);
     }
-  };
+  }, [filter]);
   
   const refreshParticipations = async (silent: boolean = false) => {
-    if (!silent) setIsRefreshing(true);
+    if (!silent) {
+      setIsRefreshing(true);
+      toast.info('Refreshing participations...');
+    }
     await loadParticipations();
-    if (!silent) setIsRefreshing(false);
+    if (!silent) {
+      setIsRefreshing(false);
+      toast.success('Participations refreshed');
+    }
   };
   
   const handleApproveParticipation = async (id: string): Promise<boolean> => {
     try {
       setProcessingId(id);
+      toast.info('Approving participation...');
       const result = await approveParticipation(id);
       if (result) {
+        toast.success('Participation approved successfully');
         await refreshParticipations();
+      } else {
+        toast.error('Failed to approve participation');
       }
       return result;
+    } catch (error) {
+      console.error('Error approving participation:', error);
+      toast.error('Error occurred while approving participation');
+      return false;
     } finally {
       setProcessingId(null);
     }
@@ -85,11 +103,19 @@ export const useMissionParticipations = () => {
   const handleRejectParticipation = async (id: string): Promise<boolean> => {
     try {
       setProcessingId(id);
+      toast.info('Rejecting participation...');
       const result = await rejectParticipation(id);
       if (result) {
+        toast.success('Participation rejected successfully');
         await refreshParticipations();
+      } else {
+        toast.error('Failed to reject participation');
       }
       return result;
+    } catch (error) {
+      console.error('Error rejecting participation:', error);
+      toast.error('Error occurred while rejecting participation');
+      return false;
     } finally {
       setProcessingId(null);
     }
