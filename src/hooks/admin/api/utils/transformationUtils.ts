@@ -46,17 +46,16 @@ export const transformParticipationData = (data: any[]): MissionParticipation[] 
       // Debug logging for this specific item
       console.log(`Transform item ${item.id}:`, {
         userId,
-        username: user.username,
+        username: user.username || 'Unknown',
         status: item.status,
         submissionData: item.submission_data,
-        createdAt: createdAt.toString(),
-        updatedAt: updatedAt.toString()
+        createdAt: createdAt.toString()
       });
       
       // Transform user data to match UserProfile type
       const userProfile: UserProfile = {
         id: userId,
-        username: user.username || 'Unknown User',
+        username: user.username || `User-${userId.substring(0, 6)}`,
         email: user.email,
         avatar: extractAvatarUrl(user)
       };
@@ -64,8 +63,8 @@ export const transformParticipationData = (data: any[]): MissionParticipation[] 
       // Transform mission data to match Mission type
       const missionData: Mission = {
         id: missionId,
-        title: mission.title || 'Unknown Mission',
-        description: mission.description || '',
+        title: mission.title || `Mission-${missionId.substring(0, 6)}`,
+        description: mission.description || 'No description available',
         pointsReward: mission.points_reward || 0,
         type: mission.type || 'REVIEW'
       };

@@ -37,29 +37,45 @@ export const fetchMissionParticipations = async (): Promise<ApiResponse<MissionP
       fetchMissions(missionIds)
     ]);
     
-    console.log('Fetched user profiles:', userProfiles.length, userProfiles);
-    console.log('Fetched missions:', missions.length, missions);
+    console.log('Fetched user profiles count:', userProfiles.length);
+    console.log('User profiles data:', userProfiles);
+    console.log('Fetched missions count:', missions.length);
+    console.log('Missions data:', missions);
     
     // Create lookup maps
     const userMap = new Map(userProfiles.map(user => [user.id, user]));
     const missionMap = new Map(missions.map(mission => [mission.id, mission]));
     
     // Combine the data
-    const enrichedParticipations = participations.map(participation => ({
-      ...participation,
-      user: userMap.get(participation.user_id) || { 
-        id: participation.user_id,
-        username: 'Unknown User',
-        avatar: null
-      },
-      mission: missionMap.get(participation.mission_id) || {
-        id: participation.mission_id,
-        title: 'Unknown Mission',
-        description: '',
-        pointsReward: 0,
-        type: 'REVIEW'
-      }
-    }));
+    const enrichedParticipations = participations.map(participation => {
+      const userObj = userMap.get(participation.user_id);
+      const missionObj = missionMap.get(participation.mission_id);
+      
+      console.log(`Enriching participation ${participation.id}:`, {
+        userId: participation.user_id,
+        foundUser: !!userObj,
+        userName: userObj?.username || 'Unknown User',
+        missionId: participation.mission_id,
+        foundMission: !!missionObj,
+        missionTitle: missionObj?.title || 'Unknown Mission'
+      });
+      
+      return {
+        ...participation,
+        user: userObj || { 
+          id: participation.user_id,
+          username: 'Unknown User',
+          avatar: null
+        },
+        mission: missionObj || {
+          id: participation.mission_id,
+          title: 'Unknown Mission',
+          description: '',
+          pointsReward: 0,
+          type: 'REVIEW'
+        }
+      };
+    });
     
     console.log('Enriched participations before transform:', enrichedParticipations);
     
@@ -131,30 +147,44 @@ export const fetchMissionParticipationsWithFilters = async (
       fetchMissions(missionIds)
     ]);
     
-    console.log('Fetched user profiles for filter:', userProfiles.length);
+    console.log('Fetched user profiles for filter:', userProfiles.length, userProfiles);
     console.log('Fetched missions for filter:', missions.length);
     
     const userMap = new Map(userProfiles.map(user => [user.id, user]));
     const missionMap = new Map(missions.map(mission => [mission.id, mission]));
     
-    const enrichedParticipations = participations.map(participation => ({
-      ...participation,
-      user: userMap.get(participation.user_id) || {
-        id: participation.user_id,
-        username: 'Unknown User',
-        email: '',
-        avatar: null
-      },
-      mission: missionMap.get(participation.mission_id) || {
-        id: participation.mission_id,
-        title: 'Unknown Mission',
-        description: '',
-        pointsReward: 0,
-        type: 'REVIEW'
-      }
-    }));
+    const enrichedParticipations = participations.map(participation => {
+      const userObj = userMap.get(participation.user_id);
+      const missionObj = missionMap.get(participation.mission_id);
+      
+      console.log(`Processing participation ${participation.id} for filter:`, {
+        userId: participation.user_id,
+        foundUser: !!userObj,
+        userName: userObj?.username || 'Unknown',
+        missionId: participation.mission_id
+      });
+      
+      return {
+        ...participation,
+        user: userObj || {
+          id: participation.user_id,
+          username: 'Unknown User',
+          email: '',
+          avatar: null
+        },
+        mission: missionObj || {
+          id: participation.mission_id,
+          title: 'Unknown Mission',
+          description: '',
+          pointsReward: 0,
+          type: 'REVIEW'
+        }
+      };
+    });
     
     const transformedData = transformParticipationData(enrichedParticipations);
+    
+    console.log('Transformed filtered participations:', transformedData.length, transformedData);
     
     return {
       success: true,

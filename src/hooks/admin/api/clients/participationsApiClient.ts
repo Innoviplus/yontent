@@ -17,6 +17,7 @@ export const fetchParticipationsData = async () => {
     }
     
     console.log('Participation fetch result:', participations ? participations.length : 0, 'records');
+    console.log('Participation raw data:', participations);
     return { success: true, data: participations || [] };
   } catch (error: any) {
     console.error('Exception while fetching participations:', error);
@@ -33,6 +34,7 @@ export const fetchUserProfiles = async (userIds: string[]) => {
   console.log('Fetching profiles for user IDs:', userIds);
   
   try {
+    // First try to get from profiles table
     const { data: userProfiles, error: userError } = await supabase
       .from('profiles')
       .select('id, username, email, avatar')
@@ -44,6 +46,29 @@ export const fetchUserProfiles = async (userIds: string[]) => {
     }
     
     console.log('Fetched profiles result:', userProfiles ? userProfiles.length : 0, 'profiles');
+    console.log('User profiles data:', userProfiles);
+    
+    // Check if any user IDs are missing from the result
+    if (userProfiles) {
+      const returnedIds = new Set(userProfiles.map(p => p.id));
+      const missingIds = userIds.filter(id => !returnedIds.has(id));
+      
+      if (missingIds.length > 0) {
+        console.log('Missing user profiles for IDs:', missingIds);
+        
+        // Create placeholder profiles for missing users
+        const placeholderProfiles = missingIds.map(id => ({
+          id,
+          username: `User-${id.substring(0, 6)}`,
+          email: null,
+          avatar: null
+        }));
+        
+        console.log('Created placeholder profiles:', placeholderProfiles);
+        return [...userProfiles, ...placeholderProfiles];
+      }
+    }
+    
     return userProfiles || [];
   } catch (error: any) {
     console.error('Exception while fetching profiles:', error);
@@ -71,6 +96,29 @@ export const fetchMissions = async (missionIds: string[]) => {
     }
     
     console.log('Fetched missions result:', missions ? missions.length : 0, 'missions');
+    
+    // Check if any mission IDs are missing from the result
+    if (missions) {
+      const returnedIds = new Set(missions.map(m => m.id));
+      const missingIds = missionIds.filter(id => !returnedIds.has(id));
+      
+      if (missingIds.length > 0) {
+        console.log('Missing missions for IDs:', missingIds);
+        
+        // Create placeholder missions for missing IDs
+        const placeholderMissions = missingIds.map(id => ({
+          id,
+          title: `Mission-${id.substring(0, 6)}`,
+          description: 'Mission details not available',
+          type: 'REVIEW',
+          points_reward: 0
+        }));
+        
+        console.log('Created placeholder missions:', placeholderMissions);
+        return [...missions, ...placeholderMissions];
+      }
+    }
+    
     return missions || [];
   } catch (error: any) {
     console.error('Exception while fetching missions:', error);

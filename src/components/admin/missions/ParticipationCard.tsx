@@ -31,7 +31,8 @@ const ParticipationCard: React.FC<ParticipationCardProps> = ({
       .split(' ')
       .map(part => part[0])
       .join('')
-      .toUpperCase();
+      .toUpperCase()
+      .substring(0, 2);
   };
 
   // Format the date properly, ensuring we have a valid Date object
@@ -55,6 +56,8 @@ const ParticipationCard: React.FC<ParticipationCardProps> = ({
   console.log('Rendering card for participation:', {
     id: participation.id,
     userName,
+    userAvatar,
+    userId: participation.userId,
     date: formattedDate,
     status: participation.status,
     createdAt: participation.createdAt
@@ -73,7 +76,7 @@ const ParticipationCard: React.FC<ParticipationCardProps> = ({
                 <AvatarFallback>{getInitials(userName || "")}</AvatarFallback>
               </Avatar>
               <div>
-                <h4 className="font-medium">{userName || "Unknown User"}</h4>
+                <h4 className="font-medium">{userName}</h4>
                 <p className="text-sm text-muted-foreground">
                   {formattedDate}
                 </p>
@@ -84,15 +87,15 @@ const ParticipationCard: React.FC<ParticipationCardProps> = ({
           
           <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
             <div>
-              <h4 className="font-medium mb-1">{missionTitle || "Unknown Mission"}</h4>
+              <h4 className="font-medium mb-1">{missionTitle}</h4>
               <div className="text-sm text-muted-foreground line-clamp-3">
-                {missionDescription || "No description available"}
+                {missionDescription}
               </div>
             </div>
             <div className="flex flex-col space-y-2">
               <div className="flex items-center">
                 <Award className="h-4 w-4 mr-2 text-brand-teal" />
-                <PointsBadge points={missionPointsReward || 0} size="sm" />
+                <PointsBadge points={missionPointsReward} size="sm" />
               </div>
               <div className="flex items-center">
                 <Tag className="h-4 w-4 mr-2" />
