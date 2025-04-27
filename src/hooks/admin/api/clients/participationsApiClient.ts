@@ -8,7 +8,11 @@ export const fetchParticipationsData = async () => {
   try {
     const { data: participations, error: participationsError } = await supabase
       .from('mission_participations')
-      .select('*')
+      .select(`
+        *,
+        user:profiles!mission_participations_user_id_fkey(*),
+        mission:missions!mission_participations_mission_id_fkey(*)
+      `)
       .order('created_at', { ascending: false });
       
     if (participationsError) {
@@ -17,11 +21,27 @@ export const fetchParticipationsData = async () => {
     }
     
     console.log('[fetchParticipationsData] Participation fetch result:', participations ? participations.length : 0, 'records');
+    console.log('[fetchParticipationsData] Raw participations data:', participations);
     
-    // Log all unique user_ids to help debug
     if (participations && participations.length > 0) {
+      // Log detailed information for debugging purposes
+      const missionIds = [...new Set(participations.map(p => p.mission_id))];
       const userIds = [...new Set(participations.map(p => p.user_id))];
-      console.log('[fetchParticipationsData] Unique user_ids in participations:', userIds);
+      
+      console.log('[fetchParticipationsData] Unique mission IDs:', missionIds);
+      console.log('[fetchParticipationsData] Unique user IDs:', userIds);
+      
+      // Check for missing user/mission data
+      const missingUsers = participations.filter(p => !p.user).map(p => p.user_id);
+      const missingMissions = participations.filter(p => !p.mission).map(p => p.mission_id);
+      
+      if (missingUsers.length > 0) {
+        console.warn('[fetchParticipationsData] Missing user data for IDs:', missingUsers);
+      }
+      
+      if (missingMissions.length > 0) {
+        console.warn('[fetchParticipationsData] Missing mission data for IDs:', missingMissions);
+      }
     }
     
     return { success: true, data: participations || [] };
@@ -69,7 +89,7 @@ export const fetchUserProfiles = async (userIds: string[]) => {
             .from('profiles')
             .select('id, username, email, avatar, extended_data')
             .eq('id', missingId)
-            .single();
+            .maybeSingle();
           
           if (singleError) {
             console.error(`[fetchUserProfiles] Error in individual fetch for user ${missingId}:`, singleError);

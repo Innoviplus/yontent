@@ -50,8 +50,8 @@ export const transformParticipationData = (data: any[]): MissionParticipation[] 
       const missionId = item.mission_id || '';
       
       // Make sure dates are properly parsed
-      let createdAt;
-      let updatedAt;
+      let createdAt: Date;
+      let updatedAt: Date;
       
       try {
         createdAt = item.created_at ? new Date(item.created_at) : new Date();
@@ -86,9 +86,11 @@ export const transformParticipationData = (data: any[]): MissionParticipation[] 
         avatar: extractAvatarUrl(user)
       };
       
-      // Ensure mission type is always "REVIEW" or "RECEIPT"
-      // This explicit type assertion ensures we're getting the correct union type
-      const missionType = (mission.type === 'RECEIPT' ? 'RECEIPT' : 'REVIEW') as 'REVIEW' | 'RECEIPT';
+      // Ensure mission type is always "REVIEW" or "RECEIPT" and properly typed
+      const missionTypeValue = mission.type || 'REVIEW';
+      // Validate the mission type and ensure it's one of the allowed values
+      const missionType: 'REVIEW' | 'RECEIPT' = 
+        missionTypeValue === 'RECEIPT' ? 'RECEIPT' : 'REVIEW';
       
       // Transform mission data to match Mission type with fallbacks
       const missionData: Mission = {
@@ -114,9 +116,10 @@ export const transformParticipationData = (data: any[]): MissionParticipation[] 
     } catch (error) {
       console.error('[transformParticipationData] Error transforming participation item:', item, error);
       
-      // Return a minimal valid object in case of error - ensure type is strictly typed
+      // Define a correctly typed fallback mission type
       const fallbackMissionType: 'REVIEW' | 'RECEIPT' = 'REVIEW';
       
+      // Return a minimal valid object in case of error with correct typing
       return {
         id: item.id || 'error-id',
         missionId: item.mission_id || '',
@@ -136,7 +139,7 @@ export const transformParticipationData = (data: any[]): MissionParticipation[] 
           title: 'Error processing mission',
           description: '',
           pointsReward: 0,
-          type: fallbackMissionType // Using the explicitly typed fallback
+          type: fallbackMissionType
         }
       };
     }

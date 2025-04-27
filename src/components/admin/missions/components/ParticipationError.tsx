@@ -1,7 +1,7 @@
 
 import React from 'react';
 import { Button } from '@/components/ui/button';
-import { AlertCircle, RefreshCw, Bug } from 'lucide-react';
+import { AlertCircle, RefreshCw, Bug, Database } from 'lucide-react';
 
 interface ParticipationErrorProps {
   error: string;
@@ -38,6 +38,16 @@ const ParticipationError: React.FC<ParticipationErrorProps> = ({
             >
               <Bug className="h-4 w-4 mr-1" />
               Debug Info
+            </Button>
+            
+            <Button
+              variant="outline"
+              size="sm"
+              className="bg-white hover:bg-blue-50"
+              onClick={() => window.open('https://supabase.com/dashboard/project/qoycoypkyqxrcqdpfqhd/editor', '_blank')}
+            >
+              <Database className="h-4 w-4 mr-1" />
+              View Database
             </Button>
           </div>
         </div>
