@@ -12,7 +12,7 @@ interface ParticipationsTableProps {
 
 const ParticipationsTable = ({ filterStatus }: ParticipationsTableProps) => {
   const [selectedParticipation, setSelectedParticipation] = useState<Participation | null>(null);
-  const { participations, loading, handleUpdateStatus, fetchParticipations } = useParticipations(filterStatus);
+  const { participations, loading, handleUpdateStatus } = useParticipations(filterStatus);
 
   if (loading) {
     return <ParticipationsLoading />;
@@ -32,21 +32,29 @@ const ParticipationsTable = ({ filterStatus }: ParticipationsTableProps) => {
             </TableRow>
           </TableHeader>
           <TableBody>
-            {participations.map((participation) => (
-              <TableRow key={participation.id}>
-                <TableCell>{participation.mission?.title}</TableCell>
-                <TableCell>{participation.profile?.username}</TableCell>
-                <TableCell>{participation.status}</TableCell>
-                <TableCell>{new Date(participation.created_at).toLocaleDateString()}</TableCell>
-                <TableCell>
-                  <ParticipationActions
-                    participation={participation}
-                    onStatusUpdate={handleUpdateStatus}
-                    onReview={setSelectedParticipation}
-                  />
+            {participations.length === 0 ? (
+              <TableRow>
+                <TableCell colSpan={5} className="text-center py-6 text-muted-foreground">
+                  No participations found
                 </TableCell>
               </TableRow>
-            ))}
+            ) : (
+              participations.map((participation) => (
+                <TableRow key={participation.id}>
+                  <TableCell>{participation.mission?.title}</TableCell>
+                  <TableCell>{participation.profile?.username}</TableCell>
+                  <TableCell>{participation.status}</TableCell>
+                  <TableCell>{new Date(participation.created_at).toLocaleDateString()}</TableCell>
+                  <TableCell>
+                    <ParticipationActions
+                      participation={participation}
+                      onStatusUpdate={handleUpdateStatus}
+                      onReview={setSelectedParticipation}
+                    />
+                  </TableCell>
+                </TableRow>
+              ))
+            )}
           </TableBody>
         </Table>
       </div>

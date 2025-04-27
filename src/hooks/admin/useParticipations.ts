@@ -1,5 +1,5 @@
 
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import { supabase } from '@/integrations/supabase/client';
 import { toast } from 'sonner';
 
@@ -30,6 +30,7 @@ export const useParticipations = (filterStatus: string | null) => {
 
   const fetchParticipations = async () => {
     try {
+      setLoading(true);
       let query = supabase
         .from('mission_participations')
         .select(`
@@ -81,6 +82,10 @@ export const useParticipations = (filterStatus: string | null) => {
       setLoading(false);
     }
   };
+
+  useEffect(() => {
+    fetchParticipations();
+  }, [filterStatus]); // Add dependency on filterStatus
 
   const handleUpdateStatus = async (id: string, newStatus: string, participation: Participation) => {
     try {
