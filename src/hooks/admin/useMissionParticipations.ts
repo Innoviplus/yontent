@@ -25,11 +25,11 @@ export const useMissionParticipations = () => {
   useEffect(() => {
     loadParticipations();
     
-    // Set up auto-refresh interval (every 60 seconds)
+    // Set up auto-refresh interval (every 90 seconds)
     const intervalId = setInterval(() => {
       console.log("Auto-refreshing participations...");
       refreshParticipations(true);
-    }, 60000);
+    }, 90000);
     
     return () => clearInterval(intervalId);
   }, []);
@@ -51,17 +51,26 @@ export const useMissionParticipations = () => {
       }
       
       if (response.success && response.participations) {
-        console.log('Setting participations:', response.participations.length, response.participations);
+        console.log('Participations loaded:', response.participations.length);
         setParticipations(response.participations);
       } else {
-        console.error('Error response:', response);
-        setError(response.error || 'Failed to load participations');
-        toast.error('Failed to load mission participations. Please try again.');
+        const errorMessage = response.error || 'Failed to load participations';
+        console.error('Error response:', errorMessage);
+        setError(errorMessage);
+        
+        // Only toast for non-silent refreshes
+        if (loading) {
+          toast.error('Failed to load mission participations');
+        }
       }
     } catch (error: any) {
-      console.error('Error in loadParticipations:', error);
-      setError(error.message || 'An error occurred loading participations');
-      toast.error('Error loading mission participations');
+      const errorMessage = error.message || 'An unexpected error occurred';
+      console.error('Error in loadParticipations:', errorMessage);
+      setError(errorMessage);
+      
+      if (loading) {
+        toast.error('Error loading mission participations');
+      }
     } finally {
       setLoading(false);
     }

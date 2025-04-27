@@ -15,11 +15,8 @@ const ParticipationError: React.FC<ParticipationErrorProps> = ({
   const [showDebugInfo, setShowDebugInfo] = useState(false);
   const supabaseProjectUrl = "https://supabase.com/dashboard/project/qoycoypkyqxrcqdpfqhd";
 
-  // Check if the error is related to the relationship issue
-  const isRelationshipError = error.includes("relationship") && 
-    (error.includes("mission_participations") || error.includes("profiles"));
-  
-  // Check if this might be an RLS issue
+  // Check for common error types
+  const isAmbiguousColumnError = error.includes("column reference") && error.includes("is ambiguous");
   const isRlsError = error.includes("permission") || error.includes("access") || error.includes("violates row-level security");
   
   return (
@@ -30,30 +27,28 @@ const ParticipationError: React.FC<ParticipationErrorProps> = ({
           <h4 className="text-sm font-medium text-red-800 mb-1">Error loading participations</h4>
           <p className="text-red-700 text-sm whitespace-pre-wrap">{error}</p>
           
-          {isRelationshipError && (
+          {isAmbiguousColumnError && (
             <div className="mt-2 p-3 bg-amber-50 border border-amber-200 rounded text-xs text-amber-800">
-              <p className="font-medium mb-1">Relationship Error Detected:</p>
-              <p className="mb-2">This error occurs because Supabase can't find the foreign key relationship between the 'mission_participations' and 'profiles' tables in your database schema.</p>
-              <p className="mb-2">The system is using a multi-query approach to work around this limitation:</p>
+              <p className="font-medium mb-1">Ambiguous Column Error Detected:</p>
+              <p className="mb-2">This error occurs when a column name exists in multiple tables in the query and isn't properly qualified with the table name.</p>
+              <p className="mb-2">The system is using qualified column names to work around this:</p>
               <ul className="list-disc pl-5 mb-2 space-y-1">
-                <li>Fetching mission participations directly</li>
-                <li>Separately fetching user profiles and missions</li>
-                <li>Manually combining the data</li>
-                <li>Creating placeholder data for any missing records</li>
+                <li>Using <code>table_name.column_name</code> syntax in queries</li>
+                <li>Specifying aliases for joined tables</li>
+                <li>Using explicit column selection instead of <code>*</code></li>
               </ul>
-              <p>This approach ensures all submissions are visible regardless of user permissions.</p>
             </div>
           )}
           
           {isRlsError && (
             <div className="mt-2 p-3 bg-amber-50 border border-amber-200 rounded text-xs text-amber-800">
               <p className="font-medium mb-1">Possible Row-Level Security (RLS) Issue:</p>
-              <p className="mb-2">This error may be related to Supabase Row Level Security policies restricting access to records submitted by other users.</p>
-              <p className="mb-2">The system has been updated to bypass these restrictions for admin users by:</p>
+              <p className="mb-2">This error is related to Supabase Row Level Security policies restricting access.</p>
+              <p className="mb-2">Possible solutions:</p>
               <ul className="list-disc pl-5 mb-2 space-y-1">
-                <li>Using separate queries to fetch all data</li>
-                <li>Creating placeholder data for any missing profiles</li>
-                <li>Ensuring all users' submissions are visible in the admin panel</li>
+                <li>Ensure admin users have proper RLS policies</li>
+                <li>The service role key may be needed for admin operations</li>
+                <li>Check that the user has the proper admin role in the user_roles table</li>
               </ul>
             </div>
           )}
@@ -75,16 +70,11 @@ const ParticipationError: React.FC<ParticipationErrorProps> = ({
             <div className="mt-2 p-2 bg-slate-50 border border-slate-200 rounded text-xs">
               <p className="font-mono overflow-x-auto py-1">
                 <Code className="h-3 w-3 inline mr-1" />
-                Error Type: {isRelationshipError ? "Schema Relationship" : isRlsError ? "Possible RLS Issue" : "General Error"}
+                Error Type: {isAmbiguousColumnError ? "Ambiguous Column Reference" : 
+                            isRlsError ? "Possible RLS Issue" : "General Error"}
               </p>
-              <p className="font-mono overflow-x-auto py-1">Tables: mission_participations, profiles</p>
-              <p className="font-mono overflow-x-auto py-1">Expected FK: user_id references profiles(id)</p>
-              {isRlsError && (
-                <p className="font-mono overflow-x-auto py-1">
-                  <Lock className="h-3 w-3 inline mr-1" />
-                  RLS workaround: Using separate queries to bypass restrictions
-                </p>
-              )}
+              <p className="font-mono overflow-x-auto py-1">Affected tables: mission_participations, profiles, missions</p>
+              <p className="font-mono overflow-x-auto py-1">User role check: Try using is_admin() function</p>
             </div>
           )}
           
