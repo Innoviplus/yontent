@@ -196,6 +196,7 @@ export const useAdminPanelState = () => {
     missionsError,
     authLoading,
     isValidAdmin,
-    checkingAdmin
+    checkingAdmin,
+    error: participationsError
   };
 };

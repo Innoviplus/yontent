@@ -7,34 +7,70 @@ export const fetchMissionParticipations = async (): Promise<ApiResponse<MissionP
   try {
     console.log('[fetchMissionParticipations] Fetching mission participations');
     
-    // Use separate query parts for clarity
-    const { data, error } = await supabase
+    // First fetch mission participations
+    const { data: participations, error: participationsError } = await supabase
       .from('mission_participations')
-      .select(`
-        id,
-        mission_id,
-        user_id,
-        status,
-        created_at,
-        updated_at,
-        submission_data,
-        profiles (id, username, email, avatar),
-        missions (id, title, description, points_reward, type)
-      `)
+      .select('*')
       .order('created_at', { ascending: false });
     
-    if (error) {
-      console.error('[fetchMissionParticipations] Error fetching participations:', error);
-      return { success: false, error: error.message };
+    if (participationsError) {
+      console.error('[fetchMissionParticipations] Error fetching participations:', participationsError);
+      return { success: false, error: participationsError.message };
     }
 
-    if (!data || data.length === 0) {
+    if (!participations || participations.length === 0) {
       return { success: true, participations: [] };
     }
+
+    // Extract user IDs and mission IDs for separate queries
+    const userIds = [...new Set(participations.map(p => p.user_id))];
+    const missionIds = [...new Set(participations.map(p => p.mission_id))];
     
-    console.log('[fetchMissionParticipations] Raw data count:', data.length);
+    // Fetch profiles separately
+    const { data: profiles, error: profilesError } = await supabase
+      .from('profiles')
+      .select('id, username, email, avatar')
+      .in('id', userIds);
+      
+    if (profilesError) {
+      console.error('[fetchMissionParticipations] Error fetching profiles:', profilesError);
+      // Continue without profiles instead of failing completely
+    }
     
-    const transformedData = transformParticipationData(data);
+    // Fetch missions separately
+    const { data: missions, error: missionsError } = await supabase
+      .from('missions')
+      .select('id, title, description, points_reward, type')
+      .in('id', missionIds);
+    
+    if (missionsError) {
+      console.error('[fetchMissionParticipations] Error fetching missions:', missionsError);
+      // Continue without missions instead of failing completely
+    }
+    
+    // Create lookup maps for faster access
+    const profilesMap = (profiles || []).reduce((acc, profile) => {
+      acc[profile.id] = profile;
+      return acc;
+    }, {});
+    
+    const missionsMap = (missions || []).reduce((acc, mission) => {
+      acc[mission.id] = mission;
+      return acc;
+    }, {});
+    
+    // Combine the data manually
+    const combinedData = participations.map(participation => {
+      return {
+        ...participation,
+        profiles: profilesMap[participation.user_id] || null,
+        missions: missionsMap[participation.mission_id] || null
+      };
+    });
+    
+    console.log('[fetchMissionParticipations] Raw data count:', combinedData.length);
+    
+    const transformedData = transformParticipationData(combinedData);
     return {
       success: true,
       participations: transformedData
@@ -51,20 +87,10 @@ export const fetchMissionParticipationsWithFilters = async (
   try {
     console.log('[fetchMissionParticipationsWithFilters] Filters:', filters);
 
-    // Build query with standard Supabase join syntax
+    // Build query for participations with filters
     let query = supabase
       .from('mission_participations')
-      .select(`
-        id,
-        mission_id,
-        user_id,
-        status,
-        created_at,
-        updated_at,
-        submission_data,
-        profiles (id, username, email, avatar),
-        missions (id, title, description, points_reward, type)
-      `);
+      .select('*');
 
     // Apply filters
     if (filters.status) {
@@ -90,20 +116,66 @@ export const fetchMissionParticipationsWithFilters = async (
     query = query.order('created_at', { ascending: false });
     
     // Execute the query
-    const { data, error } = await query;
+    const { data: participations, error: participationsError } = await query;
     
-    if (error) {
-      console.error('[fetchMissionParticipationsWithFilters] Error:', error);
-      return { success: false, error: error.message };
+    if (participationsError) {
+      console.error('[fetchMissionParticipationsWithFilters] Error:', participationsError);
+      return { success: false, error: participationsError.message };
     }
 
-    if (!data || data.length === 0) {
+    if (!participations || participations.length === 0) {
       return { success: true, participations: [] };
     }
     
-    console.log('[fetchMissionParticipationsWithFilters] Raw filtered data count:', data.length);
+    // Extract user IDs and mission IDs for separate queries
+    const userIds = [...new Set(participations.map(p => p.user_id))];
+    const missionIds = [...new Set(participations.map(p => p.mission_id))];
     
-    const transformedData = transformParticipationData(data);
+    // Fetch profiles separately
+    const { data: profiles, error: profilesError } = await supabase
+      .from('profiles')
+      .select('id, username, email, avatar')
+      .in('id', userIds);
+      
+    if (profilesError) {
+      console.error('[fetchMissionParticipationsWithFilters] Error fetching profiles:', profilesError);
+      // Continue without profiles
+    }
+    
+    // Fetch missions separately
+    const { data: missions, error: missionsError } = await supabase
+      .from('missions')
+      .select('id, title, description, points_reward, type')
+      .in('id', missionIds);
+    
+    if (missionsError) {
+      console.error('[fetchMissionParticipationsWithFilters] Error fetching missions:', missionsError);
+      // Continue without missions
+    }
+    
+    // Create lookup maps for faster access
+    const profilesMap = (profiles || []).reduce((acc, profile) => {
+      acc[profile.id] = profile;
+      return acc;
+    }, {});
+    
+    const missionsMap = (missions || []).reduce((acc, mission) => {
+      acc[mission.id] = mission;
+      return acc;
+    }, {});
+    
+    // Combine the data manually
+    const combinedData = participations.map(participation => {
+      return {
+        ...participation,
+        profiles: profilesMap[participation.user_id] || null,
+        missions: missionsMap[participation.mission_id] || null
+      };
+    });
+    
+    console.log('[fetchMissionParticipationsWithFilters] Raw filtered data count:', combinedData.length);
+    
+    const transformedData = transformParticipationData(combinedData);
     return {
       success: true,
       participations: transformedData

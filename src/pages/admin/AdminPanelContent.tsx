@@ -101,39 +101,39 @@ const AdminPanelContent = ({ state }: AdminPanelContentProps) => {
       <div className="container mx-auto px-4 pt-28 pb-16 max-w-7xl">
         <div className="flex flex-col gap-8">
           <AdminHeader 
-            isLoadingTooLong={isLoadingTooLong} 
-            handleRetry={handleRetry} 
+            isLoadingTooLong={state.isLoadingTooLong} 
+            handleRetry={state.handleRetry} 
           />
           <AdminTabsContainer
-            activeTab={activeTab}
-            setActiveTab={setActiveTab}
-            rewards={rewards || []}
-            isLoadingRewards={isLoadingRewards && !maxLoadingTime}
-            addReward={addReward}
-            updateReward={updateReward}
-            deleteReward={deleteReward}
-            requests={requests || []}
-            isLoadingRequests={isLoadingRequests && !maxLoadingTime}
-            isRefreshingRequests={isRefreshingRequests}
-            requestsActiveTab={requestsActiveTab}
-            setRequestsActiveTab={setRequestsActiveTab}
-            refreshRequests={refreshRequests}
-            handleApproveRequest={handleApproveRequest}
-            handleRejectRequest={handleRejectRequest}
-            missions={missions || []}
-            isLoadingMissions={isLoadingMissions && !maxLoadingTime}
-            addMission={addMission}
-            updateMission={updateMission}
-            deleteMission={deleteMission}
-            participations={participations || []}
-            isLoadingParticipations={isLoadingParticipations && !maxLoadingTime}
-            isRefreshingParticipations={isRefreshingParticipations}
-            refreshParticipations={refreshParticipations}
-            approveParticipation={approveParticipation}
-            rejectParticipation={rejectParticipation}
-            refreshMissions={tabsRefreshMissions}
-            maxLoadingTime={maxLoadingTime}
-            participationsError={participationsError}
+            activeTab={state.activeTab}
+            setActiveTab={state.setActiveTab}
+            rewards={state.rewards || []}
+            isLoadingRewards={state.isLoadingRewards && !state.maxLoadingTime}
+            addReward={state.addReward}
+            updateReward={state.updateReward}
+            deleteReward={state.deleteReward}
+            requests={state.requests || []}
+            isLoadingRequests={state.isLoadingRequests && !state.maxLoadingTime}
+            isRefreshingRequests={state.isRefreshingRequests}
+            requestsActiveTab={state.requestsActiveTab}
+            setRequestsActiveTab={state.setRequestsActiveTab}
+            refreshRequests={state.refreshRequests}
+            handleApproveRequest={state.handleApproveRequest}
+            handleRejectRequest={state.handleRejectRequest}
+            missions={state.missions || []}
+            isLoadingMissions={state.isLoadingMissions && !state.maxLoadingTime}
+            addMission={state.addMission}
+            updateMission={state.updateMission}
+            deleteMission={state.deleteMission}
+            participations={state.participations || []}
+            isLoadingParticipations={state.isLoadingParticipations && !state.maxLoadingTime}
+            isRefreshingParticipations={state.isRefreshingParticipations}
+            refreshParticipations={state.refreshParticipations}
+            approveParticipation={state.approveParticipation}
+            rejectParticipation={state.rejectParticipation}
+            refreshMissions={state.refreshMissions}
+            maxLoadingTime={state.maxLoadingTime}
+            participationsError={state.error || state.participationsError}
           />
         </div>
       </div>

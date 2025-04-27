@@ -16,7 +16,7 @@ export const useMissionParticipations = () => {
   const [participations, setParticipations] = useState<MissionParticipation[]>([]);
   const [loading, setLoading] = useState(true);
   const [isRefreshing, setIsRefreshing] = useState(false);
-  const [error, setError] = useState('');
+  const [error, setError] = useState<string | null>(null);
   const [filter, setFilter] = useState<ParticipationStatus | null>(null);
   const [selectedParticipation, setSelectedParticipation] = useState<MissionParticipation | null>(null);
   const [processingId, setProcessingId] = useState<string | null>(null);
@@ -37,7 +37,7 @@ export const useMissionParticipations = () => {
   const loadParticipations = useCallback(async (status?: ParticipationStatus) => {
     try {
       setLoading(true);
-      setError('');
+      setError(null);
       
       console.log('Loading participations with filter:', status || filter);
 
@@ -59,7 +59,7 @@ export const useMissionParticipations = () => {
         setError(errorMessage);
         
         // Only toast for non-silent refreshes
-        if (loading) {
+        if (!isRefreshing) {
           toast.error('Failed to load mission participations');
         }
       }
@@ -68,7 +68,7 @@ export const useMissionParticipations = () => {
       console.error('Error in loadParticipations:', errorMessage);
       setError(errorMessage);
       
-      if (loading) {
+      if (!isRefreshing) {
         toast.error('Error loading mission participations');
       }
     } finally {
