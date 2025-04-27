@@ -4,7 +4,7 @@ import { Mission } from '@/lib/types';
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from '@/components/ui/dialog';
 import { Tabs, TabsList, TabsTrigger, TabsContent } from '@/components/ui/tabs';
 import MissionInfo from './MissionInfo';
-import { TipsSquare } from 'lucide-react';
+import { AlertCircle } from 'lucide-react';
 
 interface MissionDialogProps {
   mission: Mission;
@@ -36,7 +36,7 @@ const MissionDialog = ({ mission, isOpen, onClose, onUpdated }: MissionDialogPro
           <TabsContent value="requirements" className="mt-4">
             <div className="p-4 border rounded-md bg-gray-50">
               <div className="flex items-start space-x-2">
-                <TipsSquare className="h-5 w-5 text-amber-500 mt-0.5" />
+                <AlertCircle className="h-5 w-5 text-amber-500 mt-0.5" />
                 <div>
                   <h4 className="font-medium">Submission Requirements</h4>
                   <p className="text-sm text-gray-600 mt-1">

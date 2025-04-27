@@ -1,3 +1,4 @@
+
 import { Tabs, TabsList, TabsTrigger, TabsContent } from '@/components/ui/tabs';
 import RewardsManagement from '@/components/admin/rewards/RewardsManagement';
 import RequestsManagement from '@/components/admin/rewards/RequestsManagement';
@@ -94,9 +95,11 @@ const AdminTabsContainer = ({
       <MissionsManagement
         missions={missions}
         isLoading={isLoadingMissions && !maxLoadingTime}
-        onAdd={addMission}
-        onUpdate={updateMission}
-        onDelete={deleteMission}
+        addMission={addMission}
+        updateMission={updateMission}
+        deleteMission={deleteMission}
+        refreshMissions={refreshMissions}
+        maxLoadingTime={maxLoadingTime}
       />
     </TabsContent>
     
