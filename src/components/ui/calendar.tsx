@@ -1,10 +1,11 @@
+
 import * as React from "react";
 import { ChevronLeft, ChevronRight } from "lucide-react";
-import { DayPicker, DropdownProps, CaptionProps } from "react-day-picker";
-
+import { DayPicker } from "react-day-picker";
 import { cn } from "@/lib/utils";
 import { buttonVariants } from "@/components/ui/button";
-import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
+import { CalendarCaption } from "../calendar/CalendarCaption";
+import { useCalendarNavigation } from "@/hooks/useCalendarNavigation";
 
 export type CalendarProps = React.ComponentProps<typeof DayPicker> & {
   month?: Date;
@@ -21,17 +22,17 @@ function Calendar({
   onYearSelect,
   ...props
 }: CalendarProps) {
-  // Internal state to keep track of current display month
-  const [currentMonth, setCurrentMonth] = React.useState<Date | undefined>(
-    month || props.defaultMonth || new Date()
-  );
-  
-  // Update internal state when external month prop changes
-  React.useEffect(() => {
-    if (month) {
-      setCurrentMonth(month);
-    }
-  }, [month]);
+  const {
+    currentMonth,
+    setCurrentMonth,
+    handleMonthChange,
+    handleYearChange
+  } = useCalendarNavigation({
+    month,
+    onMonthChange: props.onMonthChange,
+    onMonthSelect,
+    onYearSelect
+  });
 
   return (
     <DayPicker
@@ -51,8 +52,7 @@ function Calendar({
         nav_button_next: "absolute right-1",
         table: "w-full border-collapse space-y-1",
         head_row: "flex",
-        head_cell:
-          "text-muted-foreground rounded-md w-9 font-normal text-[0.8rem]",
+        head_cell: "text-muted-foreground rounded-md w-9 font-normal text-[0.8rem]",
         row: "flex w-full mt-2",
         cell: "h-9 w-9 text-center text-sm p-0 relative [&:has([aria-selected].day-range-end)]:rounded-r-md [&:has([aria-selected].day-outside)]:bg-accent/50 [&:has([aria-selected])]:bg-accent first:[&:has([aria-selected])]:rounded-l-md last:[&:has([aria-selected])]:rounded-r-md focus-within:relative focus-within:z-20",
         day: cn(
@@ -60,164 +60,25 @@ function Calendar({
           "h-9 w-9 p-0 font-normal aria-selected:opacity-100"
         ),
         day_range_end: "day-range-end",
-        day_selected:
-          "bg-primary text-primary-foreground hover:bg-primary hover:text-primary-foreground focus:bg-primary focus:text-primary-foreground",
+        day_selected: "bg-primary text-primary-foreground hover:bg-primary hover:text-primary-foreground focus:bg-primary focus:text-primary-foreground",
         day_today: "bg-accent text-accent-foreground",
-        day_outside:
-          "day-outside text-muted-foreground opacity-50 aria-selected:bg-accent/50 aria-selected:text-muted-foreground aria-selected:opacity-30",
+        day_outside: "day-outside text-muted-foreground opacity-50 aria-selected:bg-accent/50 aria-selected:text-muted-foreground aria-selected:opacity-30",
         day_disabled: "text-muted-foreground opacity-50",
-        day_range_middle:
-          "aria-selected:bg-accent aria-selected:text-accent-foreground",
+        day_range_middle: "aria-selected:bg-accent aria-selected:text-accent-foreground",
         day_hidden: "invisible",
         ...classNames,
       }}
       components={{
-        IconLeft: ({ ..._props }) => <ChevronLeft className="h-4 w-4" />,
-        IconRight: ({ ..._props }) => <ChevronRight className="h-4 w-4" />,
-        Dropdown: (props: DropdownProps) => {
-          const { value, onChange, children, ...rest } = props;
-          // Convert value to string for Select component
-          const stringValue = String(value);
-          
-          return (
-            <Select
-              value={stringValue}
-              onValueChange={(newValue) => {
-                // Create a synthetic event to satisfy the onChange prop type
-                const syntheticEvent = {
-                  target: {
-                    value: newValue,
-                    name: props.name
-                  },
-                  currentTarget: {
-                    value: newValue,
-                    name: props.name
-                  },
-                  preventDefault: () => {},
-                  stopPropagation: () => {}
-                } as React.ChangeEvent<HTMLSelectElement>;
-                
-                onChange?.(syntheticEvent);
-              }}
-            >
-              <SelectTrigger className="w-[90px] focus:ring-0">
-                <SelectValue>{stringValue}</SelectValue>
-              </SelectTrigger>
-              <SelectContent>
-                {React.Children.map(children as React.ReactElement[], (child) => (
-                  <SelectItem value={child.props.value.toString()}>{child.props.children}</SelectItem>
-                ))}
-              </SelectContent>
-            </Select>
-          );
-        },
-        Caption: ({ displayMonth, id, ...captionProps }: CaptionProps) => {
-          // Get the onMonthChange and onSelect prop from the parent props
-          const calendarProps = props as any;
-          
-          // Create handler functions for month and year changes
-          const handleMonthChange = (monthStr: string) => {
-            console.log("Month changed to:", monthStr);
-            const monthNum = parseInt(monthStr);
-            
-            // Update internal state
-            if (currentMonth) {
-              const newDate = new Date(currentMonth);
-              newDate.setMonth(monthNum);
-              setCurrentMonth(newDate);
-            }
-            
-            // Call the custom month select handler if provided
-            if (onMonthSelect) {
-              onMonthSelect(monthNum);
-            }
-            
-            // Call the parent's onMonthChange if provided
-            if (calendarProps.onMonthChange) {
-              const newDate = new Date(displayMonth);
-              newDate.setMonth(monthNum);
-              console.log("Calling onMonthChange with:", newDate);
-              calendarProps.onMonthChange(newDate);
-            }
-          };
-          
-          const handleYearChange = (yearStr: string) => {
-            console.log("Year changed to:", yearStr);
-            const yearNum = parseInt(yearStr);
-            
-            // Update internal state
-            if (currentMonth) {
-              const newDate = new Date(currentMonth);
-              newDate.setFullYear(yearNum);
-              setCurrentMonth(newDate);
-            }
-            
-            // Call the custom year select handler if provided
-            if (onYearSelect) {
-              onYearSelect(yearNum);
-            }
-            
-            // Call the parent's onMonthChange if provided
-            if (calendarProps.onMonthChange) {
-              const newDate = new Date(displayMonth);
-              newDate.setFullYear(yearNum);
-              console.log("Calling onMonthChange with:", newDate);
-              calendarProps.onMonthChange(newDate);
-            }
-          };
-
-          return (
-            <div className="flex justify-center space-x-2 py-1 w-full">
-              {displayMonth && (
-                <>
-                  {/* Month dropdown */}
-                  <Select 
-                    value={displayMonth.getMonth().toString()} 
-                    onValueChange={handleMonthChange}
-                  >
-                    <SelectTrigger className="w-[90px] focus:ring-0">
-                      <SelectValue>
-                        {displayMonth.toLocaleString('default', { month: 'long' })}
-                      </SelectValue>
-                    </SelectTrigger>
-                    <SelectContent>
-                      {Array.from({ length: 12 }, (_, i) => (
-                        <SelectItem key={i} value={i.toString()}>
-                          {new Date(0, i).toLocaleString('default', { month: 'long' })}
-                        </SelectItem>
-                      ))}
-                    </SelectContent>
-                  </Select>
-                  
-                  {/* Year dropdown */}
-                  <Select 
-                    value={displayMonth.getFullYear().toString()} 
-                    onValueChange={handleYearChange}
-                  >
-                    <SelectTrigger className="w-[90px] focus:ring-0">
-                      <SelectValue>
-                        {displayMonth.getFullYear()}
-                      </SelectValue>
-                    </SelectTrigger>
-                    <SelectContent>
-                      {Array.from(
-                        { length: 121 }, // 2024 to 1904 = 121 years
-                        (_, i) => {
-                          const year = 2024 - i;
-                          return (
-                            <SelectItem key={year} value={year.toString()}>
-                              {year}
-                            </SelectItem>
-                          );
-                        }
-                      )}
-                    </SelectContent>
-                  </Select>
-                </>
-              )}
-            </div>
-          );
-        }
+        IconLeft: () => <ChevronLeft className="h-4 w-4" />,
+        IconRight: () => <ChevronRight className="h-4 w-4" />,
+        Caption: (captionProps) => (
+          <CalendarCaption
+            {...captionProps}
+            onMonthSelect={onMonthSelect}
+            onYearSelect={onYearSelect}
+            onMonthChange={props.onMonthChange}
+          />
+        )
       }}
       month={currentMonth}
       onMonthChange={(newMonth) => {
