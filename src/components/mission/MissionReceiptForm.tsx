@@ -1,5 +1,5 @@
 
-import { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { toast } from 'sonner';
 import { supabase } from '@/integrations/supabase/client';
@@ -90,7 +90,7 @@ const MissionReceiptForm = ({ mission, userId }: MissionReceiptFormProps) => {
   };
 
   // Clean up preview URLs when component unmounts
-  React.useEffect(() => {
+  useEffect(() => {
     return () => {
       previewUrls.forEach(url => URL.revokeObjectURL(url));
     };
@@ -144,3 +144,4 @@ const MissionReceiptForm = ({ mission, userId }: MissionReceiptFormProps) => {
 };
 
 export default MissionReceiptForm;
+
