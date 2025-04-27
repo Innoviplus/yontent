@@ -1,10 +1,10 @@
-
 import { useEffect, useState } from 'react';
 import { Table, TableHeader, TableRow, TableHead, TableBody, TableCell } from '@/components/ui/table';
 import { Button } from '@/components/ui/button';
 import { Check, X, Search, Loader2 } from 'lucide-react';
 import { toast } from 'sonner';
 import { supabase } from '@/integrations/supabase/client';
+import SubmissionReviewDialog from './SubmissionReviewDialog';
 
 interface Participation {
   id: string;
@@ -14,6 +14,8 @@ interface Participation {
   created_at: string;
   mission: {
     title: string;
+    type: string;
+    points_reward: number;
   };
   profile?: {
     username: string;
@@ -21,6 +23,7 @@ interface Participation {
   submission_data: {
     receipt_images?: string[];
     review_content?: string;
+    review_id?: string;
   };
 }
 
@@ -31,6 +34,7 @@ interface ParticipationsTableProps {
 const ParticipationsTable = ({ filterStatus }: ParticipationsTableProps) => {
   const [participations, setParticipations] = useState<Participation[]>([]);
   const [loading, setLoading] = useState(true);
+  const [selectedParticipation, setSelectedParticipation] = useState<Participation | null>(null);
 
   const fetchParticipations = async () => {
     try {
@@ -38,7 +42,7 @@ const ParticipationsTable = ({ filterStatus }: ParticipationsTableProps) => {
         .from('mission_participations')
         .select(`
           *,
-          mission:missions(title)
+          mission:missions(title, type, points_reward)
         `)
         .order('created_at', { ascending: false });
 
@@ -50,19 +54,15 @@ const ParticipationsTable = ({ filterStatus }: ParticipationsTableProps) => {
 
       if (error) throw error;
       
-      // Process data and fetch usernames separately since the relation doesn't exist
       const processedData = await Promise.all((data || []).map(async (participation) => {
-        // Fetch the username from profiles table based on user_id
         const { data: profileData } = await supabase
           .from('profiles')
           .select('username')
           .eq('id', participation.user_id)
           .single();
         
-        // Convert submission_data from Json to the expected type structure
         const submissionData = participation.submission_data as any || {};
         
-        // Create properly typed participation object
         return {
           id: participation.id,
           mission_id: participation.mission_id,
@@ -75,7 +75,8 @@ const ParticipationsTable = ({ filterStatus }: ParticipationsTableProps) => {
           },
           submission_data: {
             receipt_images: submissionData.receipt_images || [],
-            review_content: submissionData.review_content || ''
+            review_content: submissionData.review_content || '',
+            review_id: submissionData.review_id || ''
           }
         } as Participation;
       }));
@@ -89,14 +90,38 @@ const ParticipationsTable = ({ filterStatus }: ParticipationsTableProps) => {
     }
   };
 
-  const handleUpdateStatus = async (id: string, newStatus: string) => {
+  const handleUpdateStatus = async (id: string, newStatus: string, participation: Participation) => {
     try {
-      const { error } = await supabase
+      const { error: updateError } = await supabase
         .from('mission_participations')
         .update({ status: newStatus })
         .eq('id', id);
 
-      if (error) throw error;
+      if (updateError) throw updateError;
+
+      if (newStatus === 'APPROVED') {
+        const pointAmount = participation.mission.points_reward;
+        
+        const { error: transactionError } = await supabase
+          .from('point_transactions')
+          .insert({
+            user_id: participation.user_id,
+            amount: pointAmount,
+            type: 'EARNED',
+            description: `Earned ${pointAmount} points for completing mission: ${participation.mission.title}`
+          });
+
+        if (transactionError) throw transactionError;
+
+        const { error: pointsError } = await supabase.rpc('increment_points', {
+          user_id_param: participation.user_id,
+          points_amount_param: pointAmount
+        });
+
+        if (pointsError) throw pointsError;
+
+        toast.success(`Awarded ${pointAmount} points to ${participation.profile?.username}`);
+      }
 
       toast.success(`Submission ${newStatus.toLowerCase()}`);
       fetchParticipations();
@@ -119,57 +144,69 @@ const ParticipationsTable = ({ filterStatus }: ParticipationsTableProps) => {
   }
 
   return (
-    <div className="rounded-md border">
-      <Table>
-        <TableHeader>
-          <TableRow>
-            <TableHead>Mission</TableHead>
-            <TableHead>User</TableHead>
-            <TableHead>Status</TableHead>
-            <TableHead>Submitted</TableHead>
-            <TableHead>Actions</TableHead>
-          </TableRow>
-        </TableHeader>
-        <TableBody>
-          {participations.map((participation) => (
-            <TableRow key={participation.id}>
-              <TableCell>{participation.mission?.title}</TableCell>
-              <TableCell>{participation.profile?.username}</TableCell>
-              <TableCell>{participation.status}</TableCell>
-              <TableCell>{new Date(participation.created_at).toLocaleDateString()}</TableCell>
-              <TableCell>
-                <div className="flex gap-2">
-                  {participation.status === 'PENDING' && (
-                    <>
-                      <Button
-                        size="sm"
-                        variant="outline"
-                        onClick={() => handleUpdateStatus(participation.id, 'APPROVED')}
-                      >
-                        <Check className="h-4 w-4 mr-1" />
-                        Approve
-                      </Button>
-                      <Button
-                        size="sm"
-                        variant="outline"
-                        onClick={() => handleUpdateStatus(participation.id, 'REJECTED')}
-                      >
-                        <X className="h-4 w-4 mr-1" />
-                        Reject
-                      </Button>
-                    </>
-                  )}
-                  <Button size="sm" variant="outline">
-                    <Search className="h-4 w-4 mr-1" />
-                    Review
-                  </Button>
-                </div>
-              </TableCell>
+    <>
+      <div className="rounded-md border">
+        <Table>
+          <TableHeader>
+            <TableRow>
+              <TableHead>Mission</TableHead>
+              <TableHead>User</TableHead>
+              <TableHead>Status</TableHead>
+              <TableHead>Submitted</TableHead>
+              <TableHead>Actions</TableHead>
             </TableRow>
-          ))}
-        </TableBody>
-      </Table>
-    </div>
+          </TableHeader>
+          <TableBody>
+            {participations.map((participation) => (
+              <TableRow key={participation.id}>
+                <TableCell>{participation.mission?.title}</TableCell>
+                <TableCell>{participation.profile?.username}</TableCell>
+                <TableCell>{participation.status}</TableCell>
+                <TableCell>{new Date(participation.created_at).toLocaleDateString()}</TableCell>
+                <TableCell>
+                  <div className="flex gap-2">
+                    {participation.status === 'PENDING' && (
+                      <>
+                        <Button
+                          size="sm"
+                          variant="outline"
+                          onClick={() => handleUpdateStatus(participation.id, 'APPROVED', participation)}
+                        >
+                          <Check className="h-4 w-4 mr-1" />
+                          Approve
+                        </Button>
+                        <Button
+                          size="sm"
+                          variant="outline"
+                          onClick={() => handleUpdateStatus(participation.id, 'REJECTED', participation)}
+                        >
+                          <X className="h-4 w-4 mr-1" />
+                          Reject
+                        </Button>
+                      </>
+                    )}
+                    <Button 
+                      size="sm" 
+                      variant="outline"
+                      onClick={() => setSelectedParticipation(participation)}
+                    >
+                      <Search className="h-4 w-4 mr-1" />
+                      Review
+                    </Button>
+                  </div>
+                </TableCell>
+              </TableRow>
+            ))}
+          </TableBody>
+        </Table>
+      </div>
+
+      <SubmissionReviewDialog
+        isOpen={!!selectedParticipation}
+        onClose={() => setSelectedParticipation(null)}
+        participation={selectedParticipation || undefined}
+      />
+    </>
   );
 };
 
