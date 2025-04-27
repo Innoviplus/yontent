@@ -17,7 +17,6 @@ export const CalendarCaption: React.FC<CalendarCaptionProps> = ({
 }) => {
   const context = useDayPicker();
   
-  // If we don't have a valid context or month, don't render the component
   if (!context || !context.month) {
     return null;
   }
@@ -37,10 +36,7 @@ export const CalendarCaption: React.FC<CalendarCaptionProps> = ({
       onMonthChange(newDate);
     }
     
-    // Correctly use the context's method to navigate to the new month
-    if (context.toMonth) {
-      context.toMonth(newDate);
-    }
+    context.goToMonth?.(newDate);
   };
   
   const handleYearChange = (value: string) => {
@@ -56,10 +52,7 @@ export const CalendarCaption: React.FC<CalendarCaptionProps> = ({
       onMonthChange(newDate);
     }
     
-    // Correctly use the context's method to navigate to the new month
-    if (context.toMonth) {
-      context.toMonth(newDate);
-    }
+    context.goToMonth?.(newDate);
   };
 
   return (
