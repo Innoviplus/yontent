@@ -16,7 +16,7 @@ interface DatePickerProps {
 export function DatePicker({ value, onChange, placeholder = "Select date" }: DatePickerProps) {
   // Track the current month in the calendar view
   const [calendarMonth, setCalendarMonth] = React.useState<Date | undefined>(
-    value || undefined
+    value || new Date()
   );
 
   const handleMonthChange = (date: Date) => {

@@ -5,7 +5,6 @@ import { DayPicker } from "react-day-picker";
 import { cn } from "@/lib/utils";
 import { buttonVariants } from "@/components/ui/button";
 import { CalendarCaption } from "../calendar/CalendarCaption";
-import { useCalendarNavigation } from "@/hooks/useCalendarNavigation";
 
 export type CalendarProps = React.ComponentProps<typeof DayPicker> & {
   month?: Date;
@@ -22,17 +21,16 @@ function Calendar({
   onYearSelect,
   ...props
 }: CalendarProps) {
-  const {
-    currentMonth,
-    setCurrentMonth,
-    handleMonthChange,
-    handleYearChange
-  } = useCalendarNavigation({
-    month,
-    onMonthChange: props.onMonthChange,
-    onMonthSelect,
-    onYearSelect
-  });
+  const [currentMonth, setCurrentMonth] = React.useState<Date>(
+    month || new Date()
+  );
+
+  // Update internal state when month prop changes
+  React.useEffect(() => {
+    if (month) {
+      setCurrentMonth(month);
+    }
+  }, [month]);
 
   return (
     <DayPicker
@@ -75,7 +73,12 @@ function Calendar({
           <CalendarCaption
             onMonthSelect={onMonthSelect}
             onYearSelect={onYearSelect}
-            onMonthChange={props.onMonthChange}
+            onMonthChange={(newMonth) => {
+              setCurrentMonth(newMonth);
+              if (props.onMonthChange) {
+                props.onMonthChange(newMonth);
+              }
+            }}
           />
         )
       }}
