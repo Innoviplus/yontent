@@ -7,19 +7,19 @@ export const fetchMissionParticipations = async (): Promise<ApiResponse<MissionP
   try {
     console.log('[fetchMissionParticipations] Fetching mission participations');
     
-    // Use explicit table aliases and fully qualified column references to avoid ambiguity
+    // Use separate query parts for clarity
     const { data, error } = await supabase
       .from('mission_participations')
       .select(`
         id,
-        mission_participations.mission_id,
-        mission_participations.user_id,
-        mission_participations.status,
-        mission_participations.created_at,
-        mission_participations.updated_at,
-        mission_participations.submission_data,
-        profiles:mission_participations.user_id(id, username, email, avatar),
-        missions:mission_participations.mission_id(id, title, description, points_reward, type)
+        mission_id,
+        user_id,
+        status,
+        created_at,
+        updated_at,
+        submission_data,
+        profiles (id, username, email, avatar),
+        missions (id, title, description, points_reward, type)
       `)
       .order('created_at', { ascending: false });
     
@@ -51,19 +51,19 @@ export const fetchMissionParticipationsWithFilters = async (
   try {
     console.log('[fetchMissionParticipationsWithFilters] Filters:', filters);
 
-    // Build query with explicit table references
+    // Build query with standard Supabase join syntax
     let query = supabase
       .from('mission_participations')
       .select(`
         id,
-        mission_participations.mission_id,
-        mission_participations.user_id,
-        mission_participations.status,
-        mission_participations.created_at,
-        mission_participations.updated_at,
-        mission_participations.submission_data,
-        profiles:mission_participations.user_id(id, username, email, avatar),
-        missions:mission_participations.mission_id(id, title, description, points_reward, type)
+        mission_id,
+        user_id,
+        status,
+        created_at,
+        updated_at,
+        submission_data,
+        profiles (id, username, email, avatar),
+        missions (id, title, description, points_reward, type)
       `);
 
     // Apply filters
