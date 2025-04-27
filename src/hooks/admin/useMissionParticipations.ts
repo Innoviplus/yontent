@@ -74,7 +74,7 @@ export const useMissionParticipations = () => {
     } finally {
       setLoading(false);
     }
-  }, [filter]);
+  }, [filter, isRefreshing]);
   
   const refreshParticipations = async (silent: boolean = false) => {
     if (!silent) {

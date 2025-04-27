@@ -7,10 +7,18 @@ export const fetchMissionParticipations = async (): Promise<ApiResponse<MissionP
   try {
     console.log('[fetchMissionParticipations] Fetching mission participations');
     
-    // First fetch mission participations
+    // First fetch mission participations with explicit column qualifiers
     const { data: participations, error: participationsError } = await supabase
       .from('mission_participations')
-      .select('*')
+      .select(`
+        id,
+        mission_participations.mission_id,
+        mission_participations.user_id,
+        mission_participations.status,
+        mission_participations.created_at,
+        mission_participations.updated_at,
+        mission_participations.submission_data
+      `)
       .order('created_at', { ascending: false });
     
     if (participationsError) {
@@ -87,10 +95,18 @@ export const fetchMissionParticipationsWithFilters = async (
   try {
     console.log('[fetchMissionParticipationsWithFilters] Filters:', filters);
 
-    // Build query for participations with filters
+    // Build query for participations with filters and explicit column qualifiers
     let query = supabase
       .from('mission_participations')
-      .select('*');
+      .select(`
+        id,
+        mission_participations.mission_id,
+        mission_participations.user_id,
+        mission_participations.status,
+        mission_participations.created_at,
+        mission_participations.updated_at,
+        mission_participations.submission_data
+      `);
 
     // Apply filters
     if (filters.status) {
