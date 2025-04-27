@@ -1,7 +1,7 @@
 
 import React from 'react';
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from '@/components/ui/dialog';
-import { MissionParticipation } from '@/hooks/admin/types/missionParticipationTypes';
+import { MissionParticipation } from '@/hooks/admin/api/types/participationTypes';
 import ParticipationUserInfo from './dialog/ParticipationUserInfo';
 import MissionInfo from './dialog/MissionInfo';
 import SubmissionContent from './dialog/SubmissionContent';
@@ -35,24 +35,24 @@ const ParticipationDetailsDialog: React.FC<ParticipationDetailsDialogProps> = ({
         
         <div className="space-y-4 mt-4">
           <ParticipationUserInfo 
-            userName={participation.userName}
-            userAvatar={participation.userAvatar}
+            userName={participation.user.username}
+            userAvatar={participation.user.avatar}
             createdAt={participation.createdAt}
             status={participation.status}
           />
           
           <MissionInfo 
-            title={participation.missionTitle}
-            description={participation.missionDescription}
-            pointsReward={participation.missionPointsReward}
-            missionType={participation.missionType}
+            title={participation.mission.title}
+            description={participation.mission.description}
+            pointsReward={participation.mission.pointsReward}
+            missionType={participation.mission.type}
           />
           
           <div className="border-t pt-4">
             <h4 className="font-medium mb-3">Submission Content:</h4>
             
             <SubmissionContent 
-              missionType={participation.missionType}
+              missionType={participation.mission.type}
               submissionData={participation.submissionData}
               openReviewLink={openReviewLink}
             />

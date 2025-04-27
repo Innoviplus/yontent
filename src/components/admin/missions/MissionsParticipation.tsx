@@ -9,7 +9,7 @@ import {
 } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Loader2, RefreshCw, Zap } from 'lucide-react';
-import { MissionParticipation } from '@/hooks/admin/useMissionParticipations';
+import { MissionParticipation } from '@/hooks/admin/api/types/participationTypes';
 import ParticipationsLoadingState from './ParticipationsLoadingState';
 import ParticipationCard from './ParticipationCard';
 import ParticipationDetailsDialog from './ParticipationDetailsDialog';

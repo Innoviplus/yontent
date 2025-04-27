@@ -1,6 +1,6 @@
 
 import React from 'react';
-import { Award, Tag } from 'lucide-react';
+import { Award } from 'lucide-react';
 import PointsBadge from '@/components/PointsBadge';
 
 interface MissionInfoProps {
@@ -17,21 +17,19 @@ const MissionInfo: React.FC<MissionInfoProps> = ({
   missionType
 }) => {
   return (
-    <div className="border rounded-md p-4 bg-muted/30">
-      <h3 className="font-medium text-lg mb-2">{title}</h3>
-      <p className="text-muted-foreground mb-4">{description}</p>
-      
-      <div className="grid grid-cols-2 gap-4 text-sm mb-4">
-        <div className="flex items-center">
-          <Award className="h-4 w-4 mr-2 text-brand-teal" />
-          <span>Reward: </span>
-          <PointsBadge points={pointsReward || 0} size="sm" className="ml-1" />
-        </div>
-        <div className="flex items-center">
-          <Tag className="h-4 w-4 mr-2" />
-          <span>Type: {missionType === 'RECEIPT' ? 'Receipt Submission' : 'Review'}</span>
+    <div className="bg-muted/30 p-4 rounded-md">
+      <div className="flex justify-between mb-2">
+        <h4 className="font-medium">Mission Info</h4>
+        <div className="flex items-center gap-2">
+          <Award className="h-4 w-4 text-yellow-600" />
+          <PointsBadge points={pointsReward} size="sm" />
         </div>
       </div>
+      <h3 className="font-semibold mb-2">{title}</h3>
+      <p className="text-sm mb-2">{description}</p>
+      <p className="text-xs text-muted-foreground">
+        Mission Type: {missionType === 'RECEIPT' ? 'Receipt Submission' : 'Review'}
+      </p>
     </div>
   );
 };

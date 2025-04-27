@@ -1,17 +1,13 @@
 
 import React from 'react';
+import { Button } from '@/components/ui/button';
+import { ExternalLink } from 'lucide-react';
 import ReceiptImageGallery from './ReceiptImageGallery';
 import ReviewSubmissionContent from './ReviewSubmissionContent';
 
 interface SubmissionContentProps {
   missionType: string;
-  submissionData: {
-    receipt_images?: string[];
-    review_id?: string;
-    review_images?: string[];
-    review_url?: string;
-    submission_type?: 'RECEIPT' | 'REVIEW'; // Made optional to match the type
-  } | null;
+  submissionData: any;
   openReviewLink: (reviewId: string) => void;
 }
 
@@ -21,24 +17,42 @@ const SubmissionContent: React.FC<SubmissionContentProps> = ({
   openReviewLink
 }) => {
   if (!submissionData) {
-    return <p className="text-muted-foreground">No submission content available</p>;
+    return <p className="text-muted-foreground italic">No submission data available</p>;
   }
 
-  if (missionType === 'RECEIPT' && submissionData.receipt_images?.length) {
-    return <ReceiptImageGallery images={submissionData.receipt_images} />;
-  } 
-  
-  if (missionType === 'REVIEW' && submissionData.review_id) {
+  if (missionType === 'RECEIPT') {
     return (
-      <ReviewSubmissionContent 
-        reviewId={submissionData.review_id}
-        reviewImages={submissionData.review_images}
-        openReviewLink={openReviewLink}
-      />
+      <div>
+        <h5 className="font-medium mb-2">Receipt Submission:</h5>
+        <ReceiptImageGallery 
+          images={submissionData?.receipt_images || []} 
+        />
+      </div>
     );
   }
 
-  return <p className="text-muted-foreground">No submission content available</p>;
+  return (
+    <div>
+      <div className="flex justify-between mb-2">
+        <h5 className="font-medium">Review Submission:</h5>
+        {submissionData?.review_id && (
+          <Button
+            variant="outline"
+            size="sm"
+            onClick={() => openReviewLink(submissionData.review_id)}
+            className="flex items-center gap-1"
+          >
+            <ExternalLink className="h-4 w-4" />
+            <span>View Review</span>
+          </Button>
+        )}
+      </div>
+      <ReviewSubmissionContent 
+        reviewId={submissionData?.review_id} 
+        reviewImages={submissionData?.review_images || []}
+      />
+    </div>
+  );
 };
 
 export default SubmissionContent;
