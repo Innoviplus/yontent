@@ -58,10 +58,12 @@ export async function checkIsAdmin(user_id: string): Promise<boolean> {
 // Returns all users with their roles
 export async function fetchAllUsersWithRoles() {
   try {
-    // Get all users (profiles: id, username, email)
+    // Get all users (profiles: id, username, email) excluding ghost accounts
     const { data: profiles, error } = await supabase
       .from("profiles")
       .select("id, username, email")
+      .not('username', 'is', null)  // Exclude profiles without usernames
+      .not('username', 'eq', 'Anonymous')  // Exclude Anonymous users
       .limit(200);
 
     if (error || !profiles) {
