@@ -1,4 +1,3 @@
-
 import { supabase } from '@/integrations/supabase/client';
 import { grantAdminRole } from '@/services/admin/users';
 import { toast } from 'sonner';
