@@ -2,6 +2,7 @@ import { useState, useEffect } from 'react';
 import { Mission } from '@/lib/types';
 import { supabase } from '@/integrations/supabase/client';
 import { toast } from 'sonner';
+import { fetchMissionParticipationCount } from '@/services/mission';
 
 export type SortOption = 'recent' | 'expiringSoon' | 'highestReward';
 
@@ -20,24 +21,15 @@ export const useMissionsList = () => {
     try {
       console.log("Fetching participation counts for missions:", missionIds);
       
-      // Make separate count request for each mission_id to get accurate counts
       const countPromises = missionIds.map(async (missionId) => {
-        const { count, error } = await supabase
-          .from('mission_participations')
-          .select('*', { count: 'exact', head: true })
-          .eq('mission_id', missionId);
-          
-        return { missionId, count: count || 0, error };
+        const count = await fetchMissionParticipationCount(missionId);
+        return { missionId, count };
       });
       
       const results = await Promise.all(countPromises);
       
-      // Convert results to a record object
       const countsMap: Record<string, number> = {};
       results.forEach(result => {
-        if (result.error) {
-          console.error(`Error counting participations for mission ${result.missionId}:`, result.error);
-        }
         countsMap[result.missionId] = result.count;
       });
       

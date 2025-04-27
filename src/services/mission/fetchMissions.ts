@@ -72,6 +72,7 @@ export const fetchMissionParticipationCount = async (missionId: string): Promise
       .eq('mission_id', missionId);
       
     if (error) {
+      console.error(`Error fetching mission participation count: ${error.message}`);
       throw error;
     }
     
