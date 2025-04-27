@@ -24,28 +24,39 @@ export const extractAvatarUrl = (profileData: any): string | null => {
 export const transformParticipationData = (data: any[]): MissionParticipation[] => {
   console.log('Transforming participation data:', data);
   
+  if (!Array.isArray(data)) {
+    console.error('Expected array for transformParticipationData but got:', typeof data);
+    return [];
+  }
+  
   return data.map(item => {
-    // For direct join queries, the data structure is different
+    // Handle user data
     const user = item.user || {};
+    const userId = item.user_id || '';
+    const username = user.username || 'Anonymous';
+    
+    // Handle mission data
     const mission = item.mission || {};
+    const missionId = item.mission_id || '';
+    const missionTitle = mission.title || 'Unknown Mission';
     
     return {
       id: item.id,
-      missionId: item.mission_id,
-      userId: item.user_id,
+      missionId: missionId,
+      userId: userId,
       status: item.status,
       createdAt: item.created_at,
       updatedAt: item.updated_at,
       submissionData: item.submission_data,
       user: {
-        id: user.id || item.user_id,
-        username: user.username || 'Anonymous',
+        id: user.id || userId,
+        username: username,
         email: user.email,
         avatar: extractAvatarUrl(user)
       },
       mission: {
-        id: mission.id || item.mission_id,
-        title: mission.title || 'Unknown Mission',
+        id: mission.id || missionId,
+        title: missionTitle,
         description: mission.description || '',
         pointsReward: mission.points_reward || 0,
         type: mission.type || 'REVIEW'

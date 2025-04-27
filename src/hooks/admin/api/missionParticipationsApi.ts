@@ -19,10 +19,10 @@ export const fetchMissionParticipations = async (): Promise<ApiResponse<MissionP
   try {
     console.log('Fetching all mission participations');
     
-    // Use a direct query to fetch participations
+    // First fetch the mission participations
     const { data: participations, error: participationsError } = await supabase
       .from('mission_participations')
-      .select('*, mission:missions(*), user:profiles(*)')
+      .select('*')
       .order('created_at', { ascending: false });
       
     if (participationsError) {
@@ -37,11 +37,54 @@ export const fetchMissionParticipations = async (): Promise<ApiResponse<MissionP
     }
     
     console.log('Found participations:', participations.length);
-    console.log('Raw participations data:', participations);
+    
+    // Fetch associated user profiles
+    const userIds = [...new Set(participations.map(p => p.user_id))];
+    const { data: userProfiles, error: userError } = await supabase
+      .from('profiles')
+      .select('id, username, email, avatar')
+      .in('id', userIds);
+    
+    if (userError) {
+      console.error('Error fetching user profiles:', userError);
+      // Continue with partial data
+    }
+    
+    // Fetch associated missions
+    const missionIds = [...new Set(participations.map(p => p.mission_id))];
+    const { data: missions, error: missionsError } = await supabase
+      .from('missions')
+      .select('id, title, description, type, points_reward')
+      .in('id', missionIds);
+    
+    if (missionsError) {
+      console.error('Error fetching missions:', missionsError);
+      // Continue with partial data
+    }
+    
+    // Create lookup maps for faster access
+    const userMap = new Map();
+    userProfiles?.forEach(user => userMap.set(user.id, user));
+    
+    const missionMap = new Map();
+    missions?.forEach(mission => missionMap.set(mission.id, mission));
+    
+    // Combine the data
+    const enrichedParticipations = participations.map(participation => {
+      const user = userMap.get(participation.user_id) || {};
+      const mission = missionMap.get(participation.mission_id) || {};
+      
+      return {
+        ...participation,
+        user,
+        mission
+      };
+    });
+    
+    console.log('Enriched participations data:', enrichedParticipations);
     
     // Transform the data into the expected format
-    const transformedData = transformParticipationData(participations);
-    console.log('Transformed participations data:', transformedData);
+    const transformedData = transformParticipationData(enrichedParticipations);
     
     return {
       success: true,
@@ -62,10 +105,10 @@ export const fetchMissionParticipationsWithFilters = async (
   try {
     console.log('Fetching mission participations with filters:', filters);
     
-    // Base query for participations with direct joins
+    // Base query for participations
     let query = supabase
       .from('mission_participations')
-      .select('*, mission:missions(*), user:profiles(*)');
+      .select('*');
 
     // Apply filters
     if (filters.status) {
@@ -104,12 +147,53 @@ export const fetchMissionParticipationsWithFilters = async (
       return { success: true, participations: [] };
     }
     
-    console.log('Found filtered participations:', participations.length);
-    console.log('Raw filtered participations:', participations);
+    // Fetch associated user profiles
+    const userIds = [...new Set(participations.map(p => p.user_id))];
+    const { data: userProfiles, error: userError } = await supabase
+      .from('profiles')
+      .select('id, username, email, avatar')
+      .in('id', userIds);
+    
+    if (userError) {
+      console.error('Error fetching user profiles for filtered participations:', userError);
+      // Continue with partial data
+    }
+    
+    // Fetch associated missions
+    const missionIds = [...new Set(participations.map(p => p.mission_id))];
+    const { data: missions, error: missionsError } = await supabase
+      .from('missions')
+      .select('id, title, description, type, points_reward')
+      .in('id', missionIds);
+    
+    if (missionsError) {
+      console.error('Error fetching missions for filtered participations:', missionsError);
+      // Continue with partial data
+    }
+    
+    // Create lookup maps for faster access
+    const userMap = new Map();
+    userProfiles?.forEach(user => userMap.set(user.id, user));
+    
+    const missionMap = new Map();
+    missions?.forEach(mission => missionMap.set(mission.id, mission));
+    
+    // Combine the data
+    const enrichedParticipations = participations.map(participation => {
+      const user = userMap.get(participation.user_id) || {};
+      const mission = missionMap.get(participation.mission_id) || {};
+      
+      return {
+        ...participation,
+        user,
+        mission
+      };
+    });
+    
+    console.log('Enriched filtered participations:', enrichedParticipations);
     
     // Transform the data into the expected format
-    const transformedData = transformParticipationData(participations);
-    console.log('Transformed filtered participations data:', transformedData);
+    const transformedData = transformParticipationData(enrichedParticipations);
     
     return {
       success: true,
