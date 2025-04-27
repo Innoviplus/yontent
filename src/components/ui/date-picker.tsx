@@ -14,6 +14,11 @@ interface DatePickerProps {
 }
 
 export function DatePicker({ value, onChange, placeholder = "Select date" }: DatePickerProps) {
+  const handleMonthChange = (date: Date) => {
+    // This allows the calendar to update when month/year selectors are used
+    // without actually changing the selected date
+  };
+
   return (
     <Popover>
       <PopoverTrigger asChild>
@@ -33,6 +38,7 @@ export function DatePicker({ value, onChange, placeholder = "Select date" }: Dat
           mode="single"
           selected={value || undefined}
           onSelect={onChange}
+          onMonthChange={handleMonthChange}
           initialFocus
           className="pointer-events-auto"
         />

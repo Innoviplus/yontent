@@ -29,7 +29,7 @@ interface AdminTabsContainerProps {
   addMission: any;
   updateMission: any;
   deleteMission: any;
-  refreshMissions: () => void;
+  refreshMissions: () => Promise<void>;
   maxLoadingTime: boolean;
 }
 
