@@ -58,13 +58,26 @@ const ParticipationsTable = ({ filterStatus }: ParticipationsTableProps) => {
           .select('username')
           .eq('id', participation.user_id)
           .single();
-          
+        
+        // Convert submission_data from Json to the expected type structure
+        const submissionData = participation.submission_data as any || {};
+        
+        // Create properly typed participation object
         return {
-          ...participation,
+          id: participation.id,
+          mission_id: participation.mission_id,
+          user_id: participation.user_id,
+          status: participation.status,
+          created_at: participation.created_at,
+          mission: participation.mission,
           profile: {
             username: profileData?.username || 'Unknown User'
+          },
+          submission_data: {
+            receipt_images: submissionData.receipt_images || [],
+            review_content: submissionData.review_content || ''
           }
-        };
+        } as Participation;
       }));
       
       setParticipations(processedData);
