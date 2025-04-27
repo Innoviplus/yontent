@@ -26,6 +26,7 @@ const ParticipationCard: React.FC<ParticipationCardProps> = ({
   openReviewLink
 }) => {
   const getInitials = (name: string) => {
+    if (!name) return "??";
     return name
       .split(' ')
       .map(part => part[0])
@@ -33,10 +34,21 @@ const ParticipationCard: React.FC<ParticipationCardProps> = ({
       .toUpperCase();
   };
 
-  // Format the date properly
-  const formattedDate = participation.createdAt instanceof Date 
+  // Format the date properly, ensuring we have a valid Date object
+  const formattedDate = (participation.createdAt instanceof Date) 
     ? participation.createdAt.toLocaleDateString() 
-    : new Date(participation.createdAt).toLocaleDateString();
+    : (typeof participation.createdAt === 'string' 
+        ? new Date(participation.createdAt).toLocaleDateString()
+        : 'Unknown date');
+
+  // Log for debugging
+  console.log('Rendering card for participation:', {
+    id: participation.id,
+    userName: participation.userName,
+    date: formattedDate,
+    status: participation.status,
+    createdAt: participation.createdAt
+  });
 
   return (
     <Card key={participation.id} className="overflow-hidden">
@@ -46,12 +58,12 @@ const ParticipationCard: React.FC<ParticipationCardProps> = ({
             <div className="flex items-center gap-2">
               <Avatar className="h-10 w-10">
                 {participation.userAvatar ? (
-                  <AvatarImage src={participation.userAvatar} alt={participation.userName} />
+                  <AvatarImage src={participation.userAvatar} alt={participation.userName || ""} />
                 ) : null}
                 <AvatarFallback>{getInitials(participation.userName || "")}</AvatarFallback>
               </Avatar>
               <div>
-                <h4 className="font-medium">{participation.userName}</h4>
+                <h4 className="font-medium">{participation.userName || "Unknown User"}</h4>
                 <p className="text-sm text-muted-foreground">
                   {formattedDate}
                 </p>
@@ -62,9 +74,9 @@ const ParticipationCard: React.FC<ParticipationCardProps> = ({
           
           <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
             <div>
-              <h4 className="font-medium mb-1">{participation.missionTitle}</h4>
+              <h4 className="font-medium mb-1">{participation.missionTitle || "Unknown Mission"}</h4>
               <div className="text-sm text-muted-foreground line-clamp-3">
-                {participation.missionDescription}
+                {participation.missionDescription || "No description available"}
               </div>
             </div>
             <div className="flex flex-col space-y-2">
@@ -96,6 +108,7 @@ const ParticipationCard: React.FC<ParticipationCardProps> = ({
                         openReviewLink(reviewId);
                       }
                     }}
+                    disabled={!participation.submissionData?.review_id}
                   >
                     <ExternalLink className="h-4 w-4 mr-2" />
                     <span>View Review</span>

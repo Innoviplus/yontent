@@ -22,7 +22,7 @@ export const extractAvatarUrl = (profileData: any): string | null => {
 };
 
 export const transformParticipationData = (data: any[]): MissionParticipation[] => {
-  console.log('Transforming participation data:', data);
+  console.log('transformParticipationData input:', data);
   
   if (!Array.isArray(data)) {
     console.error('Expected array for transformParticipationData but got:', typeof data);
@@ -30,41 +30,65 @@ export const transformParticipationData = (data: any[]): MissionParticipation[] 
   }
   
   return data.map(item => {
-    // Handle user data
-    const user = item.user || {};
-    const userId = item.user_id || '';
-    const username = user.username || 'Anonymous';
-    
-    // Handle mission data
-    const mission = item.mission || {};
-    const missionId = item.mission_id || '';
-    const missionTitle = mission.title || 'Unknown Mission';
-    
-    // Ensure dates are properly converted to Date objects
-    const createdAt = item.created_at ? new Date(item.created_at) : new Date();
-    const updatedAt = item.updated_at ? new Date(item.updated_at) : new Date();
-    
-    return {
-      id: item.id,
-      missionId: missionId,
-      userId: userId,
-      status: item.status,
-      createdAt: createdAt,
-      updatedAt: updatedAt,
-      submissionData: item.submission_data,
-      user: {
-        id: user.id || userId,
+    try {
+      // Handle user data
+      const user = item.user || {};
+      const userId = item.user_id || '';
+      const username = user.username || 'Unknown User';
+      
+      // Handle mission data
+      const mission = item.mission || {};
+      const missionId = item.mission_id || '';
+      const missionTitle = mission.title || 'Unknown Mission';
+      
+      // Make sure dates are properly parsed to Date objects
+      const createdAt = item.created_at ? new Date(item.created_at) : new Date();
+      const updatedAt = item.updated_at ? new Date(item.updated_at) : new Date();
+      
+      // Debug logging for this specific item
+      console.log(`Transform item ${item.id}:`, {
+        userId,
         username: username,
-        email: user.email,
-        avatar: extractAvatarUrl(user)
-      },
-      mission: {
-        id: mission.id || missionId,
-        title: missionTitle,
-        description: mission.description || '',
-        pointsReward: mission.points_reward || 0,
-        type: mission.type || 'REVIEW'
-      }
-    };
+        status: item.status,
+        submissionData: item.submission_data,
+        createdAt: createdAt.toString(),
+        updatedAt: updatedAt.toString()
+      });
+      
+      // Ensure data types match expected MissionParticipation type
+      return {
+        id: item.id,
+        missionId: missionId,
+        userId: userId,
+        status: item.status || 'PENDING',
+        createdAt: createdAt,
+        updatedAt: updatedAt,
+        submissionData: item.submission_data || null,
+        userName: username,
+        userAvatar: extractAvatarUrl(user),
+        missionTitle: missionTitle,
+        missionDescription: mission.description || '',
+        missionPointsReward: mission.points_reward || 0,
+        missionType: mission.type || 'REVIEW'
+      };
+    } catch (error) {
+      console.error('Error transforming participation item:', item, error);
+      // Return a minimal valid object in case of error
+      return {
+        id: item.id || 'error-id',
+        missionId: item.mission_id || '',
+        userId: item.user_id || '',
+        status: item.status || 'PENDING',
+        createdAt: new Date(),
+        updatedAt: new Date(),
+        submissionData: null,
+        userName: 'Error processing user',
+        userAvatar: null,
+        missionTitle: 'Error processing mission',
+        missionDescription: '',
+        missionPointsReward: 0,
+        missionType: 'REVIEW'
+      };
+    }
   });
 };

@@ -19,7 +19,7 @@ export const fetchMissionParticipations = async (): Promise<ApiResponse<MissionP
   try {
     console.log('Fetching all mission participations');
     
-    // First fetch the mission participations
+    // First fetch the mission participations with more verbose logging
     const { data: participations, error: participationsError } = await supabase
       .from('mission_participations')
       .select('*')
@@ -36,10 +36,12 @@ export const fetchMissionParticipations = async (): Promise<ApiResponse<MissionP
       return { success: true, participations: [] };
     }
     
-    console.log('Found participations:', participations.length);
+    console.log('Found raw participations:', participations.length, participations);
     
     // Fetch associated user profiles
     const userIds = [...new Set(participations.map(p => p.user_id))];
+    console.log('Fetching profiles for user IDs:', userIds);
+    
     const { data: userProfiles, error: userError } = await supabase
       .from('profiles')
       .select('id, username, email, avatar')
@@ -50,8 +52,12 @@ export const fetchMissionParticipations = async (): Promise<ApiResponse<MissionP
       // Continue with partial data
     }
     
+    console.log('Found user profiles:', userProfiles?.length, userProfiles);
+    
     // Fetch associated missions
     const missionIds = [...new Set(participations.map(p => p.mission_id))];
+    console.log('Fetching missions for mission IDs:', missionIds);
+    
     const { data: missions, error: missionsError } = await supabase
       .from('missions')
       .select('id, title, description, type, points_reward')
@@ -62,17 +68,42 @@ export const fetchMissionParticipations = async (): Promise<ApiResponse<MissionP
       // Continue with partial data
     }
     
+    console.log('Found missions:', missions?.length, missions);
+    
     // Create lookup maps for faster access
     const userMap = new Map();
-    userProfiles?.forEach(user => userMap.set(user.id, user));
+    userProfiles?.forEach(user => {
+      console.log('Mapping user:', user.id, user.username);
+      userMap.set(user.id, user);
+    });
     
     const missionMap = new Map();
-    missions?.forEach(mission => missionMap.set(mission.id, mission));
+    missions?.forEach(mission => {
+      console.log('Mapping mission:', mission.id, mission.title);
+      missionMap.set(mission.id, mission);
+    });
     
-    // Combine the data
+    // Combine the data - ensure we include all participations even if user/mission data is missing
     const enrichedParticipations = participations.map(participation => {
-      const user = userMap.get(participation.user_id) || {};
-      const mission = missionMap.get(participation.mission_id) || {};
+      const user = userMap.get(participation.user_id) || { 
+        username: 'Unknown User',
+        avatar: null
+      };
+      
+      const mission = missionMap.get(participation.mission_id) || {
+        title: 'Unknown Mission',
+        description: '',
+        points_reward: 0,
+        type: 'REVIEW'
+      };
+      
+      console.log(`Enriching participation ${participation.id}:`, {
+        userId: participation.user_id,
+        userName: user.username,
+        missionId: participation.mission_id,
+        missionTitle: mission.title,
+        status: participation.status
+      });
       
       return {
         ...participation,
@@ -81,10 +112,12 @@ export const fetchMissionParticipations = async (): Promise<ApiResponse<MissionP
       };
     });
     
-    console.log('Enriched participations data:', enrichedParticipations);
+    console.log('Enriched participations data (before transform):', enrichedParticipations);
     
     // Transform the data into the expected format
     const transformedData = transformParticipationData(enrichedParticipations);
+    
+    console.log('Final transformed participations:', transformedData);
     
     return {
       success: true,

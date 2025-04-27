@@ -50,28 +50,8 @@ export const useMissionParticipations = () => {
       }
       
       if (response.success && response.participations) {
-        console.log('Setting participations:', response.participations);
-        
-        // Map the API response to our component format
-        const mappedParticipations: MissionParticipation[] = response.participations.map((p: any) => {
-          return {
-            id: p.id,
-            userId: p.userId,
-            missionId: p.missionId,
-            status: p.status,
-            submissionData: p.submissionData,
-            createdAt: p.createdAt,
-            updatedAt: p.updatedAt,
-            userName: p.user?.username || 'Anonymous',
-            userAvatar: p.user?.avatar,
-            missionTitle: p.mission?.title || 'Unknown Mission',
-            missionDescription: p.mission?.description || '',
-            missionPointsReward: p.mission?.pointsReward || 0,
-            missionType: p.mission?.type || 'REVIEW'
-          };
-        });
-        
-        setParticipations(mappedParticipations);
+        console.log('Setting participations:', response.participations.length, response.participations);
+        setParticipations(response.participations);
       } else {
         console.error('Error response:', response);
         setError(response.error || 'Failed to load participations');
@@ -90,7 +70,7 @@ export const useMissionParticipations = () => {
     if (!silent) setIsRefreshing(false);
   };
   
-  const handleApproveParticipation = async (id: string) => {
+  const handleApproveParticipation = async (id: string): Promise<boolean> => {
     try {
       setProcessingId(id);
       const result = await approveParticipation(id);
@@ -103,7 +83,7 @@ export const useMissionParticipations = () => {
     }
   };
 
-  const handleRejectParticipation = async (id: string) => {
+  const handleRejectParticipation = async (id: string): Promise<boolean> => {
     try {
       setProcessingId(id);
       const result = await rejectParticipation(id);
