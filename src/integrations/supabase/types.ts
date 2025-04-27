@@ -492,6 +492,10 @@ export type Database = {
         Args: { review_id: string }
         Returns: undefined
       }
+      is_admin: {
+        Args: { user_id: string }
+        Returns: boolean
+      }
       update_avatar_url: {
         Args: { user_id: string; avatar_url: string }
         Returns: undefined

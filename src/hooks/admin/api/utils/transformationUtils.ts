@@ -29,27 +29,10 @@ export const transformParticipationData = (data: any[]): MissionParticipation[] 
     return [];
   }
   
-  // Log all the user information before transformation to help debug
-  console.log('[transformParticipationData] User IDs in data:',
-    data.map(item => ({
-      userId: item.user_id,
-      username: item.user?.username || 'Unknown',
-      hasUserObject: !!item.user
-    }))
-  );
-
   const transformedData = data.map(item => {
     try {
-      // Make sure user data exists with default values if missing
-      const user = item.user || {};
-      const userId = item.user_id || '';
-      
       // Special handling for YY123 user to ensure they're properly displayed
-      const isYY123User = userId === '02ff323c-a2d7-45ed-9bdc-a1d5580aba93';
-      
-      // Make sure mission data exists with default values if missing
-      const mission = item.mission || {};
-      const missionId = item.mission_id || '';
+      const isYY123User = item.user_id === '02ff323c-a2d7-45ed-9bdc-a1d5580aba93';
       
       // Make sure dates are properly parsed
       let createdAt: Date;
@@ -69,30 +52,27 @@ export const transformParticipationData = (data: any[]): MissionParticipation[] 
         updatedAt = new Date();
       }
       
-      // Create a dummy username based on user_id if username is missing
-      const fallbackUsername = isYY123User ? 'YY123' : (userId ? `User-${userId.substring(0, 6)}` : 'Unknown User');
-      const username = user.username || fallbackUsername;
+      // Get user profile from profiles object or use fallback
+      const userProfile = item.profiles || {};
+      const userId = item.user_id || '';
+      const username = userProfile.username || (isYY123User ? 'YY123' : `User-${userId.substring(0, 6)}`);
       
-      console.log(`[transformParticipationData] Processing item ${item.id}:`, {
-        userId,
-        username,
-        submissionData: item.submission_data,
-        status: item.status
-      });
+      // Get mission from missions object or use fallback
+      const mission = item.missions || {};
+      const missionId = item.mission_id || '';
       
       // Transform user data to match UserProfile type with fallbacks
-      const userProfile: UserProfile = {
+      const user: UserProfile = {
         id: userId,
         username: username,
-        email: user.email || '',
-        avatar: extractAvatarUrl(user)
+        email: userProfile.email || '',
+        avatar: userProfile.avatar || null
       };
       
-      // Get the mission type string value from the mission object
+      // Get the mission type string value with fallback
       let missionTypeValue = mission.type || 'REVIEW';
       
       // Validate and ensure the mission type is one of the allowed values
-      // This explicitly handles the TypeScript union type requirement
       const validMissionType: 'REVIEW' | 'RECEIPT' = 
         missionTypeValue === 'RECEIPT' ? 'RECEIPT' : 'REVIEW';
       
@@ -114,7 +94,7 @@ export const transformParticipationData = (data: any[]): MissionParticipation[] 
         createdAt: createdAt,
         updatedAt: updatedAt,
         submissionData: item.submission_data || null,
-        user: userProfile,
+        user: user,
         mission: missionData
       };
     } catch (error) {
@@ -146,12 +126,6 @@ export const transformParticipationData = (data: any[]): MissionParticipation[] 
       };
     }
   });
-  
-  console.log('[transformParticipationData] Transformed data length:', transformedData.length);
-  
-  if (transformedData.length > 0) {
-    console.log('[transformParticipationData] First transformed item sample:', transformedData[0]);
-  }
   
   return transformedData;
 };
