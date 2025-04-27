@@ -14,6 +14,16 @@ interface DatePickerProps {
 }
 
 export function DatePicker({ value, onChange, placeholder = "Select date" }: DatePickerProps) {
+  // Track the current month in the calendar view
+  const [calendarMonth, setCalendarMonth] = React.useState<Date | undefined>(
+    value || new Date()
+  );
+
+  const handleMonthChange = (date: Date) => {
+    // Update the calendar view without changing the selected date
+    setCalendarMonth(date);
+  };
+
   return (
     <Popover>
       <PopoverTrigger asChild>
@@ -33,7 +43,10 @@ export function DatePicker({ value, onChange, placeholder = "Select date" }: Dat
           mode="single"
           selected={value || undefined}
           onSelect={onChange}
+          onMonthChange={handleMonthChange}
+          month={calendarMonth}
           initialFocus
+          className="pointer-events-auto"
         />
       </PopoverContent>
     </Popover>

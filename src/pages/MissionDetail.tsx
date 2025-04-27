@@ -38,6 +38,29 @@ const MissionDetail = () => {
     initializeMissionService();
   }, []);
 
+  // Function to fetch participation count
+  const fetchParticipationCount = async (missionId: string) => {
+    try {
+      console.log(`Fetching participation count for mission ${missionId}`);
+      
+      const { count, error } = await supabase
+        .from('mission_participations')
+        .select('*', { count: 'exact', head: true })
+        .eq('mission_id', missionId);
+        
+      if (error) {
+        throw error;
+      }
+      
+      console.log(`Found ${count || 0} participations for mission ${missionId}`);
+      setCurrentSubmissions(count || 0);
+      return count;
+    } catch (error) {
+      console.error('Error fetching participation count:', error);
+      return 0;
+    }
+  };
+
   useEffect(() => {
     const fetchMission = async () => {
       if (!id) return;
@@ -96,18 +119,8 @@ const MissionDetail = () => {
             setParticipationStatus(participationData.status);
           }
           
-          // Get total submissions count for this mission - count ALL submissions regardless of status
-          const { count, error: countError } = await supabase
-            .from('mission_participations')
-            .select('*', { count: 'exact', head: true })
-            .eq('mission_id', id);
-            
-          if (countError) {
-            console.error('Error counting submissions:', countError);
-          } else {
-            console.log(`Found ${count} submissions for mission ${id}`);
-            setCurrentSubmissions(count || 0);
-          }
+          // Fetch the total participation count for this mission
+          await fetchParticipationCount(id);
         }
       } catch (error) {
         console.error('Error fetching mission:', error);

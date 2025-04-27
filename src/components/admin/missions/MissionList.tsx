@@ -14,6 +14,7 @@ interface MissionListProps {
   onDelete: (id: string) => void;
   onToggleStatus?: (mission: Mission) => Promise<boolean>;
   onDuplicate?: (mission: Mission) => void;
+  onMissionClick?: (mission: Mission) => void;
 }
 
 const MissionList: React.FC<MissionListProps> = ({ 
@@ -21,7 +22,8 @@ const MissionList: React.FC<MissionListProps> = ({
   onEdit, 
   onDelete,
   onToggleStatus,
-  onDuplicate 
+  onDuplicate,
+  onMissionClick 
 }) => {
   const getMissionStatusColor = (status: string, expiresAt?: Date) => {
     if (status === 'DRAFT') return 'bg-gray-200 text-gray-800';
@@ -61,6 +63,12 @@ const MissionList: React.FC<MissionListProps> = ({
     }
   };
 
+  const handleCardClick = (mission: Mission) => {
+    if (onMissionClick) {
+      onMissionClick(mission);
+    }
+  };
+
   return (
     <div className="space-y-4">
       {missions.length === 0 ? (
@@ -73,7 +81,11 @@ const MissionList: React.FC<MissionListProps> = ({
         </Card>
       ) : (
         missions.map((mission) => (
-          <Card key={mission.id} className="overflow-hidden">
+          <Card 
+            key={mission.id} 
+            className="overflow-hidden hover:shadow-md transition-shadow cursor-pointer"
+            onClick={() => handleCardClick(mission)}
+          >
             <CardHeader className="pb-2">
               <div className="flex justify-between items-start">
                 <div className="flex-1">
@@ -97,7 +109,7 @@ const MissionList: React.FC<MissionListProps> = ({
                     )}
                   </CardDescription>
                 </div>
-                <div className="flex space-x-2">
+                <div className="flex space-x-2" onClick={e => e.stopPropagation()}>
                   {onToggleStatus && mission.status !== 'COMPLETED' && (
                     <Button 
                       variant="outline" 

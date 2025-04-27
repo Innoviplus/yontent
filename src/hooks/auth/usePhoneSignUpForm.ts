@@ -8,7 +8,9 @@ import { zodResolver } from '@hookform/resolvers/zod';
 import * as z from 'zod';
 
 export const phoneSignUpSchema = z.object({
-  phone: z.string().min(1, 'Phone number is required'),
+  phone: z.string()
+    .min(1, 'Phone number is required')
+    .regex(/^\+65[689][0-9]{7}$/, 'Please enter a valid Singapore mobile number (+65XXXXXXXX)'),
   username: z.string().min(3, 'Username must be at least 3 characters'),
   email: z.string().email('Please enter a valid email address'),
   password: z.string()

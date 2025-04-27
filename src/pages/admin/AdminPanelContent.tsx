@@ -11,52 +11,13 @@ interface AdminPanelContentProps {
 }
 
 const AdminPanelContent = ({ state }: AdminPanelContentProps) => {
-  const {
-    maxLoadingTime,
-    handleRetry,
-    isLoading,
-    retryCount,
-    missionsError,
-    refreshMissions,
-    shouldShowContent,
-    isLoadingTooLong,
-    activeTab,
-    setActiveTab,
-    rewards,
-    isLoadingRewards,
-    addReward,
-    updateReward,
-    deleteReward,
-    requests,
-    isLoadingRequests,
-    isRefreshingRequests,
-    requestsActiveTab,
-    setRequestsActiveTab,
-    refreshRequests,
-    handleApproveRequest,
-    handleRejectRequest,
-    missions,
-    isLoadingMissions,
-    addMission,
-    updateMission,
-    deleteMission,
-    participations,
-    isLoadingParticipations,
-    isRefreshingParticipations,
-    refreshParticipations,
-    approveParticipation,
-    rejectParticipation,
-    refreshMissions: tabsRefreshMissions,
-    participationsError,
-  } = state;
-
-  if (isLoading && !maxLoadingTime && retryCount <= 1) {
+  if (state.isLoading && !state.maxLoadingTime && state.retryCount <= 1) {
     return (
-      <AdminPanelLoadingState retryCount={retryCount} handleRetry={handleRetry} />
+      <AdminPanelLoadingState retryCount={state.retryCount} handleRetry={state.handleRetry} />
     );
   }
 
-  if (missionsError && !maxLoadingTime && retryCount <= 1) {
+  if (state.missionsError && !state.maxLoadingTime && state.retryCount <= 1) {
     return (
       <div className="min-h-screen bg-gray-50">
         <Navbar />
@@ -66,11 +27,11 @@ const AdminPanelContent = ({ state }: AdminPanelContentProps) => {
               <AlertCircle className="text-red-500 h-6 w-6 mt-0.5 mr-3" />
               <div>
                 <h2 className="text-xl font-semibold text-red-700 mb-2">Error Loading Admin Panel</h2>
-                <p className="text-red-600 mb-4">{missionsError}</p>
+                <p className="text-red-600 mb-4">{state.missionsError}</p>
                 <div className="flex flex-col sm:flex-row gap-3">
                   <Button
                     onClick={() => {
-                      refreshMissions();
+                      state.refreshMissions();
                       state.setRetryCount && state.setRetryCount((prev: number) => prev + 1);
                     }}
                     variant="destructive"
@@ -101,39 +62,32 @@ const AdminPanelContent = ({ state }: AdminPanelContentProps) => {
       <div className="container mx-auto px-4 pt-28 pb-16 max-w-7xl">
         <div className="flex flex-col gap-8">
           <AdminHeader 
-            isLoadingTooLong={isLoadingTooLong} 
-            handleRetry={handleRetry} 
+            isLoadingTooLong={state.isLoadingTooLong} 
+            handleRetry={state.handleRetry} 
           />
           <AdminTabsContainer
-            activeTab={activeTab}
-            setActiveTab={setActiveTab}
-            rewards={rewards || []}
-            isLoadingRewards={isLoadingRewards && !maxLoadingTime}
-            addReward={addReward}
-            updateReward={updateReward}
-            deleteReward={deleteReward}
-            requests={requests || []}
-            isLoadingRequests={isLoadingRequests && !maxLoadingTime}
-            isRefreshingRequests={isRefreshingRequests}
-            requestsActiveTab={requestsActiveTab}
-            setRequestsActiveTab={setRequestsActiveTab}
-            refreshRequests={refreshRequests}
-            handleApproveRequest={handleApproveRequest}
-            handleRejectRequest={handleRejectRequest}
-            missions={missions || []}
-            isLoadingMissions={isLoadingMissions && !maxLoadingTime}
-            addMission={addMission}
-            updateMission={updateMission}
-            deleteMission={deleteMission}
-            participations={participations || []}
-            isLoadingParticipations={isLoadingParticipations && !maxLoadingTime}
-            isRefreshingParticipations={isRefreshingParticipations}
-            refreshParticipations={refreshParticipations}
-            approveParticipation={approveParticipation}
-            rejectParticipation={rejectParticipation}
-            refreshMissions={tabsRefreshMissions}
-            maxLoadingTime={maxLoadingTime}
-            participationsError={participationsError}
+            activeTab={state.activeTab}
+            setActiveTab={state.setActiveTab}
+            rewards={state.rewards || []}
+            isLoadingRewards={state.isLoadingRewards && !state.maxLoadingTime}
+            addReward={state.addReward}
+            updateReward={state.updateReward}
+            deleteReward={state.deleteReward}
+            requests={state.requests || []}
+            isLoadingRequests={state.isLoadingRequests && !state.maxLoadingTime}
+            isRefreshingRequests={state.isRefreshingRequests}
+            requestsActiveTab={state.requestsActiveTab}
+            setRequestsActiveTab={state.setRequestsActiveTab}
+            refreshRequests={state.refreshRequests}
+            handleApproveRequest={state.handleApproveRequest}
+            handleRejectRequest={state.handleRejectRequest}
+            missions={state.missions || []}
+            isLoadingMissions={state.isLoadingMissions && !state.maxLoadingTime}
+            addMission={state.addMission}
+            updateMission={state.updateMission}
+            deleteMission={state.deleteMission}
+            refreshMissions={state.refreshMissions}
+            maxLoadingTime={state.maxLoadingTime}
           />
         </div>
       </div>

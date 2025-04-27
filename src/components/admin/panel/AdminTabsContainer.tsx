@@ -1,8 +1,9 @@
+
 import { Tabs, TabsList, TabsTrigger, TabsContent } from '@/components/ui/tabs';
 import RewardsManagement from '@/components/admin/rewards/RewardsManagement';
 import RequestsManagement from '@/components/admin/rewards/RequestsManagement';
 import MissionsManagement from '@/components/admin/missions/MissionsManagement';
-import MissionsParticipation from '@/components/admin/missions/MissionsParticipation';
+import ParticipationsManagement from '@/components/admin/participations/ParticipationsManagement';
 import SiteContentTab from '@/components/admin/siteContent/SiteContentTab';
 import AdminUsersManagement from "@/components/admin/panel/AdminUsersManagement";
 import PointsManagement from '@/components/admin/points/PointsManagement';
@@ -28,15 +29,8 @@ interface AdminTabsContainerProps {
   addMission: any;
   updateMission: any;
   deleteMission: any;
-  participations: any[];
-  isLoadingParticipations: boolean;
-  isRefreshingParticipations: boolean;
-  refreshParticipations: () => Promise<void>;
-  approveParticipation: any;
-  rejectParticipation: any;
-  refreshMissions: () => void;
+  refreshMissions: () => Promise<void>;
   maxLoadingTime: boolean;
-  participationsError?: string;
 }
 
 const AdminTabsContainer = ({
@@ -60,15 +54,8 @@ const AdminTabsContainer = ({
   addMission,
   updateMission,
   deleteMission,
-  participations,
-  isLoadingParticipations,
-  isRefreshingParticipations,
-  refreshParticipations,
-  approveParticipation,
-  rejectParticipation,
   refreshMissions,
   maxLoadingTime,
-  participationsError,
 }: AdminTabsContainerProps) => (
   <Tabs defaultValue={activeTab} value={activeTab} onValueChange={setActiveTab} className="w-full">
     <TabsList className="mb-6">
@@ -108,22 +95,16 @@ const AdminTabsContainer = ({
       <MissionsManagement
         missions={missions}
         isLoading={isLoadingMissions && !maxLoadingTime}
-        onAdd={addMission}
-        onUpdate={updateMission}
-        onDelete={deleteMission}
+        addMission={addMission}
+        updateMission={updateMission}
+        deleteMission={deleteMission}
+        refreshMissions={refreshMissions}
+        maxLoadingTime={maxLoadingTime}
       />
     </TabsContent>
     
     <TabsContent value="participations" className="space-y-4">
-      <MissionsParticipation
-        participations={participations}
-        isLoading={isLoadingParticipations && !maxLoadingTime}
-        isRefreshing={isRefreshingParticipations}
-        onRefresh={refreshParticipations}
-        onApprove={approveParticipation}
-        onReject={rejectParticipation}
-        error={participationsError}
-      />
+      <ParticipationsManagement />
     </TabsContent>
     
     <TabsContent value="points" className="space-y-4">

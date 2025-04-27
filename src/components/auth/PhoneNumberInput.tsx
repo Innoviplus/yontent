@@ -7,16 +7,18 @@ import { cn } from '@/lib/utils';
 interface PhoneNumberInputProps {
   value: string;
   onChange: (value: string) => void;
-  defaultCountry?: any; // Allow any country code for now since the type is not properly exported
+  defaultCountry?: any;
   className?: string;
 }
 
-const PhoneNumberInput = ({ value, onChange, defaultCountry = 'HK', className }: PhoneNumberInputProps) => {
+const PhoneNumberInput = ({ value, onChange, className }: PhoneNumberInputProps) => {
   return (
     <div className={cn('relative w-full', className)}>
       <PhoneInput
         international
-        defaultCountry={defaultCountry}
+        defaultCountry="SG"
+        countries={["SG"]}
+        countrySelectProps={{ disabled: true }}
         value={value}
         onChange={onChange as (value: string | undefined) => void}
         className="flex h-10 w-full rounded-md border border-input bg-background px-3 py-2 text-sm ring-offset-background file:border-0 file:bg-transparent file:text-sm file:font-medium placeholder:text-muted-foreground focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 disabled:cursor-not-allowed disabled:opacity-50"

@@ -11,6 +11,7 @@ const ActiveMissionsSection = () => {
   const [missions, setMissions] = useState<Mission[]>([]);
   const [isLoading, setIsLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
+  const [participationCounts, setParticipationCounts] = useState<Record<string, number>>({});
 
   useEffect(() => {
     const fetchMissions = async () => {
@@ -65,6 +66,11 @@ const ActiveMissionsSection = () => {
         });
         
         setMissions(sortedMissions);
+        
+        // Fetch participation counts for each mission
+        if (sortedMissions.length > 0) {
+          fetchParticipationCounts(sortedMissions.map(m => m.id));
+        }
       } catch (error: any) {
         console.error('Error fetching home page missions:', error);
         setError(error?.message || 'Failed to load missions');
@@ -75,6 +81,39 @@ const ActiveMissionsSection = () => {
     
     fetchMissions();
   }, []);
+
+  // Function to fetch participation counts
+  const fetchParticipationCounts = async (missionIds: string[]) => {
+    if (!missionIds.length) return;
+    
+    try {
+      // Make separate count requests for each mission
+      const countPromises = missionIds.map(async (missionId) => {
+        const { count, error } = await supabase
+          .from('mission_participations')
+          .select('*', { count: 'exact', head: true })
+          .eq('mission_id', missionId);
+          
+        return { missionId, count: count || 0, error };
+      });
+      
+      const results = await Promise.all(countPromises);
+      
+      // Convert results to a record object
+      const counts: Record<string, number> = {};
+      results.forEach(result => {
+        if (result.error) {
+          console.error(`Error counting participations for mission ${result.missionId}:`, result.error);
+        }
+        counts[result.missionId] = result.count;
+      });
+      
+      console.log('Home page mission participation counts:', counts);
+      setParticipationCounts(counts);
+    } catch (error) {
+      console.error('Error fetching participation counts for home page:', error);
+    }
+  };
 
   // If there's an error, show a message with retry button
   if (error) {
@@ -125,7 +164,13 @@ const ActiveMissionsSection = () => {
         </div>
 
         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6 max-w-6xl mx-auto">
-          {missions.map(mission => <MissionCard key={mission.id} mission={mission} />)}
+          {missions.map(mission => (
+            <MissionCard 
+              key={mission.id} 
+              mission={mission} 
+              participationCount={participationCounts[mission.id] || 0}
+            />
+          ))}
         </div>
 
         <div className="text-center mt-10">

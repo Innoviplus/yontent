@@ -1,7 +1,9 @@
+
 import { SettingsLayout } from '@/components/settings/SettingsLayout';
 import { useSettings } from '@/hooks/useSettings';
 import Navbar from '@/components/Navbar';
 import { usePageTitle } from '@/hooks/usePageTitle';
+// Remove import for AdminAccessButton
 
 const Settings = () => {
   usePageTitle('Settings');
@@ -46,6 +48,7 @@ const Settings = () => {
           activeTab={activeTab}
           setActiveTab={setActiveTab}
         />
+        {/* Removed AdminAccessButton */}
       </div>
     </>
   );

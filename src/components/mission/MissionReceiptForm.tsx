@@ -1,5 +1,5 @@
 
-import { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { toast } from 'sonner';
 import { supabase } from '@/integrations/supabase/client';
@@ -19,11 +19,16 @@ const MissionReceiptForm = ({ mission, userId }: MissionReceiptFormProps) => {
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [files, setFiles] = useState<File[]>([]);
   const [error, setError] = useState<string | null>(null);
-  
+  const [previewUrls, setPreviewUrls] = useState<string[]>([]);
+
   const handleFilesSelected = (selectedFiles: File[]) => {
     setFiles(selectedFiles);
     if (selectedFiles.length > 0) {
       setError(null);
+      
+      // Generate preview URLs for the selected files
+      const urls = selectedFiles.map(file => URL.createObjectURL(file));
+      setPreviewUrls(urls);
     }
   };
 
@@ -84,6 +89,13 @@ const MissionReceiptForm = ({ mission, userId }: MissionReceiptFormProps) => {
     }
   };
 
+  // Clean up preview URLs when component unmounts
+  useEffect(() => {
+    return () => {
+      previewUrls.forEach(url => URL.revokeObjectURL(url));
+    };
+  }, [previewUrls]);
+
   return (
     <>
       <FileUpload
@@ -91,6 +103,7 @@ const MissionReceiptForm = ({ mission, userId }: MissionReceiptFormProps) => {
         maxFiles={10}
         accept="image/*"
         className="mb-4"
+        previewUrls={previewUrls}
       />
       
       {error && (
@@ -131,3 +144,4 @@ const MissionReceiptForm = ({ mission, userId }: MissionReceiptFormProps) => {
 };
 
 export default MissionReceiptForm;
+

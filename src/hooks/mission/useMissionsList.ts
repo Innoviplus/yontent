@@ -1,8 +1,8 @@
-
 import { useState, useEffect } from 'react';
 import { Mission } from '@/lib/types';
 import { supabase } from '@/integrations/supabase/client';
 import { toast } from 'sonner';
+import { fetchMissionParticipationCount } from '@/services/mission';
 
 export type SortOption = 'recent' | 'expiringSoon' | 'highestReward';
 
@@ -19,28 +19,21 @@ export const useMissionsList = () => {
     if (!missionIds.length) return;
     
     try {
-      const participationCountsPromises = missionIds.map(async (missionId) => {
-        const { count, error } = await supabase
-          .from('mission_participations')
-          .select('*', { count: 'exact', head: true })
-          .eq('mission_id', missionId);
-          
-        if (error) {
-          console.error(`Error fetching participation count for mission ${missionId}:`, error);
-          return { missionId, count: 0 };
-        }
-        
-        return { missionId, count: count || 0 };
+      console.log("Fetching participation counts for missions:", missionIds);
+      
+      const countPromises = missionIds.map(async (missionId) => {
+        const count = await fetchMissionParticipationCount(missionId);
+        return { missionId, count };
       });
       
-      const participationCounts = await Promise.all(participationCountsPromises);
+      const results = await Promise.all(countPromises);
+      
       const countsMap: Record<string, number> = {};
-      
-      participationCounts.forEach(({ missionId, count }) => {
-        countsMap[missionId] = count;
+      results.forEach(result => {
+        countsMap[result.missionId] = result.count;
       });
       
-      console.log('Participation counts:', countsMap);
+      console.log('Updated participation counts:', countsMap);
       setMissionParticipationCounts(countsMap);
     } catch (error) {
       console.error('Error fetching participation counts:', error);
@@ -98,7 +91,10 @@ export const useMissionsList = () => {
       ).length;
       
       setActiveMissionsCount(activeCount);
-      await fetchParticipationCounts(transformedMissions.map(m => m.id));
+      
+      // Extract mission IDs and fetch participation counts
+      const missionIds = transformedMissions.map(m => m.id);
+      await fetchParticipationCounts(missionIds);
       
       const sortedMissions = sortMissionsByExpiration(transformedMissions);
       setMissions(sortedMissions);
@@ -173,10 +169,6 @@ export const useMissionsList = () => {
     setMissions(sortMissionsByExpiration([...missions]));
   }, [sortBy]);
 
-  const getParticipationCount = (missionId: string): number => {
-    return missionParticipationCounts[missionId] || 0;
-  };
-
   return {
     missions,
     isLoading,
@@ -185,6 +177,6 @@ export const useMissionsList = () => {
     sortBy,
     setSortBy,
     fetchMissions,
-    getParticipationCount
+    getParticipationCount: (missionId: string) => missionParticipationCounts[missionId] || 0
   };
 };
