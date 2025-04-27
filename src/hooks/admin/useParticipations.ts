@@ -34,7 +34,12 @@ export const useParticipations = (filterStatus: string | null) => {
       let query = supabase
         .from('mission_participations')
         .select(`
-          *,
+          id,
+          mission_id,
+          user_id,
+          status,
+          created_at,
+          submission_data,
           mission:missions(title, type, points_reward)
         `)
         .order('created_at', { ascending: false });
@@ -47,13 +52,13 @@ export const useParticipations = (filterStatus: string | null) => {
 
       if (error) throw error;
       
-      // Process the data with proper aliasing to avoid ambiguous column issues
+      // Process the data with proper column qualification to avoid ambiguity
       const processedData = await Promise.all((data || []).map(async (participation) => {
         // Explicitly use the participation user_id to get the profile data
         const { data: profileData } = await supabase
           .from('profiles')
           .select('username')
-          .eq('id', participation.user_id)
+          .eq('id', participation.user_id)  // Explicitly reference the user_id
           .single();
         
         const submissionData = participation.submission_data as any || {};
