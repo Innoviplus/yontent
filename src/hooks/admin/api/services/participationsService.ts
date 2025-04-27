@@ -1,139 +1,38 @@
-
 import { supabase } from '@/integrations/supabase/client';
-import { MissionParticipationFilters, ApiResponse, MissionParticipation } from '../types/participationTypes';
+import { ApiResponse, MissionParticipation } from '../types/participationTypes';
 import { transformParticipationData } from '../utils/transformationUtils';
 
-export const fetchMissionParticipations = async (): Promise<ApiResponse<MissionParticipation>> => {
+export const fetchMissionParticipations = async () => {
+  console.log('[fetchMissionParticipations] Fetching all mission participations');
+  
   try {
-    console.log('[fetchMissionParticipations] Fetching all mission participations');
-    
-    // Get basic participation data first - using simpler query approach to avoid relationship errors
-    const { data: participations, error } = await supabase
+    const { data: participations, error: participationsError } = await supabase
       .from('mission_participations')
-      .select('*')
+      .select(`
+        *,
+        user:profiles(*),
+        mission:missions(*)
+      `)
       .order('created_at', { ascending: false });
-    
-    if (error) {
-      console.error('[fetchMissionParticipations] Failed to fetch participations:', error);
-      return { success: false, error: error.message };
-    }
-
-    console.log('[fetchMissionParticipations] Raw participations fetched:', participations?.length || 0);
-    
-    if (!participations || participations.length === 0) {
-      console.log('[fetchMissionParticipations] No participations found in the database');
-      return { success: true, participations: [] };
-    }
-
-    // Extract unique IDs for separate queries
-    const userIds = [...new Set(participations.map(p => p.user_id))];
-    const missionIds = [...new Set(participations.map(p => p.mission_id))];
-    
-    console.log('[fetchMissionParticipations] User IDs found:', userIds);
-    console.log('[fetchMissionParticipations] Mission IDs found:', missionIds);
-
-    // Fetch profiles separately using the service role key if available
-    // This bypasses RLS restrictions that might prevent admin users from seeing other users' submissions
-    const { data: profiles, error: profilesError } = await supabase
-      .from('profiles')
-      .select('*')
-      .in('id', userIds);
       
-    if (profilesError) {
-      console.error('[fetchMissionParticipations] Failed to fetch profiles:', profilesError);
-      // Continue with execution but log the error - we'll create placeholder profiles later
-    }
-
-    // Create a map of existing profiles
-    const profilesMap = new Map();
-    if (profiles) {
-      profiles.forEach(profile => profilesMap.set(profile.id, profile));
-      console.log('[fetchMissionParticipations] Profiles fetched:', profiles.length);
-    } else {
-      console.log('[fetchMissionParticipations] No profiles fetched or profiles fetch error');
-    }
-
-    // Fetch missions separately
-    const { data: missions, error: missionsError } = await supabase
-      .from('missions')
-      .select('*')
-      .in('id', missionIds);
-      
-    if (missionsError) {
-      console.error('[fetchMissionParticipations] Failed to fetch missions:', missionsError);
-      // Continue with execution but log the error
-    }
-
-    // Create a map of missions
-    const missionsMap = new Map();
-    if (missions) {
-      missions.forEach(mission => missionsMap.set(mission.id, mission));
-      console.log('[fetchMissionParticipations] Missions fetched:', missions.length);
-    } else {
-      console.log('[fetchMissionParticipations] No missions fetched or missions fetch error');
-    }
-
-    // Create placeholder profiles for users without profiles
-    userIds.forEach(userId => {
-      if (!profilesMap.has(userId)) {
-        console.log(`[fetchMissionParticipations] Creating placeholder for user ID: ${userId}`);
-        profilesMap.set(userId, {
-          id: userId,
-          username: userId === '02ff323c-a2d7-45ed-9bdc-a1d5580aba93' ? 'YY123' : `User-${userId.substring(0, 8)}`,
-          email: "",
-          avatar: null
-        });
-      }
-    });
-
-    // Create placeholder missions for missing missions
-    missionIds.forEach(missionId => {
-      if (!missionsMap.has(missionId)) {
-        console.log(`[fetchMissionParticipations] Creating placeholder for mission ID: ${missionId}`);
-        missionsMap.set(missionId, {
-          id: missionId,
-          title: `Mission-${missionId.substring(0, 8)}`,
-          description: "Mission details not available",
-          points_reward: 0,
-          type: "REVIEW"
-        });
-      }
-    });
-    
-    // Combine the data manually
-    const combinedData = participations.map(participation => {
-      const userId = participation.user_id;
-      const missionId = participation.mission_id;
-      
-      return {
-        ...participation,
-        user: profilesMap.get(userId),
-        mission: missionsMap.get(missionId)
+    if (participationsError) {
+      console.error('[fetchMissionParticipations] Error fetching participations:', participationsError);
+      return { 
+        success: false, 
+        error: `Failed to fetch participations: ${participationsError.message}` 
       };
-    });
-    
-    console.log('[fetchMissionParticipations] Combined data length:', combinedData.length);
-    if (combinedData.length > 0) {
-      console.log('[fetchMissionParticipations] First combined data sample:', {
-        id: combinedData[0].id,
-        user_id: combinedData[0].user_id,
-        username: combinedData[0].user?.username,
-        mission_id: combinedData[0].mission_id,
-        mission_title: combinedData[0].mission?.title
-      });
     }
     
-    // Now transform the combined data
-    const transformedData = transformParticipationData(combinedData);
+    console.log('[fetchMissionParticipations] Raw participations data:', participations);
     
-    console.log('[fetchMissionParticipations] Transformed participations data:', transformedData.length);
+    const transformedData = transformParticipationData(participations || []);
     
     return {
       success: true,
       participations: transformedData
     };
   } catch (error: any) {
-    console.error('[fetchMissionParticipations] Error in fetchMissionParticipations:', error);
+    console.error('[fetchMissionParticipations] Exception:', error);
     return { success: false, error: error.message };
   }
 };
