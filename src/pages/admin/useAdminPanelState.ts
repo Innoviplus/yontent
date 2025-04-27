@@ -1,7 +1,7 @@
+
 import { useState, useEffect, Dispatch, SetStateAction } from 'react';
 import { useRewardsAdmin } from '@/hooks/admin/useRewardsAdmin';
 import { useMissionsAdmin } from '@/hooks/admin/missions';
-import { useMissionParticipations } from '@/hooks/admin/useMissionParticipations';
 import { useRequestsAdmin } from '@/hooks/admin/useRequestsAdmin';
 import { useAuth } from '@/contexts/AuthContext';
 import { toast } from 'sonner';
@@ -74,26 +74,6 @@ export const useAdminPanelState = () => {
     refreshMissions
   } = useMissionsAdmin();
 
-  // Participations state/actions
-  const {
-    participations,
-    isLoading: isLoadingParticipations,
-    isRefreshing: isRefreshingParticipations,
-    refreshParticipations: originalRefreshParticipations,
-    approveParticipation,
-    rejectParticipation,
-    error: participationsError
-  } = useMissionParticipations();
-
-  const refreshParticipations = async () => {
-    try {
-      return await originalRefreshParticipations();
-    } catch (error) {
-      console.error("Error refreshing participations:", error);
-      return Promise.resolve();
-    }
-  };
-
   // Requests state/actions
   const {
     requests,
@@ -146,7 +126,6 @@ export const useAdminPanelState = () => {
     (authLoading || checkingAdmin) && 
     isLoadingRewards &&
     isLoadingMissions &&
-    isLoadingParticipations &&
     isLoadingRequests &&
     !maxLoadingTime;
 
@@ -178,13 +157,6 @@ export const useAdminPanelState = () => {
     addMission,
     updateMission,
     deleteMission,
-    participations,
-    isLoadingParticipations,
-    isRefreshingParticipations,
-    refreshParticipations,
-    approveParticipation,
-    rejectParticipation,
-    participationsError,
     refreshMissions,
     maxLoadingTime,
     handleRetry,
@@ -196,7 +168,6 @@ export const useAdminPanelState = () => {
     missionsError,
     authLoading,
     isValidAdmin,
-    checkingAdmin,
-    error: participationsError
+    checkingAdmin
   };
 };

@@ -1,8 +1,8 @@
+
 import { Tabs, TabsList, TabsTrigger, TabsContent } from '@/components/ui/tabs';
 import RewardsManagement from '@/components/admin/rewards/RewardsManagement';
 import RequestsManagement from '@/components/admin/rewards/RequestsManagement';
 import MissionsManagement from '@/components/admin/missions/MissionsManagement';
-import MissionsParticipation from '@/components/admin/missions/MissionsParticipation';
 import SiteContentTab from '@/components/admin/siteContent/SiteContentTab';
 import AdminUsersManagement from "@/components/admin/panel/AdminUsersManagement";
 import PointsManagement from '@/components/admin/points/PointsManagement';
@@ -28,15 +28,8 @@ interface AdminTabsContainerProps {
   addMission: any;
   updateMission: any;
   deleteMission: any;
-  participations: any[];
-  isLoadingParticipations: boolean;
-  isRefreshingParticipations: boolean;
-  refreshParticipations: () => Promise<void>;
-  approveParticipation: any;
-  rejectParticipation: any;
   refreshMissions: () => void;
   maxLoadingTime: boolean;
-  participationsError?: string;
 }
 
 const AdminTabsContainer = ({
@@ -60,22 +53,14 @@ const AdminTabsContainer = ({
   addMission,
   updateMission,
   deleteMission,
-  participations,
-  isLoadingParticipations,
-  isRefreshingParticipations,
-  refreshParticipations,
-  approveParticipation,
-  rejectParticipation,
   refreshMissions,
   maxLoadingTime,
-  participationsError,
 }: AdminTabsContainerProps) => (
   <Tabs defaultValue={activeTab} value={activeTab} onValueChange={setActiveTab} className="w-full">
     <TabsList className="mb-6">
       <TabsTrigger value="rewards">Rewards</TabsTrigger>
       <TabsTrigger value="requests">Redemption Requests</TabsTrigger>
       <TabsTrigger value="missions">Missions</TabsTrigger>
-      <TabsTrigger value="participations">Participations</TabsTrigger>
       <TabsTrigger value="points">Points Management</TabsTrigger>
       <TabsTrigger value="site-content">Site Content</TabsTrigger>
       <TabsTrigger value="admin-users">Admin Users</TabsTrigger>
@@ -111,18 +96,6 @@ const AdminTabsContainer = ({
         onAdd={addMission}
         onUpdate={updateMission}
         onDelete={deleteMission}
-      />
-    </TabsContent>
-    
-    <TabsContent value="participations" className="space-y-4">
-      <MissionsParticipation
-        participations={participations}
-        isLoading={isLoadingParticipations && !maxLoadingTime}
-        isRefreshing={isRefreshingParticipations}
-        onRefresh={refreshParticipations}
-        onApprove={approveParticipation}
-        onReject={rejectParticipation}
-        error={participationsError}
       />
     </TabsContent>
     

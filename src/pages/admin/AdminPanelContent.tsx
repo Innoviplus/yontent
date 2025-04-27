@@ -11,52 +11,13 @@ interface AdminPanelContentProps {
 }
 
 const AdminPanelContent = ({ state }: AdminPanelContentProps) => {
-  const {
-    maxLoadingTime,
-    handleRetry,
-    isLoading,
-    retryCount,
-    missionsError,
-    refreshMissions,
-    shouldShowContent,
-    isLoadingTooLong,
-    activeTab,
-    setActiveTab,
-    rewards,
-    isLoadingRewards,
-    addReward,
-    updateReward,
-    deleteReward,
-    requests,
-    isLoadingRequests,
-    isRefreshingRequests,
-    requestsActiveTab,
-    setRequestsActiveTab,
-    refreshRequests,
-    handleApproveRequest,
-    handleRejectRequest,
-    missions,
-    isLoadingMissions,
-    addMission,
-    updateMission,
-    deleteMission,
-    participations,
-    isLoadingParticipations,
-    isRefreshingParticipations,
-    refreshParticipations,
-    approveParticipation,
-    rejectParticipation,
-    refreshMissions: tabsRefreshMissions,
-    participationsError,
-  } = state;
-
-  if (isLoading && !maxLoadingTime && retryCount <= 1) {
+  if (state.isLoading && !state.maxLoadingTime && state.retryCount <= 1) {
     return (
-      <AdminPanelLoadingState retryCount={retryCount} handleRetry={handleRetry} />
+      <AdminPanelLoadingState retryCount={state.retryCount} handleRetry={state.handleRetry} />
     );
   }
 
-  if (missionsError && !maxLoadingTime && retryCount <= 1) {
+  if (state.missionsError && !state.maxLoadingTime && state.retryCount <= 1) {
     return (
       <div className="min-h-screen bg-gray-50">
         <Navbar />
@@ -66,11 +27,11 @@ const AdminPanelContent = ({ state }: AdminPanelContentProps) => {
               <AlertCircle className="text-red-500 h-6 w-6 mt-0.5 mr-3" />
               <div>
                 <h2 className="text-xl font-semibold text-red-700 mb-2">Error Loading Admin Panel</h2>
-                <p className="text-red-600 mb-4">{missionsError}</p>
+                <p className="text-red-600 mb-4">{state.missionsError}</p>
                 <div className="flex flex-col sm:flex-row gap-3">
                   <Button
                     onClick={() => {
-                      refreshMissions();
+                      state.refreshMissions();
                       state.setRetryCount && state.setRetryCount((prev: number) => prev + 1);
                     }}
                     variant="destructive"
@@ -125,15 +86,8 @@ const AdminPanelContent = ({ state }: AdminPanelContentProps) => {
             addMission={state.addMission}
             updateMission={state.updateMission}
             deleteMission={state.deleteMission}
-            participations={state.participations || []}
-            isLoadingParticipations={state.isLoadingParticipations && !state.maxLoadingTime}
-            isRefreshingParticipations={state.isRefreshingParticipations}
-            refreshParticipations={state.refreshParticipations}
-            approveParticipation={state.approveParticipation}
-            rejectParticipation={state.rejectParticipation}
             refreshMissions={state.refreshMissions}
             maxLoadingTime={state.maxLoadingTime}
-            participationsError={state.error || state.participationsError}
           />
         </div>
       </div>
