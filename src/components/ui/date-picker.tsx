@@ -34,6 +34,7 @@ export function DatePicker({ value, onChange, placeholder = "Select date" }: Dat
           selected={value || undefined}
           onSelect={onChange}
           initialFocus
+          className="pointer-events-auto"
         />
       </PopoverContent>
     </Popover>

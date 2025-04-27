@@ -25,36 +25,6 @@ export const BirthDatePicker: React.FC<BirthDatePickerProps> = ({
   const to = new Date();
   to.setFullYear(today.getFullYear() - 18); // 18 years ago
 
-  // State to keep track of the current display month in the calendar
-  const [displayMonth, setDisplayMonth] = React.useState<Date | undefined>(
-    date ? new Date(date) : undefined
-  );
-
-  // Update displayMonth when date changes
-  useEffect(() => {
-    if (date) {
-      setDisplayMonth(new Date(date));
-    }
-  }, [date]);
-
-  // Custom month/year change handler to ensure the onChange is called
-  const handleMonthChange = (date: Date) => {
-    console.log("Month/year changed to:", date);
-    setDisplayMonth(date);
-    
-    // If there's already a selected date, update it with the new month/year
-    if (date) {
-      const newDate = date ? new Date(date) : new Date();
-      newDate.setFullYear(date.getFullYear(), date.getMonth());
-      console.log("Updating selected date to:", newDate);
-      setDate(newDate);
-    } else {
-      // If no date is selected, select this one
-      console.log("No previous date, selecting new date:", date);
-      setDate(date);
-    }
-  };
-
   return (
     <Popover>
       <PopoverTrigger asChild>
@@ -84,23 +54,7 @@ export const BirthDatePicker: React.FC<BirthDatePickerProps> = ({
           captionLayout="dropdown-buttons"
           fromYear={from.getFullYear()}
           toYear={to.getFullYear()}
-          onMonthChange={handleMonthChange}
-          defaultMonth={displayMonth || date || undefined}
-          month={displayMonth}
-          onMonthSelect={(newMonth) => {
-            if (displayMonth) {
-              const newDate = new Date(displayMonth);
-              newDate.setMonth(newMonth);
-              handleMonthChange(newDate);
-            }
-          }}
-          onYearSelect={(newYear) => {
-            if (displayMonth) {
-              const newDate = new Date(displayMonth);
-              newDate.setFullYear(newYear);
-              handleMonthChange(newDate);
-            }
-          }}
+          className="pointer-events-auto"
         />
       </PopoverContent>
     </Popover>
