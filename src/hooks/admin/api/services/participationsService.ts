@@ -7,7 +7,10 @@ export const fetchMissionParticipations = async (): Promise<ApiResponse<MissionP
   try {
     console.log('[fetchMissionParticipations] Fetching mission participations');
     
-    // Fetch mission participations without column qualifiers
+    // Enable and log RLS debugging
+    console.log('[fetchMissionParticipations] Admin user accessing participations with RLS');
+    
+    // Fetch mission participations with a simple query first - no joins to avoid column ambiguity
     const { data: participations, error: participationsError } = await supabase
       .from('mission_participations')
       .select('*')
@@ -18,6 +21,9 @@ export const fetchMissionParticipations = async (): Promise<ApiResponse<MissionP
       return { success: false, error: participationsError.message };
     }
 
+    console.log('[fetchMissionParticipations] Successfully fetched participations:', 
+      participations ? participations.length : 0);
+
     if (!participations || participations.length === 0) {
       return { success: true, participations: [] };
     }
@@ -25,6 +31,8 @@ export const fetchMissionParticipations = async (): Promise<ApiResponse<MissionP
     // Extract user IDs and mission IDs for separate queries
     const userIds = [...new Set(participations.map(p => p.user_id))];
     const missionIds = [...new Set(participations.map(p => p.mission_id))];
+    
+    console.log(`[fetchMissionParticipations] Fetching ${userIds.length} profiles and ${missionIds.length} missions`);
     
     // Fetch profiles separately
     const { data: profiles, error: profilesError } = await supabase
@@ -35,6 +43,9 @@ export const fetchMissionParticipations = async (): Promise<ApiResponse<MissionP
     if (profilesError) {
       console.error('[fetchMissionParticipations] Error fetching profiles:', profilesError);
       // Continue without profiles instead of failing completely
+    } else {
+      console.log('[fetchMissionParticipations] Successfully fetched profiles:', 
+        profiles ? profiles.length : 0);
     }
     
     // Fetch missions separately
@@ -46,6 +57,9 @@ export const fetchMissionParticipations = async (): Promise<ApiResponse<MissionP
     if (missionsError) {
       console.error('[fetchMissionParticipations] Error fetching missions:', missionsError);
       // Continue without missions instead of failing completely
+    } else {
+      console.log('[fetchMissionParticipations] Successfully fetched missions:', 
+        missions ? missions.length : 0);
     }
     
     // Create lookup maps for faster access
@@ -123,6 +137,9 @@ export const fetchMissionParticipationsWithFilters = async (
       return { success: false, error: participationsError.message };
     }
 
+    console.log('[fetchMissionParticipationsWithFilters] Successfully fetched filtered participations:', 
+      participations ? participations.length : 0);
+
     if (!participations || participations.length === 0) {
       return { success: true, participations: [] };
     }
@@ -130,6 +147,8 @@ export const fetchMissionParticipationsWithFilters = async (
     // Extract user IDs and mission IDs for separate queries
     const userIds = [...new Set(participations.map(p => p.user_id))];
     const missionIds = [...new Set(participations.map(p => p.mission_id))];
+    
+    console.log(`[fetchMissionParticipationsWithFilters] Fetching ${userIds.length} profiles and ${missionIds.length} missions`);
     
     // Fetch profiles separately
     const { data: profiles, error: profilesError } = await supabase
@@ -140,6 +159,9 @@ export const fetchMissionParticipationsWithFilters = async (
     if (profilesError) {
       console.error('[fetchMissionParticipationsWithFilters] Error fetching profiles:', profilesError);
       // Continue without profiles
+    } else {
+      console.log('[fetchMissionParticipationsWithFilters] Successfully fetched profiles:', 
+        profiles ? profiles.length : 0);
     }
     
     // Fetch missions separately
@@ -151,6 +173,9 @@ export const fetchMissionParticipationsWithFilters = async (
     if (missionsError) {
       console.error('[fetchMissionParticipationsWithFilters] Error fetching missions:', missionsError);
       // Continue without missions
+    } else {
+      console.log('[fetchMissionParticipationsWithFilters] Successfully fetched missions:', 
+        missions ? missions.length : 0);
     }
     
     // Create lookup maps for faster access
