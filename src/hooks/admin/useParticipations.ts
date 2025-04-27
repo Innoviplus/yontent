@@ -47,7 +47,9 @@ export const useParticipations = (filterStatus: string | null) => {
 
       if (error) throw error;
       
+      // Process the data with proper aliasing to avoid ambiguous column issues
       const processedData = await Promise.all((data || []).map(async (participation) => {
+        // Explicitly use the participation user_id to get the profile data
         const { data: profileData } = await supabase
           .from('profiles')
           .select('username')
@@ -110,7 +112,7 @@ export const useParticipations = (filterStatus: string | null) => {
           missionTitle: participation.mission.title
         });
         
-        // Use admin_add_point_transaction to add the points transaction
+        // Use admin_add_point_transaction with explicit parameter naming to avoid ambiguity
         const { data: transactionData, error: transactionError } = await supabase.rpc(
           'admin_add_point_transaction',
           {
@@ -128,7 +130,7 @@ export const useParticipations = (filterStatus: string | null) => {
         
         console.log('Transaction added:', transactionData);
 
-        // Update the user's points in the profiles table
+        // Update the user's points in the profiles table with explicit column names
         const { data: profileData } = await supabase
           .from('profiles')
           .select('points')
