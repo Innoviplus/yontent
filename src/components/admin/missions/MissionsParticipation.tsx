@@ -48,16 +48,18 @@ const MissionsParticipation = ({
     });
   }, [participations, isLoading, isRefreshing, error]);
 
-  const handleApprove = async (id: string) => {
+  const handleApprove = async (id: string): Promise<boolean> => {
     setProcessingId(id);
-    await onApprove(id);
+    const result = await onApprove(id);
     setProcessingId(null);
+    return result;
   };
 
-  const handleReject = async (id: string) => {
+  const handleReject = async (id: string): Promise<boolean> => {
     setProcessingId(id);
-    await onReject(id);
+    const result = await onReject(id);
     setProcessingId(null);
+    return result;
   };
 
   const openReviewLink = (reviewId: string) => {

@@ -11,8 +11,8 @@ interface ParticipationDetailsDialogProps {
   participation: MissionParticipation | null;
   processingId: string | null;
   onClose: () => void;
-  onApprove: (id: string) => Promise<void>;
-  onReject: (id: string) => Promise<void>;
+  onApprove: (id: string) => Promise<boolean>;
+  onReject: (id: string) => Promise<boolean>;
   openReviewLink: (reviewId: string) => void;
 }
 

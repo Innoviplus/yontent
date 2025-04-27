@@ -7,8 +7,8 @@ interface DialogActionButtonsProps {
   status: string;
   id: string;
   processingId: string | null;
-  onApprove: (id: string) => Promise<void>;
-  onReject: (id: string) => Promise<void>;
+  onApprove: (id: string) => Promise<boolean>;
+  onReject: (id: string) => Promise<boolean>;
   onClose: () => void;
 }
 
@@ -28,9 +28,9 @@ const DialogActionButtons: React.FC<DialogActionButtonsProps> = ({
     <div className="flex justify-end space-x-2">
       <Button 
         variant="default" 
-        onClick={() => {
-          onApprove(id);
-          onClose();
+        onClick={async () => {
+          const result = await onApprove(id);
+          if (result) onClose();
         }}
         disabled={!!processingId}
       >
@@ -39,9 +39,9 @@ const DialogActionButtons: React.FC<DialogActionButtonsProps> = ({
       </Button>
       <Button 
         variant="destructive" 
-        onClick={() => {
-          onReject(id);
-          onClose();
+        onClick={async () => {
+          const result = await onReject(id);
+          if (result) onClose();
         }}
         disabled={!!processingId}
       >
