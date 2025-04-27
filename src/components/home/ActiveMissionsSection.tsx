@@ -11,6 +11,7 @@ const ActiveMissionsSection = () => {
   const [missions, setMissions] = useState<Mission[]>([]);
   const [isLoading, setIsLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
+  const [participationCounts, setParticipationCounts] = useState<Record<string, number>>({});
 
   useEffect(() => {
     const fetchMissions = async () => {
@@ -65,6 +66,11 @@ const ActiveMissionsSection = () => {
         });
         
         setMissions(sortedMissions);
+        
+        // Fetch participation counts for each mission
+        if (sortedMissions.length > 0) {
+          fetchParticipationCounts(sortedMissions.map(m => m.id));
+        }
       } catch (error: any) {
         console.error('Error fetching home page missions:', error);
         setError(error?.message || 'Failed to load missions');
@@ -75,6 +81,38 @@ const ActiveMissionsSection = () => {
     
     fetchMissions();
   }, []);
+
+  // Function to fetch participation counts
+  const fetchParticipationCounts = async (missionIds: string[]) => {
+    if (!missionIds.length) return;
+    
+    try {
+      // Use a query to count participations by mission_id
+      const { data, error } = await supabase
+        .from('mission_participations')
+        .select('mission_id, count')
+        .in('mission_id', missionIds)
+        .select('mission_id');
+      
+      if (error) throw error;
+      
+      // Count participations by mission_id
+      const counts: Record<string, number> = {};
+      missionIds.forEach(id => { counts[id] = 0 });
+      
+      if (data) {
+        data.forEach(item => {
+          const missionId = item.mission_id;
+          counts[missionId] = (counts[missionId] || 0) + 1;
+        });
+      }
+      
+      console.log('Home page mission participation counts:', counts);
+      setParticipationCounts(counts);
+    } catch (error) {
+      console.error('Error fetching participation counts for home page:', error);
+    }
+  };
 
   // If there's an error, show a message with retry button
   if (error) {
@@ -125,7 +163,13 @@ const ActiveMissionsSection = () => {
         </div>
 
         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6 max-w-6xl mx-auto">
-          {missions.map(mission => <MissionCard key={mission.id} mission={mission} />)}
+          {missions.map(mission => (
+            <MissionCard 
+              key={mission.id} 
+              mission={mission} 
+              participationCount={participationCounts[mission.id] || 0}
+            />
+          ))}
         </div>
 
         <div className="text-center mt-10">
