@@ -1,3 +1,4 @@
+
 import { supabase } from '@/integrations/supabase/client';
 import { MissionParticipationFilters, ApiResponse, MissionParticipation } from '../types/participationTypes';
 import { transformParticipationData } from '../utils/transformationUtils';
@@ -6,14 +7,10 @@ export const fetchMissionParticipations = async (): Promise<ApiResponse<MissionP
   try {
     console.log('[fetchMissionParticipations] Fetching mission participations for admin');
     
-    // Fetch mission participations with comprehensive data
+    // Fetch mission participations without using joins
     const { data: participations, error: participationsError } = await supabase
       .from('mission_participations')
-      .select(`
-        *,
-        user:profiles!inner(id, username, email, avatar),
-        mission:missions!inner(id, title, description, points_reward, type)
-      `)
+      .select('*')
       .order('created_at', { ascending: false });
     
     if (participationsError) {
@@ -31,8 +28,63 @@ export const fetchMissionParticipations = async (): Promise<ApiResponse<MissionP
       return { success: true, participations: [] };
     }
     
-    // Transform and return the data
-    const transformedData = transformParticipationData(participations);
+    // Extract user IDs and mission IDs for separate queries
+    const userIds = [...new Set(participations.map(p => p.user_id))];
+    const missionIds = [...new Set(participations.map(p => p.mission_id))];
+    
+    console.log(`[fetchMissionParticipations] Fetching ${userIds.length} profiles and ${missionIds.length} missions`);
+    
+    // Fetch profiles separately
+    const { data: profiles, error: profilesError } = await supabase
+      .from('profiles')
+      .select('id, username, email, avatar')
+      .in('id', userIds);
+      
+    if (profilesError) {
+      console.error('[fetchMissionParticipations] Error fetching profiles:', profilesError);
+      // Continue without profiles
+    } else {
+      console.log('[fetchMissionParticipations] Successfully fetched profiles:', 
+        profiles ? profiles.length : 0);
+    }
+    
+    // Fetch missions separately
+    const { data: missions, error: missionsError } = await supabase
+      .from('missions')
+      .select('id, title, description, points_reward, type')
+      .in('id', missionIds);
+    
+    if (missionsError) {
+      console.error('[fetchMissionParticipations] Error fetching missions:', missionsError);
+      // Continue without missions
+    } else {
+      console.log('[fetchMissionParticipations] Successfully fetched missions:', 
+        missions ? missions.length : 0);
+    }
+    
+    // Create lookup maps for faster access
+    const profilesMap = (profiles || []).reduce((acc, profile) => {
+      acc[profile.id] = profile;
+      return acc;
+    }, {});
+    
+    const missionsMap = (missions || []).reduce((acc, mission) => {
+      acc[mission.id] = mission;
+      return acc;
+    }, {});
+    
+    // Combine the data manually
+    const combinedData = participations.map(participation => {
+      return {
+        ...participation,
+        user: profilesMap[participation.user_id] || null,
+        mission: missionsMap[participation.mission_id] || null
+      };
+    });
+    
+    console.log('[fetchMissionParticipations] Raw data count:', combinedData.length);
+    
+    const transformedData = transformParticipationData(combinedData);
     return {
       success: true,
       participations: transformedData
