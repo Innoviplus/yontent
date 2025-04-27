@@ -1,3 +1,4 @@
+
 import { useEffect, useState } from 'react';
 import { Table, TableHeader, TableRow, TableHead, TableBody, TableCell } from '@/components/ui/table';
 import { Button } from '@/components/ui/button';
@@ -102,30 +103,52 @@ const ParticipationsTable = ({ filterStatus }: ParticipationsTableProps) => {
       if (newStatus === 'APPROVED') {
         const pointAmount = participation.mission.points_reward;
         
-        const { error: transactionError } = await supabase
-          .from('point_transactions')
-          .insert({
-            user_id: participation.user_id,
-            amount: pointAmount,
-            type: 'EARNED',
-            description: `Earned ${pointAmount} points for completing mission: ${participation.mission.title}`
-          });
+        // Use the admin_add_point_transaction function to bypass RLS
+        const { data: transactionData, error: transactionError } = await supabase.rpc(
+          'admin_add_point_transaction',
+          {
+            p_user_id: participation.user_id,
+            p_amount: pointAmount,
+            p_type: 'EARNED',
+            p_description: `Earned ${pointAmount} points for completing mission: ${participation.mission.title}`
+          }
+        );
 
         if (transactionError) throw transactionError;
 
-        const { error: pointsError } = await supabase.rpc('increment_points', {
-          user_id_param: participation.user_id,
-          points_amount_param: pointAmount
-        });
+        // Now update the user's points balance
+        const { error: pointsError } = await supabase.rpc(
+          'increment_points',
+          {
+            user_id_param: participation.user_id,
+            points_amount_param: pointAmount
+          }
+        );
 
         if (pointsError) throw pointsError;
+
+        // Update the profile points directly
+        const { data: profileData } = await supabase
+          .from('profiles')
+          .select('points')
+          .eq('id', participation.user_id)
+          .single();
+          
+        const newPoints = (profileData?.points || 0) + pointAmount;
+        
+        const { error: updatePointsError } = await supabase
+          .from('profiles')
+          .update({ points: newPoints })
+          .eq('id', participation.user_id);
+          
+        if (updatePointsError) throw updatePointsError;
 
         toast.success(`Awarded ${pointAmount} points to ${participation.profile?.username}`);
       }
 
       toast.success(`Submission ${newStatus.toLowerCase()}`);
       fetchParticipations();
-    } catch (error) {
+    } catch (error: any) {
       console.error('Error updating participation:', error);
       toast.error('Failed to update submission status');
     }
