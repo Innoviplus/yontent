@@ -22,45 +22,71 @@ export const extractAvatarUrl = (profileData: any): string | null => {
 };
 
 export const transformParticipationData = (data: any[]): MissionParticipation[] => {
-  console.log('transformParticipationData input:', data);
+  console.log('[transformParticipationData] Input data:', data);
+  console.log('[transformParticipationData] Input data length:', data ? data.length : 0);
   
   if (!Array.isArray(data)) {
-    console.error('Expected array for transformParticipationData but got:', typeof data);
+    console.error('[transformParticipationData] Expected array but got:', typeof data);
     return [];
   }
   
-  return data.map(item => {
+  // Log all the user information before transformation to help debug
+  console.log('[transformParticipationData] User IDs in data:',
+    data.map(item => ({
+      userId: item.user_id,
+      username: item.user?.username || 'Unknown',
+      hasUserObject: !!item.user
+    }))
+  );
+
+  const transformedData = data.map(item => {
     try {
-      // Handle user data
+      // Make sure user data exists with default values if missing
       const user = item.user || {};
       const userId = item.user_id || '';
       
-      // Handle mission data
+      // Make sure mission data exists with default values if missing
       const mission = item.mission || {};
       const missionId = item.mission_id || '';
       
-      // Make sure dates are properly parsed to Date objects
-      const createdAt = item.created_at ? new Date(item.created_at) : new Date();
-      const updatedAt = item.updated_at ? new Date(item.updated_at) : new Date();
+      // Make sure dates are properly parsed
+      let createdAt;
+      let updatedAt;
       
-      // Debug logging for this specific item
-      console.log(`Transform item ${item.id}:`, {
+      try {
+        createdAt = item.created_at ? new Date(item.created_at) : new Date();
+      } catch (e) {
+        console.warn(`[transformParticipationData] Error parsing created_at for participation ${item.id}:`, e);
+        createdAt = new Date();
+      }
+      
+      try {
+        updatedAt = item.updated_at ? new Date(item.updated_at) : new Date();
+      } catch (e) {
+        console.warn(`[transformParticipationData] Error parsing updated_at for participation ${item.id}:`, e);
+        updatedAt = new Date();
+      }
+      
+      // Create a dummy username based on user_id if username is missing
+      const fallbackUsername = userId ? `User-${userId.substring(0, 6)}` : 'Unknown User';
+      const username = user.username || fallbackUsername;
+      
+      console.log(`[transformParticipationData] Processing item ${item.id}:`, {
         userId,
-        username: user.username || 'Unknown',
-        status: item.status,
+        username,
         submissionData: item.submission_data,
-        createdAt: createdAt.toString()
+        status: item.status
       });
       
-      // Transform user data to match UserProfile type
+      // Transform user data to match UserProfile type with fallbacks
       const userProfile: UserProfile = {
         id: userId,
-        username: user.username || `User-${userId.substring(0, 6)}`,
-        email: user.email,
+        username: username,
+        email: user.email || '',
         avatar: extractAvatarUrl(user)
       };
       
-      // Transform mission data to match Mission type
+      // Transform mission data to match Mission type with fallbacks
       const missionData: Mission = {
         id: missionId,
         title: mission.title || `Mission-${missionId.substring(0, 6)}`,
@@ -69,7 +95,7 @@ export const transformParticipationData = (data: any[]): MissionParticipation[] 
         type: mission.type || 'REVIEW'
       };
       
-      // Ensure data types match expected MissionParticipation type
+      // Return the transformed participation with all required fields
       return {
         id: item.id || '',
         missionId: missionId,
@@ -82,7 +108,7 @@ export const transformParticipationData = (data: any[]): MissionParticipation[] 
         mission: missionData
       };
     } catch (error) {
-      console.error('Error transforming participation item:', item, error);
+      console.error('[transformParticipationData] Error transforming participation item:', item, error);
       
       // Return a minimal valid object in case of error
       return {
@@ -95,7 +121,7 @@ export const transformParticipationData = (data: any[]): MissionParticipation[] 
         submissionData: null,
         user: {
           id: item.user_id || '',
-          username: 'Error processing user',
+          username: `Error-${item.user_id ? item.user_id.substring(0, 6) : 'Unknown'}`,
           email: '',
           avatar: null
         },
@@ -109,4 +135,12 @@ export const transformParticipationData = (data: any[]): MissionParticipation[] 
       };
     }
   });
+  
+  console.log('[transformParticipationData] Transformed data length:', transformedData.length);
+  
+  if (transformedData.length > 0) {
+    console.log('[transformParticipationData] First transformed item sample:', transformedData[0]);
+  }
+  
+  return transformedData;
 };

@@ -1,7 +1,7 @@
 
 import React from 'react';
 import { Button } from '@/components/ui/button';
-import { AlertCircle, RefreshCw } from 'lucide-react';
+import { AlertCircle, RefreshCw, Bug } from 'lucide-react';
 
 interface ParticipationErrorProps {
   error: string;
@@ -19,15 +19,27 @@ const ParticipationError: React.FC<ParticipationErrorProps> = ({
         <div className="flex-1">
           <h4 className="text-sm font-medium text-red-800 mb-1">Error loading participations</h4>
           <p className="text-red-700 text-sm whitespace-pre-wrap">{error}</p>
-          <Button 
-            variant="outline" 
-            size="sm" 
-            className="mt-2 bg-white hover:bg-red-50"
-            onClick={onRefresh}
-          >
-            <RefreshCw className="h-4 w-4 mr-1" />
-            Retry
-          </Button>
+          <div className="flex gap-2 mt-2">
+            <Button 
+              variant="outline" 
+              size="sm" 
+              className="bg-white hover:bg-red-50"
+              onClick={onRefresh}
+            >
+              <RefreshCw className="h-4 w-4 mr-1" />
+              Retry
+            </Button>
+            
+            <Button
+              variant="outline"
+              size="sm"
+              className="bg-white hover:bg-amber-50"
+              onClick={() => console.log('Debugging participations issue')}
+            >
+              <Bug className="h-4 w-4 mr-1" />
+              Debug Info
+            </Button>
+          </div>
         </div>
       </div>
     </div>

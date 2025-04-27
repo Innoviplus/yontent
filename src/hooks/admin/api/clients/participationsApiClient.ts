@@ -3,7 +3,7 @@ import { supabase } from '@/integrations/supabase/client';
 import { ApiResponse, MissionParticipation } from '../types/participationTypes';
 
 export const fetchParticipationsData = async () => {
-  console.log('Fetching all mission participations from database');
+  console.log('[fetchParticipationsData] Fetching all mission participations from database');
   
   try {
     const { data: participations, error: participationsError } = await supabase
@@ -12,41 +12,47 @@ export const fetchParticipationsData = async () => {
       .order('created_at', { ascending: false });
       
     if (participationsError) {
-      console.error('Error fetching mission participations:', participationsError);
+      console.error('[fetchParticipationsData] Error fetching mission participations:', participationsError);
       return { success: false, error: participationsError.message };
     }
     
-    console.log('Participation fetch result:', participations ? participations.length : 0, 'records');
-    console.log('Participation raw data:', participations);
+    console.log('[fetchParticipationsData] Participation fetch result:', participations ? participations.length : 0, 'records');
+    
+    // Log all unique user_ids to help debug
+    if (participations && participations.length > 0) {
+      const userIds = [...new Set(participations.map(p => p.user_id))];
+      console.log('[fetchParticipationsData] Unique user_ids in participations:', userIds);
+    }
+    
     return { success: true, data: participations || [] };
   } catch (error: any) {
-    console.error('Exception while fetching participations:', error);
+    console.error('[fetchParticipationsData] Exception while fetching participations:', error);
     return { success: false, error: error.message };
   }
 };
 
 export const fetchUserProfiles = async (userIds: string[]) => {
   if (!userIds || userIds.length === 0) {
-    console.log('No user IDs provided to fetch profiles');
+    console.log('[fetchUserProfiles] No user IDs provided to fetch profiles');
     return [];
   }
   
-  console.log('Fetching profiles for user IDs:', userIds);
+  console.log('[fetchUserProfiles] Fetching profiles for user IDs:', userIds);
   
   try {
     // First try to get from profiles table
     const { data: userProfiles, error: userError } = await supabase
       .from('profiles')
-      .select('id, username, email, avatar')
+      .select('id, username, email, avatar, extended_data')
       .in('id', userIds);
     
     if (userError) {
-      console.error('Error fetching user profiles:', userError);
+      console.error('[fetchUserProfiles] Error fetching user profiles:', userError);
       return [];
     }
     
-    console.log('Fetched profiles result:', userProfiles ? userProfiles.length : 0, 'profiles');
-    console.log('User profiles data:', userProfiles);
+    console.log('[fetchUserProfiles] Fetched profiles result:', userProfiles ? userProfiles.length : 0, 'profiles');
+    console.log('[fetchUserProfiles] User profiles data:', userProfiles);
     
     // Check if any user IDs are missing from the result
     if (userProfiles) {
@@ -54,35 +60,52 @@ export const fetchUserProfiles = async (userIds: string[]) => {
       const missingIds = userIds.filter(id => !returnedIds.has(id));
       
       if (missingIds.length > 0) {
-        console.log('Missing user profiles for IDs:', missingIds);
+        console.warn('[fetchUserProfiles] Missing user profiles for IDs:', missingIds);
+        
+        // For each missing ID, attempt an individual fetch for additional debugging
+        for (const missingId of missingIds) {
+          console.log(`[fetchUserProfiles] Attempting individual fetch for user ID: ${missingId}`);
+          const { data: singleUser, error: singleError } = await supabase
+            .from('profiles')
+            .select('id, username, email, avatar, extended_data')
+            .eq('id', missingId)
+            .single();
+          
+          if (singleError) {
+            console.error(`[fetchUserProfiles] Error in individual fetch for user ${missingId}:`, singleError);
+          } else {
+            console.log(`[fetchUserProfiles] Individual fetch result for user ${missingId}:`, singleUser);
+          }
+        }
         
         // Create placeholder profiles for missing users
         const placeholderProfiles = missingIds.map(id => ({
           id,
           username: `User-${id.substring(0, 6)}`,
           email: null,
-          avatar: null
+          avatar: null,
+          extended_data: {}
         }));
         
-        console.log('Created placeholder profiles:', placeholderProfiles);
+        console.log('[fetchUserProfiles] Created placeholder profiles:', placeholderProfiles);
         return [...userProfiles, ...placeholderProfiles];
       }
     }
     
     return userProfiles || [];
   } catch (error: any) {
-    console.error('Exception while fetching profiles:', error);
+    console.error('[fetchUserProfiles] Exception while fetching profiles:', error);
     return [];
   }
 };
 
 export const fetchMissions = async (missionIds: string[]) => {
   if (!missionIds || missionIds.length === 0) {
-    console.log('No mission IDs provided to fetch missions');
+    console.log('[fetchMissions] No mission IDs provided to fetch missions');
     return [];
   }
   
-  console.log('Fetching missions for mission IDs:', missionIds);
+  console.log('[fetchMissions] Fetching missions for mission IDs:', missionIds);
   
   try {
     const { data: missions, error: missionsError } = await supabase
@@ -91,11 +114,11 @@ export const fetchMissions = async (missionIds: string[]) => {
       .in('id', missionIds);
     
     if (missionsError) {
-      console.error('Error fetching missions:', missionsError);
+      console.error('[fetchMissions] Error fetching missions:', missionsError);
       return [];
     }
     
-    console.log('Fetched missions result:', missions ? missions.length : 0, 'missions');
+    console.log('[fetchMissions] Fetched missions result:', missions ? missions.length : 0, 'missions');
     
     // Check if any mission IDs are missing from the result
     if (missions) {
@@ -103,7 +126,7 @@ export const fetchMissions = async (missionIds: string[]) => {
       const missingIds = missionIds.filter(id => !returnedIds.has(id));
       
       if (missingIds.length > 0) {
-        console.log('Missing missions for IDs:', missingIds);
+        console.log('[fetchMissions] Missing missions for IDs:', missingIds);
         
         // Create placeholder missions for missing IDs
         const placeholderMissions = missingIds.map(id => ({
@@ -114,14 +137,14 @@ export const fetchMissions = async (missionIds: string[]) => {
           points_reward: 0
         }));
         
-        console.log('Created placeholder missions:', placeholderMissions);
+        console.log('[fetchMissions] Created placeholder missions:', placeholderMissions);
         return [...missions, ...placeholderMissions];
       }
     }
     
     return missions || [];
   } catch (error: any) {
-    console.error('Exception while fetching missions:', error);
+    console.error('[fetchMissions] Exception while fetching missions:', error);
     return [];
   }
 };
