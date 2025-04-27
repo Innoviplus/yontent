@@ -1,4 +1,3 @@
-
 import { useState, useEffect } from 'react';
 import { Mission } from '@/lib/types';
 import { supabase } from '@/integrations/supabase/client';
@@ -40,7 +39,7 @@ export const useMissionsList = () => {
         countsMap[missionId] = count;
       });
       
-      console.log('Participation counts:', countsMap);
+      console.log('Updated participation counts:', countsMap);
       setMissionParticipationCounts(countsMap);
     } catch (error) {
       console.error('Error fetching participation counts:', error);
@@ -98,6 +97,7 @@ export const useMissionsList = () => {
       ).length;
       
       setActiveMissionsCount(activeCount);
+      
       await fetchParticipationCounts(transformedMissions.map(m => m.id));
       
       const sortedMissions = sortMissionsByExpiration(transformedMissions);
@@ -173,10 +173,6 @@ export const useMissionsList = () => {
     setMissions(sortMissionsByExpiration([...missions]));
   }, [sortBy]);
 
-  const getParticipationCount = (missionId: string): number => {
-    return missionParticipationCounts[missionId] || 0;
-  };
-
   return {
     missions,
     isLoading,
@@ -185,6 +181,6 @@ export const useMissionsList = () => {
     sortBy,
     setSortBy,
     fetchMissions,
-    getParticipationCount
+    getParticipationCount: (missionId: string) => missionParticipationCounts[missionId] || 0
   };
 };
