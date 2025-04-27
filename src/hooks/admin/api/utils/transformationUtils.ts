@@ -87,7 +87,8 @@ export const transformParticipationData = (data: any[]): MissionParticipation[] 
       };
       
       // Ensure mission type is always "REVIEW" or "RECEIPT"
-      const missionType = mission.type === 'RECEIPT' ? 'RECEIPT' : 'REVIEW';
+      // This explicit type assertion ensures we're getting the correct union type
+      const missionType = (mission.type === 'RECEIPT' ? 'RECEIPT' : 'REVIEW') as 'REVIEW' | 'RECEIPT';
       
       // Transform mission data to match Mission type with fallbacks
       const missionData: Mission = {
@@ -113,7 +114,9 @@ export const transformParticipationData = (data: any[]): MissionParticipation[] 
     } catch (error) {
       console.error('[transformParticipationData] Error transforming participation item:', item, error);
       
-      // Return a minimal valid object in case of error - make sure type is valid
+      // Return a minimal valid object in case of error - ensure type is strictly typed
+      const fallbackMissionType: 'REVIEW' | 'RECEIPT' = 'REVIEW';
+      
       return {
         id: item.id || 'error-id',
         missionId: item.mission_id || '',
@@ -133,7 +136,7 @@ export const transformParticipationData = (data: any[]): MissionParticipation[] 
           title: 'Error processing mission',
           description: '',
           pointsReward: 0,
-          type: 'REVIEW' // Default to 'REVIEW' as a safe fallback
+          type: fallbackMissionType // Using the explicitly typed fallback
         }
       };
     }
