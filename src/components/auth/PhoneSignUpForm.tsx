@@ -1,12 +1,12 @@
 
-import { useState, useEffect } from 'react';
+import { useState } from 'react';
 import { Form } from '@/components/ui/form';
 import OTPVerification from './otp/OTPVerification';
 import SignUpFormFields from './signup/SignUpFormFields';
 import { usePhoneSignUpForm } from '@/hooks/auth/usePhoneSignUpForm';
 
 const PhoneSignUpForm = () => {
-  const [userCountry, setUserCountry] = useState('HK');
+  const [userCountry] = useState('SG'); // Default and lock to Singapore
   const {
     form,
     showOTP,
@@ -19,20 +19,6 @@ const PhoneSignUpForm = () => {
     handleResendOtp,
     setShowOTP
   } = usePhoneSignUpForm();
-
-  useEffect(() => {
-    const detectCountry = async () => {
-      try {
-        const response = await fetch('https://ipapi.co/json/');
-        const data = await response.json();
-        setUserCountry(data.country_code || 'HK');
-      } catch (error) {
-        console.error('Failed to detect country', error);
-      }
-    };
-
-    detectCountry();
-  }, []);
 
   if (showOTP) {
     return (
