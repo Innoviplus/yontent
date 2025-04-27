@@ -58,3 +58,27 @@ export const fetchActiveMissions = async (): Promise<Mission[]> => {
     return [];
   }
 };
+
+/**
+ * Fetches participation count for a specific mission
+ */
+export const fetchMissionParticipationCount = async (missionId: string): Promise<number> => {
+  try {
+    console.log(`Fetching participation count for mission ${missionId}`);
+    
+    const { count, error } = await supabase
+      .from('mission_participations')
+      .select('*', { count: 'exact', head: true })
+      .eq('mission_id', missionId);
+      
+    if (error) {
+      throw error;
+    }
+    
+    console.log(`Found ${count || 0} participations for mission ${missionId}`);
+    return count || 0;
+  } catch (error: any) {
+    console.error(`Error fetching participation count for mission ${missionId}:`, error.message);
+    return 0;
+  }
+};

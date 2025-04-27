@@ -1,4 +1,3 @@
-
 import { useState, useEffect } from 'react';
 import { Mission } from '@/lib/types';
 import { supabase } from '@/integrations/supabase/client';
@@ -21,31 +20,26 @@ export const useMissionsList = () => {
     try {
       console.log("Fetching participation counts for missions:", missionIds);
       
-      // Use a single query to get all participation counts at once
-      const { data, error } = await supabase
-        .from('mission_participations')
-        .select('mission_id')
-        .in('mission_id', missionIds);
-        
-      if (error) {
-        throw error;
-      }
-      
-      // Count participations by mission_id
-      const countsMap: Record<string, number> = {};
-      
-      // Initialize all mission IDs with zero count
-      missionIds.forEach(id => {
-        countsMap[id] = 0;
+      // Make separate count request for each mission_id to get accurate counts
+      const countPromises = missionIds.map(async (missionId) => {
+        const { count, error } = await supabase
+          .from('mission_participations')
+          .select('*', { count: 'exact', head: true })
+          .eq('mission_id', missionId);
+          
+        return { missionId, count: count || 0, error };
       });
       
-      // Update counts based on data
-      if (data) {
-        data.forEach(participation => {
-          const missionId = participation.mission_id;
-          countsMap[missionId] = (countsMap[missionId] || 0) + 1;
-        });
-      }
+      const results = await Promise.all(countPromises);
+      
+      // Convert results to a record object
+      const countsMap: Record<string, number> = {};
+      results.forEach(result => {
+        if (result.error) {
+          console.error(`Error counting participations for mission ${result.missionId}:`, result.error);
+        }
+        countsMap[result.missionId] = result.count;
+      });
       
       console.log('Updated participation counts:', countsMap);
       setMissionParticipationCounts(countsMap);

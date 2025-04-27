@@ -87,25 +87,26 @@ const ActiveMissionsSection = () => {
     if (!missionIds.length) return;
     
     try {
-      // Use a query to count participations by mission_id
-      const { data, error } = await supabase
-        .from('mission_participations')
-        .select('mission_id, count')
-        .in('mission_id', missionIds)
-        .select('mission_id');
+      // Make separate count requests for each mission
+      const countPromises = missionIds.map(async (missionId) => {
+        const { count, error } = await supabase
+          .from('mission_participations')
+          .select('*', { count: 'exact', head: true })
+          .eq('mission_id', missionId);
+          
+        return { missionId, count: count || 0, error };
+      });
       
-      if (error) throw error;
+      const results = await Promise.all(countPromises);
       
-      // Count participations by mission_id
+      // Convert results to a record object
       const counts: Record<string, number> = {};
-      missionIds.forEach(id => { counts[id] = 0 });
-      
-      if (data) {
-        data.forEach(item => {
-          const missionId = item.mission_id;
-          counts[missionId] = (counts[missionId] || 0) + 1;
-        });
-      }
+      results.forEach(result => {
+        if (result.error) {
+          console.error(`Error counting participations for mission ${result.missionId}:`, result.error);
+        }
+        counts[result.missionId] = result.count;
+      });
       
       console.log('Home page mission participation counts:', counts);
       setParticipationCounts(counts);

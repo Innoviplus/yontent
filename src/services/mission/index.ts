@@ -1,12 +1,17 @@
 
-// Export all mission service functions from this index file
-export { fetchActiveMissions } from './fetchMissions';
-export { submitMissionReceipt } from './submitMissions';
-export { 
-  ensureMissionStorageBucketExists,
-  initializeMissionService
-} from './storageBucket';
-export { 
-  updateMissionExpiryDate,
-  updateItoenMissionExpiry
-} from './updateMissionExpiry';
+import { fetchActiveMissions, fetchMissionParticipationCount } from './fetchMissions';
+import { submitMissionReceipt } from './submitMissions';
+import { updateMissionExpiry } from './updateMissionExpiry';
+import { getStorageBucket } from './storageBucket';
+
+export const initializeMissionService = () => {
+  console.log('Mission service initialized');
+};
+
+export {
+  fetchActiveMissions,
+  fetchMissionParticipationCount,
+  submitMissionReceipt,
+  updateMissionExpiry,
+  getStorageBucket
+};

@@ -35,7 +35,7 @@ const MissionsGrid = ({ missions, isLoading, getParticipationCount = () => 0 }: 
         <MissionCard 
           key={mission.id} 
           mission={mission} 
-          participationCount={getParticipationCount ? getParticipationCount(mission.id) : 0}
+          participationCount={getParticipationCount(mission.id)}
         />
       ))}
     </div>
