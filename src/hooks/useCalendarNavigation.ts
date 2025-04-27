@@ -14,10 +14,11 @@ export const useCalendarNavigation = ({
   onMonthSelect,
   onYearSelect
 }: UseCalendarNavigationProps) => {
-  const [currentMonth, setCurrentMonth] = useState<Date | undefined>(
+  const [currentMonth, setCurrentMonth] = useState<Date>(
     month || new Date()
   );
 
+  // Update internal state when month prop changes
   useEffect(() => {
     if (month) {
       setCurrentMonth(month);
@@ -27,19 +28,15 @@ export const useCalendarNavigation = ({
   const handleMonthChange = (monthStr: string) => {
     const monthNum = parseInt(monthStr);
     
-    if (currentMonth) {
-      const newDate = new Date(currentMonth);
-      newDate.setMonth(monthNum);
-      setCurrentMonth(newDate);
-    }
+    const newDate = new Date(currentMonth);
+    newDate.setMonth(monthNum);
+    setCurrentMonth(newDate);
     
     if (onMonthSelect) {
       onMonthSelect(monthNum);
     }
     
-    if (onMonthChange && currentMonth) {
-      const newDate = new Date(currentMonth);
-      newDate.setMonth(monthNum);
+    if (onMonthChange) {
       onMonthChange(newDate);
     }
   };
@@ -47,19 +44,15 @@ export const useCalendarNavigation = ({
   const handleYearChange = (yearStr: string) => {
     const yearNum = parseInt(yearStr);
     
-    if (currentMonth) {
-      const newDate = new Date(currentMonth);
-      newDate.setFullYear(yearNum);
-      setCurrentMonth(newDate);
-    }
+    const newDate = new Date(currentMonth);
+    newDate.setFullYear(yearNum);
+    setCurrentMonth(newDate);
     
     if (onYearSelect) {
       onYearSelect(yearNum);
     }
     
-    if (onMonthChange && currentMonth) {
-      const newDate = new Date(currentMonth);
-      newDate.setFullYear(yearNum);
+    if (onMonthChange) {
       onMonthChange(newDate);
     }
   };

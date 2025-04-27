@@ -1,10 +1,10 @@
 
 import * as React from "react";
-import { DayPickerCaption, useDayPicker } from "react-day-picker";
+import { useDayPicker } from "react-day-picker";
 import { MonthSelect } from "./MonthSelect";
 import { YearSelect } from "./YearSelect";
 
-interface CalendarCaptionProps extends React.ComponentProps<typeof DayPickerCaption> {
+interface CalendarCaptionProps {
   onMonthSelect?: (month: number) => void;
   onYearSelect?: (year: number) => void;
   onMonthChange?: (month: Date) => void;
@@ -14,9 +14,15 @@ export const CalendarCaption: React.FC<CalendarCaptionProps> = ({
   onMonthSelect,
   onYearSelect,
   onMonthChange,
-  ...props
 }) => {
-  const { currentMonth, fromDate, toDate } = useDayPicker();
+  const context = useDayPicker();
+  
+  // If we don't have a valid context or month, don't render the component
+  if (!context || !context.month) {
+    return null;
+  }
+  
+  const currentMonth = context.month;
   
   const handleMonthChange = (value: string) => {
     const monthNum = parseInt(value);
@@ -29,6 +35,11 @@ export const CalendarCaption: React.FC<CalendarCaptionProps> = ({
     
     if (onMonthChange) {
       onMonthChange(newDate);
+    }
+    
+    // Use the context's goToMonth function
+    if (context.goToMonth) {
+      context.goToMonth(newDate);
     }
   };
   
@@ -43,6 +54,11 @@ export const CalendarCaption: React.FC<CalendarCaptionProps> = ({
     
     if (onMonthChange) {
       onMonthChange(newDate);
+    }
+    
+    // Use the context's goToMonth function
+    if (context.goToMonth) {
+      context.goToMonth(newDate);
     }
   };
 

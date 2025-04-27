@@ -71,9 +71,8 @@ function Calendar({
       components={{
         IconLeft: () => <ChevronLeft className="h-4 w-4" />,
         IconRight: () => <ChevronRight className="h-4 w-4" />,
-        Caption: (captionProps) => (
+        Caption: () => (
           <CalendarCaption
-            {...captionProps}
             onMonthSelect={onMonthSelect}
             onYearSelect={onYearSelect}
             onMonthChange={props.onMonthChange}

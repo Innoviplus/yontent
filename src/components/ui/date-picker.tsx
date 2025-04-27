@@ -14,9 +14,14 @@ interface DatePickerProps {
 }
 
 export function DatePicker({ value, onChange, placeholder = "Select date" }: DatePickerProps) {
+  // Track the current month in the calendar view
+  const [calendarMonth, setCalendarMonth] = React.useState<Date | undefined>(
+    value || undefined
+  );
+
   const handleMonthChange = (date: Date) => {
-    // This allows the calendar to update when month/year selectors are used
-    // without actually changing the selected date
+    // Update the calendar view without changing the selected date
+    setCalendarMonth(date);
   };
 
   return (
@@ -39,6 +44,7 @@ export function DatePicker({ value, onChange, placeholder = "Select date" }: Dat
           selected={value || undefined}
           onSelect={onChange}
           onMonthChange={handleMonthChange}
+          month={calendarMonth}
           initialFocus
           className="pointer-events-auto"
         />
