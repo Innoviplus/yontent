@@ -17,7 +17,7 @@ import { toast } from "sonner";
 
 const UserMenuDropdown = () => {
   const { user, userProfile, signOut } = useAuth();
-  const { userPoints } = usePoints();
+  const { userPoints, refreshPoints } = usePoints();
   const navigate = useNavigate();
   
   if (!user) return null;
@@ -36,9 +36,14 @@ const UserMenuDropdown = () => {
     }
   };
   
+  // Force refresh points when dropdown is opened
+  const handleDropdownOpen = () => {
+    refreshPoints();
+  };
+  
   return (
     <DropdownMenu>
-      <DropdownMenuTrigger className="focus:outline-none" asChild>
+      <DropdownMenuTrigger className="focus:outline-none" asChild onClick={handleDropdownOpen}>
         <div className="flex items-center gap-2 cursor-pointer">
           <Avatar className="h-8 w-8 border">
             <AvatarImage src={userProfile?.avatar} />

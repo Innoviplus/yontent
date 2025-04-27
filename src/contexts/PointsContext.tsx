@@ -27,7 +27,7 @@ export const usePoints = () => {
 export const PointsProvider = ({ children }: { children: ReactNode }) => {
   const [userPoints, setUserPoints] = useState<number>(0);
   const [isLoading, setIsLoading] = useState<boolean>(true);
-  const { user, userProfile } = useAuth(); // Using the useAuth hook instead of direct context
+  const { user, userProfile } = useAuth();
 
   const fetchUserPoints = async () => {
     if (!user) {
@@ -46,31 +46,75 @@ export const PointsProvider = ({ children }: { children: ReactNode }) => {
 
       if (error) {
         console.error('Error fetching user points:', error);
-        // Don't show toast on initial load to prevent spam
-        // Only show toast on explicit refresh or subsequent failures
         return;
       }
       
       setUserPoints(data?.points || 0);
     } catch (error) {
       console.error('Error fetching user points:', error);
-      // Don't show toast on initial load
     } finally {
       setIsLoading(false);
     }
   };
 
-  // Fetch points when user is available or userProfile changes
+  // Set up a subscription to listen for point transactions
   useEffect(() => {
-    if (user) {
-      console.log("PointsProvider: User available, fetching points");
+    if (!user) return;
+
+    // Subscribe to the user's profile changes to detect point updates
+    const profilesChannel = supabase
+      .channel('profile-points-changes')
+      .on('postgres_changes', 
+        { 
+          event: 'UPDATE', 
+          schema: 'public',
+          table: 'profiles',
+          filter: `id=eq.${user.id}`
+        }, 
+        (payload) => {
+          console.log('Profile updated:', payload);
+          // Update points when profile is updated
+          if (payload.new && 'points' in payload.new) {
+            setUserPoints(payload.new.points as number);
+          }
+        }
+      )
+      .subscribe();
+
+    // Subscribe to point transactions to know when new points are added
+    const transactionsChannel = supabase
+      .channel('point-transactions')
+      .on('postgres_changes', 
+        { 
+          event: 'INSERT', 
+          schema: 'public',
+          table: 'point_transactions',
+          filter: `user_id=eq.${user.id}`
+        }, 
+        () => {
+          // When a new transaction is added, refresh the points
+          fetchUserPoints();
+        }
+      )
+      .subscribe();
+
+    // Fetch initial points
+    fetchUserPoints();
+
+    return () => {
+      // Clean up subscriptions
+      supabase.removeChannel(profilesChannel);
+      supabase.removeChannel(transactionsChannel);
+    };
+  }, [user]); 
+
+  // Also fetch points when userProfile changes
+  useEffect(() => {
+    if (user && userProfile) {
+      console.log("PointsProvider: Profile updated, refreshing points");
       fetchUserPoints();
-    } else {
-      console.log("PointsProvider: No user available");
-      setUserPoints(0);
-      setIsLoading(false);
     }
-  }, [user, userProfile]); // Add userProfile as a dependency to refresh points when profile changes
+  }, [userProfile]);
 
   const refreshPoints = async () => {
     try {
