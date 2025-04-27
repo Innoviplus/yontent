@@ -7,7 +7,6 @@ export const fetchMissionParticipations = async () => {
   console.log('[fetchMissionParticipations] Fetching all mission participations');
   
   try {
-    // Use specific column aliases to avoid ambiguity
     const { data: participations, error } = await supabase
       .from('mission_participations')
       .select(`
@@ -18,14 +17,14 @@ export const fetchMissionParticipations = async () => {
         submission_data,
         created_at,
         updated_at,
-        missions:mission_id (
+        missions (
           id, 
           title, 
           description,
           points_reward,
           type
         ),
-        profiles:user_id (
+        profiles (
           id,
           username,
           email,
@@ -76,14 +75,14 @@ export const fetchMissionParticipationsWithFilters = async (
         submission_data,
         created_at,
         updated_at,
-        missions:mission_id (
+        missions (
           id, 
           title, 
           description,
           points_reward,
           type
         ),
-        profiles:user_id (
+        profiles (
           id,
           username,
           email,

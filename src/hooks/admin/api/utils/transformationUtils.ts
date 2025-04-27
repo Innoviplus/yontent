@@ -29,98 +29,57 @@ export const transformParticipationData = (data: any[]): MissionParticipation[] 
     return [];
   }
   
-  // Log all the user information before transformation to help debug
-  console.log('[transformParticipationData] User IDs in data:',
-    data.map(item => ({
-      userId: item.user_id,
-      username: item.user?.username || 'Unknown',
-      hasUserObject: !!item.user
-    }))
-  );
-
   const transformedData = data.map(item => {
     try {
-      // Make sure user data exists with default values if missing
-      const user = item.user || {};
-      const userId = item.user_id || '';
+      // Extract the nested data from Supabase's response format
+      const mission = item.missions || {};
+      const profile = item.profiles || {};
       
-      // Special handling for YY123 user to ensure they're properly displayed
-      const isYY123User = userId === '02ff323c-a2d7-45ed-9bdc-a1d5580aba93';
-      
-      // Make sure mission data exists with default values if missing
-      const mission = item.mission || {};
-      const missionId = item.mission_id || '';
-      
-      // Make sure dates are properly parsed
-      let createdAt: Date;
-      let updatedAt: Date;
-      
-      try {
-        createdAt = item.created_at ? new Date(item.created_at) : new Date();
-      } catch (e) {
-        console.warn(`[transformParticipationData] Error parsing created_at for participation ${item.id}:`, e);
-        createdAt = new Date();
-      }
-      
-      try {
-        updatedAt = item.updated_at ? new Date(item.updated_at) : new Date();
-      } catch (e) {
-        console.warn(`[transformParticipationData] Error parsing updated_at for participation ${item.id}:`, e);
-        updatedAt = new Date();
-      }
-      
-      // Create a dummy username based on user_id if username is missing
-      const fallbackUsername = isYY123User ? 'YY123' : (userId ? `User-${userId.substring(0, 6)}` : 'Unknown User');
-      const username = user.username || fallbackUsername;
-      
-      console.log(`[transformParticipationData] Processing item ${item.id}:`, {
-        userId,
-        username,
-        submissionData: item.submission_data,
-        status: item.status
-      });
-      
-      // Transform user data to match UserProfile type with fallbacks
+      // Transform user data to match UserProfile type
       const userProfile: UserProfile = {
-        id: userId,
-        username: username,
-        email: user.email || '',
-        avatar: extractAvatarUrl(user)
+        id: item.user_id || '',
+        username: profile.username || `User-${item.user_id?.substring(0, 6) || 'Unknown'}`,
+        email: profile.email || '',
+        avatar: profile.avatar || null
       };
       
-      // Get the mission type string value from the mission object
-      let missionTypeValue = mission.type || 'REVIEW';
+      // Handle special case for YY123 user
+      if (item.user_id === '02ff323c-a2d7-45ed-9bdc-a1d5580aba93') {
+        userProfile.username = 'YY123';
+      }
       
-      // Validate and ensure the mission type is one of the allowed values
-      // This explicitly handles the TypeScript union type requirement
+      // Get the mission type string value
+      const missionTypeValue = mission.type || 'REVIEW';
+      
+      // Ensure the mission type is one of the allowed values
       const validMissionType: 'REVIEW' | 'RECEIPT' = 
         missionTypeValue === 'RECEIPT' ? 'RECEIPT' : 'REVIEW';
       
-      // Transform mission data to match Mission type with fallbacks
+      // Transform mission data
       const missionData: Mission = {
-        id: missionId,
-        title: mission.title || `Mission-${missionId.substring(0, 6)}`,
+        id: item.mission_id || '',
+        title: mission.title || `Mission-${item.mission_id?.substring(0, 6) || 'Unknown'}`,
         description: mission.description || 'No description available',
         pointsReward: typeof mission.points_reward === 'number' ? mission.points_reward : 0,
         type: validMissionType
       };
       
-      // Return the transformed participation with all required fields
+      // Return the transformed participation
       return {
         id: item.id || '',
-        missionId: missionId,
-        userId: userId,
+        missionId: item.mission_id || '',
+        userId: item.user_id || '',
         status: item.status || 'PENDING',
-        createdAt: createdAt,
-        updatedAt: updatedAt,
+        createdAt: item.created_at ? new Date(item.created_at) : new Date(),
+        updatedAt: item.updated_at ? new Date(item.updated_at) : new Date(),
         submissionData: item.submission_data || null,
         user: userProfile,
         mission: missionData
       };
     } catch (error) {
-      console.error('[transformParticipationData] Error transforming participation item:', item, error);
+      console.error('[transformParticipationData] Error transforming item:', item.id, error);
       
-      // Return a minimal valid object in case of error with correct typing
+      // Return a minimal valid object in case of error
       return {
         id: item.id || 'error-id',
         missionId: item.mission_id || '',
@@ -131,8 +90,7 @@ export const transformParticipationData = (data: any[]): MissionParticipation[] 
         submissionData: null,
         user: {
           id: item.user_id || '',
-          username: item.user_id === '02ff323c-a2d7-45ed-9bdc-a1d5580aba93' ? 'YY123' : 
-                   `Error-${item.user_id ? item.user_id.substring(0, 6) : 'Unknown'}`,
+          username: 'Error-User',
           email: '',
           avatar: null
         },
@@ -148,10 +106,5 @@ export const transformParticipationData = (data: any[]): MissionParticipation[] 
   });
   
   console.log('[transformParticipationData] Transformed data length:', transformedData.length);
-  
-  if (transformedData.length > 0) {
-    console.log('[transformParticipationData] First transformed item sample:', transformedData[0]);
-  }
-  
   return transformedData;
 };
