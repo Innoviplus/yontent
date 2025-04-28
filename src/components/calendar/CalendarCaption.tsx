@@ -36,11 +36,9 @@ export const CalendarCaption: React.FC<CalendarCaptionProps> = ({
       onMonthChange(newDate);
     }
     
-    // Fix: Check if toMonth is a function before calling it
-    if (context.goToMonth && typeof context.goToMonth === 'function') {
-      context.goToMonth(newDate);
-    } else if (context.toMonth && typeof context.toMonth === 'function') {
-      context.toMonth(newDate);
+    // Proper type checking before calling context methods
+    if (context.onMonthChange && typeof context.onMonthChange === 'function') {
+      context.onMonthChange(newDate);
     }
   };
   
@@ -57,11 +55,9 @@ export const CalendarCaption: React.FC<CalendarCaptionProps> = ({
       onMonthChange(newDate);
     }
     
-    // Fix: Check if toMonth is a function before calling it
-    if (context.goToMonth && typeof context.goToMonth === 'function') {
-      context.goToMonth(newDate);
-    } else if (context.toMonth && typeof context.toMonth === 'function') {
-      context.toMonth(newDate);
+    // Proper type checking before calling context methods
+    if (context.onMonthChange && typeof context.onMonthChange === 'function') {
+      context.onMonthChange(newDate);
     }
   };
 
