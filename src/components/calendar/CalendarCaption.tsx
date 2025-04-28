@@ -36,7 +36,7 @@ export const CalendarCaption: React.FC<CalendarCaptionProps> = ({
       onMonthChange(newDate);
     }
     
-    // Fix: Use context.toMonth as a function
+    // Fix: Use context.toMonth as a method passing the new date
     if (context.toMonth) {
       context.toMonth(newDate);
     }
@@ -55,7 +55,7 @@ export const CalendarCaption: React.FC<CalendarCaptionProps> = ({
       onMonthChange(newDate);
     }
     
-    // Fix: Use context.toMonth as a function
+    // Fix: Use context.toMonth as a method passing the new date
     if (context.toMonth) {
       context.toMonth(newDate);
     }
