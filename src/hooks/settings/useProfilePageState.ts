@@ -1,7 +1,7 @@
 
 import { useState } from 'react';
 import { useAuth } from '@/contexts/AuthContext';
-import { toast } from 'sonner';
+import { toast } from 'sonner'; // Re-add the toast import
 import { ProfileFormValues } from '@/schemas/profileFormSchema';
 
 export const useProfilePageState = () => {
@@ -22,7 +22,6 @@ export const useProfilePageState = () => {
       await refreshUserProfile();
       
       setFormSuccess(true);
-      toast.success('Profile updated successfully');
       
       // Ensure form is marked as pristine after successful submission
       profileForm.reset(values, { keepValues: true, keepDirty: false });

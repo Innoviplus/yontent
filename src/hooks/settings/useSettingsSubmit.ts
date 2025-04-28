@@ -7,6 +7,20 @@ import { useProfileData } from './useProfileData';
 import { SettingsFormValues } from '@/schemas/settingsFormSchema';
 import { prepareProfileData } from '@/services/profile/profileSubmitService';
 
+// Add debounce utility to prevent multiple toast notifications
+const createDebouncer = () => {
+  let timeout: NodeJS.Timeout | null = null;
+  return (fn: Function, delay: number) => {
+    if (timeout) clearTimeout(timeout);
+    timeout = setTimeout(() => {
+      timeout = null;
+      fn();
+    }, delay);
+  };
+};
+
+const debounceToast = createDebouncer();
+
 export const useSettingsSubmit = () => {
   const { user } = useAuth();
   const { toast } = useToast();
@@ -23,7 +37,9 @@ export const useSettingsSubmit = () => {
       const success = await updateProfileData(profileData);
       
       if (success) {
-        sonnerToast.success('Your profile has been updated');
+        debounceToast(() => {
+          sonnerToast.success('Your profile has been updated');
+        }, 300);
       } else {
         throw new Error('Failed to update profile');
       }
