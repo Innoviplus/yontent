@@ -5,6 +5,20 @@ import { toast as sonnerToast } from 'sonner';
 import { signOut } from '@/services/auth/sessionAuth';
 import { useAuth } from '@/contexts/AuthContext';
 
+// Add debounce utility to prevent multiple toast notifications
+const createDebouncer = () => {
+  let timeout: NodeJS.Timeout | null = null;
+  return (fn: Function, delay: number) => {
+    if (timeout) clearTimeout(timeout);
+    timeout = setTimeout(() => {
+      timeout = null;
+      fn();
+    }, delay);
+  };
+};
+
+const debounceToast = createDebouncer();
+
 export const useAccountActions = (
   navigate: (path: string) => void
 ) => {
@@ -20,7 +34,9 @@ export const useAccountActions = (
     
     try {
       // In a real application, this would typically be handled by a secure server-side function
-      sonnerToast.info('Account deletion would be processed here. Signing you out for demo purposes.');
+      debounceToast(() => {
+        sonnerToast.info('Account deletion would be processed here. Signing you out for demo purposes.');
+      }, 300);
       await authSignOut();
       navigate('/');
     } catch (error: any) {
@@ -51,7 +67,9 @@ export const useAccountActions = (
       }
 
       console.log("Sign out processes completed");
-      sonnerToast.success("You have been logged out");
+      debounceToast(() => {
+        sonnerToast.success("You have been logged out");
+      }, 300);
       navigate('/');
     } catch (error: any) {
       console.error("Logout error:", error);
