@@ -5,6 +5,9 @@ import { toast } from 'sonner';
 import { User } from '@/lib/types';
 import { Json } from '@/integrations/supabase/types';
 
+// Define a specific type for the extended data to avoid deep recursion
+type ExtendedData = Record<string, any>;
+
 // Define a more explicit type to avoid deep recursion
 type ProfileWithCounts = {
   id: string;
@@ -15,7 +18,7 @@ type ProfileWithCounts = {
   createdAt: Date;
   completedReviews: number;
   completedMissions: number;
-  extendedData?: Json;
+  extendedData?: ExtendedData;
   followersCount?: number;
   followingCount?: number;
   transactionsCount?: number;
@@ -88,6 +91,11 @@ export const useDashboardProfile = (userId: string | undefined) => {
         // Calculate total transactions count
         const totalTransactionsCount = (pointTransactionsCount || 0) + (redemptionRequestsCount || 0);
 
+        // Convert Json to ExtendedData to avoid type issues
+        const extendedData: ExtendedData = profile.extended_data 
+          ? (typeof profile.extended_data === 'object' ? profile.extended_data as ExtendedData : {})
+          : {};
+
         // Transform the profile data to match the ProfileWithCounts type
         const userWithCounts: ProfileWithCounts = {
           id: profile.id,
@@ -98,7 +106,7 @@ export const useDashboardProfile = (userId: string | undefined) => {
           createdAt: new Date(profile.created_at),
           completedReviews: reviewsCount || 0,
           completedMissions: missionsCount || 0,
-          extendedData: profile.extended_data,
+          extendedData: extendedData,
           followersCount: profile.followers_count || 0,
           followingCount: profile.following_count || 0,
           transactionsCount: totalTransactionsCount || 0

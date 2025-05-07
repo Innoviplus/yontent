@@ -1,6 +1,6 @@
 
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from "@/components/ui/dialog";
-import { Participation } from "@/hooks/admin/useParticipations";
+import { Participation, SubmissionData } from "@/hooks/admin/useParticipations";
 import { ScrollArea } from "@/components/ui/scroll-area";
 import { Separator } from "@/components/ui/separator";
 import { Badge } from "@/components/ui/badge";
@@ -14,9 +14,11 @@ interface SubmissionReviewDialogProps {
 const SubmissionReviewDialog = ({ isOpen, onClose, participation }: SubmissionReviewDialogProps) => {
   if (!participation) return null;
   
-  const submissionData = participation.submission_data || {};
-  const isReview = submissionData.submission_type === 'REVIEW' || submissionData.review_id;
-  const isReceipt = submissionData.submission_type === 'RECEIPT' || submissionData.receipt_images;
+  const submissionData = participation.submission_data as unknown as SubmissionData || {};
+  const isReview = submissionData.submission_type === 'REVIEW' || 
+                   (typeof submissionData === 'object' && 'review_id' in submissionData);
+  const isReceipt = submissionData.submission_type === 'RECEIPT' || 
+                    (typeof submissionData === 'object' && 'receipt_images' in submissionData);
   
   // Handle different submission types
   const renderSubmissionContent = () => {
@@ -25,10 +27,17 @@ const SubmissionReviewDialog = ({ isOpen, onClose, participation }: SubmissionRe
         <div className="space-y-4">
           <div>
             <h3 className="text-sm font-medium">Review Content:</h3>
-            <p className="mt-1 text-sm text-gray-700 whitespace-pre-wrap">{submissionData.content || "No content provided"}</p>
+            <p className="mt-1 text-sm text-gray-700 whitespace-pre-wrap">
+              {typeof submissionData === 'object' && 'content' in submissionData 
+                ? String(submissionData.content) 
+                : "No content provided"}
+            </p>
           </div>
           
-          {submissionData.review_images && submissionData.review_images.length > 0 && (
+          {typeof submissionData === 'object' && 
+           'review_images' in submissionData && 
+           Array.isArray(submissionData.review_images) && 
+           submissionData.review_images.length > 0 && (
             <div>
               <h3 className="text-sm font-medium mb-2">Review Images:</h3>
               <div className="grid grid-cols-2 gap-2">
@@ -50,7 +59,10 @@ const SubmissionReviewDialog = ({ isOpen, onClose, participation }: SubmissionRe
           <div>
             <h3 className="text-sm font-medium mb-2">Receipt Images:</h3>
             <div className="grid grid-cols-1 gap-4">
-              {submissionData.receipt_images && submissionData.receipt_images.map((image: string, index: number) => (
+              {typeof submissionData === 'object' && 
+               'receipt_images' in submissionData && 
+               Array.isArray(submissionData.receipt_images) &&
+               submissionData.receipt_images.map((image: string, index: number) => (
                 <div key={index} className="relative rounded-md overflow-hidden">
                   <img src={image} alt={`Receipt image ${index + 1}`} className="object-contain w-full" />
                 </div>

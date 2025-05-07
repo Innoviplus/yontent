@@ -4,6 +4,21 @@ import { supabase } from '@/integrations/supabase/client';
 import { toast } from 'sonner';
 import { Json } from '@/integrations/supabase/types';
 
+// Define types for submission data to help with type checking
+export interface ReviewSubmissionData {
+  submission_type: 'REVIEW';
+  review_id: string;
+  content?: string;
+  review_images?: string[];
+}
+
+export interface ReceiptSubmissionData {
+  submission_type: 'RECEIPT';
+  receipt_images: string[];
+}
+
+export type SubmissionData = ReviewSubmissionData | ReceiptSubmissionData | Record<string, any>;
+
 export interface Participation {
   id: string;
   mission_id: string;
