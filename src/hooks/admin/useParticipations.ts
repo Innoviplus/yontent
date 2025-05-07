@@ -61,16 +61,16 @@ export const useParticipations = (statusFilter: string | null = null) => {
         // For debugging
         console.log('Processing item:', item);
         
-        // Handle user data instead of profile
-        const user = item.user;
+        // Handle user data instead of profile - fix possible null issues
+        const user = item.user || {};
         console.log('User data:', user);
         
         // Create a profile-like object from user data
-        const profileData = user && typeof user === 'object' ? {
-          id: user.id || '',
-          username: user.email ? user.email.split('@')[0] : 'Unknown User',
+        const profileData = {
+          id: typeof user.id === 'string' ? user.id : '',
+          username: typeof user.email === 'string' ? user.email.split('@')[0] : 'Unknown User',
           // No avatar in user table, can be added later if needed
-        } : undefined;
+        };
         
         return {
           ...item,
