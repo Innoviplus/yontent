@@ -105,8 +105,7 @@ export const useParticipations = (statusFilter: string | null = null) => {
               id: profile.id || '',
               username: profile.username || 'Unknown User',
               avatar: profile.avatar
-            },
-            user: undefined // Remove the original user field to match our Participation interface
+            }
           });
         } catch (profileError) {
           console.error('Error processing profile:', profileError);
@@ -124,8 +123,7 @@ export const useParticipations = (statusFilter: string | null = null) => {
               id: '',
               username: 'Unknown User',
               avatar: undefined
-            },
-            user: undefined
+            }
           });
         }
       }
