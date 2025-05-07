@@ -9,7 +9,7 @@ export const useMissionOperations = (refreshMissions: () => Promise<void>) => {
   const [isLoading, setIsLoading] = useState(false);
   const { formatMissionForDatabase, formatMissionUpdatesForDatabase } = useMissionFormatters();
 
-  const addMission = async (missionData: Omit<Mission, 'id' | 'createdAt' | 'updatedAt'>) => {
+  const addMission = async (missionData: Partial<Mission>) => {
     try {
       // Log before saving to check data integrity
       console.log('Adding mission with rich text:', {

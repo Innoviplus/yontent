@@ -7,6 +7,7 @@ import MissionList from './MissionList';
 import MissionFormWrapper from './MissionFormWrapper';
 import MissionsLoadingState from './MissionsLoadingState';
 import MissionDialog from './dialog/MissionDialog';
+import { toast } from 'sonner';
 
 interface MissionsManagementProps {
   missions: Mission[];
@@ -45,6 +46,37 @@ const MissionsManagement = ({
     await refreshMissions();
   };
 
+  const handleToggleStatus = async (mission: Mission) => {
+    const newStatus = mission.status === 'ACTIVE' ? 'DRAFT' : 'ACTIVE';
+    const result = await updateMission(mission.id, { status: newStatus });
+    
+    if (result) {
+      toast.success(
+        `Mission ${mission.title} ${newStatus === 'ACTIVE' ? 'activated' : 'deactivated'} successfully`
+      );
+    }
+    
+    return result;
+  };
+
+  const handleDuplicateMission = async (mission: Mission) => {
+    const timestamp = new Date().toLocaleTimeString();
+    const duplicateMission = {
+      ...mission,
+      title: `${mission.title} (Copy - ${timestamp})`,
+      status: 'DRAFT' // Always create duplicates as drafts
+    };
+    
+    // Remove the id and timestamps from the duplicate to create a new record
+    const { id, createdAt, updatedAt, ...missionData } = duplicateMission;
+    
+    const result = await addMission(missionData);
+    if (result) {
+      toast.success(`Mission "${mission.title}" duplicated successfully`);
+      await refreshMissions();
+    }
+  };
+
   if (isLoading && !maxLoadingTime) {
     return <MissionsLoadingState />;
   }
@@ -65,6 +97,8 @@ const MissionsManagement = ({
           setSelectedMission(mission);
           setIsAddingMission(true);
         }}
+        onToggleStatus={handleToggleStatus}
+        onDuplicate={handleDuplicateMission}
         onMissionClick={handleMissionClick}
       />
 
