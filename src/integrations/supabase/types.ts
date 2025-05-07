@@ -484,6 +484,10 @@ export type Database = {
         Args: { views: number; likes: number; avg_time: number; ctr: number }
         Returns: number
       }
+      handle_mission_approval: {
+        Args: { p_participation_id: string; p_status: string }
+        Returns: Json
+      }
       increment_points: {
         Args: { user_id_param: string; points_amount_param: number }
         Returns: number
