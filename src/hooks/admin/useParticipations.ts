@@ -25,6 +25,13 @@ export interface Participation {
   };
 }
 
+// Define a type for the profile data to help with type checking
+interface ProfileData {
+  id?: string;
+  username?: string;
+  avatar?: string;
+}
+
 export const useParticipations = (statusFilter: string | null = null) => {
   const [participations, setParticipations] = useState<Participation[]>([]);
   const [loading, setLoading] = useState(true);
@@ -61,16 +68,9 @@ export const useParticipations = (statusFilter: string | null = null) => {
         // For debugging
         console.log('Processing item:', item);
         
-        // Handle profile data - ensure it's an object
-        const profile = item.profile || {};
-        console.log('Profile data:', profile);
-        
-        // Create a properly typed profile object with fallbacks
-        const profileData = {
-          id: typeof profile.id === 'string' ? profile.id : '',
-          username: typeof profile.username === 'string' ? profile.username : 'Unknown User',
-          avatar: typeof profile.avatar === 'string' ? profile.avatar : undefined
-        };
+        // Type assertion for profile data with safe defaults
+        const profileData: ProfileData = item.profile || {};
+        console.log('Profile data:', profileData);
         
         return {
           ...item,
@@ -80,7 +80,11 @@ export const useParticipations = (statusFilter: string | null = null) => {
               ? item.mission.type 
               : 'REVIEW' // Default to 'REVIEW' if type is invalid
           } : undefined,
-          profile: profileData,
+          profile: {
+            id: profileData.id || '',
+            username: profileData.username || 'Unknown User',
+            avatar: profileData.avatar
+          },
           user: undefined // Remove the original user field to match our Participation interface
         };
       });
