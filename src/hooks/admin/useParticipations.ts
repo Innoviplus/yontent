@@ -61,6 +61,11 @@ export const useParticipations = (statusFilter: string | null = null) => {
         mission: item.mission ? {
           ...item.mission,
           type: item.mission.type as 'REVIEW' | 'RECEIPT' // Ensure correct typing
+        } : undefined,
+        profile: item.profile && typeof item.profile !== 'string' ? {
+          id: item.profile.id,
+          username: item.profile.username,
+          avatar: item.profile.avatar
         } : undefined
       }));
       
