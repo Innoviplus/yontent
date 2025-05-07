@@ -1,6 +1,6 @@
 
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from "@/components/ui/dialog";
-import { Participation, SubmissionData } from "@/hooks/admin/useParticipations";
+import { Participation, SubmissionData, ReviewSubmissionData, ReceiptSubmissionData } from "@/hooks/admin/participations/useParticipations";
 import { ScrollArea } from "@/components/ui/scroll-area";
 import { Separator } from "@/components/ui/separator";
 import { Badge } from "@/components/ui/badge";
@@ -11,14 +11,21 @@ interface SubmissionReviewDialogProps {
   participation?: Participation;
 }
 
+// Type guard functions to safely check submission data types
+const isReviewSubmission = (data: any): data is ReviewSubmissionData => {
+  return data && (data.submission_type === 'REVIEW' || 'review_id' in data);
+};
+
+const isReceiptSubmission = (data: any): data is ReceiptSubmissionData => {
+  return data && (data.submission_type === 'RECEIPT' || 'receipt_images' in data);
+};
+
 const SubmissionReviewDialog = ({ isOpen, onClose, participation }: SubmissionReviewDialogProps) => {
   if (!participation) return null;
   
   const submissionData = participation.submission_data as unknown as SubmissionData || {};
-  const isReview = submissionData.submission_type === 'REVIEW' || 
-                   (typeof submissionData === 'object' && 'review_id' in submissionData);
-  const isReceipt = submissionData.submission_type === 'RECEIPT' || 
-                    (typeof submissionData === 'object' && 'receipt_images' in submissionData);
+  const isReview = isReviewSubmission(submissionData);
+  const isReceipt = isReceiptSubmission(submissionData);
   
   // Handle different submission types
   const renderSubmissionContent = () => {
@@ -28,14 +35,11 @@ const SubmissionReviewDialog = ({ isOpen, onClose, participation }: SubmissionRe
           <div>
             <h3 className="text-sm font-medium">Review Content:</h3>
             <p className="mt-1 text-sm text-gray-700 whitespace-pre-wrap">
-              {typeof submissionData === 'object' && 'content' in submissionData 
-                ? String(submissionData.content) 
-                : "No content provided"}
+              {submissionData.content || "No content provided"}
             </p>
           </div>
           
-          {typeof submissionData === 'object' && 
-           'review_images' in submissionData && 
+          {submissionData.review_images && 
            Array.isArray(submissionData.review_images) && 
            submissionData.review_images.length > 0 && (
             <div>
@@ -59,8 +63,7 @@ const SubmissionReviewDialog = ({ isOpen, onClose, participation }: SubmissionRe
           <div>
             <h3 className="text-sm font-medium mb-2">Receipt Images:</h3>
             <div className="grid grid-cols-1 gap-4">
-              {typeof submissionData === 'object' && 
-               'receipt_images' in submissionData && 
+              {submissionData.receipt_images &&
                Array.isArray(submissionData.receipt_images) &&
                submissionData.receipt_images.map((image: string, index: number) => (
                 <div key={index} className="relative rounded-md overflow-hidden">
