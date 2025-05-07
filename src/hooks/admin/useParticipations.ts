@@ -34,13 +34,13 @@ export const useParticipations = (statusFilter: string | null = null) => {
     console.log('Fetching participations with status filter:', statusFilter);
     try {
       setLoading(true);
-      // Modified query to properly join user profiles from users table instead of profiles
+      // Query needed to join profiles data - joining with profiles table directly
       let query = supabase
         .from('mission_participations')
         .select(`
           *,
           mission:missions(*),
-          user:users(id, email)
+          profile:profiles(id, username, avatar)
         `)
         .order('created_at', { ascending: false });
 
@@ -61,15 +61,15 @@ export const useParticipations = (statusFilter: string | null = null) => {
         // For debugging
         console.log('Processing item:', item);
         
-        // Handle user data instead of profile - fix possible null issues
-        const user = item.user || {};
-        console.log('User data:', user);
+        // Handle profile data - ensure it's an object
+        const profile = item.profile || {};
+        console.log('Profile data:', profile);
         
-        // Create a profile-like object from user data
+        // Create a properly typed profile object with fallbacks
         const profileData = {
-          id: typeof user.id === 'string' ? user.id : '',
-          username: typeof user.email === 'string' ? user.email.split('@')[0] : 'Unknown User',
-          // No avatar in user table, can be added later if needed
+          id: typeof profile.id === 'string' ? profile.id : '',
+          username: typeof profile.username === 'string' ? profile.username : 'Unknown User',
+          avatar: typeof profile.avatar === 'string' ? profile.avatar : undefined
         };
         
         return {
