@@ -2,6 +2,7 @@
 import { useState, useEffect, useCallback } from 'react';
 import { supabase } from '@/integrations/supabase/client';
 import { toast } from 'sonner';
+import { Json } from '@/integrations/supabase/types';
 
 export interface Participation {
   id: string;
@@ -53,7 +54,17 @@ export const useParticipations = (statusFilter: string | null = null) => {
       }
 
       console.log(`Fetched ${data?.length || 0} participations`);
-      setParticipations(data || []);
+      
+      // Transform data to ensure proper typing
+      const typedParticipations: Participation[] = (data || []).map(item => ({
+        ...item,
+        mission: item.mission ? {
+          ...item.mission,
+          type: item.mission.type as 'REVIEW' | 'RECEIPT' // Ensure correct typing
+        } : undefined
+      }));
+      
+      setParticipations(typedParticipations);
     } catch (error: any) {
       console.error('Error fetching participations:', error.message);
       setError(error.message);
