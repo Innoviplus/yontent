@@ -27,6 +27,7 @@ export const useMissionFormatters = () => {
     faqContent: mission.faq_content || undefined
   });
 
+  // Update the type definition to clearly specify what's required
   const formatMissionForDatabase = (mission: Omit<Mission, 'id' | 'createdAt' | 'updatedAt'>) => ({
     title: mission.title,
     description: mission.description,

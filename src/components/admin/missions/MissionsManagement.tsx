@@ -61,16 +61,29 @@ const MissionsManagement = ({
 
   const handleDuplicateMission = async (mission: Mission) => {
     const timestamp = new Date().toLocaleTimeString();
-    const duplicateMission = {
-      ...mission,
+    // Create a properly typed duplicate with the correct status type
+    const duplicateMission: Omit<Mission, 'id' | 'createdAt' | 'updatedAt'> = {
       title: `${mission.title} (Copy - ${timestamp})`,
-      status: 'DRAFT' // Always create duplicates as drafts
+      description: mission.description,
+      pointsReward: mission.pointsReward,
+      type: mission.type,
+      status: 'DRAFT' as const, // Explicitly typed as 'DRAFT'
+      startDate: mission.startDate,
+      expiresAt: mission.expiresAt,
+      requirementDescription: mission.requirementDescription,
+      merchantName: mission.merchantName,
+      merchantLogo: mission.merchantLogo,
+      bannerImage: mission.bannerImage,
+      maxSubmissionsPerUser: mission.maxSubmissionsPerUser,
+      totalMaxSubmissions: mission.totalMaxSubmissions,
+      termsConditions: mission.termsConditions,
+      completionSteps: mission.completionSteps,
+      productDescription: mission.productDescription,
+      productImages: mission.productImages,
+      faqContent: mission.faqContent
     };
     
-    // Remove the id and timestamps from the duplicate to create a new record
-    const { id, createdAt, updatedAt, ...missionData } = duplicateMission;
-    
-    const result = await addMission(missionData);
+    const result = await addMission(duplicateMission);
     if (result) {
       toast.success(`Mission "${mission.title}" duplicated successfully`);
       await refreshMissions();

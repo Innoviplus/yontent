@@ -9,6 +9,7 @@ export const useMissionOperations = (refreshMissions: () => Promise<void>) => {
   const [isLoading, setIsLoading] = useState(false);
   const { formatMissionForDatabase, formatMissionUpdatesForDatabase } = useMissionFormatters();
 
+  // Fix the type definition to match what formatMissionForDatabase expects
   const addMission = async (missionData: Partial<Mission>) => {
     try {
       // Log before saving to check data integrity
@@ -19,7 +20,15 @@ export const useMissionOperations = (refreshMissions: () => Promise<void>) => {
         productDescription: missionData.productDescription?.substring(0, 50) + '...'
       });
 
-      const dbData = formatMissionForDatabase(missionData);
+      // Ensure all required fields are present
+      if (!missionData.title || !missionData.description || 
+          missionData.pointsReward === undefined || !missionData.type || 
+          !missionData.status || !missionData.startDate) {
+        throw new Error('Missing required fields for mission creation');
+      }
+
+      // Now we're sure it has all required fields for the database formatting
+      const dbData = formatMissionForDatabase(missionData as Omit<Mission, 'id' | 'createdAt' | 'updatedAt'>);
       const { error } = await supabase.from('missions').insert(dbData);
 
       if (error) {
