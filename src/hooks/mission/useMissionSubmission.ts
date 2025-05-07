@@ -27,7 +27,7 @@ export const useMissionSubmission = (
           .from('mission_participations')
           .select('*')
           .eq('mission_id', id)
-          .eq('user_id', user.id);
+          .eq('user_id_p', user.id);
           
         if (participationError) throw participationError;
         

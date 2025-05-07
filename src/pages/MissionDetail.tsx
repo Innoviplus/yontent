@@ -1,3 +1,4 @@
+
 import { useState, useEffect } from 'react';
 import { useParams, Navigate } from 'react-router-dom';
 import { Mission } from '@/lib/types';
@@ -101,7 +102,7 @@ const MissionDetail = () => {
         setTotalSubmissions(data.total_max_submissions);
         
         if (user) {
-          // Check user participation
+          // Check user participation - Updated to use user_id_p instead of user_id
           const { data: participationData, error: participationError } = await supabase
             .from('mission_participations')
             .select('status')

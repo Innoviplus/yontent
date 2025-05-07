@@ -1,5 +1,5 @@
 
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useCallback } from 'react';
 import { supabase } from '@/integrations/supabase/client';
 import { toast } from 'sonner';
 
@@ -8,185 +8,110 @@ export interface Participation {
   mission_id: string;
   user_id_p: string;
   status: string;
+  submission_data?: any;
   created_at: string;
-  mission: {
+  updated_at: string;
+  mission?: {
+    id: string;
     title: string;
-    type: string;
     points_reward: number;
+    type: 'REVIEW' | 'RECEIPT';
   };
   profile?: {
+    id: string;
     username: string;
-  };
-  submission_data: {
-    receipt_images?: string[];
-    review_content?: string;
-    review_id?: string;
+    avatar?: string;
   };
 }
 
-export const useParticipations = (filterStatus: string | null) => {
+export const useParticipations = (statusFilter: string | null = null) => {
   const [participations, setParticipations] = useState<Participation[]>([]);
   const [loading, setLoading] = useState(true);
+  const [error, setError] = useState<string | null>(null);
 
-  const fetchParticipations = async () => {
+  const fetchParticipations = useCallback(async () => {
+    console.log('Fetching participations with status filter:', statusFilter);
     try {
       setLoading(true);
       let query = supabase
         .from('mission_participations')
         .select(`
-          id,
-          mission_id,
-          user_id_p,
-          status,
-          created_at,
-          submission_data,
-          mission:missions(title, type, points_reward)
+          *,
+          mission:missions(*),
+          profile:profiles(id, username, avatar)
         `)
         .order('created_at', { ascending: false });
 
-      if (filterStatus) {
-        query = query.eq('status', filterStatus);
+      if (statusFilter) {
+        query = query.eq('status', statusFilter);
       }
 
       const { data, error } = await query;
 
-      if (error) throw error;
-      
-      // Process the data with proper column qualification to avoid ambiguity
-      const processedData = await Promise.all((data || []).map(async (participation) => {
-        // Explicitly store the user_id_p from participation
-        const participationUserId = participation.user_id_p;
-        
-        // Explicitly use the participation's user_id_p to get the profile data
-        const { data: profileData } = await supabase
-          .from('profiles')
-          .select('username')
-          .eq('id', participationUserId)  // Using the stored user_id_p variable
-          .single();
-        
-        const submissionData = participation.submission_data as any || {};
-        
-        return {
-          id: participation.id,
-          mission_id: participation.mission_id,
-          user_id_p: participationUserId, // Use the stored user_id_p
-          status: participation.status,
-          created_at: participation.created_at,
-          mission: participation.mission,
-          profile: {
-            username: profileData?.username || 'Unknown User'
-          },
-          submission_data: {
-            receipt_images: submissionData.receipt_images || [],
-            review_content: submissionData.review_content || '',
-            review_id: submissionData.review_id || ''
-          }
-        } as Participation;
-      }));
-      
-      setParticipations(processedData);
-    } catch (error) {
-      console.error('Error fetching participations:', error);
-      toast.error('Failed to load participations');
+      if (error) {
+        throw error;
+      }
+
+      console.log(`Fetched ${data?.length || 0} participations`);
+      setParticipations(data || []);
+    } catch (error: any) {
+      console.error('Error fetching participations:', error.message);
+      setError(error.message);
+      toast.error('Failed to load mission participations');
     } finally {
       setLoading(false);
+    }
+  }, [statusFilter]);
+
+  const handleUpdateStatus = async (id: string, status: string, participation: Participation) => {
+    try {
+      console.log(`Updating participation ${id} to ${status}`);
+      
+      const { error } = await supabase
+        .from('mission_participations')
+        .update({ status })
+        .eq('id', id);
+        
+      if (error) throw error;
+      
+      // If approved, award points to the user
+      if (status === 'APPROVED' && participation.mission?.points_reward) {
+        // Insert point transaction
+        await supabase.from('point_transactions').insert({
+          user_id: participation.user_id_p,
+          amount: participation.mission.points_reward,
+          type: 'EARNED',
+          source: participation.mission.type === 'REVIEW' ? 'MISSION_REVIEW' : 'RECEIPT_SUBMISSION',
+          description: `Earned from ${participation.mission.title} mission`
+        });
+        
+        // Update user points
+        await supabase.rpc('increment_points', {
+          user_id_param: participation.user_id_p,
+          points_amount_param: participation.mission.points_reward
+        });
+        
+        console.log(`Awarded ${participation.mission.points_reward} points to user ${participation.user_id_p}`);
+      }
+      
+      // Refresh the participations list
+      await fetchParticipations();
+      
+      toast.success(`Mission submission ${status.toLowerCase()}`);
+    } catch (error: any) {
+      console.error('Error updating participation status:', error);
+      toast.error('Failed to update submission status');
     }
   };
 
   useEffect(() => {
     fetchParticipations();
-  }, [filterStatus]);
-
-  const handleUpdateStatus = async (id: string, newStatus: string, participation: Participation) => {
-    try {
-      console.log(`Updating participation ${id} to status: ${newStatus}`);
-      
-      // Store the user ID in a local variable to avoid ambiguity
-      const participationUserId = participation.user_id_p;
-      
-      // First, update the participation status
-      const { error: updateError } = await supabase
-        .from('mission_participations')
-        .update({ status: newStatus })
-        .eq('id', id);
-
-      if (updateError) {
-        console.error('Error updating status:', updateError);
-        throw updateError;
-      }
-
-      console.log('Status updated successfully');
-
-      // If approving, award points to the user
-      if (newStatus === 'APPROVED') {
-        const pointAmount = participation.mission.points_reward;
-        
-        console.log('Awarding points:', {
-          userId: participationUserId,
-          pointAmount,
-          missionTitle: participation.mission.title
-        });
-        
-        // Use admin_add_point_transaction with explicit parameter naming
-        const { data: transactionData, error: transactionError } = await supabase.rpc(
-          'admin_add_point_transaction',
-          {
-            p_user_id: participationUserId,
-            p_amount: pointAmount,
-            p_type: 'EARNED',
-            p_description: `Earned ${pointAmount} points for completing mission: ${participation.mission.title}`
-          }
-        );
-
-        if (transactionError) {
-          console.error('Transaction error:', transactionError);
-          throw transactionError;
-        }
-        
-        console.log('Transaction added:', transactionData);
-
-        // Update the user's points in the profiles table - using the explicit participationUserId
-        const { data: profileData } = await supabase
-          .from('profiles')
-          .select('points')
-          .eq('id', participationUserId)
-          .single();
-
-        if (!profileData) {
-          throw new Error(`User profile not found for ${participationUserId}`);
-        }
-          
-        const newPoints = (profileData?.points || 0) + pointAmount;
-        
-        // Explicitly reference profiles table and user id to avoid ambiguity
-        const { error: updatePointsError } = await supabase
-          .from('profiles')
-          .update({ points: newPoints })
-          .eq('id', participationUserId);
-          
-        if (updatePointsError) {
-          console.error('Points update error:', updatePointsError);
-          throw updatePointsError;
-        }
-
-        console.log(`Points updated: User ${participationUserId} now has ${newPoints} points`);
-        toast.success(`Awarded ${pointAmount} points to ${participation.profile?.username || 'user'}`);
-      }
-
-      toast.success(`Submission ${newStatus.toLowerCase()} successfully`);
-      // Refresh the participations list
-      fetchParticipations();
-    } catch (error: any) {
-      console.error('Error updating participation:', error);
-      toast.error('Failed to update submission status', { 
-        description: error.message || 'Please try again or contact support'
-      });
-    }
-  };
+  }, [fetchParticipations]);
 
   return {
     participations,
     loading,
+    error,
     fetchParticipations,
     handleUpdateStatus
   };
