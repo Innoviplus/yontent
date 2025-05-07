@@ -3,13 +3,25 @@ import { useState, useEffect } from 'react';
 import { supabase } from '@/integrations/supabase/client';
 import { toast } from 'sonner';
 import { User } from '@/lib/types';
+import { Json } from '@/integrations/supabase/types';
 
-type ProfileWithCounts = User & {
+// Define a specific type for the extended data to avoid deep recursion
+type ExtendedData = Record<string, any>;
+
+// Define a more explicit type to avoid deep recursion
+type ProfileWithCounts = {
+  id: string;
+  username: string;
+  email: string;
+  avatar?: string;
+  points: number;
+  createdAt: Date;
   completedReviews: number;
   completedMissions: number;
-  extendedData?: any;
+  extendedData?: ExtendedData;
   followersCount?: number;
   followingCount?: number;
+  transactionsCount?: number;
 };
 
 export const useDashboardProfile = (userId: string | undefined) => {
@@ -50,7 +62,7 @@ export const useDashboardProfile = (userId: string | undefined) => {
         const { count: missionsCount, error: missionsError } = await supabase
           .from('mission_participations')
           .select('*', { count: 'exact', head: true })
-          .eq('user_id', userId);
+          .eq('user_id_p', userId);
 
         if (missionsError) {
           console.error('Error fetching missions count:', missionsError);
@@ -79,17 +91,22 @@ export const useDashboardProfile = (userId: string | undefined) => {
         // Calculate total transactions count
         const totalTransactionsCount = (pointTransactionsCount || 0) + (redemptionRequestsCount || 0);
 
-        // Transform the profile data to match the User type with counts
+        // Convert Json to ExtendedData to avoid type issues
+        const extendedData: ExtendedData = profile.extended_data 
+          ? (typeof profile.extended_data === 'object' ? profile.extended_data as ExtendedData : {})
+          : {};
+
+        // Transform the profile data to match the ProfileWithCounts type
         const userWithCounts: ProfileWithCounts = {
           id: profile.id,
           username: profile.username || 'Anonymous',
-          email: profile.email || '', // Use email from profile or default to empty string
+          email: profile.email || '', 
           avatar: profile.avatar || undefined,
           points: profile.points || 0,
-          createdAt: new Date(profile.created_at), // Convert string date to Date object
+          createdAt: new Date(profile.created_at),
           completedReviews: reviewsCount || 0,
           completedMissions: missionsCount || 0,
-          extendedData: profile.extended_data || {},
+          extendedData: extendedData,
           followersCount: profile.followers_count || 0,
           followingCount: profile.following_count || 0,
           transactionsCount: totalTransactionsCount || 0

@@ -102,12 +102,12 @@ const MissionDetail = () => {
         setTotalSubmissions(data.total_max_submissions);
         
         if (user) {
-          // Check user participation
+          // Check user participation - Updated to use user_id_p instead of user_id
           const { data: participationData, error: participationError } = await supabase
             .from('mission_participations')
             .select('status')
             .eq('mission_id', id)
-            .eq('user_id', user.id)
+            .eq('user_id_p', user.id)
             .single();
             
           if (participationError && participationError.code !== 'PGRST116') {

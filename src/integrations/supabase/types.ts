@@ -17,7 +17,7 @@ export type Database = {
           status: string
           submission_data: Json | null
           updated_at: string
-          user_id: string
+          user_id_p: string
         }
         Insert: {
           created_at?: string
@@ -26,7 +26,7 @@ export type Database = {
           status: string
           submission_data?: Json | null
           updated_at?: string
-          user_id: string
+          user_id_p: string
         }
         Update: {
           created_at?: string
@@ -35,7 +35,7 @@ export type Database = {
           status?: string
           submission_data?: Json | null
           updated_at?: string
-          user_id?: string
+          user_id_p?: string
         }
         Relationships: [
           {
@@ -483,6 +483,10 @@ export type Database = {
       calculate_relevance_score: {
         Args: { views: number; likes: number; avg_time: number; ctr: number }
         Returns: number
+      }
+      handle_mission_approval: {
+        Args: { p_participation_id: string; p_status: string }
+        Returns: Json
       }
       increment_points: {
         Args: { user_id_param: string; points_amount_param: number }

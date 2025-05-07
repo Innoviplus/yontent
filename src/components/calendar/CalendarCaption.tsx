@@ -1,78 +1,111 @@
 
-import * as React from "react";
-import { useDayPicker } from "react-day-picker";
-import { MonthSelect } from "./MonthSelect";
-import { YearSelect } from "./YearSelect";
+import React from "react";
+import { ChevronLeft, ChevronRight } from "lucide-react";
+import { 
+  Select,
+  SelectContent,
+  SelectItem, 
+  SelectTrigger,
+  SelectValue,
+} from "@/components/ui/select";
+import { Button } from "@/components/ui/button";
+import { CaptionProps } from "react-day-picker";
+import { useCalendarNavigation } from "@/hooks/useCalendarNavigation";
 
-interface CalendarCaptionProps {
+// Extend the CaptionProps interface to include our custom properties
+interface ExtendedCaptionProps extends CaptionProps {
   onMonthSelect?: (month: number) => void;
   onYearSelect?: (year: number) => void;
   onMonthChange?: (month: Date) => void;
 }
 
-export const CalendarCaption: React.FC<CalendarCaptionProps> = ({
-  onMonthSelect,
-  onYearSelect,
-  onMonthChange,
-}) => {
-  const context = useDayPicker();
+export function CalendarCaption(props: ExtendedCaptionProps) {
+  const { currentMonth, handleMonthChange, handleYearChange } = useCalendarNavigation({
+    month: props.displayMonth,
+    onMonthChange: (newMonth) => {
+      if (props.onMonthChange) {
+        props.onMonthChange(newMonth);
+      }
+    },
+    onMonthSelect: props.onMonthSelect,
+    onYearSelect: props.onYearSelect,
+  });
   
-  if (!context || !context.month) {
-    return null;
-  }
+  // Generate years array for dropdown (from 1900 to 10 years into the future)
+  const currentYear = new Date().getFullYear();
+  const years = Array.from({ length: currentYear - 1900 + 11 }, (_, i) => 1900 + i);
   
-  const currentMonth = context.month;
-  
-  const handleMonthChange = (value: string) => {
-    const monthNum = parseInt(value);
-    const newDate = new Date(currentMonth);
-    newDate.setMonth(monthNum);
-    
-    if (onMonthSelect) {
-      onMonthSelect(monthNum);
-    }
-    
-    if (onMonthChange) {
-      onMonthChange(newDate);
-    }
-    
-    // Proper type checking before calling context methods
-    if (context.onMonthChange && typeof context.onMonthChange === 'function') {
-      context.onMonthChange(newDate);
-    }
-  };
-  
-  const handleYearChange = (value: string) => {
-    const yearNum = parseInt(value);
-    const newDate = new Date(currentMonth);
-    newDate.setFullYear(yearNum);
-    
-    if (onYearSelect) {
-      onYearSelect(yearNum);
-    }
-    
-    if (onMonthChange) {
-      onMonthChange(newDate);
-    }
-    
-    // Proper type checking before calling context methods
-    if (context.onMonthChange && typeof context.onMonthChange === 'function') {
-      context.onMonthChange(newDate);
-    }
-  };
+  // Get month names for dropdown
+  const monthNames = [
+    "January", "February", "March", "April", "May", "June", 
+    "July", "August", "September", "October", "November", "December"
+  ];
 
   return (
-    <div className="flex justify-center items-center space-x-1">
-      <MonthSelect 
-        value={currentMonth.getMonth().toString()} 
-        onValueChange={handleMonthChange}
-        displayMonth={currentMonth}
-      />
-      <YearSelect 
-        value={currentMonth.getFullYear().toString()} 
-        onValueChange={handleYearChange}
-        displayMonth={currentMonth}
-      />
+    <div className="flex justify-center items-center pt-1 relative w-full">
+      <Button
+        variant="ghost"
+        size="icon"
+        className="h-7 w-7 absolute left-1 opacity-50 hover:opacity-100"
+        onClick={() => {
+          const newMonth = new Date(currentMonth);
+          newMonth.setMonth(currentMonth.getMonth() - 1);
+          if (props.onMonthChange) {
+            props.onMonthChange(newMonth);
+          }
+        }}
+      >
+        <ChevronLeft className="h-4 w-4" />
+      </Button>
+      
+      <div className="flex items-center gap-1">
+        <Select
+          value={currentMonth.getMonth().toString()}
+          onValueChange={handleMonthChange}
+        >
+          <SelectTrigger className="h-7 text-xs border-none shadow-none bg-transparent focus:ring-0">
+            <SelectValue>{monthNames[currentMonth.getMonth()]}</SelectValue>
+          </SelectTrigger>
+          <SelectContent className="max-h-80">
+            {monthNames.map((month, index) => (
+              <SelectItem key={index} value={index.toString()} className="text-xs">
+                {month}
+              </SelectItem>
+            ))}
+          </SelectContent>
+        </Select>
+        
+        <Select
+          value={currentMonth.getFullYear().toString()}
+          onValueChange={handleYearChange}
+        >
+          <SelectTrigger className="h-7 text-xs w-[75px] border-none shadow-none bg-transparent focus:ring-0">
+            <SelectValue>{currentMonth.getFullYear()}</SelectValue>
+          </SelectTrigger>
+          <SelectContent className="max-h-80">
+            {years.map((year) => (
+              <SelectItem key={year} value={year.toString()} className="text-xs">
+                {year}
+              </SelectItem>
+            ))}
+          </SelectContent>
+        </Select>
+      </div>
+
+      <Button
+        variant="ghost"
+        size="icon"
+        className="h-7 w-7 absolute right-1 opacity-50 hover:opacity-100"
+        onClick={() => {
+          const newMonth = new Date(currentMonth);
+          newMonth.setMonth(currentMonth.getMonth() + 1);
+          if (props.onMonthChange) {
+            props.onMonthChange(newMonth);
+          }
+        }}
+      >
+        <ChevronRight className="h-4 w-4" />
+      </Button>
     </div>
   );
-};
+}

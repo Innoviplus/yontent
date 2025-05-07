@@ -1,3 +1,4 @@
+
 export interface User {
   id: string;
   username: string;
@@ -59,7 +60,7 @@ export interface Mission {
   pointsReward: number;
   type: 'REVIEW' | 'RECEIPT';
   status: 'ACTIVE' | 'COMPLETED' | 'DRAFT';
-  expiresAt?: Date;
+  expiresAt?: Date | null; // Updated to allow null value to explicitly indicate no expiry
   requirementDescription?: string;
   merchantName?: string;
   merchantLogo?: string;

@@ -15,7 +15,7 @@ export const submitMissionReceipt = async (
       .from('mission_participations')
       .insert({
         mission_id: missionId,
-        user_id: userId,
+        user_id_p: userId,
         status: 'PENDING',
         submission_data: {
           receipt_images: receiptImages,

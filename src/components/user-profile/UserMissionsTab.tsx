@@ -1,4 +1,3 @@
-
 import { useState, useEffect } from 'react';
 import { supabase } from '@/integrations/supabase/client';
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@/components/ui/table';
@@ -45,7 +44,7 @@ const UserMissionsTab = ({ userId, isCurrentUser, username }: UserMissionTabProp
               points_reward
             )
           `)
-          .eq('user_id', userId)
+          .eq('user_id_p', userId)
           .order('created_at', { ascending: false });
 
         if (error) throw error;

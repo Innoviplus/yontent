@@ -7,6 +7,7 @@ import MissionList from './MissionList';
 import MissionFormWrapper from './MissionFormWrapper';
 import MissionsLoadingState from './MissionsLoadingState';
 import MissionDialog from './dialog/MissionDialog';
+import { toast } from 'sonner';
 
 interface MissionsManagementProps {
   missions: Mission[];
@@ -45,6 +46,50 @@ const MissionsManagement = ({
     await refreshMissions();
   };
 
+  const handleToggleStatus = async (mission: Mission) => {
+    const newStatus = mission.status === 'ACTIVE' ? 'DRAFT' : 'ACTIVE';
+    const result = await updateMission(mission.id, { status: newStatus });
+    
+    if (result) {
+      toast.success(
+        `Mission ${mission.title} ${newStatus === 'ACTIVE' ? 'activated' : 'deactivated'} successfully`
+      );
+    }
+    
+    return result;
+  };
+
+  const handleDuplicateMission = async (mission: Mission) => {
+    const timestamp = new Date().toLocaleTimeString();
+    // Create a properly typed duplicate with the correct status type
+    const duplicateMission: Omit<Mission, 'id' | 'createdAt' | 'updatedAt'> = {
+      title: `${mission.title} (Copy - ${timestamp})`,
+      description: mission.description,
+      pointsReward: mission.pointsReward,
+      type: mission.type,
+      status: 'DRAFT' as const, // Explicitly typed as 'DRAFT'
+      startDate: mission.startDate,
+      expiresAt: mission.expiresAt,
+      requirementDescription: mission.requirementDescription,
+      merchantName: mission.merchantName,
+      merchantLogo: mission.merchantLogo,
+      bannerImage: mission.bannerImage,
+      maxSubmissionsPerUser: mission.maxSubmissionsPerUser,
+      totalMaxSubmissions: mission.totalMaxSubmissions,
+      termsConditions: mission.termsConditions,
+      completionSteps: mission.completionSteps,
+      productDescription: mission.productDescription,
+      productImages: mission.productImages,
+      faqContent: mission.faqContent
+    };
+    
+    const result = await addMission(duplicateMission);
+    if (result) {
+      toast.success(`Mission "${mission.title}" duplicated successfully`);
+      await refreshMissions();
+    }
+  };
+
   if (isLoading && !maxLoadingTime) {
     return <MissionsLoadingState />;
   }
@@ -65,6 +110,8 @@ const MissionsManagement = ({
           setSelectedMission(mission);
           setIsAddingMission(true);
         }}
+        onToggleStatus={handleToggleStatus}
+        onDuplicate={handleDuplicateMission}
         onMissionClick={handleMissionClick}
       />
 

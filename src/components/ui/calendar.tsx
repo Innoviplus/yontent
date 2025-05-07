@@ -10,6 +10,7 @@ export type CalendarProps = React.ComponentProps<typeof DayPicker> & {
   month?: Date;
   onMonthSelect?: (month: number) => void;
   onYearSelect?: (year: number) => void;
+  onMonthChange?: (month: Date) => void;
 };
 
 function Calendar({
@@ -19,6 +20,7 @@ function Calendar({
   month,
   onMonthSelect,
   onYearSelect,
+  onMonthChange,
   ...props
 }: CalendarProps) {
   const [currentMonth, setCurrentMonth] = React.useState<Date>(
@@ -69,24 +71,20 @@ function Calendar({
       components={{
         IconLeft: () => <ChevronLeft className="h-4 w-4" />,
         IconRight: () => <ChevronRight className="h-4 w-4" />,
-        Caption: () => (
+        Caption: (captionProps) => (
           <CalendarCaption
+            {...captionProps}
             onMonthSelect={onMonthSelect}
             onYearSelect={onYearSelect}
-            onMonthChange={(newMonth) => {
-              setCurrentMonth(newMonth);
-              if (props.onMonthChange) {
-                props.onMonthChange(newMonth);
-              }
-            }}
+            onMonthChange={onMonthChange}
           />
         )
       }}
       month={currentMonth}
       onMonthChange={(newMonth) => {
         setCurrentMonth(newMonth);
-        if (props.onMonthChange) {
-          props.onMonthChange(newMonth);
+        if (onMonthChange) {
+          onMonthChange(newMonth);
         }
       }}
       {...props}

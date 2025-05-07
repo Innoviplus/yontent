@@ -8,15 +8,31 @@ interface TransactionCardProps {
 
 const TransactionCard = ({ transaction }: TransactionCardProps) => {
   const isDeduction = transaction.type === "REDEEMED" || transaction.type === "DEDUCTED";
-  const displayDescription = transaction.itemName && transaction.source === 'REDEMPTION' 
-    ? `Redeemed: ${transaction.itemName}` 
-    : transaction.description;
+  
+  // Enhanced display description to ensure mission rewards are shown properly
+  const displayDescription = () => {
+    if (transaction.itemName && transaction.source === 'REDEMPTION') {
+      return `Redeemed: ${transaction.itemName}`;
+    }
+    
+    if ((transaction.source === 'MISSION_REVIEW' || transaction.source === 'RECEIPT_SUBMISSION') && transaction.itemName) {
+      return `${transaction.description} (${transaction.itemName})`;
+    }
+    
+    return transaction.description;
+  };
   
   return (
     <div className="flex justify-between items-start bg-white rounded-xl p-6 shadow-card">
       <div>
-        <div className="text-lg font-semibold text-gray-900">{displayDescription}</div>
+        <div className="text-lg font-semibold text-gray-900">{displayDescription()}</div>
         <div className="text-gray-500 text-sm mt-1">{format(new Date(transaction.createdAt), "MMM dd, yyyy")}</div>
+        {transaction.source === 'MISSION_REVIEW' && (
+          <div className="text-xs text-green-600">Mission review reward</div>
+        )}
+        {transaction.source === 'RECEIPT_SUBMISSION' && (
+          <div className="text-xs text-green-600">Mission receipt submission reward</div>
+        )}
         {transaction.source === 'REDEMPTION' && (
           <>
             <div className="text-xs text-orange-600">Points redeemed for reward</div>

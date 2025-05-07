@@ -1,7 +1,7 @@
 
 import { useState } from 'react';
 import { Table, TableHeader, TableRow, TableHead, TableBody, TableCell } from '@/components/ui/table';
-import { useParticipations, Participation } from '@/hooks/admin/useParticipations';
+import { useParticipations, Participation } from '@/hooks/admin/participations/useParticipations';
 import { ParticipationsLoading } from './ParticipationsLoading';
 import { ParticipationActions } from './ParticipationActions';
 import SubmissionReviewDialog from './SubmissionReviewDialog';

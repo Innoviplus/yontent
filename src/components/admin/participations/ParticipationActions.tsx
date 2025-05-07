@@ -1,7 +1,7 @@
 
 import { Button } from '@/components/ui/button';
 import { Check, X, Search } from 'lucide-react';
-import { Participation } from '@/hooks/admin/useParticipations';
+import { Participation } from '@/hooks/admin/participations/useParticipations';
 import { useState } from 'react';
 
 interface ParticipationActionsProps {

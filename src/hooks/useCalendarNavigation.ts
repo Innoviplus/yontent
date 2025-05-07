@@ -1,9 +1,9 @@
 
 import { useState, useEffect } from 'react';
 
-interface UseCalendarNavigationProps {
+interface CalendarNavigationProps {
   month?: Date;
-  onMonthChange?: (date: Date) => void;
+  onMonthChange?: (month: Date) => void;
   onMonthSelect?: (month: number) => void;
   onYearSelect?: (year: number) => void;
 }
@@ -13,10 +13,8 @@ export const useCalendarNavigation = ({
   onMonthChange,
   onMonthSelect,
   onYearSelect
-}: UseCalendarNavigationProps) => {
-  const [currentMonth, setCurrentMonth] = useState<Date>(
-    month || new Date()
-  );
+}: CalendarNavigationProps) => {
+  const [currentMonth, setCurrentMonth] = useState<Date>(month || new Date());
 
   // Update internal state when month prop changes
   useEffect(() => {
@@ -25,41 +23,38 @@ export const useCalendarNavigation = ({
     }
   }, [month]);
 
-  const handleMonthChange = (monthStr: string) => {
-    const monthNum = parseInt(monthStr);
+  // Handle month selection from dropdown
+  const handleMonthChange = (value: string) => {
+    const newMonth = new Date(currentMonth);
+    newMonth.setMonth(parseInt(value, 10));
+    setCurrentMonth(newMonth);
     
-    const newDate = new Date(currentMonth);
-    newDate.setMonth(monthNum);
-    setCurrentMonth(newDate);
-    
-    if (onMonthSelect) {
-      onMonthSelect(monthNum);
-    }
-    
+    // Call external handlers if provided
     if (onMonthChange) {
-      onMonthChange(newDate);
+      onMonthChange(newMonth);
+    }
+    if (onMonthSelect) {
+      onMonthSelect(parseInt(value, 10));
     }
   };
 
-  const handleYearChange = (yearStr: string) => {
-    const yearNum = parseInt(yearStr);
+  // Handle year selection from dropdown
+  const handleYearChange = (value: string) => {
+    const newMonth = new Date(currentMonth);
+    newMonth.setFullYear(parseInt(value, 10));
+    setCurrentMonth(newMonth);
     
-    const newDate = new Date(currentMonth);
-    newDate.setFullYear(yearNum);
-    setCurrentMonth(newDate);
-    
-    if (onYearSelect) {
-      onYearSelect(yearNum);
-    }
-    
+    // Call external handlers if provided
     if (onMonthChange) {
-      onMonthChange(newDate);
+      onMonthChange(newMonth);
+    }
+    if (onYearSelect) {
+      onYearSelect(parseInt(value, 10));
     }
   };
 
   return {
     currentMonth,
-    setCurrentMonth,
     handleMonthChange,
     handleYearChange
   };
