@@ -37,7 +37,7 @@ const TransactionsTab = () => {
         const processedTransactions = (data || []).map(item => {
           // Try to extract source from description [SOURCE:ID] or [SOURCE]
           let source: 'MISSION_REVIEW' | 'RECEIPT_SUBMISSION' | 'REDEMPTION' | 'ADMIN_ADJUSTMENT' = 'ADMIN_ADJUSTMENT';
-          let sourceId: string | undefined;
+          let sourceId: string | undefined = undefined;
           let cleanDescription = item.description;
           
           const sourceMatch = item.description.match(/\[(.*?)(?::([^\]]+))?\]$/);
@@ -56,6 +56,13 @@ const TransactionsTab = () => {
             
             // Remove the source tag from the description
             cleanDescription = item.description.replace(/\s*\[.*?\]$/, '').trim();
+          }
+          
+          // Check for mission rewards that don't follow the tagging pattern
+          if (!sourceMatch && cleanDescription.toLowerCase().includes('mission')) {
+            source = cleanDescription.toLowerCase().includes('review') 
+              ? 'MISSION_REVIEW' 
+              : 'RECEIPT_SUBMISSION';
           }
           
           return {
@@ -113,6 +120,12 @@ const TransactionsTab = () => {
             <span className="text-sm text-gray-500">
               {format(transaction.createdAt, 'MMM dd, yyyy')}
             </span>
+            {transaction.source === 'MISSION_REVIEW' && (
+              <span className="text-xs text-green-600">Mission review reward</span>
+            )}
+            {transaction.source === 'RECEIPT_SUBMISSION' && (
+              <span className="text-xs text-green-600">Mission receipt submission reward</span>
+            )}
             {transaction.source === 'REDEMPTION' && (
               <span className="text-xs text-orange-600">Points redeemed for reward</span>
             )}

@@ -19,6 +19,7 @@ const MyRewardTransactions = () => {
 
   useEffect(() => {
     if (user?.id) {
+      // Initial fetch on component mount
       fetchTransactions();
     }
   }, [user?.id]);
@@ -34,7 +35,8 @@ const MyRewardTransactions = () => {
       <div className="container mx-auto px-4 pt-24 pb-16 max-w-2xl">
         <RewardHeader title="Back to My Dashboard" />
         
-        <div className="flex justify-end mb-6">
+        <div className="flex justify-between items-center mb-6">
+          <h1 className="text-2xl font-bold text-gray-900">My Transactions</h1>
           <Button 
             variant="outline" 
             size="sm"
@@ -45,8 +47,6 @@ const MyRewardTransactions = () => {
             Refresh
           </Button>
         </div>
-
-        <h1 className="text-2xl font-bold text-gray-900 mb-8">My Transactions</h1>
 
         <TransactionsList 
           transactions={transactions} 

@@ -63,12 +63,27 @@ export const useTransactions = (userId: string | undefined) => {
         let itemId: string | undefined = undefined;
         let itemName: string | undefined = undefined;
         
-        // Extract source and itemId information from description if it follows the pattern
+        // Enhanced regex to better extract mission information
+        // This ensures we properly identify and extract mission rewards
         const sourceMatch = row.description.match(/\[(.*?)(?::([^\]]+))?\]$/);
         if (sourceMatch) {
           source = sourceMatch[1];
           itemId = sourceMatch[2];
           cleanDescription = row.description.replace(/\s*\[.*?\]$/, '').trim();
+          
+          // Enhance mission-related information extraction
+          if (source === 'MISSION_REVIEW' || source === 'RECEIPT_SUBMISSION') {
+            // Extract mission name if available in the description
+            const missionMatch = cleanDescription.match(/Earned from (.*?) mission$/);
+            if (missionMatch) {
+              itemName = missionMatch[1];
+            }
+          }
+        }
+        
+        // Add specific extraction for mission rewards that may have a different format
+        if (!source && cleanDescription.includes('mission')) {
+          source = cleanDescription.includes('review') ? 'MISSION_REVIEW' : 'RECEIPT_SUBMISSION';
         }
         
         // Fetch item name for redemption transactions
