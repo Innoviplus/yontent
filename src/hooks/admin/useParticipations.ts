@@ -142,6 +142,7 @@ export const useParticipations = (statusFilter: string | null = null) => {
     try {
       console.log(`Updating participation ${id} to ${status}`);
       
+      // Update the participation status
       const { error } = await supabase
         .from('mission_participations')
         .update({ status })
@@ -151,22 +152,58 @@ export const useParticipations = (statusFilter: string | null = null) => {
       
       // If approved, award points to the user
       if (status === 'APPROVED' && participation.mission?.points_reward) {
-        // Insert point transaction
-        await supabase.from('point_transactions').insert({
-          user_id: participation.user_id_p, // Use user_id_p instead of user_id to avoid ambiguity
-          amount: participation.mission.points_reward,
-          type: 'EARNED',
-          source: participation.mission.type === 'REVIEW' ? 'MISSION_REVIEW' : 'RECEIPT_SUBMISSION',
-          description: `Earned from ${participation.mission.title} mission`
-        });
+        const pointsToAward = participation.mission.points_reward;
+        const userId = participation.user_id_p;
         
-        // Update user points using user_id_p to avoid ambiguity
-        await supabase.rpc('increment_points', {
-          user_id_param: participation.user_id_p,
-          points_amount_param: participation.mission.points_reward
-        });
+        console.log(`Awarding ${pointsToAward} points to user ${userId}`);
         
-        console.log(`Awarded ${participation.mission.points_reward} points to user ${participation.user_id_p}`);
+        // 1. First get the current user points
+        const { data: userData, error: userError } = await supabase
+          .from('profiles')
+          .select('points')
+          .eq('id', userId)
+          .single();
+          
+        if (userError) {
+          console.error('Error fetching user points:', userError);
+          throw userError;
+        }
+        
+        // Current points, defaulting to 0 if null
+        const currentPoints = userData?.points || 0;
+        const newPointsTotal = currentPoints + pointsToAward;
+        
+        console.log(`Current points: ${currentPoints}, New total: ${newPointsTotal}`);
+        
+        // 2. Directly update the user's points in the profiles table
+        const { error: updateError } = await supabase
+          .from('profiles')
+          .update({ points: newPointsTotal })
+          .eq('id', userId);
+          
+        if (updateError) {
+          console.error('Error updating user points:', updateError);
+          throw updateError;
+        }
+        
+        // 3. Insert point transaction record
+        const { error: transactionError } = await supabase
+          .from('point_transactions')
+          .insert({
+            user_id: userId,
+            amount: pointsToAward,
+            type: 'EARNED',
+            description: `Earned from ${participation.mission.title} mission [${
+              participation.mission.type === 'REVIEW' ? 'MISSION_REVIEW' : 'RECEIPT_SUBMISSION'
+            }]`
+          });
+          
+        if (transactionError) {
+          console.error('Error creating point transaction:', transactionError);
+          throw transactionError;
+        }
+        
+        console.log(`Successfully awarded ${pointsToAward} points to user ${userId}`);
       }
       
       // Refresh the participations list
