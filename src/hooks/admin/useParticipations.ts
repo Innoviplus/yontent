@@ -32,6 +32,15 @@ interface ProfileData {
   avatar?: string;
 }
 
+// Define interface for handle_mission_approval function response
+interface MissionApprovalResponse {
+  success: boolean;
+  user_id: string;
+  points_awarded: number;
+  new_points_total: number;
+  transaction_id: string;
+}
+
 export const useParticipations = (statusFilter: string | null = null) => {
   const [participations, setParticipations] = useState<Participation[]>([]);
   const [loading, setLoading] = useState(true);
@@ -156,10 +165,13 @@ export const useParticipations = (statusFilter: string | null = null) => {
       
       console.log('Mission approval result:', data);
       
+      // Cast the data to our expected response type
+      const response = data as unknown as MissionApprovalResponse;
+      
       // If points were awarded, show additional information
-      if (status === 'APPROVED' && data?.points_awarded) {
-        console.log(`Successfully awarded ${data.points_awarded} points to user ${data.user_id}`);
-        console.log(`New points total: ${data.new_points_total}`);
+      if (status === 'APPROVED' && response?.points_awarded) {
+        console.log(`Successfully awarded ${response.points_awarded} points to user ${response.user_id}`);
+        console.log(`New points total: ${response.new_points_total}`);
       }
       
       // Refresh the participations list

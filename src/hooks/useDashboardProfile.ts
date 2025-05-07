@@ -4,12 +4,20 @@ import { supabase } from '@/integrations/supabase/client';
 import { toast } from 'sonner';
 import { User } from '@/lib/types';
 
-type ProfileWithCounts = User & {
+// Define a more explicit type to avoid deep recursion
+type ProfileWithCounts = {
+  id: string;
+  username: string;
+  email: string;
+  avatar?: string;
+  points: number;
+  createdAt: Date;
   completedReviews: number;
   completedMissions: number;
-  extendedData?: any;
+  extendedData?: Record<string, any>;
   followersCount?: number;
   followingCount?: number;
+  transactionsCount?: number;
 };
 
 export const useDashboardProfile = (userId: string | undefined) => {
@@ -79,14 +87,14 @@ export const useDashboardProfile = (userId: string | undefined) => {
         // Calculate total transactions count
         const totalTransactionsCount = (pointTransactionsCount || 0) + (redemptionRequestsCount || 0);
 
-        // Transform the profile data to match the User type with counts
+        // Transform the profile data to match the ProfileWithCounts type
         const userWithCounts: ProfileWithCounts = {
           id: profile.id,
           username: profile.username || 'Anonymous',
-          email: profile.email || '', // Use email from profile or default to empty string
+          email: profile.email || '', 
           avatar: profile.avatar || undefined,
           points: profile.points || 0,
-          createdAt: new Date(profile.created_at), // Convert string date to Date object
+          createdAt: new Date(profile.created_at),
           completedReviews: reviewsCount || 0,
           completedMissions: missionsCount || 0,
           extendedData: profile.extended_data || {},
