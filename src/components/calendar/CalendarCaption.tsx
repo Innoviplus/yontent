@@ -9,10 +9,10 @@ import {
   SelectValue,
 } from "@/components/ui/select";
 import { Button } from "@/components/ui/button";
-import { DayPicker } from "react-day-picker";
+import { CaptionProps, DayPicker } from "react-day-picker";
 import { useCalendarNavigation } from "@/hooks/useCalendarNavigation";
 
-export function CalendarCaption(props: React.ComponentProps<typeof DayPicker.Caption>) {
+export function CalendarCaption(props: CaptionProps) {
   const { currentMonth, handleMonthChange, handleYearChange } = useCalendarNavigation({
     month: props.displayMonth,
     onMonthChange: props.onMonthChange,
