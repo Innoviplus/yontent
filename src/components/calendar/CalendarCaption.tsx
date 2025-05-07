@@ -1,5 +1,5 @@
 
-import React, { useState } from "react";
+import React from "react";
 import { ChevronLeft, ChevronRight } from "lucide-react";
 import { 
   Select,
@@ -9,10 +9,16 @@ import {
   SelectValue,
 } from "@/components/ui/select";
 import { Button } from "@/components/ui/button";
-import { CaptionProps, DayPicker } from "react-day-picker";
+import { CaptionProps } from "react-day-picker";
 import { useCalendarNavigation } from "@/hooks/useCalendarNavigation";
 
-export function CalendarCaption(props: CaptionProps) {
+// Extend the CaptionProps interface to include our custom properties
+interface ExtendedCaptionProps extends CaptionProps {
+  onMonthSelect?: (month: number) => void;
+  onYearSelect?: (year: number) => void;
+}
+
+export function CalendarCaption(props: ExtendedCaptionProps) {
   const { currentMonth, handleMonthChange, handleYearChange } = useCalendarNavigation({
     month: props.displayMonth,
     onMonthChange: props.onMonthChange,
