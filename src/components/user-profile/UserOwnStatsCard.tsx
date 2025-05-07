@@ -31,14 +31,16 @@ const UserOwnStatsCard = ({
       if (!user?.id) return;
       
       try {
+        // Updated to use user_id_p instead of user_id
         const { count, error } = await supabase
           .from('mission_participations')
           .select('*', { count: 'exact', head: true })
-          .eq('user_id', user.id);
+          .eq('user_id_p', user.id);
           
         if (error) throw error;
         setMissionCount(count || 0);
       } catch (error) {
+        console.error("Error fetching mission count:", error);
         setMissionCount(0);
       }
     };

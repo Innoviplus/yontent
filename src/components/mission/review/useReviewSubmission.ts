@@ -96,11 +96,12 @@ export const useReviewSubmission = (mission: Mission, userId: string) => {
       if (reviewError) throw reviewError;
       
       // Save the participation record with the review ID
+      // This is the line with the error - changing user_id to user_id_p
       const { error: insertError } = await supabase
         .from('mission_participations')
         .insert({
           mission_id: mission.id,
-          user_id: userId,
+          user_id_p: userId,
           status: 'PENDING',
           submission_data: {
             review_id: reviewData.id,
