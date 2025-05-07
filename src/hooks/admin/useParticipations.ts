@@ -56,18 +56,26 @@ export const useParticipations = (statusFilter: string | null = null) => {
       console.log(`Fetched ${data?.length || 0} participations`);
       
       // Transform data to ensure proper typing
-      const typedParticipations: Participation[] = (data || []).map(item => ({
-        ...item,
-        mission: item.mission ? {
-          ...item.mission,
-          type: item.mission.type as 'REVIEW' | 'RECEIPT' // Ensure correct typing
-        } : undefined,
-        profile: item.profile && typeof item.profile !== 'string' ? {
-          id: item.profile.id,
-          username: item.profile.username,
-          avatar: item.profile.avatar
-        } : undefined
-      }));
+      const typedParticipations: Participation[] = (data || []).map(item => {
+        // For debugging
+        console.log('Processing item:', item);
+        if (item.profile) {
+          console.log('Profile data:', item.profile);
+        }
+        
+        return {
+          ...item,
+          mission: item.mission ? {
+            ...item.mission,
+            type: item.mission.type as 'REVIEW' | 'RECEIPT' // Ensure correct typing
+          } : undefined,
+          profile: item.profile && typeof item.profile === 'object' && item.profile !== null ? {
+            id: typeof item.profile.id === 'string' ? item.profile.id : '',
+            username: typeof item.profile.username === 'string' ? item.profile.username : 'Unknown user',
+            avatar: typeof item.profile.avatar === 'string' ? item.profile.avatar : undefined
+          } : undefined
+        };
+      });
       
       setParticipations(typedParticipations);
     } catch (error: any) {
