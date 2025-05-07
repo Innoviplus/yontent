@@ -3,6 +3,7 @@ import { useState, useEffect } from 'react';
 import { supabase } from '@/integrations/supabase/client';
 import { toast } from 'sonner';
 import { User } from '@/lib/types';
+import { Json } from '@/integrations/supabase/types';
 
 // Define a more explicit type to avoid deep recursion
 type ProfileWithCounts = {
@@ -14,7 +15,7 @@ type ProfileWithCounts = {
   createdAt: Date;
   completedReviews: number;
   completedMissions: number;
-  extendedData?: Record<string, any>;
+  extendedData?: Json;
   followersCount?: number;
   followingCount?: number;
   transactionsCount?: number;
@@ -58,7 +59,7 @@ export const useDashboardProfile = (userId: string | undefined) => {
         const { count: missionsCount, error: missionsError } = await supabase
           .from('mission_participations')
           .select('*', { count: 'exact', head: true })
-          .eq('user_id', userId);
+          .eq('user_id_p', userId);
 
         if (missionsError) {
           console.error('Error fetching missions count:', missionsError);
@@ -97,7 +98,7 @@ export const useDashboardProfile = (userId: string | undefined) => {
           createdAt: new Date(profile.created_at),
           completedReviews: reviewsCount || 0,
           completedMissions: missionsCount || 0,
-          extendedData: profile.extended_data || {},
+          extendedData: profile.extended_data,
           followersCount: profile.followers_count || 0,
           followingCount: profile.following_count || 0,
           transactionsCount: totalTransactionsCount || 0
