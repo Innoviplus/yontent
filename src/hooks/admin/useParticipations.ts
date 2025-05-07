@@ -41,13 +41,13 @@ export const useParticipations = (statusFilter: string | null = null) => {
     console.log('Fetching participations with status filter:', statusFilter);
     try {
       setLoading(true);
-      // Query needed to join profiles data - joining with profiles table directly
+      
+      // Modified query to separately fetch user profiles
       let query = supabase
         .from('mission_participations')
         .select(`
           *,
-          mission:missions(*),
-          profile:profiles(id, username, avatar)
+          mission:missions(*)
         `)
         .order('created_at', { ascending: false });
 
@@ -64,32 +64,73 @@ export const useParticipations = (statusFilter: string | null = null) => {
       console.log(`Fetched ${data?.length || 0} participations`);
       
       // Transform data to ensure proper typing
-      const typedParticipations: Participation[] = (data || []).map(item => {
+      const participationsData = data || [];
+      const participationsWithProfiles: Participation[] = [];
+      
+      // Fetch profiles for all participations
+      for (const item of participationsData) {
         // For debugging
         console.log('Processing item:', item);
         
-        // Type assertion for profile data with safe defaults
-        const profileData: ProfileData = item.profile || {};
-        console.log('Profile data:', profileData);
+        try {
+          // Separate query to get the profile
+          const { data: profileData, error: profileError } = await supabase
+            .from('profiles')
+            .select('id, username, avatar')
+            .eq('id', item.user_id_p)
+            .single();
+            
+          if (profileError) {
+            console.warn('Error fetching profile:', profileError);
+          }
+          
+          // Safe profile data
+          const profile: ProfileData = profileData || { 
+            id: '', 
+            username: 'Unknown User', 
+            avatar: undefined 
+          };
+          
+          console.log('Profile data fetched:', profile);
         
-        return {
-          ...item,
-          mission: item.mission ? {
-            ...item.mission,
-            type: (item.mission.type === 'REVIEW' || item.mission.type === 'RECEIPT') 
-              ? item.mission.type 
-              : 'REVIEW' // Default to 'REVIEW' if type is invalid
-          } : undefined,
-          profile: {
-            id: profileData.id || '',
-            username: profileData.username || 'Unknown User',
-            avatar: profileData.avatar
-          },
-          user: undefined // Remove the original user field to match our Participation interface
-        };
-      });
+          participationsWithProfiles.push({
+            ...item,
+            mission: item.mission ? {
+              ...item.mission,
+              type: (item.mission.type === 'REVIEW' || item.mission.type === 'RECEIPT') 
+                ? item.mission.type 
+                : 'REVIEW' // Default to 'REVIEW' if type is invalid
+            } : undefined,
+            profile: {
+              id: profile.id || '',
+              username: profile.username || 'Unknown User',
+              avatar: profile.avatar
+            },
+            user: undefined // Remove the original user field to match our Participation interface
+          });
+        } catch (profileError) {
+          console.error('Error processing profile:', profileError);
+          
+          // Still add the participation but with default profile
+          participationsWithProfiles.push({
+            ...item,
+            mission: item.mission ? {
+              ...item.mission,
+              type: (item.mission.type === 'REVIEW' || item.mission.type === 'RECEIPT') 
+                ? item.mission.type 
+                : 'REVIEW'
+            } : undefined,
+            profile: {
+              id: '',
+              username: 'Unknown User',
+              avatar: undefined
+            },
+            user: undefined
+          });
+        }
+      }
       
-      setParticipations(typedParticipations);
+      setParticipations(participationsWithProfiles);
     } catch (error: any) {
       console.error('Error fetching participations:', error.message);
       setError(error.message);
