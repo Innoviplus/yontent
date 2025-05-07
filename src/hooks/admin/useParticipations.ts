@@ -96,6 +96,8 @@ export const useParticipations = (filterStatus: string | null) => {
 
   const handleUpdateStatus = async (id: string, newStatus: string, participation: Participation) => {
     try {
+      console.log(`Updating participation ${id} to status: ${newStatus}`);
+      
       // First, update the participation status
       const { error: updateError } = await supabase
         .from('mission_participations')
@@ -107,12 +109,15 @@ export const useParticipations = (filterStatus: string | null) => {
         throw updateError;
       }
 
+      console.log('Status updated successfully');
+
       // If approving, award points to the user
       if (newStatus === 'APPROVED') {
         const pointAmount = participation.mission.points_reward;
+        const userId = participation.user_id; // Store user_id to avoid ambiguity
         
         console.log('Awarding points:', {
-          userId: participation.user_id,
+          userId,
           pointAmount,
           missionTitle: participation.mission.title
         });
@@ -121,7 +126,7 @@ export const useParticipations = (filterStatus: string | null) => {
         const { data: transactionData, error: transactionError } = await supabase.rpc(
           'admin_add_point_transaction',
           {
-            p_user_id: participation.user_id,
+            p_user_id: userId,
             p_amount: pointAmount,
             p_type: 'EARNED',
             p_description: `Earned ${pointAmount} points for completing mission: ${participation.mission.title}`
@@ -139,11 +144,11 @@ export const useParticipations = (filterStatus: string | null) => {
         const { data: profileData } = await supabase
           .from('profiles')
           .select('points')
-          .eq('id', participation.user_id)
+          .eq('id', userId)
           .single();
 
         if (!profileData) {
-          throw new Error(`User profile not found for ${participation.user_id}`);
+          throw new Error(`User profile not found for ${userId}`);
         }
           
         const newPoints = (profileData?.points || 0) + pointAmount;
@@ -151,13 +156,14 @@ export const useParticipations = (filterStatus: string | null) => {
         const { error: updatePointsError } = await supabase
           .from('profiles')
           .update({ points: newPoints })
-          .eq('id', participation.user_id);
+          .eq('id', userId);
           
         if (updatePointsError) {
           console.error('Points update error:', updatePointsError);
           throw updatePointsError;
         }
 
+        console.log(`Points updated: User ${userId} now has ${newPoints} points`);
         toast.success(`Awarded ${pointAmount} points to ${participation.profile?.username || 'user'}`);
       }
 
