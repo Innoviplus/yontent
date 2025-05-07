@@ -54,7 +54,7 @@ export const useParticipations = (filterStatus: string | null) => {
       
       // Process the data with proper column qualification to avoid ambiguity
       const processedData = await Promise.all((data || []).map(async (participation) => {
-        // Explicitly use the participation.user_id to get the profile data
+        // Explicitly use the participation's user_id to get the profile data
         const { data: profileData } = await supabase
           .from('profiles')
           .select('username')
