@@ -11,6 +11,13 @@ import { Input } from '@/components/ui/input';
 import { UseFormReturn } from 'react-hook-form';
 import { MissionFormData } from '../../MissionFormSchema';
 import RichTextEditor from '@/components/RichTextEditor';
+import { 
+  Select, 
+  SelectContent, 
+  SelectItem, 
+  SelectTrigger, 
+  SelectValue 
+} from '@/components/ui/select';
 
 interface BasicInformationProps {
   form: UseFormReturn<MissionFormData>;
@@ -59,27 +66,58 @@ const BasicInformation = ({ form }: BasicInformationProps) => {
         )}
       />
       
-      <FormField
-        control={form.control}
-        name="pointsReward"
-        render={({ field }) => (
-          <FormItem>
-            <FormLabel>Points Reward</FormLabel>
-            <FormControl>
-              <Input 
-                type="number" 
-                {...field} 
-                onChange={e => field.onChange(Number(e.target.value))}
-                placeholder="Enter points reward" 
-              />
-            </FormControl>
-            <FormDescription>
-              The number of points a user will earn for completing this mission.
-            </FormDescription>
-            <FormMessage />
-          </FormItem>
-        )}
-      />
+      <div className="grid grid-cols-2 gap-4">
+        <FormField
+          control={form.control}
+          name="pointsReward"
+          render={({ field }) => (
+            <FormItem>
+              <FormLabel>Points Reward</FormLabel>
+              <FormControl>
+                <Input 
+                  type="number" 
+                  {...field} 
+                  onChange={e => field.onChange(Number(e.target.value))}
+                  placeholder="Enter points reward" 
+                />
+              </FormControl>
+              <FormDescription>
+                The number of points a user will earn for completing this mission.
+              </FormDescription>
+              <FormMessage />
+            </FormItem>
+          )}
+        />
+
+        <FormField
+          control={form.control}
+          name="type"
+          render={({ field }) => (
+            <FormItem>
+              <FormLabel>Mission Type</FormLabel>
+              <Select 
+                onValueChange={field.onChange} 
+                defaultValue={field.value}
+                value={field.value}
+              >
+                <FormControl>
+                  <SelectTrigger>
+                    <SelectValue placeholder="Select mission type" />
+                  </SelectTrigger>
+                </FormControl>
+                <SelectContent>
+                  <SelectItem value="RECEIPT">Receipt Submission</SelectItem>
+                  <SelectItem value="REVIEW">Review Submission</SelectItem>
+                </SelectContent>
+              </Select>
+              <FormDescription>
+                The type of mission determines what users need to submit.
+              </FormDescription>
+              <FormMessage />
+            </FormItem>
+          )}
+        />
+      </div>
     </div>
   );
 };

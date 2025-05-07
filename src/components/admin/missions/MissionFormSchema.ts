@@ -8,7 +8,7 @@ export const missionSchema = z.object({
   type: z.enum(['REVIEW', 'RECEIPT']).default('RECEIPT'),
   status: z.enum(['ACTIVE', 'DRAFT', 'COMPLETED']).default('DRAFT'),
   startDate: z.date(),
-  expiresAt: z.date().optional(),
+  expiresAt: z.date().nullable().optional(), // Update to allow null value for no expiry
   requirementDescription: z.string().optional(),
   merchantName: z.string().optional(),
   merchantLogo: z.string().optional(),
