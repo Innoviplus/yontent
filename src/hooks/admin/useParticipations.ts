@@ -9,7 +9,7 @@ export interface Participation {
   mission_id: string;
   user_id_p: string;
   status: string;
-  submission_data?: any;
+  submission_data?: Json;
   created_at: string;
   updated_at: string;
   mission?: {
@@ -51,15 +51,16 @@ export const useParticipations = (statusFilter: string | null = null) => {
     try {
       setLoading(true);
       
-      // Modified query to separately fetch user profiles
+      // Build the query
       let query = supabase
         .from('mission_participations')
         .select(`
           *,
-          mission:missions(*)
+          mission:missions(id, title, points_reward, type)
         `)
         .order('created_at', { ascending: false });
 
+      // Apply status filter if provided
       if (statusFilter) {
         query = query.eq('status', statusFilter);
       }
@@ -78,10 +79,10 @@ export const useParticipations = (statusFilter: string | null = null) => {
       
       // Fetch profiles for all participations
       for (const item of participationsData) {
-        // For debugging
-        console.log('Processing item:', item);
-        
         try {
+          // For debugging
+          console.log('Processing participation:', item.id);
+          
           // Separate query to get the profile
           const { data: profileData, error: profileError } = await supabase
             .from('profiles')
@@ -102,14 +103,19 @@ export const useParticipations = (statusFilter: string | null = null) => {
           
           console.log('Profile data fetched:', profile);
         
+          // Clean mission data with proper typing
+          const missionData = item.mission ? {
+            id: item.mission.id,
+            title: item.mission.title,
+            points_reward: item.mission.points_reward,
+            type: (item.mission.type === 'REVIEW' || item.mission.type === 'RECEIPT') 
+              ? item.mission.type as 'REVIEW' | 'RECEIPT'
+              : 'REVIEW' // Default to 'REVIEW' if type is invalid
+          } : undefined;
+          
           participationsWithProfiles.push({
             ...item,
-            mission: item.mission ? {
-              ...item.mission,
-              type: (item.mission.type === 'REVIEW' || item.mission.type === 'RECEIPT') 
-                ? item.mission.type 
-                : 'REVIEW' // Default to 'REVIEW' if type is invalid
-            } : undefined,
+            mission: missionData,
             profile: {
               id: profile.id || '',
               username: profile.username || 'Unknown User',
@@ -123,9 +129,11 @@ export const useParticipations = (statusFilter: string | null = null) => {
           participationsWithProfiles.push({
             ...item,
             mission: item.mission ? {
-              ...item.mission,
+              id: item.mission.id,
+              title: item.mission.title,
+              points_reward: item.mission.points_reward,
               type: (item.mission.type === 'REVIEW' || item.mission.type === 'RECEIPT') 
-                ? item.mission.type 
+                ? item.mission.type as 'REVIEW' | 'RECEIPT'
                 : 'REVIEW'
             } : undefined,
             profile: {
@@ -151,7 +159,7 @@ export const useParticipations = (statusFilter: string | null = null) => {
     try {
       console.log(`Updating participation ${id} to ${status} using handle_mission_approval function`);
       
-      // Use our new secure database function to handle the approval process
+      // Use our secure database function to handle the approval process
       const { data, error } = await supabase
         .rpc('handle_mission_approval', { 
           p_participation_id: id,
@@ -165,7 +173,7 @@ export const useParticipations = (statusFilter: string | null = null) => {
       
       console.log('Mission approval result:', data);
       
-      // Cast the data to our expected response type
+      // Type assertion for the response
       const response = data as unknown as MissionApprovalResponse;
       
       // If points were awarded, show additional information
