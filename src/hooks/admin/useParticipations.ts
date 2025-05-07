@@ -54,11 +54,14 @@ export const useParticipations = (filterStatus: string | null) => {
       
       // Process the data with proper column qualification to avoid ambiguity
       const processedData = await Promise.all((data || []).map(async (participation) => {
+        // Explicitly store the user_id from participation to avoid ambiguity
+        const participationUserId = participation.user_id;
+        
         // Explicitly use the participation's user_id to get the profile data
         const { data: profileData } = await supabase
           .from('profiles')
           .select('username')
-          .eq('id', participation.user_id)  // Explicitly reference the user_id from participation
+          .eq('id', participationUserId)  // Using the stored user_id variable
           .single();
         
         const submissionData = participation.submission_data as any || {};
@@ -66,7 +69,7 @@ export const useParticipations = (filterStatus: string | null) => {
         return {
           id: participation.id,
           mission_id: participation.mission_id,
-          user_id: participation.user_id,
+          user_id: participationUserId, // Use the stored user_id
           status: participation.status,
           created_at: participation.created_at,
           mission: participation.mission,
