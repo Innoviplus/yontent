@@ -145,7 +145,7 @@ export const useParticipations = (filterStatus: string | null) => {
         
         console.log('Transaction added:', transactionData);
 
-        // Update the user's points in the profiles table
+        // Update the user's points in the profiles table - using the explicit participationUserId
         const { data: profileData } = await supabase
           .from('profiles')
           .select('points')
@@ -158,6 +158,7 @@ export const useParticipations = (filterStatus: string | null) => {
           
         const newPoints = (profileData?.points || 0) + pointAmount;
         
+        // Explicitly reference profiles table and user id to avoid ambiguity
         const { error: updatePointsError } = await supabase
           .from('profiles')
           .update({ points: newPoints })

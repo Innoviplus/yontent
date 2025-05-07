@@ -21,7 +21,11 @@ interface ExtendedCaptionProps extends CaptionProps {
 export function CalendarCaption(props: ExtendedCaptionProps) {
   const { currentMonth, handleMonthChange, handleYearChange } = useCalendarNavigation({
     month: props.displayMonth,
-    onMonthChange: props.onMonthChange,
+    onMonthChange: (newMonth) => {
+      if (props.onMonthChange) {
+        props.onMonthChange(newMonth);
+      }
+    },
     onMonthSelect: props.onMonthSelect,
     onYearSelect: props.onYearSelect,
   });
@@ -45,7 +49,9 @@ export function CalendarCaption(props: ExtendedCaptionProps) {
         onClick={() => {
           const newMonth = new Date(currentMonth);
           newMonth.setMonth(currentMonth.getMonth() - 1);
-          props.onMonthChange(newMonth);
+          if (props.onMonthChange) {
+            props.onMonthChange(newMonth);
+          }
         }}
       >
         <ChevronLeft className="h-4 w-4" />
@@ -92,7 +98,9 @@ export function CalendarCaption(props: ExtendedCaptionProps) {
         onClick={() => {
           const newMonth = new Date(currentMonth);
           newMonth.setMonth(currentMonth.getMonth() + 1);
-          props.onMonthChange(newMonth);
+          if (props.onMonthChange) {
+            props.onMonthChange(newMonth);
+          }
         }}
       >
         <ChevronRight className="h-4 w-4" />
