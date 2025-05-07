@@ -1,4 +1,3 @@
-
 import { useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { Mission } from '@/lib/types';
@@ -64,7 +63,7 @@ const MissionStats = ({
         error
       } = await supabase.from('mission_participations').insert({
         mission_id: mission.id,
-        user_id: userId,
+        user_id_p: userId,
         status: 'PENDING'
       });
       if (error) throw error;

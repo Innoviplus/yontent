@@ -16,6 +16,7 @@ import { useCalendarNavigation } from "@/hooks/useCalendarNavigation";
 interface ExtendedCaptionProps extends CaptionProps {
   onMonthSelect?: (month: number) => void;
   onYearSelect?: (year: number) => void;
+  onMonthChange?: (month: Date) => void;
 }
 
 export function CalendarCaption(props: ExtendedCaptionProps) {

@@ -17,7 +17,7 @@ export type Database = {
           status: string
           submission_data: Json | null
           updated_at: string
-          user_id: string
+          user_id_p: string
         }
         Insert: {
           created_at?: string
@@ -26,7 +26,7 @@ export type Database = {
           status: string
           submission_data?: Json | null
           updated_at?: string
-          user_id: string
+          user_id_p: string
         }
         Update: {
           created_at?: string
@@ -35,7 +35,7 @@ export type Database = {
           status?: string
           submission_data?: Json | null
           updated_at?: string
-          user_id?: string
+          user_id_p?: string
         }
         Relationships: [
           {

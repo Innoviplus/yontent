@@ -6,7 +6,7 @@ import { toast } from 'sonner';
 export interface Participation {
   id: string;
   mission_id: string;
-  user_id: string;
+  user_id_p: string;
   status: string;
   created_at: string;
   mission: {
@@ -36,7 +36,7 @@ export const useParticipations = (filterStatus: string | null) => {
         .select(`
           id,
           mission_id,
-          user_id,
+          user_id_p,
           status,
           created_at,
           submission_data,
@@ -54,14 +54,14 @@ export const useParticipations = (filterStatus: string | null) => {
       
       // Process the data with proper column qualification to avoid ambiguity
       const processedData = await Promise.all((data || []).map(async (participation) => {
-        // Explicitly store the user_id from participation to avoid ambiguity
-        const participationUserId = participation.user_id;
+        // Explicitly store the user_id_p from participation
+        const participationUserId = participation.user_id_p;
         
-        // Explicitly use the participation's user_id to get the profile data
+        // Explicitly use the participation's user_id_p to get the profile data
         const { data: profileData } = await supabase
           .from('profiles')
           .select('username')
-          .eq('id', participationUserId)  // Using the stored user_id variable
+          .eq('id', participationUserId)  // Using the stored user_id_p variable
           .single();
         
         const submissionData = participation.submission_data as any || {};
@@ -69,7 +69,7 @@ export const useParticipations = (filterStatus: string | null) => {
         return {
           id: participation.id,
           mission_id: participation.mission_id,
-          user_id: participationUserId, // Use the stored user_id
+          user_id_p: participationUserId, // Use the stored user_id_p
           status: participation.status,
           created_at: participation.created_at,
           mission: participation.mission,
@@ -102,7 +102,7 @@ export const useParticipations = (filterStatus: string | null) => {
       console.log(`Updating participation ${id} to status: ${newStatus}`);
       
       // Store the user ID in a local variable to avoid ambiguity
-      const participationUserId = participation.user_id;
+      const participationUserId = participation.user_id_p;
       
       // First, update the participation status
       const { error: updateError } = await supabase

@@ -1,4 +1,3 @@
-
 import { useState, useEffect } from 'react';
 import { useParams, Navigate } from 'react-router-dom';
 import { Mission } from '@/lib/types';
@@ -107,7 +106,7 @@ const MissionDetail = () => {
             .from('mission_participations')
             .select('status')
             .eq('mission_id', id)
-            .eq('user_id', user.id)
+            .eq('user_id_p', user.id)
             .single();
             
           if (participationError && participationError.code !== 'PGRST116') {

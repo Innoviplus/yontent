@@ -1,4 +1,3 @@
-
 import React, { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { toast } from 'sonner';
@@ -69,7 +68,7 @@ const MissionReceiptForm = ({ mission, userId }: MissionReceiptFormProps) => {
         .from('mission_participations')
         .insert({
           mission_id: mission.id,
-          user_id: userId,
+          user_id_p: userId,
           status: 'PENDING',
           submission_data: {
             receipt_images: uploadedUrls,
@@ -144,4 +143,3 @@ const MissionReceiptForm = ({ mission, userId }: MissionReceiptFormProps) => {
 };
 
 export default MissionReceiptForm;
-
