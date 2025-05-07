@@ -34,12 +34,13 @@ export const useParticipations = (statusFilter: string | null = null) => {
     console.log('Fetching participations with status filter:', statusFilter);
     try {
       setLoading(true);
+      // Modified query to properly join user profiles from users table instead of profiles
       let query = supabase
         .from('mission_participations')
         .select(`
           *,
           mission:missions(*),
-          profile:profiles(id, username, avatar)
+          user:users(id, email)
         `)
         .order('created_at', { ascending: false });
 
@@ -59,21 +60,28 @@ export const useParticipations = (statusFilter: string | null = null) => {
       const typedParticipations: Participation[] = (data || []).map(item => {
         // For debugging
         console.log('Processing item:', item);
-        if (item.profile) {
-          console.log('Profile data:', item.profile);
-        }
+        
+        // Handle user data instead of profile
+        const user = item.user;
+        console.log('User data:', user);
+        
+        // Create a profile-like object from user data
+        const profileData = user && typeof user === 'object' ? {
+          id: user.id || '',
+          username: user.email ? user.email.split('@')[0] : 'Unknown User',
+          // No avatar in user table, can be added later if needed
+        } : undefined;
         
         return {
           ...item,
           mission: item.mission ? {
             ...item.mission,
-            type: item.mission.type as 'REVIEW' | 'RECEIPT' // Ensure correct typing
+            type: (item.mission.type === 'REVIEW' || item.mission.type === 'RECEIPT') 
+              ? item.mission.type 
+              : 'REVIEW' // Default to 'REVIEW' if type is invalid
           } : undefined,
-          profile: item.profile && typeof item.profile === 'object' && item.profile !== null ? {
-            id: typeof item.profile.id === 'string' ? item.profile.id : '',
-            username: typeof item.profile.username === 'string' ? item.profile.username : 'Unknown user',
-            avatar: typeof item.profile.avatar === 'string' ? item.profile.avatar : undefined
-          } : undefined
+          profile: profileData,
+          user: undefined // Remove the original user field to match our Participation interface
         };
       });
       
