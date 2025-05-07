@@ -153,14 +153,14 @@ export const useParticipations = (statusFilter: string | null = null) => {
       if (status === 'APPROVED' && participation.mission?.points_reward) {
         // Insert point transaction
         await supabase.from('point_transactions').insert({
-          user_id: participation.user_id_p,
+          user_id: participation.user_id_p, // Use user_id_p instead of user_id to avoid ambiguity
           amount: participation.mission.points_reward,
           type: 'EARNED',
           source: participation.mission.type === 'REVIEW' ? 'MISSION_REVIEW' : 'RECEIPT_SUBMISSION',
           description: `Earned from ${participation.mission.title} mission`
         });
         
-        // Update user points
+        // Update user points using user_id_p to avoid ambiguity
         await supabase.rpc('increment_points', {
           user_id_param: participation.user_id_p,
           points_amount_param: participation.mission.points_reward
