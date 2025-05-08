@@ -1,29 +1,38 @@
 
 import { useAuth } from '@/contexts/AuthContext';
 import { useFetchReview } from './review/useFetchReview';
-import { useReviewLikes } from './review/useReviewLikes';
-import { useRelatedReviews } from './review/useRelatedReviews';
 import { useReviewNavigation } from './review/useReviewNavigation';
+import { useEffect, useRef } from 'react';
 
 export const useReviewDetail = (id: string | undefined) => {
   const { user } = useAuth();
+  const initialLoadRef = useRef(false);
   
-  const { review, loading, setReview } = useFetchReview(id);
-  const { hasLiked, likeLoading, handleLike } = useReviewLikes(review, user?.id);
-  const { relatedReviews } = useRelatedReviews(review);
-  const { navigateToUserProfile } = useReviewNavigation(review);
+  const { review, loading, setReview, refetchReview } = useFetchReview(id);
+  const { navigateToUserProfile, relatedReviews } = useReviewNavigation(review);
   
-  const handleLikeAction = () => {
-    handleLike(setReview);
-  };
+  // Only refresh data periodically to update data, but don't track view again
+  useEffect(() => {
+    if (!id || !review) return;
+    
+    // Skip the initial refresh since useFetchReview already fetched the data
+    if (!initialLoadRef.current) {
+      initialLoadRef.current = true;
+      return;
+    }
+    
+    // Disable periodic refreshes
+    
+    return () => {
+      // Nothing to clean up
+    };
+  }, [id, review, refetchReview]);
   
   return {
     review,
     loading,
-    likeLoading,
-    hasLiked,
-    handleLike: handleLikeAction,
     navigateToUserProfile,
-    relatedReviews
+    relatedReviews,
+    refetchReview: (skipViewTracking = false) => refetchReview(skipViewTracking)
   };
 };

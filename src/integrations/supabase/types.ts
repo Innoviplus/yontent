@@ -484,6 +484,10 @@ export type Database = {
         Args: { views: number; likes: number; avg_time: number; ctr: number }
         Returns: number
       }
+      decrement_review_likes: {
+        Args: { review_id_param: string }
+        Returns: undefined
+      }
       handle_mission_approval: {
         Args: { p_participation_id: string; p_status: string }
         Returns: Json
@@ -491,6 +495,10 @@ export type Database = {
       increment_points: {
         Args: { user_id_param: string; points_amount_param: number }
         Returns: number
+      }
+      increment_review_likes: {
+        Args: { review_id_param: string }
+        Returns: undefined
       }
       increment_view_count: {
         Args: { review_id: string }
@@ -503,6 +511,10 @@ export type Database = {
       is_admin_user: {
         Args: Record<PropertyKey, never>
         Returns: boolean
+      }
+      sync_review_likes_count: {
+        Args: { review_id_param: string }
+        Returns: number
       }
       update_avatar_url: {
         Args: { user_id: string; avatar_url: string }

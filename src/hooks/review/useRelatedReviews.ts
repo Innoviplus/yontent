@@ -25,7 +25,6 @@ export const useRelatedReviews = (review: Review | null) => {
             images,
             videos,
             views_count,
-            likes_count,
             created_at,
             profiles:user_id (
               id,
@@ -37,7 +36,7 @@ export const useRelatedReviews = (review: Review | null) => {
           `)
           .neq('id', reviewData.id)
           .eq('status', 'PUBLISHED') // Only fetch published reviews
-          .order('likes_count', { ascending: false })
+          .order('views_count', { ascending: false })
           .limit(5); // Limit to just 5 reviews for faster loading
         
         if (error) {
@@ -64,7 +63,6 @@ export const useRelatedReviews = (review: Review | null) => {
             images: item.images || [],
             videos: item.videos || [],
             viewsCount: item.views_count,
-            likesCount: item.likes_count,
             createdAt: new Date(item.created_at),
             user: profile ? {
               id: profile.id || item.user_id,

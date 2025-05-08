@@ -1,3 +1,4 @@
+
 import { useEffect } from 'react';
 import { Loader2, Star } from 'lucide-react';
 import Navbar from '@/components/Navbar';

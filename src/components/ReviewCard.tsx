@@ -1,6 +1,6 @@
 
 import { useNavigate } from 'react-router-dom';
-import { User, Camera, Eye, Heart, Play } from 'lucide-react';
+import { User, Camera, Eye, Play } from 'lucide-react';
 import { Review } from '@/lib/types';
 import { cn } from '@/lib/utils';
 import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
@@ -90,15 +90,11 @@ const ReviewCard = ({ review, className }: ReviewCardProps) => {
           </p>
         </div>
         
-        {/* Stats: Views aligned left, Likes aligned right */}
-        <div className="flex items-center justify-between">
+        {/* Stats: Views only */}
+        <div className="flex items-center">
           <div className="flex items-center text-xs text-gray-500">
             <Eye className="h-3 w-3 mr-0.5" />
             <span>{review.viewsCount || 0}</span>
-          </div>
-          <div className="flex items-center text-xs text-gray-500">
-            <Heart className="h-3 w-3 mr-0.5 text-red-500" />
-            <span>{review.likesCount || 0}</span>
           </div>
         </div>
       </div>

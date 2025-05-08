@@ -2,7 +2,7 @@
 import { Link } from 'react-router-dom';
 import { Review } from '@/lib/types';
 import { formatTimeAgo } from '@/lib/formatUtils';
-import { Eye, Heart } from 'lucide-react';
+import { Eye } from 'lucide-react';
 
 interface RelatedReviewsProps {
   reviewId: string;
@@ -44,14 +44,10 @@ const RelatedReviews = ({ reviewId, relatedReviews }: RelatedReviewsProps) => {
                     <span className="mx-1">•</span>
                     <span>{formatTimeAgo(review.createdAt)}</span>
                   </div>
-                  <div className="mt-2 flex items-center space-x-4 text-xs text-gray-500">
+                  <div className="mt-2 flex items-center text-xs text-gray-500">
                     <div className="flex items-center">
                       <Eye className="h-3.5 w-3.5 mr-1" />
                       <span>{review.viewsCount}</span>
-                    </div>
-                    <div className="flex items-center">
-                      <Heart className="h-3.5 w-3.5 mr-1" />
-                      <span>{review.likesCount}</span>
                     </div>
                   </div>
                 </div>
