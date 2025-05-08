@@ -90,10 +90,23 @@ export const useReviewLikes = (review: Review | null, userId: string | undefined
           throw deleteLikeError;
         }
         
-        const newLikesCount = Math.max(0, localLikesCount - 1);
+        // First check the current count before decrementing
+        const { data: currentData, error: fetchError } = await supabase
+          .from('reviews')
+          .select('likes_count')
+          .eq('id', review.id)
+          .single();
+          
+        if (fetchError) {
+          console.error('Error fetching current likes count before unlike:', fetchError);
+          throw fetchError;
+        }
+        
+        const currentCount = currentData?.likes_count || 0;
+        const newLikesCount = Math.max(0, currentCount - 1);
         console.log('Updating review likes count to:', newLikesCount);
         
-        // Critical fix: Ensure the likes_count is properly updated in the database
+        // Critical: Update the likes_count in the database
         const { error: updateError } = await supabase
           .from('reviews')
           .update({ likes_count: newLikesCount })
