@@ -15,6 +15,7 @@ export const useFetchReview = (id: string | undefined) => {
     try {
       setLoading(true);
       
+      // Get the review data with actual likes count from reviews table
       const { data, error } = await supabase
         .from('reviews')
         .select(`
@@ -51,7 +52,8 @@ export const useFetchReview = (id: string | undefined) => {
           images: data.images || [],
           videos: data.videos || [],
           viewsCount: data.views_count,
-          likesCount: data.likes_count,
+          // Make sure to use the likes_count from the database
+          likesCount: data.likes_count || 0,
           createdAt: new Date(data.created_at),
           user: data.profiles ? {
             id: data.profiles.id || data.user_id,
@@ -67,6 +69,7 @@ export const useFetchReview = (id: string | undefined) => {
         
         // Log the review data for debugging
         console.log('Fetched review data:', transformedReview);
+        console.log('Like count from database:', data.likes_count);
         
         // Track the view
         trackReviewView(id);

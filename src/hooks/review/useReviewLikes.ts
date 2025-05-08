@@ -9,8 +9,10 @@ export const useReviewLikes = (review: Review | null, userId: string | undefined
   const [likeLoading, setLikeLoading] = useState(false);
   const [localLikesCount, setLocalLikesCount] = useState(0);
   
+  // Initialize and sync the likes count from the review
   useEffect(() => {
     if (review) {
+      console.log('Setting initial likes count:', review.likesCount);
       setLocalLikesCount(review.likesCount || 0);
     }
   }, [review]);
@@ -31,7 +33,9 @@ export const useReviewLikes = (review: Review | null, userId: string | undefined
         return;
       }
       
-      setHasLiked(!!data);
+      const userHasLiked = !!data;
+      console.log('User has liked this review:', userHasLiked);
+      setHasLiked(userHasLiked);
     } catch (error) {
       console.error('Unexpected error:', error);
     }
@@ -130,6 +134,7 @@ export const useReviewLikes = (review: Review | null, userId: string | undefined
     }
   };
   
+  // Check if the user has liked the review when the component mounts
   useEffect(() => {
     if (userId && review) {
       checkIfUserLiked();
