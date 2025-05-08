@@ -57,7 +57,14 @@ export const likeReview = async (userId: string, reviewId: string) => {
   try {
     console.log(`Adding like to review ${reviewId} by user ${userId}`);
     
-    // First, add the like record
+    // First, verify that the user hasn't already liked this review
+    const alreadyLiked = await checkUserLikedReview(userId, reviewId);
+    if (alreadyLiked) {
+      console.log('User has already liked this review, skipping like operation');
+      return await fetchReviewLikesCount(reviewId);
+    }
+    
+    // Add the like record
     const { error: insertLikeError } = await supabase
       .from('review_likes')
       .insert([{ user_id: userId, review_id: reviewId }]);
@@ -97,7 +104,14 @@ export const unlikeReview = async (userId: string, reviewId: string) => {
   try {
     console.log(`Removing like from review ${reviewId} by user ${userId}`);
     
-    // First, remove the like record
+    // First, verify that the user has liked this review
+    const hasLiked = await checkUserLikedReview(userId, reviewId);
+    if (!hasLiked) {
+      console.log('User has not liked this review, skipping unlike operation');
+      return await fetchReviewLikesCount(reviewId);
+    }
+    
+    // Remove the like record
     const { error: deleteLikeError } = await supabase
       .from('review_likes')
       .delete()
