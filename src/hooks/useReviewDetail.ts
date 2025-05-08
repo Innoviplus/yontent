@@ -2,7 +2,6 @@
 import { useAuth } from '@/contexts/AuthContext';
 import { useFetchReview } from './review/useFetchReview';
 import { useReviewLikes } from './review/useReviewLikes';
-import { useRelatedReviews } from './review/useReviewNavigation';
 import { useReviewNavigation } from './review/useReviewNavigation';
 import { useEffect, useRef } from 'react';
 
@@ -12,8 +11,7 @@ export const useReviewDetail = (id: string | undefined) => {
   
   const { review, loading, setReview, refetchReview } = useFetchReview(id);
   const { hasLiked, likeLoading, likesCount, handleLike } = useReviewLikes(review, user?.id);
-  const { relatedReviews } = useRelatedReviews(review);
-  const { navigateToUserProfile } = useReviewNavigation(review);
+  const { navigateToUserProfile, relatedReviews } = useReviewNavigation(review);
   
   // Only refresh data periodically to update likes count, but don't track view again
   useEffect(() => {
