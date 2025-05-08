@@ -39,6 +39,7 @@ export const useLikeAction = ({
     
     setIsProcessing(true);
     try {
+      console.log('Starting like action for review:', reviewId);
       // Call the provided onLike function which handles the like/unlike action
       onLike();
     } catch (error) {

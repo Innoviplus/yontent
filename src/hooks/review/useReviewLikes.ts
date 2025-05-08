@@ -93,6 +93,7 @@ export const useReviewLikes = (review: Review | null, userId: string | undefined
         const newLikesCount = Math.max(0, localLikesCount - 1);
         console.log('Updating review likes count to:', newLikesCount);
         
+        // Critical fix: Ensure the likes_count is properly updated in the database
         const { error: updateError } = await supabase
           .from('reviews')
           .update({ likes_count: newLikesCount })
@@ -126,9 +127,26 @@ export const useReviewLikes = (review: Review | null, userId: string | undefined
           throw insertLikeError;
         }
         
-        const newLikesCount = localLikesCount + 1;
+        // Critical fix: First get the current likes count from the database
+        const { data: currentData, error: fetchError } = await supabase
+          .from('reviews')
+          .select('likes_count')
+          .eq('id', review.id)
+          .single();
+          
+        if (fetchError) {
+          console.error('Error fetching current likes count:', fetchError);
+          throw fetchError;
+        }
+        
+        // Use the database value to ensure accuracy
+        const currentCount = currentData?.likes_count || 0;
+        const newLikesCount = currentCount + 1;
+        
+        console.log('Current likes count in DB:', currentCount);
         console.log('Updating review likes count to:', newLikesCount);
         
+        // Update the likes count in the database
         const { error: updateError } = await supabase
           .from('reviews')
           .update({ likes_count: newLikesCount })
