@@ -38,8 +38,11 @@ export const useReviewLikes = (review: Review | null, userId: string | undefined
     
     try {
       setLikeLoading(true);
+      console.log('Processing like action for review:', review.id);
       
       if (hasLiked) {
+        // Unlike the review
+        console.log('Removing like...');
         const { error: deleteLikeError } = await supabase
           .from('review_likes')
           .delete()
@@ -47,15 +50,20 @@ export const useReviewLikes = (review: Review | null, userId: string | undefined
           .eq('review_id', review.id);
           
         if (deleteLikeError) {
+          console.error('Error removing like:', deleteLikeError);
           throw deleteLikeError;
         }
         
+        const newLikesCount = Math.max(0, (review.likesCount || 0) - 1);
+        console.log('Updating review likes count to:', newLikesCount);
+        
         const { error: updateError } = await supabase
           .from('reviews')
-          .update({ likes_count: Math.max(0, (review.likesCount || 0) - 1) })
+          .update({ likes_count: newLikesCount })
           .eq('id', review.id);
           
         if (updateError) {
+          console.error('Error updating review likes count:', updateError);
           throw updateError;
         }
         
@@ -64,26 +72,33 @@ export const useReviewLikes = (review: Review | null, userId: string | undefined
           if (!prev) return null;
           return {
             ...prev,
-            likesCount: Math.max(0, (prev.likesCount || 0) - 1)
+            likesCount: newLikesCount
           };
         });
         
         toast.success('Review unliked');
       } else {
+        // Like the review
+        console.log('Adding like...');
         const { error: insertLikeError } = await supabase
           .from('review_likes')
           .insert([{ user_id: userId, review_id: review.id }]);
           
         if (insertLikeError) {
+          console.error('Error adding like:', insertLikeError);
           throw insertLikeError;
         }
         
+        const newLikesCount = (review.likesCount || 0) + 1;
+        console.log('Updating review likes count to:', newLikesCount);
+        
         const { error: updateError } = await supabase
           .from('reviews')
-          .update({ likes_count: (review.likesCount || 0) + 1 })
+          .update({ likes_count: newLikesCount })
           .eq('id', review.id);
           
         if (updateError) {
+          console.error('Error updating review likes count:', updateError);
           throw updateError;
         }
         
@@ -92,7 +107,7 @@ export const useReviewLikes = (review: Review | null, userId: string | undefined
           if (!prev) return null;
           return {
             ...prev,
-            likesCount: (prev.likesCount || 0) + 1
+            likesCount: newLikesCount
           };
         });
         

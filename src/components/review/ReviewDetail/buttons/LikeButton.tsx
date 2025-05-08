@@ -17,12 +17,18 @@ const LikeButton = ({ likesCount, hasLiked, onClick, isLoading }: LikeButtonProp
       size="sm"
       onClick={onClick}
       disabled={isLoading}
-      className="text-gray-600"
+      className="text-gray-600 relative"
+      aria-label={hasLiked ? "Unlike" : "Like"}
     >
       <Heart 
-        className={`h-5 w-5 mr-1 ${hasLiked ? 'fill-red-500 text-red-500' : ''}`} 
+        className={`h-5 w-5 mr-1 transition-colors ${hasLiked ? 'fill-red-500 text-red-500' : ''}`} 
       />
       <span className="text-gray-600">{likesCount}</span>
+      {isLoading && (
+        <span className="absolute inset-0 flex items-center justify-center bg-white/50 rounded">
+          <div className="h-3 w-3 border-t-2 border-b-2 border-brand-teal rounded-full animate-spin"></div>
+        </span>
+      )}
     </Button>
   );
 };
