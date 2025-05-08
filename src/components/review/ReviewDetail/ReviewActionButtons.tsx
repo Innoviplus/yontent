@@ -33,7 +33,7 @@ const ReviewActionButtons = ({
   return (
     <div className="flex items-center gap-2">
       <LikeButton 
-        likesCount={likesCount}
+        likesCount={likeAction.likesCount}
         hasLiked={likeAction.hasLiked}
         onClick={likeAction.handleLike}
         isLoading={likeAction.likeLoading}

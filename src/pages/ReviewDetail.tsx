@@ -14,6 +14,7 @@ import RelatedReviews from '@/components/review/ReviewDetail/RelatedReviews';
 import ReviewComments from '@/components/review/ReviewDetail/ReviewComments';
 import { useAuth } from '@/contexts/AuthContext';
 import { useIsMobile } from '@/hooks/use-mobile';
+import { useEffect } from 'react';
 
 const ReviewDetail = () => {
   const { id } = useParams<{ id: string }>();
@@ -27,11 +28,20 @@ const ReviewDetail = () => {
     likesCount,
     handleLike,
     navigateToUserProfile,
-    relatedReviews
+    relatedReviews,
+    refetchReview
   } = useReviewDetail(id);
 
   // Check if current user is the author of the review
   const isAuthor = user && review && user.id === review.userId;
+  
+  // Fetch review data when component mounts and when route changes
+  useEffect(() => {
+    if (id) {
+      console.log('ReviewDetail: Route changed, refetching review data');
+      refetchReview();
+    }
+  }, [id, refetchReview]);
 
   return (
     <div className="min-h-screen bg-gray-50">

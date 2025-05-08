@@ -43,6 +43,11 @@ export const useFetchReview = (id: string | undefined) => {
       }
       
       if (data) {
+        // Explicitly verify likes_count is present in the data
+        if (data.likes_count === undefined || data.likes_count === null) {
+          console.warn('Likes count is undefined or null in fetched data');
+        }
+        
         const transformedReview: Review = {
           id: data.id,
           userId: data.user_id,
@@ -52,7 +57,7 @@ export const useFetchReview = (id: string | undefined) => {
           images: data.images || [],
           videos: data.videos || [],
           viewsCount: data.views_count,
-          // Make sure to use the likes_count from the database
+          // Make sure to use the likes_count from the database and default to 0 if not present
           likesCount: data.likes_count || 0,
           createdAt: new Date(data.created_at),
           user: data.profiles ? {
@@ -90,5 +95,5 @@ export const useFetchReview = (id: string | undefined) => {
     }
   }, [id]);
   
-  return { review, loading, setReview };
+  return { review, loading, setReview, refetchReview: fetchReview };
 };

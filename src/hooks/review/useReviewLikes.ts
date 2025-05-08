@@ -17,6 +17,31 @@ export const useReviewLikes = (review: Review | null, userId: string | undefined
     }
   }, [review]);
   
+  // Fetch the current likes count from the database to ensure accuracy
+  const fetchCurrentLikesCount = async () => {
+    if (!review?.id) return;
+    
+    try {
+      const { data, error } = await supabase
+        .from('reviews')
+        .select('likes_count')
+        .eq('id', review.id)
+        .single();
+        
+      if (error) {
+        console.error('Error fetching current likes count:', error);
+        return;
+      }
+      
+      if (data) {
+        console.log('Fetched current likes count from DB:', data.likes_count);
+        setLocalLikesCount(data.likes_count || 0);
+      }
+    } catch (error) {
+      console.error('Unexpected error fetching likes count:', error);
+    }
+  };
+  
   const checkIfUserLiked = async () => {
     if (!userId || !review?.id) return;
     
@@ -126,9 +151,17 @@ export const useReviewLikes = (review: Review | null, userId: string | undefined
         
         toast.success('Review liked!');
       }
+      
+      // After like/unlike action, refetch the current likes count from the database
+      await fetchCurrentLikesCount();
+      
     } catch (error: any) {
       console.error('Error liking/unliking review:', error);
       toast.error('Failed to update like status');
+      
+      // In case of error, refresh the likes count and status
+      await fetchCurrentLikesCount();
+      await checkIfUserLiked();
     } finally {
       setLikeLoading(false);
     }
@@ -138,6 +171,7 @@ export const useReviewLikes = (review: Review | null, userId: string | undefined
   useEffect(() => {
     if (userId && review) {
       checkIfUserLiked();
+      fetchCurrentLikesCount();
     }
   }, [userId, review]);
   
