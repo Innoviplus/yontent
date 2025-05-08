@@ -26,6 +26,9 @@ const ReviewCard = ({ review, className }: ReviewCardProps) => {
     return doc.body.textContent || '';
   };
 
+  // Ensure likes count is at least 0
+  const displayLikesCount = review.likesCount || 0;
+
   return (
     <div 
       onClick={handleCardClick}
@@ -98,7 +101,7 @@ const ReviewCard = ({ review, className }: ReviewCardProps) => {
           </div>
           <div className="flex items-center text-xs text-gray-500">
             <Heart className="h-3 w-3 mr-0.5 text-red-500" />
-            <span>{review.likesCount || 0}</span>
+            <span>{displayLikesCount}</span>
           </div>
         </div>
       </div>

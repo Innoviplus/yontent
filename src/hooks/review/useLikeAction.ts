@@ -2,7 +2,6 @@
 import { toast } from 'sonner';
 import { useAuth } from '@/contexts/AuthContext';
 import { useState } from 'react';
-import { supabase } from '@/integrations/supabase/client';
 
 interface UseLikeActionProps {
   reviewId?: string;
