@@ -27,7 +27,8 @@ export const checkUserLikedReview = async (userId: string, reviewId: string) => 
 };
 
 /**
- * Fetches the current likes count for a review
+ * Fetches the current likes count for a review directly from the reviews table
+ * which is now kept in sync with the actual likes count
  */
 export const fetchReviewLikesCount = async (reviewId: string) => {
   try {
@@ -66,10 +67,10 @@ export const likeReview = async (userId: string, reviewId: string) => {
       throw insertLikeError;
     }
     
-    // Update the likes count directly in the reviews table using an increment operation
+    // Call the sync function to update the likes count in the reviews table
     // Use .rpc with a type assertion to bypass TypeScript's type checking
     const { data, error: updateError } = await (supabase.rpc as any)(
-      'increment_review_likes',
+      'sync_review_likes_count',
       { review_id_param: reviewId }
     );
     
@@ -78,8 +79,8 @@ export const likeReview = async (userId: string, reviewId: string) => {
       throw updateError;
     }
     
-    // Fetch the updated likes count to return
-    const newLikesCount = await fetchReviewLikesCount(reviewId);
+    // The data from sync_review_likes_count should contain the updated count
+    const newLikesCount = data || await fetchReviewLikesCount(reviewId);
     console.log(`Updated likes count after like: ${newLikesCount}`);
     
     return newLikesCount;
@@ -108,10 +109,10 @@ export const unlikeReview = async (userId: string, reviewId: string) => {
       throw deleteLikeError;
     }
     
-    // Update the likes count directly in the reviews table using a decrement operation
+    // Call the sync function to update the likes count in the reviews table
     // Use .rpc with a type assertion to bypass TypeScript's type checking
     const { data, error: updateError } = await (supabase.rpc as any)(
-      'decrement_review_likes',
+      'sync_review_likes_count',
       { review_id_param: reviewId }
     );
     
@@ -120,8 +121,8 @@ export const unlikeReview = async (userId: string, reviewId: string) => {
       throw updateError;
     }
     
-    // Fetch the updated likes count to return
-    const newLikesCount = await fetchReviewLikesCount(reviewId);
+    // The data from sync_review_likes_count should contain the updated count
+    const newLikesCount = data || await fetchReviewLikesCount(reviewId);
     console.log(`Updated likes count after unlike: ${newLikesCount}`);
     
     return newLikesCount;
