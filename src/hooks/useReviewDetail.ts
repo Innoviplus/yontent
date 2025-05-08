@@ -9,7 +9,7 @@ export const useReviewDetail = (id: string | undefined) => {
   const { user } = useAuth();
   
   const { review, loading, setReview } = useFetchReview(id);
-  const { hasLiked, likeLoading, handleLike } = useReviewLikes(review, user?.id);
+  const { hasLiked, likeLoading, likesCount, handleLike } = useReviewLikes(review, user?.id);
   const { relatedReviews } = useRelatedReviews(review);
   const { navigateToUserProfile } = useReviewNavigation(review);
   
@@ -22,6 +22,7 @@ export const useReviewDetail = (id: string | undefined) => {
     loading,
     likeLoading,
     hasLiked,
+    likesCount,
     handleLike: handleLikeAction,
     navigateToUserProfile,
     relatedReviews

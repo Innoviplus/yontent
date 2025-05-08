@@ -7,6 +7,13 @@ import { toast } from 'sonner';
 export const useReviewLikes = (review: Review | null, userId: string | undefined) => {
   const [hasLiked, setHasLiked] = useState(false);
   const [likeLoading, setLikeLoading] = useState(false);
+  const [localLikesCount, setLocalLikesCount] = useState(0);
+  
+  useEffect(() => {
+    if (review) {
+      setLocalLikesCount(review.likesCount || 0);
+    }
+  }, [review]);
   
   const checkIfUserLiked = async () => {
     if (!userId || !review?.id) return;
@@ -54,7 +61,7 @@ export const useReviewLikes = (review: Review | null, userId: string | undefined
           throw deleteLikeError;
         }
         
-        const newLikesCount = Math.max(0, (review.likesCount || 0) - 1);
+        const newLikesCount = Math.max(0, localLikesCount - 1);
         console.log('Updating review likes count to:', newLikesCount);
         
         const { error: updateError } = await supabase
@@ -68,6 +75,7 @@ export const useReviewLikes = (review: Review | null, userId: string | undefined
         }
         
         setHasLiked(false);
+        setLocalLikesCount(newLikesCount);
         setReview(prev => {
           if (!prev) return null;
           return {
@@ -89,7 +97,7 @@ export const useReviewLikes = (review: Review | null, userId: string | undefined
           throw insertLikeError;
         }
         
-        const newLikesCount = (review.likesCount || 0) + 1;
+        const newLikesCount = localLikesCount + 1;
         console.log('Updating review likes count to:', newLikesCount);
         
         const { error: updateError } = await supabase
@@ -103,6 +111,7 @@ export const useReviewLikes = (review: Review | null, userId: string | undefined
         }
         
         setHasLiked(true);
+        setLocalLikesCount(newLikesCount);
         setReview(prev => {
           if (!prev) return null;
           return {
@@ -127,5 +136,5 @@ export const useReviewLikes = (review: Review | null, userId: string | undefined
     }
   }, [userId, review]);
   
-  return { hasLiked, likeLoading, handleLike };
+  return { hasLiked, likeLoading, likesCount: localLikesCount, handleLike };
 };
