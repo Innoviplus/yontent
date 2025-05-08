@@ -14,12 +14,14 @@ import RelatedReviews from '@/components/review/ReviewDetail/RelatedReviews';
 import ReviewComments from '@/components/review/ReviewDetail/ReviewComments';
 import { useAuth } from '@/contexts/AuthContext';
 import { useIsMobile } from '@/hooks/use-mobile';
-import { useEffect } from 'react';
+import { useEffect, useRef } from 'react';
 
 const ReviewDetail = () => {
   const { id } = useParams<{ id: string }>();
   const { user } = useAuth();
   const isMobile = useIsMobile();
+  const initialLoadRef = useRef(false);
+  
   const {
     review,
     loading,
@@ -35,13 +37,17 @@ const ReviewDetail = () => {
   // Check if current user is the author of the review
   const isAuthor = user && review && user.id === review.userId;
   
-  // Fetch review data when component mounts and when route changes
+  // Only fetch review data when component mounts and when route changes
+  // but avoid triggering view tracking on every render
   useEffect(() => {
-    if (id) {
-      console.log('ReviewDetail: Route changed, refetching review data');
-      refetchReview();
-    }
-  }, [id, refetchReview]);
+    if (!id || initialLoadRef.current) return;
+    
+    initialLoadRef.current = true;
+    console.log('ReviewDetail: Initial load, no need to refetch');
+    
+    // The initial data is already fetched by useReviewDetail
+    // No need to call refetchReview() here
+  }, [id]);
 
   return (
     <div className="min-h-screen bg-gray-50">

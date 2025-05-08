@@ -8,12 +8,16 @@ import { trackReviewView } from '@/services/review';
 export const useFetchReview = (id: string | undefined) => {
   const [review, setReview] = useState<Review | null>(null);
   const [loading, setLoading] = useState(true);
+  const [isRefetching, setIsRefetching] = useState(false);
   
-  const fetchReview = async () => {
+  const fetchReview = async (skipViewTracking = false) => {
     if (!id) return;
     
     try {
-      setLoading(true);
+      // Only show loading state on initial fetch, not refreshes
+      if (!isRefetching) {
+        setLoading(true);
+      }
       
       // Get the review data with actual likes count from reviews table
       const { data, error } = await supabase
@@ -76,14 +80,17 @@ export const useFetchReview = (id: string | undefined) => {
         console.log('Fetched review data:', transformedReview);
         console.log('Like count from database:', data.likes_count);
         
-        // Track the view
-        trackReviewView(id);
+        // Only track the view if this is not a refresh operation
+        if (!skipViewTracking && !isRefetching) {
+          trackReviewView(id);
+        }
       }
     } catch (error) {
       console.error('Unexpected error:', error);
       toast.error('An unexpected error occurred');
     } finally {
       setLoading(false);
+      setIsRefetching(false);
     }
   };
   
@@ -95,5 +102,10 @@ export const useFetchReview = (id: string | undefined) => {
     }
   }, [id]);
   
-  return { review, loading, setReview, refetchReview: fetchReview };
+  const refetchWithState = (skipViewTracking = false) => {
+    setIsRefetching(true);
+    return fetchReview(skipViewTracking);
+  };
+  
+  return { review, loading, setReview, refetchReview: refetchWithState };
 };
