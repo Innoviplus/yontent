@@ -19,7 +19,7 @@ export const useFetchReview = (id: string | undefined) => {
         setLoading(true);
       }
       
-      // Get the review data with actual likes count from reviews table
+      // Get the review data
       const { data, error } = await supabase
         .from('reviews')
         .select(`
@@ -29,7 +29,6 @@ export const useFetchReview = (id: string | undefined) => {
           images,
           videos,
           views_count,
-          likes_count,
           created_at,
           profiles:user_id (
             id,
@@ -47,29 +46,6 @@ export const useFetchReview = (id: string | undefined) => {
       }
       
       if (data) {
-        // Explicitly verify likes_count is present in the data
-        if (data.likes_count === undefined || data.likes_count === null) {
-          console.warn('Likes count is undefined or null in fetched data');
-          
-          // Fetch the actual likes count if it's missing
-          const { count, error: countError } = await supabase
-            .from('review_likes')
-            .select('id', { count: 'exact', head: true })
-            .eq('review_id', id);
-            
-          if (!countError && count !== null) {
-            // Update the likes count in the database
-            await supabase
-              .from('reviews')
-              .update({ likes_count: count })
-              .eq('id', id);
-              
-            data.likes_count = count;
-          } else {
-            data.likes_count = 0;
-          }
-        }
-        
         const transformedReview: Review = {
           id: data.id,
           userId: data.user_id,
@@ -79,8 +55,6 @@ export const useFetchReview = (id: string | undefined) => {
           images: data.images || [],
           videos: data.videos || [],
           viewsCount: data.views_count,
-          // Make sure to use the likes_count from the database and default to 0 if not present
-          likesCount: data.likes_count || 0,
           createdAt: new Date(data.created_at),
           user: data.profiles ? {
             id: data.profiles.id || data.user_id,
@@ -93,10 +67,6 @@ export const useFetchReview = (id: string | undefined) => {
         };
         
         setReview(transformedReview);
-        
-        // Log the review data for debugging
-        console.log('Fetched review data:', transformedReview);
-        console.log('Like count from database:', data.likes_count);
         
         // Only track the view if this is not a refresh operation
         if (!skipViewTracking && !isRefetching) {

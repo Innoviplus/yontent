@@ -1,7 +1,6 @@
 
 import { useAuth } from '@/contexts/AuthContext';
 import { useFetchReview } from './review/useFetchReview';
-import { useReviewLikes } from './review/useReviewLikes';
 import { useReviewNavigation } from './review/useReviewNavigation';
 import { useEffect, useRef } from 'react';
 
@@ -10,10 +9,9 @@ export const useReviewDetail = (id: string | undefined) => {
   const initialLoadRef = useRef(false);
   
   const { review, loading, setReview, refetchReview } = useFetchReview(id);
-  const { hasLiked, likeLoading, likesCount, handleLike } = useReviewLikes(review, user?.id);
   const { navigateToUserProfile, relatedReviews } = useReviewNavigation(review);
   
-  // Only refresh data periodically to update likes count, but don't track view again
+  // Only refresh data periodically to update data, but don't track view again
   useEffect(() => {
     if (!id || !review) return;
     
@@ -23,27 +21,16 @@ export const useReviewDetail = (id: string | undefined) => {
       return;
     }
     
-    // IMPORTANT: Disable periodic refreshes to prevent the like count from resetting
-    // The like count is now managed by the like/unlike operations directly
-    // Users can manually reload the page if they want fresh data
+    // Disable periodic refreshes
     
     return () => {
       // Nothing to clean up
     };
   }, [id, review, refetchReview]);
   
-  // Handle like button click with direct update to the review object
-  const handleLikeAction = () => {
-    handleLike(setReview);
-  };
-  
   return {
     review,
     loading,
-    likeLoading,
-    hasLiked,
-    likesCount,
-    handleLike: handleLikeAction,
     navigateToUserProfile,
     relatedReviews,
     refetchReview: (skipViewTracking = false) => refetchReview(skipViewTracking)

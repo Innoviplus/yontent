@@ -25,10 +25,6 @@ const ReviewDetail = () => {
   const {
     review,
     loading,
-    likeLoading,
-    hasLiked,
-    likesCount,
-    handleLike,
     navigateToUserProfile,
     relatedReviews,
     refetchReview
@@ -98,10 +94,6 @@ const ReviewDetail = () => {
                     
                     {/* Action buttons with isAuthor prop */}
                     <ReviewActionButtons
-                      likesCount={likesCount || 0}
-                      hasLiked={hasLiked}
-                      onLike={handleLike}
-                      likeLoading={likeLoading}
                       isAuthor={isAuthor}
                       reviewId={review.id}
                     />
