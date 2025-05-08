@@ -50,9 +50,11 @@ export const useLikeHandler = (
         toast.success('Review liked!');
       }
       
+      // Log the updated count
+      console.log('Updated likes count to:', newLikesCount);
+      
       // Update the likes count in our local state
       setLikesCount(newLikesCount);
-      console.log('Updated likes count to:', newLikesCount);
       
       // If a setReview function is provided, update the review object
       if (setReview) {

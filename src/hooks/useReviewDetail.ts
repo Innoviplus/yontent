@@ -23,10 +23,8 @@ export const useReviewDetail = (id: string | undefined) => {
       return;
     }
     
-    // Disable periodic refreshes to prevent the like count from resetting
-    // This prevents interference with the like count updates
-    
-    // This entire refresh logic is disabled to preserve like counts
+    // IMPORTANT: Disable periodic refreshes to prevent the like count from resetting
+    // The like count is now managed by the like/unlike operations directly
     // Users can manually reload the page if they want fresh data
     
     return () => {
@@ -34,6 +32,7 @@ export const useReviewDetail = (id: string | undefined) => {
     };
   }, [id, review, refetchReview]);
   
+  // Handle like button click with direct update to the review object
   const handleLikeAction = () => {
     handleLike(setReview);
   };

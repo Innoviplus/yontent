@@ -13,19 +13,21 @@ export const useLikeStatus = (reviewId: string | undefined, userId: string | und
   // Fetch initial like status and count
   useEffect(() => {
     const fetchLikeStatus = async () => {
-      if (!reviewId || !userId) return;
+      if (!reviewId) return;
       
       setIsLoading(true);
       try {
-        // Check if user has liked the review
-        const userHasLiked = await checkUserLikedReview(userId, reviewId);
-        setHasLiked(userHasLiked);
-        
-        // Get current likes count
+        // Get current likes count first
         const currentLikesCount = await fetchReviewLikesCount(reviewId);
         setLikesCount(currentLikesCount);
+        console.log(`Initial likes count for review ${reviewId}: ${currentLikesCount}`);
         
-        console.log(`Initial like status: hasLiked=${userHasLiked}, count=${currentLikesCount}`);
+        // Then check if user has liked the review (only if userId exists)
+        if (userId) {
+          const userHasLiked = await checkUserLikedReview(userId, reviewId);
+          setHasLiked(userHasLiked);
+          console.log(`User ${userId} has liked review ${reviewId}: ${userHasLiked}`);
+        }
       } catch (error) {
         console.error('Error fetching like status:', error);
       } finally {

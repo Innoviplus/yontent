@@ -54,6 +54,8 @@ export const fetchReviewLikesCount = async (reviewId: string) => {
  */
 export const likeReview = async (userId: string, reviewId: string) => {
   try {
+    console.log(`Adding like to review ${reviewId} by user ${userId}`);
+    
     // First, add the like record
     const { error: insertLikeError } = await supabase
       .from('review_likes')
@@ -64,20 +66,20 @@ export const likeReview = async (userId: string, reviewId: string) => {
       throw insertLikeError;
     }
     
-    // Get the current likes count
-    const currentCount = await fetchReviewLikesCount(reviewId);
-    const newLikesCount = currentCount + 1;
+    // Update the likes count directly in the reviews table using an increment operation
+    const { data, error: updateError } = await supabase.rpc(
+      'increment_review_likes',
+      { review_id_param: reviewId }
+    );
     
-    // Update the likes count in the reviews table
-    const { error: updateError } = await supabase
-      .from('reviews')
-      .update({ likes_count: newLikesCount })
-      .eq('id', reviewId);
-      
     if (updateError) {
       console.error('Error updating review likes count:', updateError);
       throw updateError;
     }
+    
+    // Fetch the updated likes count to return
+    const newLikesCount = await fetchReviewLikesCount(reviewId);
+    console.log(`Updated likes count after like: ${newLikesCount}`);
     
     return newLikesCount;
   } catch (error) {
@@ -91,6 +93,8 @@ export const likeReview = async (userId: string, reviewId: string) => {
  */
 export const unlikeReview = async (userId: string, reviewId: string) => {
   try {
+    console.log(`Removing like from review ${reviewId} by user ${userId}`);
+    
     // First, remove the like record
     const { error: deleteLikeError } = await supabase
       .from('review_likes')
@@ -103,20 +107,20 @@ export const unlikeReview = async (userId: string, reviewId: string) => {
       throw deleteLikeError;
     }
     
-    // Get the current likes count
-    const currentCount = await fetchReviewLikesCount(reviewId);
-    const newLikesCount = Math.max(0, currentCount - 1);
+    // Update the likes count directly in the reviews table using a decrement operation
+    const { data, error: updateError } = await supabase.rpc(
+      'decrement_review_likes',
+      { review_id_param: reviewId }
+    );
     
-    // Update the likes count in the reviews table
-    const { error: updateError } = await supabase
-      .from('reviews')
-      .update({ likes_count: newLikesCount })
-      .eq('id', reviewId);
-      
     if (updateError) {
       console.error('Error updating review likes count after unlike:', updateError);
       throw updateError;
     }
+    
+    // Fetch the updated likes count to return
+    const newLikesCount = await fetchReviewLikesCount(reviewId);
+    console.log(`Updated likes count after unlike: ${newLikesCount}`);
     
     return newLikesCount;
   } catch (error) {
