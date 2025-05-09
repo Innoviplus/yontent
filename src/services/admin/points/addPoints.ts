@@ -48,6 +48,7 @@ export const addPointsToUser = async (
       p_description: description
     });
     
+    // Use explicit parameter naming to match function signature exactly
     const { data: transactionData, error: transactionError } = await supabase.rpc(
       'admin_add_point_transaction',
       {
