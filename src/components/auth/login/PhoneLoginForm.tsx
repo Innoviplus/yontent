@@ -39,7 +39,7 @@ const PhoneLoginForm = ({ form, onSubmit, isLoading, userCountry }: PhoneLoginFo
                 <PhoneNumberInput
                   value={field.value}
                   onChange={field.onChange}
-                  defaultCountry={userCountry}
+                  defaultCountry={userCountry as any}
                 />
               </FormControl>
               <FormMessage />

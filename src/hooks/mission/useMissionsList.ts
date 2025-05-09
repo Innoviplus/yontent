@@ -134,7 +134,7 @@ export const useMissionsList = () => {
         }
         
         // For other options, first sort by displayOrder, then by the specific criteria
-        if (a.displayOrder !== b.displayOrder && sortOption !== 'default') {
+        if (a.displayOrder !== b.displayOrder) {
           return a.displayOrder - b.displayOrder;
         }
         

@@ -8,8 +8,7 @@ import {
 import { Button } from '@/components/ui/button';
 import { ChevronDown } from 'lucide-react';
 import { cn } from '@/lib/utils';
-
-type SortOption = 'default' | 'recent' | 'expiringSoon' | 'highestReward';
+import type { SortOption } from '@/hooks/mission/useMissionsList';
 
 interface MissionSortDropdownProps {
   sortBy: SortOption;
