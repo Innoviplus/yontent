@@ -53,7 +53,7 @@ const UserOwnStatsCard = ({
         const { count: pointTransactionsCount, error: pointError } = await supabase
           .from('point_transactions')
           .select('*', { count: 'exact', head: true })
-          .eq('user_id', user.id);
+          .eq('user_id_point', user.id);
           
         if (pointError) throw pointError;
         
@@ -66,7 +66,8 @@ const UserOwnStatsCard = ({
         if (redemptionError) throw redemptionError;
         
         // Sum both counts for total transactions
-        setActualTransactionsCount((pointTransactionsCount || 0) + (redemptionRequestsCount || 0));
+        const totalCount = (pointTransactionsCount || 0) + (redemptionRequestsCount || 0);
+        setActualTransactionsCount(totalCount);
       } catch (error) {
         console.error("Error fetching transactions count:", error);
         setActualTransactionsCount(transactionsCount);
