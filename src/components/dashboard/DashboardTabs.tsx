@@ -3,7 +3,9 @@ import { useState } from 'react';
 import { Tabs, TabsList, TabsTrigger, TabsContent } from '@/components/ui/tabs';
 import ReviewsTab from './ReviewsTab';
 import DraftReviewsTab from './DraftReviewsTab';
+import MissionsTab from './MissionsTab';
 import { Review } from '@/lib/types';
+import { Link } from 'react-router-dom';
 
 interface DashboardTabsProps {
   reviews: Review[];
@@ -11,14 +13,19 @@ interface DashboardTabsProps {
 }
 
 const DashboardTabs = ({ reviews, draftReviews }: DashboardTabsProps) => {
-  const [activeTab, setActiveTab] = useState('reviews');
+  const [activeTab, setActiveTab] = useState('missions');
 
   return (
-    <Tabs defaultValue="reviews" value={activeTab} onValueChange={setActiveTab}>
+    <Tabs defaultValue="missions" value={activeTab} onValueChange={setActiveTab}>
       <TabsList className="mb-6">
+        <TabsTrigger value="missions">My Missions</TabsTrigger>
         <TabsTrigger value="reviews">My Reviews</TabsTrigger>
         <TabsTrigger value="drafts">My Drafts</TabsTrigger>
       </TabsList>
+      
+      <TabsContent value="missions">
+        <MissionsTab />
+      </TabsContent>
       
       <TabsContent value="reviews">
         <ReviewsTab reviews={reviews} />
@@ -32,4 +39,3 @@ const DashboardTabs = ({ reviews, draftReviews }: DashboardTabsProps) => {
 };
 
 export default DashboardTabs;
-
