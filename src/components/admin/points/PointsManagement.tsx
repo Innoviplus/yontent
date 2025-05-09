@@ -7,8 +7,7 @@ import { Card, CardHeader, CardTitle } from '@/components/ui/card';
 import UserSearchCard from './UserSearchCard';
 import TransactionFormCard from './TransactionFormCard';
 import { transactionSchema, type TransactionFormValues } from './TransactionFormCard';
-import { supabase } from '@/integrations/supabase/client';
-import { updateUserPoints } from '@/services/auth/points';
+import { addPointsToUser } from '@/hooks/admin/utils/points';
 
 interface UserData {
   id: string;
@@ -39,19 +38,21 @@ const PointsManagement = () => {
       return;
     }
 
-    const { data, error } = await supabase
-      .from('profiles')
-      .select('id, username, avatar, points')
-      .ilike('username', `%${query}%`)
-      .limit(10);
+    try {
+      const { data, error } = await fetch(`/api/admin/search-users?query=${encodeURIComponent(query)}`)
+        .then(res => res.json());
 
-    if (error) {
-      console.error('Error searching users:', error);
+      if (error) {
+        console.error('Error searching users:', error);
+        toast.error('Failed to search users');
+        return;
+      }
+
+      setUsers(data || []);
+    } catch (error) {
+      console.error('Error fetching users:', error);
       toast.error('Failed to search users');
-      return;
     }
-
-    setUsers(data || []);
   };
 
   const handleSelectUser = (user: UserData) => {
@@ -71,81 +72,37 @@ const PointsManagement = () => {
 
       const { amount, type, description, userId } = values;
       
-      // First fetch the user's points in the profiles table
-      const { data: userData, error: userError } = await supabase
-        .from('profiles')
-        .select('points')
-        .eq('id', userId)
-        .single();
-        
-      if (userError) {
-        console.error('Error fetching user points:', userError);
-        toast.error('Failed to fetch user points');
-        setIsSubmitting(false);
-        return;
-      }
-      
-      const currentPoints = userData?.points || 0;
-      const finalAmount = type === 'ADD' ? amount : -amount;
-      const newPoints = currentPoints + finalAmount;
-      
-      // For deductions, check if user has enough points
-      if (type === 'DEDUCT' && currentPoints < amount) {
-        toast.error(`User only has ${currentPoints} points, cannot deduct ${amount} points.`);
-        setIsSubmitting(false);
-        return;
-      }
-      
-      // Update the user's points in the database
-      const { error: updateError } = await updateUserPoints(userId, newPoints);
-      
-      if (updateError) {
-        console.error('Error updating user points:', updateError);
-        toast.error('Failed to update user points');
-        setIsSubmitting(false);
-        return;
-      }
-      
-      console.log('Points updated successfully. New total:', newPoints);
+      // Convert to correct transaction type format expected by the points service
+      const transactionType = type === 'ADD' ? 'ADJUSTED' : 'DEDUCTED';
+      const pointsAmount = type === 'ADD' ? amount : -amount;
       
       // Make sure we properly tag the source in the description
       const fullDescription = `${description.trim()} [ADMIN_ADJUSTMENT]`;
       
-      // Create a transaction record
-      const { data: transactionData, error: transactionError } = await supabase.rpc(
-        'admin_add_point_transaction',
-        {
-          p_user_id: userId,
-          p_amount: finalAmount,
-          p_type: type === 'ADD' ? 'ADJUSTED' : 'DEDUCTED',
-          p_description: fullDescription
-        }
+      // Call the points service to add/deduct points
+      const result = await addPointsToUser(
+        userId,
+        pointsAmount,
+        transactionType as any,
+        'ADMIN_ADJUSTMENT',
+        fullDescription
       );
       
-      if (transactionError) {
-        console.error('Error creating transaction record:', transactionError);
-        toast.error('Failed to log transaction');
-        
-        // Attempt to revert the point change
-        try {
-          await updateUserPoints(userId, currentPoints);
-          console.log('Points reverted due to transaction error');
-        } catch (revertError) {
-          console.error('Failed to revert points:', revertError);
-        }
-        
+      if (!result.success) {
+        console.error('Error updating user points:', result.error);
+        toast.error(`Failed to ${type === 'ADD' ? 'add' : 'deduct'} points: ${result.error}`);
         setIsSubmitting(false);
         return;
       }
       
-      console.log('Transaction logged successfully:', transactionData);
+      console.log('Points transaction successful. New total:', result.newPointsTotal);
       toast.success(`Successfully ${type === 'ADD' ? 'added' : 'deducted'} ${amount} points`);
       
       // Update the selected user's points
-      if (selectedUser) {
+      if (selectedUser && result.newPointsTotal) {
         setSelectedUser({
           ...selectedUser,
-          points: newPoints
+          points: result.newPointsTotal
         });
       }
       
@@ -157,7 +114,7 @@ const PointsManagement = () => {
         description: '',
         userId: userId
       });
-    } catch (error) {
+    } catch (error: any) {
       console.error('Error processing points transaction:', error);
       toast.error('Failed to process points transaction');
     } finally {
