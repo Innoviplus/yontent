@@ -1,4 +1,3 @@
-
 /**
  * Search for users by username or email
  */

@@ -8,6 +8,7 @@ import UserSearchCard from './UserSearchCard';
 import TransactionFormCard from './TransactionFormCard';
 import { transactionSchema, type TransactionFormValues } from './TransactionFormCard';
 import { addPointsToUser } from '@/hooks/admin/utils/points';
+import { searchUsersByUsernameOrEmail } from '@/services/admin/users';
 
 interface UserData {
   id: string;
@@ -20,6 +21,7 @@ const PointsManagement = () => {
   const [users, setUsers] = useState<UserData[]>([]);
   const [selectedUser, setSelectedUser] = useState<UserData | null>(null);
   const [isSubmitting, setIsSubmitting] = useState(false);
+  const [isSearching, setIsSearching] = useState(false);
 
   const form = useForm<TransactionFormValues>({
     resolver: zodResolver(transactionSchema),
@@ -39,19 +41,23 @@ const PointsManagement = () => {
     }
 
     try {
-      const { data, error } = await fetch(`/api/admin/search-users?query=${encodeURIComponent(query)}`)
-        .then(res => res.json());
-
-      if (error) {
-        console.error('Error searching users:', error);
-        toast.error('Failed to search users');
-        return;
-      }
-
-      setUsers(data || []);
+      setIsSearching(true);
+      const results = await searchUsersByUsernameOrEmail(query);
+      
+      // Format results to match UserData interface
+      const formattedUsers = results.map(user => ({
+        id: user.id,
+        username: user.username || 'Unknown',
+        avatar: user.avatar || undefined,
+        points: user.points || 0
+      }));
+      
+      setUsers(formattedUsers);
     } catch (error) {
-      console.error('Error fetching users:', error);
+      console.error('Error searching users:', error);
       toast.error('Failed to search users');
+    } finally {
+      setIsSearching(false);
     }
   };
 
@@ -133,7 +139,7 @@ const PointsManagement = () => {
       <div className="grid gap-6 md:grid-cols-2">
         <UserSearchCard
           users={users}
-          isLoading={false}
+          isLoading={isSearching}
           selectedUser={selectedUser}
           onSelectUser={handleSelectUser}
           onClearUser={handleClearUser}
