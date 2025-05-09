@@ -1,9 +1,12 @@
 
 import React from 'react';
 import PhoneInput from 'react-phone-number-input';
-import type { Country, E164Number } from 'react-phone-number-input';
+import type { Country } from 'react-phone-number-input';
 import 'react-phone-number-input/style.css';
 import { cn } from '@/lib/utils';
+
+// Define our own E164Number type as a workaround since it's not properly exported
+type E164Number = string & { readonly __tag: 'E164Number' };
 
 interface PhoneNumberInputProps {
   value: string;
