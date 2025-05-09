@@ -17,7 +17,7 @@ const DashboardTabs = ({
   return <Tabs defaultValue="missions" value={activeTab} onValueChange={setActiveTab}>
       <TabsList className="mb-6">
         <TabsTrigger value="missions">Missions</TabsTrigger>
-        <TabsTrigger value="reviews">My Reviews</TabsTrigger>
+        <TabsTrigger value="reviews">Reviews</TabsTrigger>
         <TabsTrigger value="drafts">My Drafts</TabsTrigger>
       </TabsList>
       
