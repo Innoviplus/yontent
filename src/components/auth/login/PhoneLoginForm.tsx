@@ -8,6 +8,7 @@ import { Button } from '@/components/ui/button';
 import { UseFormReturn } from 'react-hook-form';
 import { z } from 'zod';
 import PhoneNumberInput from '@/components/auth/PhoneNumberInput';
+import type { Country } from 'react-phone-number-input';
 
 export const phoneLoginSchema = z.object({
   phone: z.string().min(1, 'Phone number is required'),
@@ -39,7 +40,7 @@ const PhoneLoginForm = ({ form, onSubmit, isLoading, userCountry }: PhoneLoginFo
                 <PhoneNumberInput
                   value={field.value}
                   onChange={field.onChange}
-                  defaultCountry={userCountry as any}
+                  defaultCountry={userCountry as unknown as Country}
                 />
               </FormControl>
               <FormMessage />

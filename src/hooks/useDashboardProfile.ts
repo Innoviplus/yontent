@@ -72,7 +72,7 @@ export const useDashboardProfile = (userId: string | undefined) => {
         const { count: pointTransactionsCount, error: pointTransactionsError } = await supabase
           .from('point_transactions')
           .select('*', { count: 'exact', head: true })
-          .eq('user_id', userId);
+          .eq('user_id_point', userId);
           
         if (pointTransactionsError) {
           console.error('Error fetching point transactions count:', pointTransactionsError);
@@ -93,7 +93,7 @@ export const useDashboardProfile = (userId: string | undefined) => {
 
         // Convert Json to ExtendedData to avoid type issues
         const extendedData: ExtendedData = profile.extended_data 
-          ? (typeof profile.extended_data === 'object' ? profile.extended_data as ExtendedData : {})
+          ? (profile.extended_data as ExtendedData)
           : {};
 
         // Transform the profile data to match the ProfileWithCounts type
