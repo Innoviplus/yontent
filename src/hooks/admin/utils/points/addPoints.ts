@@ -50,7 +50,7 @@ export const addPointsToUser = async (
     
     // Use the admin_add_point_transaction RPC function with explicit parameter names
     // to avoid ambiguous column references
-    const { error: transactionError } = await supabase.rpc(
+    const { data: transactionData, error: transactionError } = await supabase.rpc(
       'admin_add_point_transaction',
       {
         p_user_id: userId,
