@@ -3,51 +3,70 @@ import { Mission } from '@/lib/types';
 import { Tables } from '@/integrations/supabase/types';
 
 export const useMissionFormatters = () => {
-  const formatMissionFromDatabase = (mission: Tables<'missions'>): Mission => ({
-    id: mission.id,
-    title: mission.title,
-    description: mission.description,
-    pointsReward: mission.points_reward,
-    type: mission.type as 'REVIEW' | 'RECEIPT',
-    status: mission.status as 'ACTIVE' | 'COMPLETED' | 'DRAFT',
-    merchantName: mission.merchant_name || undefined,
-    merchantLogo: mission.merchant_logo || undefined,
-    bannerImage: mission.banner_image || undefined,
-    maxSubmissionsPerUser: mission.max_submissions_per_user || 1,
-    totalMaxSubmissions: mission.total_max_submissions || undefined,
-    termsConditions: mission.terms_conditions || undefined,
-    requirementDescription: mission.requirement_description || undefined,
-    startDate: new Date(mission.start_date),
-    expiresAt: mission.expires_at ? new Date(mission.expires_at) : undefined,
-    createdAt: new Date(mission.created_at),
-    updatedAt: new Date(mission.updated_at),
-    completionSteps: mission.completion_steps || undefined,
-    productDescription: mission.product_description || undefined,
-    productImages: mission.product_images || [],
-    faqContent: mission.faq_content || undefined
-  });
+  const formatMissionFromDatabase = (mission: any): Mission => {
+    // Format mission dates
+    const startDate = mission.start_date ? new Date(mission.start_date) : new Date();
+    const expiresAt = mission.expires_at ? new Date(mission.expires_at) : null;
+    const createdAt = new Date(mission.created_at);
+    const updatedAt = new Date(mission.updated_at);
+    
+    // Transform from snake_case to camelCase
+    return {
+      id: mission.id,
+      title: mission.title,
+      description: mission.description || '',
+      pointsReward: mission.points_reward || 0,
+      type: mission.type || 'REVIEW',
+      status: mission.status || 'DRAFT',
+      startDate,
+      expiresAt,
+      createdAt,
+      updatedAt,
+      requirementDescription: mission.requirement_description,
+      merchantName: mission.merchant_name,
+      merchantLogo: mission.merchant_logo,
+      bannerImage: mission.banner_image,
+      maxSubmissionsPerUser: mission.max_submissions_per_user || 1,
+      totalMaxSubmissions: mission.total_max_submissions,
+      termsConditions: mission.terms_conditions,
+      completionSteps: mission.completion_steps,
+      productDescription: mission.product_description,
+      productImages: mission.product_images || [],
+      faqContent: mission.faq_content,
+      displayOrder: mission.display_order || 0
+    };
+  };
 
-  // Update the type definition to clearly specify what's required
-  const formatMissionForDatabase = (mission: Omit<Mission, 'id' | 'createdAt' | 'updatedAt'>) => ({
-    title: mission.title,
-    description: mission.description,
-    points_reward: mission.pointsReward,
-    type: mission.type,
-    status: mission.status,
-    merchant_name: mission.merchantName,
-    merchant_logo: mission.merchantLogo,
-    banner_image: mission.bannerImage,
-    max_submissions_per_user: mission.maxSubmissionsPerUser,
-    total_max_submissions: mission.totalMaxSubmissions,
-    terms_conditions: mission.termsConditions,
-    requirement_description: mission.requirementDescription,
-    start_date: mission.startDate.toISOString(),
-    expires_at: mission.expiresAt ? mission.expiresAt.toISOString() : null,
-    completion_steps: mission.completionSteps,
-    product_description: mission.productDescription,
-    product_images: mission.productImages || [],
-    faq_content: mission.faqContent
-  });
+  // Format mission for database
+  const formatMissionForDatabase = (mission: Partial<Mission>) => {
+    const data: any = {
+      title: mission.title,
+      description: mission.description,
+      points_reward: mission.pointsReward,
+      type: mission.type,
+      status: mission.status,
+      start_date: mission.startDate?.toISOString(),
+      expires_at: mission.expiresAt?.toISOString() || null,
+      requirement_description: mission.requirementDescription,
+      merchant_name: mission.merchantName,
+      merchant_logo: mission.merchantLogo,
+      banner_image: mission.bannerImage,
+      max_submissions_per_user: mission.maxSubmissionsPerUser || 1,
+      total_max_submissions: mission.totalMaxSubmissions,
+      terms_conditions: mission.termsConditions,
+      completion_steps: mission.completionSteps,
+      product_description: mission.productDescription,
+      product_images: mission.productImages || [],
+      faq_content: mission.faqContent
+    };
+    
+    // Only include displayOrder if explicitly set
+    if (mission.displayOrder !== undefined) {
+      data.display_order = mission.displayOrder;
+    }
+    
+    return data;
+  };
 
   const formatMissionUpdatesForDatabase = (updates: Partial<Mission>) => {
     const dbUpdates: any = {};
@@ -70,6 +89,7 @@ export const useMissionFormatters = () => {
     if (updates.productDescription !== undefined) dbUpdates.product_description = updates.productDescription;
     if (updates.productImages !== undefined) dbUpdates.product_images = updates.productImages;
     if (updates.faqContent !== undefined) dbUpdates.faq_content = updates.faqContent;
+    if (updates.displayOrder !== undefined) dbUpdates.display_order = updates.displayOrder;
     
     return dbUpdates;
   };

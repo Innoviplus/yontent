@@ -8,7 +8,7 @@ import {
 } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
-import { Search, User } from "lucide-react";
+import { Search, User, Loader2 } from "lucide-react";
 import { Avatar, AvatarImage, AvatarFallback } from "@/components/ui/avatar";
 
 interface UserData {
@@ -40,7 +40,9 @@ const UserSearchCard = ({
   // Effect to trigger search when query changes
   useEffect(() => {
     const timer = setTimeout(() => {
-      onSearch(searchQuery);
+      if (searchQuery && searchQuery.length >= 2) {
+        onSearch(searchQuery);
+      }
     }, 300);
     
     return () => clearTimeout(timer);
@@ -79,21 +81,31 @@ const UserSearchCard = ({
             <div className="relative mb-4">
               <Search className="absolute left-2.5 top-2.5 h-4 w-4 text-gray-500" />
               <Input
-                placeholder="Search users by username..."
+                placeholder="Search users by username or email..."
                 className="pl-8"
                 value={searchQuery}
                 onChange={(e) => setSearchQuery(e.target.value)}
               />
+              {searchQuery && searchQuery.length < 2 && (
+                <div className="text-xs text-gray-500 mt-1 ml-1">
+                  Enter at least 2 characters to search
+                </div>
+              )}
             </div>
             
             <div className="border rounded-md max-h-60 overflow-y-auto">
               {isLoading ? (
-                <div className="p-4 text-center text-sm text-gray-500">
-                  Loading...
+                <div className="p-4 text-center text-sm text-gray-500 flex items-center justify-center">
+                  <Loader2 className="h-4 w-4 mr-2 animate-spin" />
+                  Searching...
                 </div>
-              ) : users?.length === 0 ? (
+              ) : users?.length === 0 && searchQuery.length >= 2 ? (
                 <div className="p-4 text-center text-sm text-gray-500">
                   No users found
+                </div>
+              ) : searchQuery.length < 2 ? (
+                <div className="p-4 text-center text-sm text-gray-500">
+                  Start typing to search for users
                 </div>
               ) : (
                 <div className="divide-y">

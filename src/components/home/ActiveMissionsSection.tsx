@@ -27,7 +27,8 @@ const ActiveMissionsSection = () => {
           .from('missions')
           .select('*')
           .eq('status', 'ACTIVE')
-          .order('created_at', { ascending: false })
+          .order('display_order', { ascending: true }) // First sort by display_order
+          .order('created_at', { ascending: false })  // Then by creation date
           .limit(3);
           
         if (error) throw error;
@@ -52,17 +53,22 @@ const ActiveMissionsSection = () => {
           startDate: new Date(mission.start_date),
           expiresAt: mission.expires_at ? new Date(mission.expires_at) : undefined,
           createdAt: new Date(mission.created_at),
-          updatedAt: new Date(mission.updated_at)
+          updatedAt: new Date(mission.updated_at),
+          displayOrder: mission.display_order || 0
         }));
 
-        // Sort missions so expired ones are at the bottom
+        // Sort missions so expired ones are at the bottom, but respect display_order first
         const now = new Date();
         const sortedMissions = [...transformedMissions].sort((a, b) => {
           const aExpired = a.expiresAt && now > a.expiresAt;
           const bExpired = b.expiresAt && now > b.expiresAt;
+          
+          // First separate active from expired
           if (aExpired && !bExpired) return 1; // a is expired, b is not -> a goes after b
           if (!aExpired && bExpired) return -1; // a is not expired, b is -> a goes before b
-          return 0; // No change in order based on expiration
+          
+          // Within the same category (active or expired), sort by display_order
+          return (a.displayOrder || 0) - (b.displayOrder || 0);
         });
         
         setMissions(sortedMissions);

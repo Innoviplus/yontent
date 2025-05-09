@@ -1,4 +1,3 @@
-
 import React from 'react';
 import { 
   Form,
@@ -46,15 +45,9 @@ const TransactionFormCard = ({
   isUserSelected, 
   isSubmitting = false 
 }: TransactionFormCardProps) => {
-  // Create a handler function to prevent default form behavior and ensure onSubmit is called
-  const handleSubmit = async (event: React.FormEvent) => {
-    // Don't prevent default here, let react-hook-form handle it
-    await form.handleSubmit(onSubmit)(event);
-  };
-  
   return (
     <Form {...form}>
-      <form onSubmit={handleSubmit} className="space-y-4">
+      <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-4">
         <FormField
           control={form.control}
           name="amount"
