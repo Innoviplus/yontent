@@ -9,7 +9,7 @@ import { Button } from '@/components/ui/button';
 import { ChevronDown } from 'lucide-react';
 import { cn } from '@/lib/utils';
 
-type SortOption = 'recent' | 'expiringSoon' | 'highestReward';
+type SortOption = 'default' | 'recent' | 'expiringSoon' | 'highestReward';
 
 interface MissionSortDropdownProps {
   sortBy: SortOption;
@@ -20,6 +20,8 @@ interface MissionSortDropdownProps {
 const MissionSortDropdown = ({ sortBy, onSortChange, className }: MissionSortDropdownProps) => {
   const getSortLabel = (option: SortOption): string => {
     switch (option) {
+      case 'default':
+        return 'Default';
       case 'recent':
         return 'Most Recent';
       case 'expiringSoon':
@@ -43,6 +45,9 @@ const MissionSortDropdown = ({ sortBy, onSortChange, className }: MissionSortDro
         </Button>
       </DropdownMenuTrigger>
       <DropdownMenuContent align="end">
+        <DropdownMenuItem onClick={() => onSortChange('default')}>
+          Default
+        </DropdownMenuItem>
         <DropdownMenuItem onClick={() => onSortChange('recent')}>
           Most Recent
         </DropdownMenuItem>

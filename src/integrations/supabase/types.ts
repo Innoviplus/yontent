@@ -129,7 +129,7 @@ export type Database = {
           description: string
           id: string
           type: string
-          user_id: string
+          user_id_point: string
         }
         Insert: {
           amount: number
@@ -137,7 +137,7 @@ export type Database = {
           description: string
           id?: string
           type: string
-          user_id: string
+          user_id_point: string
         }
         Update: {
           amount?: number
@@ -145,7 +145,7 @@ export type Database = {
           description?: string
           id?: string
           type?: string
-          user_id?: string
+          user_id_point?: string
         }
         Relationships: []
       }
