@@ -1,3 +1,4 @@
+
 import { useState, useEffect } from 'react';
 import { Mission } from '@/lib/types';
 import { supabase } from '@/integrations/supabase/client';
@@ -49,7 +50,9 @@ export const useMissionsList = () => {
       let query = supabase
         .from('missions')
         .select('*')
-        .eq('status', 'ACTIVE');
+        .eq('status', 'ACTIVE')
+        .order('display_order', { ascending: true }) // First sort by display_order
+        .order('created_at', { ascending: false });  // Then by created_at as secondary sort
       
       const { data, error } = await query;
       
@@ -82,7 +85,8 @@ export const useMissionsList = () => {
         startDate: new Date(mission.start_date),
         expiresAt: mission.expires_at ? new Date(mission.expires_at) : undefined,
         createdAt: new Date(mission.created_at),
-        updatedAt: new Date(mission.updated_at)
+        updatedAt: new Date(mission.updated_at),
+        displayOrder: mission.display_order || 0
       }));
       
       const now = new Date();
@@ -96,6 +100,7 @@ export const useMissionsList = () => {
       const missionIds = transformedMissions.map(m => m.id);
       await fetchParticipationCounts(missionIds);
       
+      // Secondary sort will be handled based on sortBy, but respect display_order first
       const sortedMissions = sortMissionsByExpiration(transformedMissions);
       setMissions(sortedMissions);
       setLoadAttempts(0);
@@ -115,26 +120,38 @@ export const useMissionsList = () => {
 
   const sortMissionsByExpiration = (missionsToSort: Mission[]): Mission[] => {
     const now = new Date();
-    return [...missionsToSort].sort((a, b) => {
-      const aExpired = a.expiresAt && now > a.expiresAt;
-      const bExpired = b.expiresAt && now > b.expiresAt;
+    
+    // First separate active and expired missions
+    const activeMissions = missionsToSort.filter(m => !m.expiresAt || now <= m.expiresAt);
+    const expiredMissions = missionsToSort.filter(m => m.expiresAt && now > m.expiresAt);
+    
+    // Then apply the display order as primary sort for active missions
+    activeMissions.sort((a, b) => {
+      // Primary sort by display_order
+      if (a.displayOrder !== b.displayOrder) {
+        return a.displayOrder - b.displayOrder;
+      }
       
-      if (aExpired && !bExpired) return 1;
-      if (!aExpired && bExpired) return -1;
-      
-      if (!aExpired && !bExpired) {
-        switch (sortBy) {
-          case 'recent':
-            return b.startDate.getTime() - a.startDate.getTime();
-          case 'expiringSoon':
-            if (!a.expiresAt) return 1;
-            if (!b.expiresAt) return -1;
-            return a.expiresAt.getTime() - b.expiresAt.getTime();
-          case 'highestReward':
-            return b.pointsReward - a.pointsReward;
-          default:
-            return 0;
-        }
+      // Secondary sort based on user preference
+      switch (sortBy) {
+        case 'recent':
+          return b.startDate.getTime() - a.startDate.getTime();
+        case 'expiringSoon':
+          if (!a.expiresAt) return 1;
+          if (!b.expiresAt) return -1;
+          return a.expiresAt.getTime() - b.expiresAt.getTime();
+        case 'highestReward':
+          return b.pointsReward - a.pointsReward;
+        default:
+          return 0;
+      }
+    });
+    
+    // Sort expired missions separately using the same logic
+    expiredMissions.sort((a, b) => {
+      // Primary sort by display_order
+      if (a.displayOrder !== b.displayOrder) {
+        return a.displayOrder - b.displayOrder;
       }
       
       switch (sortBy) {
@@ -150,6 +167,9 @@ export const useMissionsList = () => {
           return 0;
       }
     });
+    
+    // Combine with active missions first, then expired missions
+    return [...activeMissions, ...expiredMissions];
   };
 
   useEffect(() => {
@@ -166,7 +186,10 @@ export const useMissionsList = () => {
   }, []);
 
   useEffect(() => {
-    setMissions(sortMissionsByExpiration([...missions]));
+    // When sortBy changes, re-sort the existing missions without fetching again
+    if (missions.length > 0) {
+      setMissions(sortMissionsByExpiration([...missions]));
+    }
   }, [sortBy]);
 
   return {
