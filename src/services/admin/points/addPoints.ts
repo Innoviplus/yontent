@@ -40,17 +40,17 @@ export const addPointsToUser = async (
     const newPointsTotal = currentPoints + amount;
     console.log("New points total:", newPointsTotal);
     
-    // Log the transaction using admin_add_point_transaction RPC with explicit parameter names
-    console.log("Calling admin_add_point_transaction with parameters:", {
+    // Use the new create_point_transaction function which has fully qualified column references
+    console.log("Calling create_point_transaction with parameters:", {
       p_user_id: userId,
       p_amount: amount,
       p_type: type,
       p_description: description
     });
     
-    // Use explicit parameter naming to match function signature exactly
+    // Use the new function with better column reference handling
     const { data: transactionData, error: transactionError } = await supabase.rpc(
-      'admin_add_point_transaction',
+      'create_point_transaction',
       {
         p_user_id: userId,
         p_amount: amount,

@@ -48,16 +48,16 @@ export const addPointsToUser = async (
       throw pointsError;
     }
     
-    console.log('Calling admin_add_point_transaction with parameters:', {
+    console.log('Calling create_point_transaction with parameters:', {
       p_user_id: userId,
       p_amount: pointsAmount,
       p_type: type,
       p_description: description
     });
     
-    // Use the admin_add_point_transaction RPC function with explicit parameter names
+    // Use the new function with better column reference handling
     const { data: transactionData, error: transactionError } = await supabase.rpc(
-      'admin_add_point_transaction',
+      'create_point_transaction',
       {
         p_user_id: userId,
         p_amount: pointsAmount,

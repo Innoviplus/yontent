@@ -487,6 +487,15 @@ export type Database = {
         Args: { views: number; likes: number; avg_time: number; ctr: number }
         Returns: number
       }
+      create_point_transaction: {
+        Args: {
+          p_user_id: string
+          p_amount: number
+          p_type: string
+          p_description: string
+        }
+        Returns: Json
+      }
       decrement_review_likes: {
         Args: { review_id_param: string }
         Returns: undefined

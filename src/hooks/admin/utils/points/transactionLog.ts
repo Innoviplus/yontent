@@ -21,35 +21,49 @@ export const logPointsTransaction = async (
       ? `${description} [${source}:${sourceId}]`
       : `${description} [${source}]`;
     
-    // Insert the transaction record into the database
-    const { data, error } = await supabase
-      .from('point_transactions')
-      .insert({
-        user_id: userId,
-        amount: amount,
-        type: type as string, // Cast to string as the DB accepts any string
-        description: fullDescription
-      })
-      .select()
-      .single();
+    // Use the new create_point_transaction function with better column reference handling
+    const { data, error } = await supabase.rpc(
+      'create_point_transaction',
+      {
+        p_user_id: userId,
+        p_amount: amount,
+        p_type: type,
+        p_description: fullDescription
+      }
+    );
     
     if (error) {
       console.error('Error inserting transaction record:', error);
       throw error;
     }
     
-    console.log('Transaction logged successfully:', data);
+    // If we got here, the transaction was successfully created but we need to fetch it
+    // since the create_point_transaction function doesn't return the complete record
+    const { data: transactionData, error: fetchError } = await supabase
+      .from('point_transactions')
+      .select('*')
+      .order('created_at', { ascending: false })
+      .eq('user_id', userId)
+      .limit(1)
+      .single();
+    
+    if (fetchError) {
+      console.error('Error fetching created transaction:', fetchError);
+      throw fetchError;
+    }
+    
+    console.log('Transaction logged successfully:', transactionData);
     
     // Transform to match our interface
     const transaction: PointTransaction = {
-      id: data.id,
-      userId: data.user_id,
-      amount: data.amount,
-      type: data.type as any, // Type assertion as our PointTransaction type is more strict
+      id: transactionData.id,
+      userId: transactionData.user_id,
+      amount: transactionData.amount,
+      type: transactionData.type as any, // Type assertion as our PointTransaction type is more strict
       source: source, // This is not stored in DB but we include it in the return object
       sourceId, // This is not stored in DB but we include it in the return object
-      description: data.description,
-      createdAt: new Date(data.created_at)
+      description: transactionData.description,
+      createdAt: new Date(transactionData.created_at)
     };
     
     return { success: true, transaction };
