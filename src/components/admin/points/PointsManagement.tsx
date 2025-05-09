@@ -87,7 +87,7 @@ const PointsManagement = () => {
       const pointsAmount = type === 'ADD' ? amount : -amount;
       
       // Make sure we properly tag the source in the description
-      const fullDescription = `${description.trim()} [ADMIN_ADJUSTMENT]`;
+      const fullDescription = `${description.trim()}`;
       
       console.log('Calling addPointsToUser with:', {
         userId,

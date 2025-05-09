@@ -21,7 +21,7 @@ export const logPointsTransaction = async (
       ? `${description} [${source}:${sourceId}]`
       : `${description} [${source}]`;
     
-    // Use the new create_point_transaction function with better column reference handling
+    // Call the Supabase function with correctly named parameters
     const { data, error } = await supabase.rpc(
       'create_point_transaction',
       {

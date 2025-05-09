@@ -40,7 +40,7 @@ export const addPointsToUser = async (
     const newPointsTotal = currentPoints + amount;
     console.log("New points total:", newPointsTotal);
     
-    // Use the new create_point_transaction function which has fully qualified column references
+    // Create transaction record using the standard RPC function call
     console.log("Calling create_point_transaction with parameters:", {
       p_user_id: userId,
       p_amount: amount,
@@ -48,7 +48,7 @@ export const addPointsToUser = async (
       p_description: description
     });
     
-    // Use the new function with better column reference handling
+    // Call the create_point_transaction function - important to use simple parameter names here
     const { data: transactionData, error: transactionError } = await supabase.rpc(
       'create_point_transaction',
       {
