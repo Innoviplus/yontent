@@ -18,7 +18,7 @@ const DashboardTabs = ({
       <TabsList className="mb-6">
         <TabsTrigger value="missions">Missions</TabsTrigger>
         <TabsTrigger value="reviews">Reviews</TabsTrigger>
-        <TabsTrigger value="drafts">My Drafts</TabsTrigger>
+        <TabsTrigger value="drafts">Drafts</TabsTrigger>
       </TabsList>
       
       <TabsContent value="missions">
