@@ -60,7 +60,7 @@ export const addPointsToUser = async (
       p_description: fullDescription
     });
     
-    // Call the create_point_transaction function with proper parameter names
+    // Call the create_point_transaction function with the correct parameter names
     const { data: transactionData, error: transactionError } = await supabase.rpc(
       'create_point_transaction',
       {

@@ -16,7 +16,7 @@ export const logPointsTransaction = async (
   try {
     console.log(`Logging points transaction: ${amount} points for user ${userId} (${type} from ${source})`);
     
-    // Include the source information in the description to maintain this data
+    // Include the source information in the description
     const fullDescription = sourceId 
       ? `${description} [${source}:${sourceId}]`
       : `${description} [${source}]`;
