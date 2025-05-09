@@ -22,6 +22,7 @@ const PointsManagement = () => {
   const [selectedUser, setSelectedUser] = useState<UserData | null>(null);
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [isSearching, setIsSearching] = useState(false);
+  const [lastError, setLastError] = useState<string | null>(null);
 
   const form = useForm<TransactionFormValues>({
     resolver: zodResolver(transactionSchema),
@@ -52,6 +53,7 @@ const PointsManagement = () => {
         points: user.points || 0
       }));
       
+      console.log('Search results:', formattedUsers);
       setUsers(formattedUsers);
     } catch (error) {
       console.error('Error searching users:', error);
@@ -62,6 +64,7 @@ const PointsManagement = () => {
   };
 
   const handleSelectUser = (user: UserData) => {
+    console.log('Selected user:', user);
     setSelectedUser(user);
     form.setValue('userId', user.id);
   };
@@ -74,6 +77,7 @@ const PointsManagement = () => {
   const onSubmit = async (values: TransactionFormValues) => {
     try {
       setIsSubmitting(true);
+      setLastError(null);
       console.log('Starting transaction submission with values:', values);
 
       const { amount, type, description, userId } = values;
@@ -84,6 +88,14 @@ const PointsManagement = () => {
       
       // Make sure we properly tag the source in the description
       const fullDescription = `${description.trim()} [ADMIN_ADJUSTMENT]`;
+      
+      console.log('Calling addPointsToUser with:', {
+        userId,
+        pointsAmount,
+        transactionType,
+        source: 'ADMIN_ADJUSTMENT',
+        fullDescription
+      });
       
       // Call the points service to add/deduct points
       const result = await addPointsToUser(
@@ -96,6 +108,7 @@ const PointsManagement = () => {
       
       if (!result.success) {
         console.error('Error updating user points:', result.error);
+        setLastError(result.error || 'Unknown error occurred');
         toast.error(`Failed to ${type === 'ADD' ? 'add' : 'deduct'} points: ${result.error}`);
         setIsSubmitting(false);
         return;
@@ -105,7 +118,7 @@ const PointsManagement = () => {
       toast.success(`Successfully ${type === 'ADD' ? 'added' : 'deducted'} ${amount} points`);
       
       // Update the selected user's points
-      if (selectedUser && result.newPointsTotal) {
+      if (selectedUser && result.newPointsTotal !== undefined) {
         setSelectedUser({
           ...selectedUser,
           points: result.newPointsTotal
@@ -122,6 +135,7 @@ const PointsManagement = () => {
       });
     } catch (error: any) {
       console.error('Error processing points transaction:', error);
+      setLastError(error?.message || 'Unknown error occurred');
       toast.error('Failed to process points transaction');
     } finally {
       setIsSubmitting(false);
@@ -135,6 +149,14 @@ const PointsManagement = () => {
           <CardTitle>Points Management</CardTitle>
         </CardHeader>
       </Card>
+
+      {lastError && (
+        <Card className="bg-red-50 border-red-200">
+          <CardHeader>
+            <CardTitle className="text-red-700 text-sm">Last Error: {lastError}</CardTitle>
+          </CardHeader>
+        </Card>
+      )}
 
       <div className="grid gap-6 md:grid-cols-2">
         <UserSearchCard

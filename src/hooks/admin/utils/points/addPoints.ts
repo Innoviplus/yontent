@@ -48,6 +48,13 @@ export const addPointsToUser = async (
       throw pointsError;
     }
     
+    console.log('Calling admin_add_point_transaction with parameters:', {
+      p_user_id: userId,
+      p_amount: pointsAmount,
+      p_type: type,
+      p_description: description
+    });
+    
     // Use the admin_add_point_transaction RPC function with explicit parameter names
     // to avoid ambiguous column references
     const { data: transactionData, error: transactionError } = await supabase.rpc(
@@ -62,6 +69,8 @@ export const addPointsToUser = async (
     
     if (transactionError) {
       console.error('Error logging transaction:', transactionError);
+      console.error('Transaction error details:', JSON.stringify(transactionError));
+      
       // If transaction logging fails, try to revert the points
       try {
         await supabase
@@ -76,10 +85,12 @@ export const addPointsToUser = async (
     }
     
     console.log(`Successfully updated user points from ${currentPoints} to ${newPointsTotal}`);
+    console.log('Transaction data:', transactionData);
     
     return { success: true, newPointsTotal };
   } catch (error: any) {
     console.error('Error in addPointsToUser:', error);
+    console.error('Error details:', error.message, error.code, error.details, error.hint);
     return { success: false, error: error.message };
   }
 };
