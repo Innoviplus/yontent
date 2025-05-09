@@ -61,7 +61,7 @@ export const createPointTransaction = async (
   try {
     console.log(`Creating point transaction record: ${userId}, ${amount}, ${type}, ${description}`);
     
-    // Use the create_point_transaction function with the updated column name (will be fixed in SQL function)
+    // Use the create_point_transaction function with the updated column name
     const { data, error } = await supabase.rpc(
       'create_point_transaction',
       {

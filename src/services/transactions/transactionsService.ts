@@ -12,7 +12,7 @@ export const fetchPointTransactions = async (userId: string) => {
   const { data, error } = await supabase
     .from("point_transactions")
     .select("*")
-    .eq("user_id", userId)
+    .eq("user_id_point", userId)  // Updated column name here
     .order("created_at", { ascending: false });
 
   if (error) {
