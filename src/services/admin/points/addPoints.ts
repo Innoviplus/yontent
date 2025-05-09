@@ -40,7 +40,7 @@ export const addPointsToUser = async (
     const newPointsTotal = currentPoints + amount;
     console.log("New points total:", newPointsTotal);
     
-    // Log the transaction using admin_add_point_transaction RPC
+    // Log the transaction using admin_add_point_transaction RPC with explicit parameter names
     console.log("Calling admin_add_point_transaction with parameters:", {
       p_user_id: userId,
       p_amount: amount,

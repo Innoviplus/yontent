@@ -7,7 +7,7 @@ import { Card, CardHeader, CardTitle } from '@/components/ui/card';
 import UserSearchCard from './UserSearchCard';
 import TransactionFormCard from './TransactionFormCard';
 import { transactionSchema, type TransactionFormValues } from './TransactionFormCard';
-import { addPointsToUser } from '@/hooks/admin/utils/points';
+import { addPointsToUser } from '@/services/admin/points';
 import { searchUsersByUsernameOrEmail } from '@/services/admin/users';
 
 interface UserData {
@@ -93,16 +93,14 @@ const PointsManagement = () => {
         userId,
         pointsAmount,
         transactionType,
-        source: 'ADMIN_ADJUSTMENT',
         fullDescription
       });
       
-      // Call the points service to add/deduct points
+      // Call the points service to add/deduct points with explicit parameter names
       const result = await addPointsToUser(
         userId,
         pointsAmount,
-        transactionType as any,
-        'ADMIN_ADJUSTMENT',
+        transactionType as 'EARNED' | 'ADJUSTED',
         fullDescription
       );
       
