@@ -28,15 +28,6 @@ const NavLinks = () => {
         icon={<Gift className="h-5 w-5" />}
         current={location.pathname === '/rewards' || location.pathname.includes('/reward/')}
       />
-      
-      {user && (
-        <NavLink 
-          to="/submit-review" 
-          label="Write a Review" 
-          icon={<Pencil className="h-5 w-5" />}
-          current={location.pathname === '/submit-review'}
-        />
-      )}
     </>
   );
 };

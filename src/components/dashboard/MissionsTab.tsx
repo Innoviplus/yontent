@@ -1,3 +1,4 @@
+
 import { useState, useEffect } from 'react';
 import { supabase } from '@/integrations/supabase/client';
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@/components/ui/table';
@@ -8,6 +9,9 @@ import PointsBadge from '@/components/PointsBadge';
 import { useAuth } from '@/contexts/AuthContext';
 import { format } from 'date-fns';
 import { toast } from 'sonner';
+import { Button } from '@/components/ui/button';
+import { Link } from 'react-router-dom';
+import { Award } from 'lucide-react';
 
 interface MissionParticipation {
   id: string;
@@ -129,20 +133,35 @@ const MissionsTab = () => {
     return (
       <div className="bg-white rounded-xl p-8 text-center shadow-card">
         <h3 className="text-lg font-medium text-gray-900 mb-2">No mission submissions yet</h3>
-        <p className="text-gray-600">
+        <p className="text-gray-600 mb-6">
           You haven't submitted any mission entries yet. Look for missions to complete and earn points!
         </p>
+        
+        <Button asChild className="bg-brand-teal hover:bg-brand-teal/90">
+          <Link to="/missions" className="flex items-center gap-2">
+            <Award className="h-4 w-4" />
+            <span>Join Missions</span>
+          </Link>
+        </Button>
       </div>
     );
   }
 
   return (
     <Card>
-      <CardHeader>
-        <CardTitle>My Mission Participations</CardTitle>
-        <CardDescription>
-          Track the status of your mission submissions
-        </CardDescription>
+      <CardHeader className="flex flex-row items-center justify-between">
+        <div>
+          <CardTitle>My Mission Participations</CardTitle>
+          <CardDescription>
+            Track the status of your mission submissions
+          </CardDescription>
+        </div>
+        <Button asChild size="sm" className="bg-brand-teal hover:bg-brand-teal/90">
+          <Link to="/missions" className="flex items-center gap-2">
+            <Award className="h-4 w-4" />
+            <span>Join Missions</span>
+          </Link>
+        </Button>
       </CardHeader>
       <CardContent>
         <Tabs defaultValue="all">
