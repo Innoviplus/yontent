@@ -53,6 +53,7 @@ export type Database = {
           completion_steps: string | null
           created_at: string
           description: string
+          display_order: number | null
           expires_at: string | null
           faq_content: string | null
           id: string
@@ -76,6 +77,7 @@ export type Database = {
           completion_steps?: string | null
           created_at?: string
           description: string
+          display_order?: number | null
           expires_at?: string | null
           faq_content?: string | null
           id?: string
@@ -99,6 +101,7 @@ export type Database = {
           completion_steps?: string | null
           created_at?: string
           description?: string
+          display_order?: number | null
           expires_at?: string | null
           faq_content?: string | null
           id?: string

@@ -1,3 +1,4 @@
+
 import { Mission } from '@/lib/types';
 import { Tables } from '@/integrations/supabase/types';
 
@@ -88,6 +89,7 @@ export const useMissionFormatters = () => {
     if (updates.productDescription !== undefined) dbUpdates.product_description = updates.productDescription;
     if (updates.productImages !== undefined) dbUpdates.product_images = updates.productImages;
     if (updates.faqContent !== undefined) dbUpdates.faq_content = updates.faqContent;
+    if (updates.displayOrder !== undefined) dbUpdates.display_order = updates.displayOrder;
     
     return dbUpdates;
   };
