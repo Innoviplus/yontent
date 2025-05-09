@@ -1,8 +1,9 @@
+
 import React from 'react';
 import { Mission } from '@/lib/types';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
-import { Pencil, Trash2, Award, Clock, Tag, CalendarDays, Users, ToggleLeft, ToggleRight, Copy } from 'lucide-react';
+import { Pencil, Trash2, Award, Clock, Tag, CalendarDays, Users, ToggleLeft, ToggleRight, Copy, ArrowUp, ArrowDown } from 'lucide-react';
 import { format, isPast, isAfter } from 'date-fns';
 import { Badge } from '@/components/ui/badge';
 import { Avatar, AvatarImage, AvatarFallback } from '@/components/ui/avatar';
@@ -15,6 +16,7 @@ interface MissionListProps {
   onToggleStatus?: (mission: Mission) => Promise<boolean>;
   onDuplicate?: (mission: Mission) => void;
   onMissionClick?: (mission: Mission) => void;
+  onUpdateOrder?: (id: string, direction: 'up' | 'down') => Promise<boolean>;
 }
 
 const MissionList: React.FC<MissionListProps> = ({ 
@@ -23,8 +25,11 @@ const MissionList: React.FC<MissionListProps> = ({
   onDelete,
   onToggleStatus,
   onDuplicate,
-  onMissionClick 
+  onMissionClick,
+  onUpdateOrder 
 }) => {
+  const [processingOrderIds, setProcessingOrderIds] = useState<Record<string, boolean>>({});
+  
   const getMissionStatusColor = (status: string, expiresAt?: Date) => {
     if (status === 'DRAFT') return 'bg-gray-200 text-gray-800';
     if (status === 'COMPLETED') return 'bg-green-100 text-green-800';
@@ -69,6 +74,20 @@ const MissionList: React.FC<MissionListProps> = ({
     }
   };
 
+  const handleUpdateOrder = async (id: string, direction: 'up' | 'down') => {
+    if (!onUpdateOrder || processingOrderIds[id]) return;
+    
+    setProcessingOrderIds(prev => ({ ...prev, [id]: true }));
+    
+    try {
+      await onUpdateOrder(id, direction);
+    } catch (error) {
+      console.error("Error updating mission order:", error);
+    } finally {
+      setProcessingOrderIds(prev => ({ ...prev, [id]: false }));
+    }
+  };
+
   return (
     <div className="space-y-4">
       {missions.length === 0 ? (
@@ -110,6 +129,28 @@ const MissionList: React.FC<MissionListProps> = ({
                   </CardDescription>
                 </div>
                 <div className="flex space-x-2" onClick={e => e.stopPropagation()}>
+                  {onUpdateOrder && (
+                    <div className="flex flex-col gap-1">
+                      <Button 
+                        variant="outline" 
+                        size="sm" 
+                        onClick={() => handleUpdateOrder(mission.id, 'up')}
+                        className="h-7 w-7 p-0"
+                        disabled={processingOrderIds[mission.id]}
+                      >
+                        <ArrowUp className="h-4 w-4" />
+                      </Button>
+                      <Button 
+                        variant="outline" 
+                        size="sm" 
+                        onClick={() => handleUpdateOrder(mission.id, 'down')}
+                        className="h-7 w-7 p-0"
+                        disabled={processingOrderIds[mission.id]}
+                      >
+                        <ArrowDown className="h-4 w-4" />
+                      </Button>
+                    </div>
+                  )}
                   {onToggleStatus && mission.status !== 'COMPLETED' && (
                     <Button 
                       variant="outline" 

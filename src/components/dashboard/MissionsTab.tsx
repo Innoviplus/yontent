@@ -28,6 +28,7 @@ const MissionsTab = () => {
   const [participations, setParticipations] = useState<MissionParticipation[]>([]);
   const [loading, setLoading] = useState(true);
   const { user } = useAuth();
+  const [activeTab, setActiveTab] = useState('all');
 
   useEffect(() => {
     const fetchMissionParticipations = async () => {
@@ -35,6 +36,8 @@ const MissionsTab = () => {
       
       try {
         setLoading(true);
+        console.log('Fetching mission participations for user:', user.id);
+        
         const { data, error } = await supabase
           .from('mission_participations')
           .select(`
@@ -50,7 +53,12 @@ const MissionsTab = () => {
           .eq('user_id_p', user.id)
           .order('created_at', { ascending: false });
 
-        if (error) throw error;
+        if (error) {
+          console.error('Error fetching mission participations:', error);
+          throw error;
+        }
+        
+        console.log('Mission participations fetched:', data?.length);
         setParticipations(data || []);
       } catch (error) {
         console.error('Error fetching mission participations:', error);
@@ -164,7 +172,7 @@ const MissionsTab = () => {
         </Button>
       </CardHeader>
       <CardContent>
-        <Tabs defaultValue="all">
+        <Tabs defaultValue={activeTab} value={activeTab} onValueChange={setActiveTab}>
           <TabsList className="mb-4">
             <TabsTrigger value="all">All ({participations.length})</TabsTrigger>
             <TabsTrigger value="pending">Pending ({pendingMissions.length})</TabsTrigger>

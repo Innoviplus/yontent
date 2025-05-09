@@ -13,6 +13,7 @@ export const fetchActiveMissions = async (): Promise<Mission[]> => {
       .from('missions')
       .select('*')
       .eq('status', 'ACTIVE')
+      .order('display_order', { ascending: true })
       .order('created_at', { ascending: false });
 
     if (error) {
@@ -46,7 +47,8 @@ export const fetchActiveMissions = async (): Promise<Mission[]> => {
       completionSteps: mission.completion_steps || undefined,
       productDescription: mission.product_description || undefined,
       productImages: mission.product_images || [],
-      faqContent: mission.faq_content || undefined
+      faqContent: mission.faq_content || undefined,
+      displayOrder: mission.display_order || 0
     }));
 
     console.log('Transformed missions:', missions);

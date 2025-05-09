@@ -1,4 +1,3 @@
-
 export interface User {
   id: string;
   username: string;
@@ -75,6 +74,7 @@ export interface Mission {
   productDescription?: string; // New field for "About the product or service"
   productImages?: string[]; // New field for product images
   faqContent?: string; // Field for FAQ content
+  displayOrder?: number; // Added field to manage display order
 }
 
 // RedemptionRequest type updated with more fields for the UI

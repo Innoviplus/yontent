@@ -8,6 +8,7 @@ import UserSearchCard from './UserSearchCard';
 import TransactionFormCard from './TransactionFormCard';
 import { transactionSchema, type TransactionFormValues } from './TransactionFormCard';
 import { supabase } from '@/integrations/supabase/client';
+import { updateUserPoints } from '@/services/auth/points';
 
 interface UserData {
   id: string;
@@ -70,7 +71,7 @@ const PointsManagement = () => {
 
       const { amount, type, description, userId } = values;
       
-      // First update the user's points in the profiles table
+      // First fetch the user's points in the profiles table
       const { data: userData, error: userError } = await supabase
         .from('profiles')
         .select('points')
@@ -96,11 +97,8 @@ const PointsManagement = () => {
       }
       
       // Update the user's points in the database
-      const { error: updateError } = await supabase
-        .from('profiles')
-        .update({ points: newPoints })
-        .eq('id', userId);
-        
+      const { error: updateError } = await updateUserPoints(userId, newPoints);
+      
       if (updateError) {
         console.error('Error updating user points:', updateError);
         toast.error('Failed to update user points');
@@ -113,9 +111,9 @@ const PointsManagement = () => {
       // Make sure we properly tag the source in the description
       const fullDescription = `${description.trim()} [ADMIN_ADJUSTMENT]`;
       
-      // Use admin service to insert the transaction record
-      const { data: rpcResult, error: rpcError } = await supabase.rpc(
-        'admin_add_point_transaction' as any,
+      // Create a transaction record
+      const { data: transactionData, error: transactionError } = await supabase.rpc(
+        'admin_add_point_transaction',
         {
           p_user_id: userId,
           p_amount: finalAmount,
@@ -124,25 +122,41 @@ const PointsManagement = () => {
         }
       );
       
-      if (rpcError) {
-        console.error('Error calling admin_add_point_transaction:', rpcError);
+      if (transactionError) {
+        console.error('Error creating transaction record:', transactionError);
         toast.error('Failed to log transaction');
+        
+        // Attempt to revert the point change
+        try {
+          await updateUserPoints(userId, currentPoints);
+          console.log('Points reverted due to transaction error');
+        } catch (revertError) {
+          console.error('Failed to revert points:', revertError);
+        }
+        
         setIsSubmitting(false);
         return;
       }
       
-      console.log('Transaction logged successfully via RPC:', rpcResult);
+      console.log('Transaction logged successfully:', transactionData);
       toast.success(`Successfully ${type === 'ADD' ? 'added' : 'deducted'} ${amount} points`);
       
-      // Reset form and selection
+      // Update the selected user's points
+      if (selectedUser) {
+        setSelectedUser({
+          ...selectedUser,
+          points: newPoints
+        });
+      }
+      
+      // Reset form to defaults except userId
       form.reset({
         amount: 0,
         type: 'ADD',
         source: 'ADMIN_ADJUSTMENT',
         description: '',
-        userId: ''
+        userId: userId
       });
-      handleClearUser();
     } catch (error) {
       console.error('Error processing points transaction:', error);
       toast.error('Failed to process points transaction');

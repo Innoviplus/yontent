@@ -80,13 +80,58 @@ const MissionsManagement = ({
       completionSteps: mission.completionSteps,
       productDescription: mission.productDescription,
       productImages: mission.productImages,
-      faqContent: mission.faqContent
+      faqContent: mission.faqContent,
+      displayOrder: 0 // Set default display order
     };
     
     const result = await addMission(duplicateMission);
     if (result) {
       toast.success(`Mission "${mission.title}" duplicated successfully`);
       await refreshMissions();
+    }
+  };
+
+  const handleUpdateOrder = async (missionId: string, direction: 'up' | 'down') => {
+    try {
+      // Find the current mission and its index
+      const currentIndex = missions.findIndex(m => m.id === missionId);
+      if (currentIndex === -1) return false;
+      
+      const mission = missions[currentIndex];
+      let newDisplayOrder = mission.displayOrder || 0;
+      
+      // Calculate the target index based on direction
+      let targetIndex;
+      if (direction === 'up') {
+        if (currentIndex === 0) return false; // Already at the top
+        targetIndex = currentIndex - 1;
+      } else {
+        if (currentIndex === missions.length - 1) return false; // Already at the bottom
+        targetIndex = currentIndex + 1;
+      }
+      
+      const targetMission = missions[targetIndex];
+      const targetOrder = targetMission.displayOrder || 0;
+      
+      // Update the current mission's order
+      const result = await updateMission(missionId, { 
+        displayOrder: targetOrder 
+      });
+      
+      // Update the target mission's order
+      await updateMission(targetMission.id, { 
+        displayOrder: newDisplayOrder 
+      });
+      
+      if (result) {
+        await refreshMissions();
+        return true;
+      }
+      return false;
+    } catch (error) {
+      console.error('Error updating mission order:', error);
+      toast.error('Failed to update mission order');
+      return false;
     }
   };
 
@@ -113,6 +158,7 @@ const MissionsManagement = ({
         onToggleStatus={handleToggleStatus}
         onDuplicate={handleDuplicateMission}
         onMissionClick={handleMissionClick}
+        onUpdateOrder={handleUpdateOrder}
       />
 
       {isAddingMission && (
