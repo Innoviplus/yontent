@@ -29,7 +29,7 @@ const LikeButton = ({ reviewId, initialLikesCount }: LikeButtonProps) => {
     if (user?.id) {
       checkUserLike();
     }
-  }, [user?.id, reviewId, initialLikesCount]);
+  }, [user?.id, reviewId, initialLikesCount, checkUserLike, setLikesCount]);
 
   const handleLikeClick = async () => {
     if (!user) {

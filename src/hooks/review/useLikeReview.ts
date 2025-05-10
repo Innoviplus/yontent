@@ -1,5 +1,5 @@
 
-import { useState } from 'react';
+import { useState, useCallback } from 'react';
 import { supabase } from '@/integrations/supabase/client';
 import { toast } from 'sonner';
 import { useAuth } from '@/contexts/AuthContext';
@@ -11,7 +11,7 @@ export const useLikeReview = (reviewId: string, initialLikesCount: number = 0) =
   const { user } = useAuth();
 
   // Check if the current user has liked this review
-  const checkUserLike = async () => {
+  const checkUserLike = useCallback(async () => {
     if (!user?.id || !reviewId) return;
     
     try {
@@ -31,7 +31,7 @@ export const useLikeReview = (reviewId: string, initialLikesCount: number = 0) =
     } catch (error) {
       console.error('Error checking like status:', error);
     }
-  };
+  }, [user?.id, reviewId]);
 
   // Toggle like status (like or unlike)
   const toggleLike = async () => {
@@ -53,7 +53,7 @@ export const useLikeReview = (reviewId: string, initialLikesCount: number = 0) =
           
         if (error) throw error;
         
-        // Decrement likes count
+        // Decrement likes count using RPC function
         await supabase.rpc('decrement_review_likes', { review_id_param: reviewId });
         
         setUserHasLiked(false);
@@ -78,7 +78,7 @@ export const useLikeReview = (reviewId: string, initialLikesCount: number = 0) =
           throw error;
         }
         
-        // Increment likes count
+        // Increment likes count using RPC function
         await supabase.rpc('increment_review_likes', { review_id_param: reviewId });
         
         setUserHasLiked(true);
@@ -94,8 +94,6 @@ export const useLikeReview = (reviewId: string, initialLikesCount: number = 0) =
       setIsLiking(false);
     }
   };
-
-  // Call checkUserLike when needed (can be called in useEffect in the component)
   
   return {
     isLiking,
