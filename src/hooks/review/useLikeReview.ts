@@ -53,7 +53,18 @@ export const useLikeReview = (reviewId: string, initialLikesCount: number = 0) =
           
         if (error) throw error;
         
-        // Decrement likes count using RPC function
+        // Directly update the likes_count in the reviews table
+        const { error: updateError } = await supabase
+          .from('reviews')
+          .update({ likes_count: Math.max(0, likesCount - 1) })
+          .eq('id', reviewId);
+        
+        if (updateError) {
+          console.error('Error updating likes count:', updateError);
+          throw updateError;
+        }
+        
+        // Also call the RPC function for any additional processing it might do
         await supabase.rpc('decrement_review_likes', { review_id_param: reviewId });
         
         setUserHasLiked(false);
@@ -78,7 +89,18 @@ export const useLikeReview = (reviewId: string, initialLikesCount: number = 0) =
           throw error;
         }
         
-        // Increment likes count using RPC function
+        // Directly update the likes_count in the reviews table
+        const { error: updateError } = await supabase
+          .from('reviews')
+          .update({ likes_count: likesCount + 1 })
+          .eq('id', reviewId);
+        
+        if (updateError) {
+          console.error('Error updating likes count:', updateError);
+          throw updateError;
+        }
+        
+        // Also call the RPC function for any additional processing it might do
         await supabase.rpc('increment_review_likes', { review_id_param: reviewId });
         
         setUserHasLiked(true);
