@@ -92,10 +92,11 @@ const ReviewDetail = () => {
                   <div className="flex items-center justify-between mb-4">
                     <ReviewStats viewsCount={review.viewsCount || 0} />
                     
-                    {/* Action buttons with isAuthor prop */}
+                    {/* Action buttons with isAuthor prop and likesCount */}
                     <ReviewActionButtons
                       isAuthor={isAuthor}
                       reviewId={review.id}
+                      likesCount={review.likesCount || 0}
                     />
                   </div>
                   
