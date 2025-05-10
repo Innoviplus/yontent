@@ -49,24 +49,42 @@ export const deductPointsFromUser = async (
       throw pointsError;
     }
     
-    // Log the transaction with proper type and description
-    const transactionResult = await logPointsTransaction(
-      userId,
-      pointsAmount,
-      'REDEEMED', // Use REDEEMED type for redemptions
-      source,
-      description,
-      sourceId
+    // Include the source information in the description
+    const fullDescription = sourceId 
+      ? `${description} [${source}:${sourceId}]`
+      : `${description} [${source}]`;
+    
+    // Call the create_point_transaction function with the correct parameter names
+    const { data: transactionData, error: transactionError } = await supabase.rpc(
+      'create_point_transaction',
+      {
+        p_user_id: userId,
+        p_amount: pointsAmount,
+        p_type: 'REDEEMED',
+        p_description: fullDescription
+      }
     );
     
-    if (!transactionResult.success) {
-      console.error('Failed to log transaction:', transactionResult.error);
-      // Even if logging fails, we've already updated the points, so don't return error here
-    } else {
-      console.log('Transaction logged successfully:', transactionResult.transaction);
+    if (transactionError) {
+      console.error('Error creating transaction record:', transactionError);
+      console.error('Transaction error details:', JSON.stringify(transactionError));
+      
+      // If transaction logging fails, try to revert the points
+      try {
+        await supabase
+          .from('profiles')
+          .update({ points: currentPoints })
+          .eq('id', userId);
+        console.log('Points reverted due to transaction error');
+      } catch (revertError) {
+        console.error('Failed to revert points after transaction error:', revertError);
+      }
+      
+      throw transactionError;
     }
     
     console.log(`Successfully updated user points from ${currentPoints} to ${newPointsTotal}`);
+    console.log('Transaction data:', transactionData);
     
     return { success: true, newPointsTotal };
   } catch (error: any) {

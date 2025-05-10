@@ -1,6 +1,5 @@
 
 import { supabase } from '@/integrations/supabase/client';
-import { logPointsTransaction } from './transactionLog';
 
 /**
  * Returns points to a user (refund) and logs the transaction
@@ -41,21 +40,42 @@ export const returnPointsToUser = async (
       throw pointsError;
     }
     
-    // Log the transaction if successful
-    const transactionResult = await logPointsTransaction(
-      userId,
-      pointsAmount,
-      'REFUNDED',
-      'REDEMPTION',
-      description,
-      sourceId
+    // Create the full description with source info
+    const fullDescription = sourceId
+      ? `${description} [REDEMPTION:${sourceId}]`
+      : `${description} [REDEMPTION]`;
+    
+    // Call the create_point_transaction function
+    const { data: transactionData, error: transactionError } = await supabase.rpc(
+      'create_point_transaction',
+      {
+        p_user_id: userId,
+        p_amount: pointsAmount,
+        p_type: 'REFUNDED',
+        p_description: fullDescription
+      }
     );
     
-    if (!transactionResult.success) {
-      console.error('Failed to log refund transaction:', transactionResult.error);
+    if (transactionError) {
+      console.error('Error creating refund transaction:', transactionError);
+      console.error('Transaction error details:', JSON.stringify(transactionError));
+      
+      // If transaction logging fails, try to revert the points
+      try {
+        await supabase
+          .from('profiles')
+          .update({ points: currentPoints })
+          .eq('id', userId);
+        console.log('Points reverted due to transaction error');
+      } catch (revertError) {
+        console.error('Failed to revert points after transaction error:', revertError);
+      }
+      
+      throw transactionError;
     }
     
     console.log(`Successfully updated user points from ${currentPoints} to ${newPointsTotal}`);
+    console.log('Transaction data:', transactionData);
     
     return { success: true, newPointsTotal };
   } catch (error: any) {
