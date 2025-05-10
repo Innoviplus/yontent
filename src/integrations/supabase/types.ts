@@ -323,19 +323,19 @@ export type Database = {
           created_at: string
           id: string
           review_id: string
-          user_id: string
+          user_id_likes: string
         }
         Insert: {
           created_at?: string
           id?: string
           review_id: string
-          user_id: string
+          user_id_likes: string
         }
         Update: {
           created_at?: string
           id?: string
           review_id?: string
-          user_id?: string
+          user_id_likes?: string
         }
         Relationships: [
           {

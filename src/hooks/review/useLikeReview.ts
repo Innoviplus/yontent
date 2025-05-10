@@ -18,7 +18,7 @@ export const useLikeReview = (reviewId: string, initialLikesCount: number = 0) =
       const { data, error } = await supabase
         .from('review_likes')
         .select('id')
-        .eq('user_id', user.id)
+        .eq('user_id_likes', user.id)  // Updated column name
         .eq('review_id', reviewId)
         .single();
         
@@ -48,7 +48,7 @@ export const useLikeReview = (reviewId: string, initialLikesCount: number = 0) =
         const { error } = await supabase
           .from('review_likes')
           .delete()
-          .eq('user_id', user.id)
+          .eq('user_id_likes', user.id)  // Updated column name
           .eq('review_id', reviewId);
           
         if (error) throw error;
@@ -76,7 +76,7 @@ export const useLikeReview = (reviewId: string, initialLikesCount: number = 0) =
         const { error } = await supabase
           .from('review_likes')
           .insert({
-            user_id: user.id,
+            user_id_likes: user.id,  // Updated column name
             review_id: reviewId
           });
           
