@@ -53,7 +53,7 @@ const UserOwnStatsCard = ({
         const { count: pointTransactionsCount, error: pointError } = await supabase
           .from('point_transactions')
           .select('*', { count: 'exact', head: true })
-          .eq('user_id_point', user.id);
+          .eq('user_id_point', user.id); // Updated column name
           
         if (pointError) throw pointError;
         
