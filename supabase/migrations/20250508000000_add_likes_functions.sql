@@ -39,3 +39,4 @@ BEGIN
   RETURN likes_count_val;
 END;
 $$ LANGUAGE plpgsql;
+
