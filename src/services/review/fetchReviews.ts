@@ -1,6 +1,7 @@
 
 import { supabase } from '@/integrations/supabase/client';
 import { Review } from '@/lib/types';
+import { syncAllLikesCounts } from '@/lib/api';
 
 // Cache for review data
 const reviewsCache = new Map<string, { data: Review[], timestamp: number }>();
@@ -17,6 +18,11 @@ export const fetchReviews = async (sortBy: string, userId?: string): Promise<Rev
     }
     
     console.log('Cache miss, fetching fresh reviews data');
+    
+    // Periodically sync all likes counts (do this in the background)
+    syncAllLikesCounts().catch(err => 
+      console.error('Background sync of all likes counts failed:', err)
+    );
     
     // Limit the amount of data we're retrieving
     const FETCH_LIMIT = 50; // Fetch fewer items for better performance

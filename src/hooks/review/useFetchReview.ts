@@ -19,6 +19,9 @@ export const useFetchReview = (id: string | undefined) => {
         setLoading(true);
       }
       
+      // Call sync_review_likes_count to make sure we have the correct likes count
+      await supabase.rpc('sync_review_likes_count', { review_id_param: id });
+      
       // Get the review data with actual likes count from reviews table
       const { data, error } = await supabase
         .from('reviews')

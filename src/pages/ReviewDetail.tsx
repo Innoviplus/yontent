@@ -15,6 +15,7 @@ import ReviewComments from '@/components/review/ReviewDetail/ReviewComments';
 import { useAuth } from '@/contexts/AuthContext';
 import { useIsMobile } from '@/hooks/use-mobile';
 import { useEffect, useRef } from 'react';
+import { syncLikesCount } from '@/lib/api';
 
 const ReviewDetail = () => {
   const { id } = useParams<{ id: string }>();
@@ -32,6 +33,19 @@ const ReviewDetail = () => {
 
   // Check if current user is the author of the review
   const isAuthor = user && review && user.id === review.userId;
+  
+  // Sync likes count when the component mounts
+  useEffect(() => {
+    if (id && !initialLoadRef.current) {
+      syncLikesCount(id)
+        .then(() => {
+          console.log('Likes count synced for review:', id);
+          // Refetch the review to get the updated likes count
+          refetchReview(true);
+        })
+        .catch(err => console.error('Error syncing likes count:', err));
+    }
+  }, [id, refetchReview]);
   
   // Only fetch review data when component mounts and when route changes
   // but avoid triggering view tracking on every render

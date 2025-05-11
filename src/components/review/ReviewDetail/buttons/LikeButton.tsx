@@ -18,6 +18,7 @@ const LikeButton = ({ reviewId, initialLikesCount }: LikeButtonProps) => {
     userHasLiked, 
     toggleLike, 
     checkUserLike,
+    syncLikesCount,
     setLikesCount
   } = useLikeReview(reviewId, initialLikesCount);
 
@@ -29,12 +30,16 @@ const LikeButton = ({ reviewId, initialLikesCount }: LikeButtonProps) => {
     if (user?.id) {
       checkUserLike();
     }
+    
+    // Sync the likes count from the database on initial load
+    syncLikesCount();
+    
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [user?.id, reviewId, initialLikesCount, checkUserLike, setLikesCount]);
 
   const handleLikeClick = async () => {
     if (!user) {
       // If user is not logged in, inform them they need to log in
-      // Could redirect to login page or show a toast
       return;
     }
     

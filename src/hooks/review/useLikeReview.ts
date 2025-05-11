@@ -18,7 +18,7 @@ export const useLikeReview = (reviewId: string, initialLikesCount: number = 0) =
       const { data, error } = await supabase
         .from('review_likes')
         .select('id')
-        .eq('user_id_likes', user.id)  // Updated column name
+        .eq('user_id_likes', user.id)  // Using the renamed column
         .eq('review_id', reviewId)
         .single();
         
@@ -48,35 +48,31 @@ export const useLikeReview = (reviewId: string, initialLikesCount: number = 0) =
         const { error } = await supabase
           .from('review_likes')
           .delete()
-          .eq('user_id_likes', user.id)  // Updated column name
+          .eq('user_id_likes', user.id)  // Using the renamed column
           .eq('review_id', reviewId);
           
         if (error) throw error;
         
-        // Directly update the likes_count in the reviews table
-        const { error: updateError } = await supabase
-          .from('reviews')
-          .update({ likes_count: Math.max(0, likesCount - 1) })
-          .eq('id', reviewId);
+        // Call the sync function to update the likes count
+        const { data: syncResult, error: syncError } = await supabase
+          .rpc('sync_review_likes_count', { review_id_param: reviewId });
         
-        if (updateError) {
-          console.error('Error updating likes count:', updateError);
-          throw updateError;
+        if (syncError) {
+          console.error('Error syncing likes count:', syncError);
+          throw syncError;
         }
         
-        // Also call the RPC function for any additional processing it might do
-        await supabase.rpc('decrement_review_likes', { review_id_param: reviewId });
-        
+        const newCount = syncResult || Math.max(0, likesCount - 1);
         setUserHasLiked(false);
-        setLikesCount(prev => Math.max(0, prev - 1));
+        setLikesCount(newCount);
         
-        return { liked: false, totalLikes: Math.max(0, likesCount - 1) };
+        return { liked: false, totalLikes: newCount };
       } else {
         // Like the review
         const { error } = await supabase
           .from('review_likes')
           .insert({
-            user_id_likes: user.id,  // Updated column name
+            user_id_likes: user.id,  // Using the renamed column
             review_id: reviewId
           });
           
@@ -89,24 +85,20 @@ export const useLikeReview = (reviewId: string, initialLikesCount: number = 0) =
           throw error;
         }
         
-        // Directly update the likes_count in the reviews table
-        const { error: updateError } = await supabase
-          .from('reviews')
-          .update({ likes_count: likesCount + 1 })
-          .eq('id', reviewId);
+        // Call the sync function to update the likes count
+        const { data: syncResult, error: syncError } = await supabase
+          .rpc('sync_review_likes_count', { review_id_param: reviewId });
         
-        if (updateError) {
-          console.error('Error updating likes count:', updateError);
-          throw updateError;
+        if (syncError) {
+          console.error('Error syncing likes count:', syncError);
+          throw syncError;
         }
         
-        // Also call the RPC function for any additional processing it might do
-        await supabase.rpc('increment_review_likes', { review_id_param: reviewId });
-        
+        const newCount = syncResult || likesCount + 1;
         setUserHasLiked(true);
-        setLikesCount(prev => prev + 1);
+        setLikesCount(newCount);
         
-        return { liked: true, totalLikes: likesCount + 1 };
+        return { liked: true, totalLikes: newCount };
       }
     } catch (error) {
       console.error('Error toggling like:', error);
@@ -116,6 +108,25 @@ export const useLikeReview = (reviewId: string, initialLikesCount: number = 0) =
       setIsLiking(false);
     }
   };
+
+  // Sync likes count with the database
+  const syncLikesCount = async () => {
+    try {
+      const { data, error } = await supabase
+        .rpc('sync_review_likes_count', { review_id_param: reviewId });
+        
+      if (error) {
+        console.error('Error syncing likes count:', error);
+        return;
+      }
+      
+      if (data !== null && typeof data === 'number') {
+        setLikesCount(data);
+      }
+    } catch (error) {
+      console.error('Error syncing likes count:', error);
+    }
+  };
   
   return {
     isLiking,
@@ -123,6 +134,7 @@ export const useLikeReview = (reviewId: string, initialLikesCount: number = 0) =
     userHasLiked,
     toggleLike,
     checkUserLike,
+    syncLikesCount,
     setLikesCount
   };
 };
