@@ -5,6 +5,8 @@ import { Review } from '@/lib/types';
 import { cn } from '@/lib/utils';
 import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
 import { useIsMobile } from '@/hooks/use-mobile';
+import { useEffect, useState } from 'react';
+import { syncLikesCount } from '@/lib/api';
 
 interface ReviewCardProps {
   review: Review;
@@ -15,6 +17,17 @@ const ReviewCard = ({ review, className }: ReviewCardProps) => {
   const navigate = useNavigate();
   const isMobile = useIsMobile();
   const hasVideo = review.videos && review.videos.length > 0;
+  const [likesCount, setLikesCount] = useState<number>(review.likesCount || 0);
+
+  // On mount, verify the likes count for this review
+  useEffect(() => {
+    setLikesCount(review.likesCount || 0);
+    
+    // For debugging specific review
+    if (review.id === 'efed29eb-34fd-461f-bbce-0d591e8110de') {
+      console.log('ReviewCard: Target review initial likes count:', review.likesCount);
+    }
+  }, [review.id, review.likesCount]);
 
   const handleCardClick = () => {
     navigate(`/review/${review.id}`);
@@ -26,8 +39,12 @@ const ReviewCard = ({ review, className }: ReviewCardProps) => {
     return doc.body.textContent || '';
   };
 
-  // Debug log for likes count
-  console.log(`ReviewCard for ${review.id} has ${review.likesCount} likes`);
+  // Log for debugging review likes
+  useEffect(() => {
+    if (review.id === 'efed29eb-34fd-461f-bbce-0d591e8110de') {
+      console.log(`ReviewCard: Target review ${review.id} has ${likesCount} likes`);
+    }
+  }, [review.id, likesCount]);
 
   return (
     <div 
@@ -102,7 +119,9 @@ const ReviewCard = ({ review, className }: ReviewCardProps) => {
           
           <div className="flex items-center text-xs text-gray-500">
             <Heart className="h-3 w-3 mr-0.5" />
-            <span>{review.likesCount || 0}</span>
+            <span data-testid={`likes-count-${review.id}`}>
+              {likesCount}
+            </span>
           </div>
         </div>
       </div>

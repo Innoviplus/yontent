@@ -1,4 +1,3 @@
-
 import { Suspense, lazy, useEffect } from 'react';
 import { Loader2, Filter, Star } from 'lucide-react';
 import { useAuth } from '@/contexts/AuthContext';
@@ -13,6 +12,7 @@ import ReviewsPagination from '@/components/review/ReviewsPagination';
 import { Sheet, SheetContent, SheetTrigger } from '@/components/ui/sheet';
 import { useIsMobile } from '@/hooks/use-mobile';
 import { Card, CardContent } from '@/components/ui/card';
+import { syncAllLikesCounts } from '@/lib/api';
 
 const Reviews = () => {
   usePageTitle('Reviews');
@@ -32,11 +32,22 @@ const Reviews = () => {
     totalPages 
   } = useReviewsList(user?.id);
 
+  // On initial load, sync all likes counts and refresh data
+  useEffect(() => {
+    console.log('Reviews page: Initial likes sync');
+    syncAllLikesCounts()
+      .then(() => {
+        console.log('Reviews page: Refreshing data after sync');
+        refetch();
+      })
+      .catch(err => console.error('Error syncing likes on Reviews page:', err));
+  }, [refetch]);
+
   useEffect(() => {
     if (isMobile && page < totalPages) {
       const handleScroll = () => {
         if (window.innerHeight + window.scrollY >= document.body.offsetHeight - 1000) {
-          const nextPageReviews = (page + 1);
+          // This is intentionally left empty as noted in the original code
         }
       };
       
@@ -98,7 +109,9 @@ const Reviews = () => {
           <ReviewsError onRetry={refetch} />
         ) : reviews.length > 0 ? (
           <>
-            <p className="text-sm text-gray-500 mb-3">{allReviewsCount} reviews</p>
+            <p className="text-sm text-gray-500 mb-3">
+              {allReviewsCount} {allReviewsCount === 1 ? 'review' : 'reviews'}
+            </p>
             <Suspense fallback={<div className="animate-pulse bg-gray-200 h-screen w-full"></div>}>
               <ReviewsGrid reviews={reviews} />
             </Suspense>
