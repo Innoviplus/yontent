@@ -28,20 +28,22 @@ export const syncLikesCount = async (reviewId: string) => {
   console.log(`Syncing likes count for review: ${reviewId}`);
   
   try {
-    // Use a properly typed approach to count likes
-    // First get all likes for this review
+    // Use an approach that's compatible with TypeScript types
+    // Instead of using .eq directly, we'll use a different query structure
     const { data: likes, error: likesError } = await supabase
       .from('review_likes')
-      .select('id')
-      .eq('review_id', reviewId);
+      .select('*')
+      .is('review_id', 'not.null'); // First get all likes
       
     if (likesError) {
       console.error('Error fetching likes:', likesError);
       throw likesError;
     }
     
-    // Count the likes manually
-    const actualCount = likes ? likes.length : 0;
+    // Filter the likes for this specific review in JavaScript
+    const reviewLikes = likes ? likes.filter(like => like.review_id === reviewId) : [];
+    const actualCount = reviewLikes.length;
+    
     console.log(`Direct count for review ${reviewId}: ${actualCount} likes`);
     
     // Update the reviews table with the correct count using normal update
@@ -89,21 +91,21 @@ export const syncAllLikesCounts = async () => {
     
     console.log(`Found ${reviews.length} reviews to sync`);
     
-    // Get all likes grouped by review_id
-    const { data: likesCounts, error: countError } = await supabase
+    // Get all likes
+    const { data: allLikes, error: likesError } = await supabase
       .from('review_likes')
-      .select('review_id')
+      .select('*')
       .is('review_id', 'not.null');
       
-    if (countError) {
-      console.error('Error fetching likes counts:', countError);
-      throw countError;
+    if (likesError) {
+      console.error('Error fetching likes:', likesError);
+      throw likesError;
     }
     
     // Group likes by review_id
     const likesMap = new Map<string, number>();
-    if (likesCounts) {
-      likesCounts.forEach(like => {
+    if (allLikes) {
+      allLikes.forEach(like => {
         const reviewId = like.review_id;
         if (reviewId) {
           likesMap.set(reviewId, (likesMap.get(reviewId) || 0) + 1);
