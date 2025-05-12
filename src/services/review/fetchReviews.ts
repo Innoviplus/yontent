@@ -66,26 +66,29 @@ export const fetchReviews = async (sortBy: string, userId?: string): Promise<Rev
     }
     
     if (data) {
-      const transformedReviews: Review[] = data.map(review => ({
-        id: review.id,
-        userId: review.user_id,
-        productName: "Review",
-        rating: 5,
-        content: review.content,
-        images: review.images || [],
-        videos: review.videos || [],
-        viewsCount: review.views_count || 0,
-        likesCount: review.likes_count || 0,
-        createdAt: new Date(review.created_at),
-        user: review.profiles ? {
-          id: review.profiles.id || review.user_id,
-          username: review.profiles.username || 'Anonymous',
-          email: '',
-          points: 0,
-          createdAt: new Date(),
-          avatar: review.profiles.avatar
-        } : undefined
-      }));
+      const transformedReviews: Review[] = data.map(review => {
+        console.log(`Review ${review.id} has likes_count:`, review.likes_count);
+        return {
+          id: review.id,
+          userId: review.user_id,
+          productName: "Review",
+          rating: 5,
+          content: review.content,
+          images: review.images || [],
+          videos: review.videos || [],
+          viewsCount: review.views_count || 0,
+          likesCount: review.likes_count || 0,
+          createdAt: new Date(review.created_at),
+          user: review.profiles ? {
+            id: review.profiles.id || review.user_id,
+            username: review.profiles.username || 'Anonymous',
+            email: '',
+            points: 0,
+            createdAt: new Date(),
+            avatar: review.profiles.avatar
+          } : undefined
+        };
+      });
       
       // Cache the results
       reviewsCache.set(cacheKey, { 

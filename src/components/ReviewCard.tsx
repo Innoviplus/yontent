@@ -26,6 +26,9 @@ const ReviewCard = ({ review, className }: ReviewCardProps) => {
     return doc.body.textContent || '';
   };
 
+  // Debug log for likes count
+  console.log(`ReviewCard for ${review.id} has ${review.likesCount} likes`);
+
   return (
     <div 
       onClick={handleCardClick}

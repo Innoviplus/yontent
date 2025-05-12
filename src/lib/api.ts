@@ -33,6 +33,7 @@ export const syncLikesCount = async (reviewId: string) => {
     throw new Error(error.message);
   }
   
+  console.log(`Synced likes count for review ${reviewId}: ${data}`);
   return data;
 };
 
@@ -41,6 +42,8 @@ export const syncLikesCount = async (reviewId: string) => {
  * This is useful for ensuring all reviews have accurate likes counts
  */
 export const syncAllLikesCounts = async () => {
+  console.log("Starting to sync all reviews likes counts");
+  
   // First get all review IDs
   const { data: reviews, error: reviewsError } = await supabase
     .from('reviews')
@@ -51,16 +54,29 @@ export const syncAllLikesCounts = async () => {
     throw new Error(reviewsError.message);
   }
   
-  if (!reviews || reviews.length === 0) return;
+  if (!reviews || reviews.length === 0) {
+    console.log("No reviews found to sync");
+    return;
+  }
+  
+  console.log(`Found ${reviews.length} reviews to sync`);
   
   // Sync likes count for each review
   const syncPromises = reviews.map(review => 
     supabase.rpc('sync_review_likes_count', { review_id_param: review.id })
+      .then(({ data, error }) => {
+        if (error) {
+          console.error(`Error syncing review ${review.id}:`, error);
+          return null;
+        }
+        console.log(`Synced review ${review.id} likes count: ${data}`);
+        return data;
+      })
   );
   
   try {
-    await Promise.all(syncPromises);
-    console.log(`Successfully synced likes counts for ${reviews.length} reviews`);
+    const results = await Promise.all(syncPromises);
+    console.log(`Successfully synced likes counts for ${reviews.length} reviews`, results);
   } catch (error) {
     console.error('Error syncing all likes counts:', error);
   }

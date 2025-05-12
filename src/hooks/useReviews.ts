@@ -1,7 +1,9 @@
+
 import { useState, useEffect } from 'react';
 import { Review } from '@/lib/types';
 import { supabase } from '@/integrations/supabase/client';
 import { toast } from 'sonner';
+import { syncAllLikesCounts } from '@/lib/api';
 
 type SortOption = 'recent' | 'views' | 'relevant';
 
@@ -16,6 +18,9 @@ export const useReviews = () => {
   
   const fetchReviews = async (pageNum: number, sort: SortOption) => {
     try {
+      // First sync all likes counts to ensure we have accurate data
+      await syncAllLikesCounts();
+      
       let query = supabase
         .from('reviews')
         .select(`
@@ -58,26 +63,31 @@ export const useReviews = () => {
         return;
       }
       
-      const transformedReviews: Review[] = data.map(review => ({
-        id: review.id,
-        userId: review.user_id,
-        content: review.content,
-        images: review.images || [],
-        videos: review.videos || [],
-        viewsCount: review.views_count,
-        likesCount: review.likes_count,
-        createdAt: new Date(review.created_at),
-        productName: 'Review',
-        rating: 5,
-        user: {
-          id: review.profiles?.id || review.user_id,
-          username: review.profiles?.username || 'Anonymous',
-          email: '',
-          points: review.profiles?.points || 0,
-          createdAt: review.profiles?.created_at ? new Date(review.profiles.created_at) : new Date(),
-          avatar: review.profiles?.avatar
-        }
-      }));
+      const transformedReviews: Review[] = data.map(review => {
+        // Log to debug likes count
+        console.log(`Review ${review.id} has ${review.likes_count || 0} likes`);
+        
+        return {
+          id: review.id,
+          userId: review.user_id,
+          content: review.content,
+          images: review.images || [],
+          videos: review.videos || [],
+          viewsCount: review.views_count || 0,
+          likesCount: review.likes_count || 0, // Ensure we're using the count from the database
+          createdAt: new Date(review.created_at),
+          productName: 'Review',
+          rating: 5,
+          user: {
+            id: review.profiles?.id || review.user_id,
+            username: review.profiles?.username || 'Anonymous',
+            email: '',
+            points: review.profiles?.points || 0,
+            createdAt: review.profiles?.created_at ? new Date(review.profiles.created_at) : new Date(),
+            avatar: review.profiles?.avatar
+          }
+        };
+      });
 
       if (pageNum === 0) {
         setReviews(transformedReviews);
@@ -94,6 +104,11 @@ export const useReviews = () => {
       setLoading(false);
     }
   };
+  
+  // Run a background sync when component mounts
+  useEffect(() => {
+    syncAllLikesCounts().catch(console.error);
+  }, []);
   
   useEffect(() => {
     setPage(0);
