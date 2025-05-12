@@ -28,16 +28,34 @@ export const syncLikesCount = async (reviewId: string) => {
   console.log(`Syncing likes count for review: ${reviewId}`);
   
   try {
-    const { data, error } = await supabase
-      .rpc('sync_review_likes_count', { review_id_param: reviewId });
-    
-    if (error) {
-      console.error('Error syncing likes count:', error);
-      throw new Error(error.message);
+    // Get the actual count of likes for this review directly from review_likes table
+    const { data: likeCount, error: countError } = await supabase
+      .from('review_likes')
+      .select('id', { count: 'exact' })
+      .eq('review_id', reviewId);
+      
+    if (countError) {
+      console.error('Error counting likes:', countError);
+      throw countError;
     }
     
-    console.log(`Successfully synced likes count for review ${reviewId}: ${data}`);
-    return data;
+    const actualCount = likeCount?.length || 0;
+    console.log(`Direct count for review ${reviewId}: ${actualCount} likes`);
+    
+    // Update the reviews table with the correct count using normal update
+    const { data, error } = await supabase
+      .from('reviews')
+      .update({ likes_count: actualCount })
+      .eq('id', reviewId)
+      .select('likes_count');
+    
+    if (error) {
+      console.error('Error updating likes count:', error);
+      throw error;
+    }
+    
+    console.log(`Successfully updated likes count for review ${reviewId}: ${data?.[0]?.likes_count || actualCount}`);
+    return actualCount;
   } catch (error) {
     console.error('Unexpected error in syncLikesCount:', error);
     throw error;
@@ -69,20 +87,48 @@ export const syncAllLikesCounts = async () => {
     
     console.log(`Found ${reviews.length} reviews to sync`);
     
-    // Sync likes count for each review
-    const syncPromises = reviews.map(review => 
-      supabase.rpc('sync_review_likes_count', { review_id_param: review.id })
-        .then(({ data, error }) => {
-          if (error) {
-            console.error(`Error syncing review ${review.id}:`, error);
-            return { id: review.id, success: false, error };
-          }
-          console.log(`Synced review ${review.id} likes count: ${data}`);
-          return { id: review.id, likes: data, success: true };
-        })
-    );
+    // Get all likes grouped by review_id
+    const { data: likesCounts, error: countError } = await supabase
+      .from('review_likes')
+      .select('review_id')
+      .is('review_id', 'not.null');
+      
+    if (countError) {
+      console.error('Error fetching likes counts:', countError);
+      throw countError;
+    }
     
-    const results = await Promise.all(syncPromises);
+    // Group likes by review_id
+    const likesMap = new Map<string, number>();
+    if (likesCounts) {
+      likesCounts.forEach(like => {
+        const reviewId = like.review_id;
+        if (reviewId) {
+          likesMap.set(reviewId, (likesMap.get(reviewId) || 0) + 1);
+        }
+      });
+    }
+    
+    // Update each review with the correct count
+    const updatePromises = reviews.map(async review => {
+      const likesCount = likesMap.get(review.id) || 0;
+      
+      const { data: updateResult, error: updateError } = await supabase
+        .from('reviews')
+        .update({ likes_count: likesCount })
+        .eq('id', review.id)
+        .select('id, likes_count');
+        
+      if (updateError) {
+        console.error(`Error updating review ${review.id}:`, updateError);
+        return { id: review.id, success: false, error: updateError };
+      }
+      
+      console.log(`Synced review ${review.id} likes count: ${likesCount}`);
+      return { id: review.id, likes: likesCount, success: true };
+    });
+    
+    const results = await Promise.all(updatePromises);
     console.log(`Sync results summary:`, 
       results.reduce((acc, curr) => {
         acc[curr.success ? 'success' : 'failed']++;

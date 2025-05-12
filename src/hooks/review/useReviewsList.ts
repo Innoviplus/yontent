@@ -11,7 +11,7 @@ export const useReviewsList = (userId?: string) => {
   const [page, setPage] = useState(1);
   const itemsPerPage = 10;
 
-  // Force sync before initial data fetch and whenever sort changes
+  // Force sync before initial data fetch
   useEffect(() => {
     console.log('useReviewsList: Running initial likes count sync');
     syncAllLikesCounts()
@@ -21,15 +21,16 @@ export const useReviewsList = (userId?: string) => {
       );
   }, []);
 
-  // Use a shorter stale time to refresh data more frequently
+  // Use a very short stale time to refresh data frequently
   const { data: allReviews = [], isLoading, error, refetch } = useQuery({
     queryKey: ['reviews', sortBy, userId],
     queryFn: async () => {
-      // Sync likes counts before fetching to ensure we have fresh data
+      console.log('Fetching reviews with required sync...');
+      // Always sync likes counts before fetching to ensure we have fresh data
       await syncAllLikesCounts();
       return fetchReviews(sortBy, userId);
     },
-    staleTime: 1 * 60 * 1000, // 1 minute stale time
+    staleTime: 10 * 1000, // 10 seconds stale time for frequent refreshes
     meta: {
       onError: (err: Error) => {
         console.error('Error fetching reviews:', err);
@@ -66,6 +67,8 @@ export const useReviewsList = (userId?: string) => {
   // Force a sync and refetch when sorting changes
   const handleSortChange = (newSort: SortOption) => {
     setSortBy(newSort);
+    // Sync likes and refresh data when sort changes
+    console.log('Sort changed, syncing likes count and refreshing data...');
     syncAllLikesCounts()
       .then(() => refetch())
       .catch(err => console.error('Error syncing likes count during sort change:', err));
@@ -77,6 +80,7 @@ export const useReviewsList = (userId?: string) => {
     isLoading,
     error,
     refetch: async () => {
+      console.log('Manual refetch requested, syncing likes count first...');
       await syncAllLikesCounts();
       return refetch();
     },

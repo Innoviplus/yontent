@@ -20,13 +20,13 @@ const ReviewCard = ({ review, className }: ReviewCardProps) => {
 
   // Initialize and update likes count whenever the review prop changes
   useEffect(() => {
-    if (review.likesCount !== undefined) {
-      setLikesCount(review.likesCount);
-      
-      // For debugging specific review
-      if (review.id === 'efed29eb-34fd-461f-bbce-0d591e8110de') {
-        console.log('ReviewCard: Target review likes count set to:', review.likesCount);
-      }
+    // Ensure we have a valid number
+    const count = typeof review.likesCount === 'number' ? review.likesCount : 0;
+    setLikesCount(count);
+    
+    // For debugging specific review
+    if (review.id === 'efed29eb-34fd-461f-bbce-0d591e8110de') {
+      console.log('ReviewCard: Target review likes count set to:', count);
     }
   }, [review.id, review.likesCount]);
 

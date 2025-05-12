@@ -1,3 +1,4 @@
+
 import { Suspense, lazy, useEffect } from 'react';
 import { Loader2, Filter, Star } from 'lucide-react';
 import { useAuth } from '@/contexts/AuthContext';
@@ -41,6 +42,14 @@ const Reviews = () => {
         refetch();
       })
       .catch(err => console.error('Error syncing likes on Reviews page:', err));
+      
+    // Set an interval to refresh likes count every 30 seconds
+    const intervalId = setInterval(() => {
+      console.log('Reviews page: Periodic refresh');
+      refetch();
+    }, 30000);
+    
+    return () => clearInterval(intervalId);
   }, [refetch]);
 
   // Debug likes count for reviews
@@ -75,6 +84,16 @@ const Reviews = () => {
     setSortBy(value as SortOption);
     setPage(1);
   };
+
+  // Force an immediate refresh when the component mounts
+  useEffect(() => {
+    const loadData = async () => {
+      await syncAllLikesCounts();
+      refetch();
+    };
+    
+    loadData();
+  }, [refetch]);
 
   return (
     <div className="min-h-screen bg-gray-50">

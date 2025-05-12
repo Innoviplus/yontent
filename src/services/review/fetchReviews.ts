@@ -11,8 +11,7 @@ export const fetchReviews = async (sortBy: string, userId?: string): Promise<Rev
   try {
     const cacheKey = `${sortBy}-${userId || 'no-user'}`;
     
-    // Intentionally not using cache for now to ensure fresh data
-    // Clear cache to force fresh data
+    // Always clear cache to ensure fresh data
     reviewsCache.delete(cacheKey);
     
     console.log('Fetching fresh reviews data');
@@ -96,7 +95,7 @@ export const fetchReviews = async (sortBy: string, userId?: string): Promise<Rev
       });
       
       console.log('Reviews transformed, total count:', transformedReviews.length);
-      console.log('Sample review like counts:', transformedReviews.slice(0, 3).map(r => ({ id: r.id, likes: r.likesCount })));
+      console.log('Sample review like counts:', transformedReviews.slice(0, 3).map(r => ({ id: r.id.substring(0, 8), likes: r.likesCount })));
       
       return transformedReviews;
     }
