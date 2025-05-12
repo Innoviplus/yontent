@@ -28,12 +28,11 @@ export const syncLikesCount = async (reviewId: string) => {
   console.log(`Syncing likes count for review: ${reviewId}`);
   
   try {
-    // Use an approach that's compatible with TypeScript types
-    // Instead of using .eq directly, we'll use a different query structure
+    // Instead of using filtering on the database side which is causing type errors,
+    // we'll get all likes and filter them in memory
     const { data: likes, error: likesError } = await supabase
       .from('review_likes')
-      .select('*')
-      .is('review_id', 'not.null'); // First get all likes
+      .select('*');
       
     if (likesError) {
       console.error('Error fetching likes:', likesError);
@@ -91,11 +90,10 @@ export const syncAllLikesCounts = async () => {
     
     console.log(`Found ${reviews.length} reviews to sync`);
     
-    // Get all likes
+    // Get all likes without filtering by review_id - we'll process them in memory
     const { data: allLikes, error: likesError } = await supabase
       .from('review_likes')
-      .select('*')
-      .is('review_id', 'not.null');
+      .select('*');
       
     if (likesError) {
       console.error('Error fetching likes:', likesError);
