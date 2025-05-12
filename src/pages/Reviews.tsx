@@ -43,6 +43,21 @@ const Reviews = () => {
       .catch(err => console.error('Error syncing likes on Reviews page:', err));
   }, [refetch]);
 
+  // Debug likes count for reviews
+  useEffect(() => {
+    if (reviews && reviews.length > 0) {
+      console.log('Reviews in Reviews page:', reviews.map(r => ({ 
+        id: r.id.substring(0, 8), 
+        likes: r.likesCount 
+      })));
+      
+      const targetReview = reviews.find(r => r.id === 'efed29eb-34fd-461f-bbce-0d591e8110de');
+      if (targetReview) {
+        console.log('Target review in Reviews page:', targetReview.id, 'likes:', targetReview.likesCount);
+      }
+    }
+  }, [reviews]);
+
   useEffect(() => {
     if (isMobile && page < totalPages) {
       const handleScroll = () => {

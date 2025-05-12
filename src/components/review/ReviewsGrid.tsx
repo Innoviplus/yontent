@@ -15,13 +15,26 @@ const ReviewsGrid = memo(({ reviews }: ReviewsGridProps) => {
   const [loadedReviews, setLoadedReviews] = useState<Review[]>([]);
   const [isLoading, setIsLoading] = useState(true);
 
+  // Update loaded reviews whenever reviews prop changes
   useEffect(() => {
-    // Only set reviews when the data is available
     if (reviews.length > 0) {
+      // Log likes counts for debugging
+      console.log('ReviewsGrid: Setting reviews with like counts:', 
+        reviews.slice(0, 3).map(r => ({ id: r.id.substring(0, 8), likes: r.likesCount }))
+      );
+      
       setLoadedReviews(reviews);
       setIsLoading(false);
     }
   }, [reviews]);
+
+  // Debug specific review
+  useEffect(() => {
+    const targetReview = loadedReviews.find(r => r.id === 'efed29eb-34fd-461f-bbce-0d591e8110de');
+    if (targetReview) {
+      console.log('ReviewsGrid: Target review has likesCount:', targetReview.likesCount);
+    }
+  }, [loadedReviews]);
 
   const handleReviewClick = (reviewId: string) => {
     trackReviewView(reviewId);

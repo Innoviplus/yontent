@@ -5,20 +5,17 @@ import { syncAllLikesCounts } from '@/lib/api';
 
 // Cache for review data
 const reviewsCache = new Map<string, { data: Review[], timestamp: number }>();
-const CACHE_EXPIRY = 1 * 60 * 1000; // 1 minute cache expiry for more frequent updates
+const CACHE_EXPIRY = 30 * 1000; // 30 second cache expiry for more frequent updates
 
 export const fetchReviews = async (sortBy: string, userId?: string): Promise<Review[]> => {
   try {
     const cacheKey = `${sortBy}-${userId || 'no-user'}`;
-    const cachedResult = reviewsCache.get(cacheKey);
     
-    // Clear cache and fetch fresh data
-    if (cachedResult && (Date.now() - cachedResult.timestamp) < CACHE_EXPIRY) {
-      console.log('Using cached reviews data');
-      return cachedResult.data;
-    }
+    // Intentionally not using cache for now to ensure fresh data
+    // Clear cache to force fresh data
+    reviewsCache.delete(cacheKey);
     
-    console.log('Cache miss or expired, fetching fresh reviews data');
+    console.log('Fetching fresh reviews data');
     
     // Force sync all likes counts before fetching reviews
     console.log('Syncing all likes counts before fetching reviews');
@@ -100,12 +97,6 @@ export const fetchReviews = async (sortBy: string, userId?: string): Promise<Rev
       
       console.log('Reviews transformed, total count:', transformedReviews.length);
       console.log('Sample review like counts:', transformedReviews.slice(0, 3).map(r => ({ id: r.id, likes: r.likesCount })));
-      
-      // Cache the results but with shorter expiry
-      reviewsCache.set(cacheKey, { 
-        data: transformedReviews, 
-        timestamp: Date.now() 
-      });
       
       return transformedReviews;
     }

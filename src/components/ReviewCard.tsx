@@ -6,7 +6,6 @@ import { cn } from '@/lib/utils';
 import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
 import { useIsMobile } from '@/hooks/use-mobile';
 import { useEffect, useState } from 'react';
-import { syncLikesCount } from '@/lib/api';
 
 interface ReviewCardProps {
   review: Review;
@@ -17,15 +16,17 @@ const ReviewCard = ({ review, className }: ReviewCardProps) => {
   const navigate = useNavigate();
   const isMobile = useIsMobile();
   const hasVideo = review.videos && review.videos.length > 0;
-  const [likesCount, setLikesCount] = useState<number>(review.likesCount || 0);
+  const [likesCount, setLikesCount] = useState<number>(0);
 
-  // On mount, verify the likes count for this review
+  // Initialize and update likes count whenever the review prop changes
   useEffect(() => {
-    setLikesCount(review.likesCount || 0);
-    
-    // For debugging specific review
-    if (review.id === 'efed29eb-34fd-461f-bbce-0d591e8110de') {
-      console.log('ReviewCard: Target review initial likes count:', review.likesCount);
+    if (review.likesCount !== undefined) {
+      setLikesCount(review.likesCount);
+      
+      // For debugging specific review
+      if (review.id === 'efed29eb-34fd-461f-bbce-0d591e8110de') {
+        console.log('ReviewCard: Target review likes count set to:', review.likesCount);
+      }
     }
   }, [review.id, review.likesCount]);
 
@@ -38,13 +39,6 @@ const ReviewCard = ({ review, className }: ReviewCardProps) => {
     const doc = new DOMParser().parseFromString(html, 'text/html');
     return doc.body.textContent || '';
   };
-
-  // Log for debugging review likes
-  useEffect(() => {
-    if (review.id === 'efed29eb-34fd-461f-bbce-0d591e8110de') {
-      console.log(`ReviewCard: Target review ${review.id} has ${likesCount} likes`);
-    }
-  }, [review.id, likesCount]);
 
   return (
     <div 

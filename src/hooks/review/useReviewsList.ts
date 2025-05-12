@@ -11,19 +11,25 @@ export const useReviewsList = (userId?: string) => {
   const [page, setPage] = useState(1);
   const itemsPerPage = 10;
 
-  // Sync likes counts when component mounts or sort changes
+  // Force sync before initial data fetch and whenever sort changes
   useEffect(() => {
     console.log('useReviewsList: Running initial likes count sync');
-    syncAllLikesCounts().catch(err => 
-      console.error('Error syncing likes count in useReviewsList:', err)
-    );
-  }, [sortBy]);
+    syncAllLikesCounts()
+      .then(() => console.log('useReviewsList: Initial likes count sync complete'))
+      .catch(err => 
+        console.error('Error syncing likes count in useReviewsList:', err)
+      );
+  }, []);
 
   // Use a shorter stale time to refresh data more frequently
   const { data: allReviews = [], isLoading, error, refetch } = useQuery({
     queryKey: ['reviews', sortBy, userId],
-    queryFn: () => fetchReviews(sortBy, userId),
-    staleTime: 2 * 60 * 1000, // 2 minutes stale time
+    queryFn: async () => {
+      // Sync likes counts before fetching to ensure we have fresh data
+      await syncAllLikesCounts();
+      return fetchReviews(sortBy, userId);
+    },
+    staleTime: 1 * 60 * 1000, // 1 minute stale time
     meta: {
       onError: (err: Error) => {
         console.error('Error fetching reviews:', err);
