@@ -28,19 +28,20 @@ export const syncLikesCount = async (reviewId: string) => {
   console.log(`Syncing likes count for review: ${reviewId}`);
   
   try {
-    // Get the actual count of likes for this review directly from review_likes table
-    // Fix the type error by using a properly typed query approach
-    const { count: likeCount, error: countError } = await supabase
+    // Use a properly typed approach to count likes
+    // First get all likes for this review
+    const { data: likes, error: likesError } = await supabase
       .from('review_likes')
-      .select('*', { count: 'exact', head: false })
-      .filter('review_id', 'eq', reviewId);
+      .select('id')
+      .eq('review_id', reviewId);
       
-    if (countError) {
-      console.error('Error counting likes:', countError);
-      throw countError;
+    if (likesError) {
+      console.error('Error fetching likes:', likesError);
+      throw likesError;
     }
     
-    const actualCount = likeCount || 0;
+    // Count the likes manually
+    const actualCount = likes ? likes.length : 0;
     console.log(`Direct count for review ${reviewId}: ${actualCount} likes`);
     
     // Update the reviews table with the correct count using normal update
