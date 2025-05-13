@@ -28,12 +28,23 @@ export const useSettingsSubmit = () => {
   const [isSubmitting, setIsSubmitting] = useState(false);
 
   const onSubmit = async (values: SettingsFormValues) => {
-    if (!user) return;
+    if (!user) {
+      console.error("User not authenticated");
+      toast({
+        title: "Authentication Error",
+        description: "You must be logged in to update your profile",
+        variant: "destructive",
+      });
+      return;
+    }
     
     setIsSubmitting(true);
     
     try {
+      console.log("Processing profile update with values:", values);
       const profileData = prepareProfileData(values);
+      
+      console.log("Using user ID:", user.id);
       const success = await updateProfileData(profileData);
       
       if (success) {
@@ -44,9 +55,10 @@ export const useSettingsSubmit = () => {
         throw new Error('Failed to update profile');
       }
     } catch (error: any) {
+      console.error("Profile update error:", error);
       toast({
         title: "Update Failed",
-        description: error.message,
+        description: error.message || "Could not update profile",
         variant: "destructive",
       });
     } finally {

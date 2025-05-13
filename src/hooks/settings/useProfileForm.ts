@@ -52,7 +52,10 @@ export const useProfileForm = (
   useProfileFormInitialization(profileForm, userProfile);
 
   const onProfileSubmit = async (values: ProfileFormValues) => {
-    if (!user) return;
+    if (!user) {
+      toast.error("You must be logged in to update your profile");
+      return;
+    }
     
     setIsUpdating(true);
     console.log("Submitting profile data:", values);
@@ -72,7 +75,8 @@ export const useProfileForm = (
       // Format and merge profile data
       const extendedData = formatProfileFormValues(values, currentExtendedProfile);
       
-      console.log("Saving extended data:", extendedData);
+      console.log("Saving extended data with user ID:", user.id);
+      console.log("Extended data:", extendedData);
       
       // Use the updateProfileData service function
       const success = await updateProfileData(user.id, extendedData);
@@ -88,11 +92,13 @@ export const useProfileForm = (
         
         // Mark form as pristine to indicate data has been saved
         profileForm.reset(values, { keepValues: true });
+      } else {
+        throw new Error("Failed to update profile data");
       }
       
     } catch (error: any) {
       console.error("Profile update error:", error);
-      toast.error("Update Failed: " + error.message);
+      toast.error("Update Failed: " + (error.message || "Unknown error"));
     } finally {
       setIsUpdating(false);
     }
