@@ -52,12 +52,10 @@ export const useProfileData = () => {
       return false;
     }
     
-    console.log("Updating profile data via hook for user:", user.id);
     const success = await updateProfileInDb(user.id, profileData);
     
     if (success && refreshUserProfile) {
       // Refresh user profile data after updating
-      console.log("Profile update successful, refreshing user profile");
       await refreshUserProfile();
     }
     

@@ -34,8 +34,6 @@ export const useSettingsSubmit = () => {
     
     try {
       const profileData = prepareProfileData(values);
-      console.log("Submitting profile with data:", profileData);
-      
       const success = await updateProfileData(profileData);
       
       if (success) {

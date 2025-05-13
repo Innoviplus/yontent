@@ -26,14 +26,12 @@ export const updateProfileData = async (userId: string, profileData: ExtendedPro
 
     console.log("Prepared JSON safe profile data:", jsonSafeProfile);
 
-    // Use the correct column names in the update operation
     const { error: updateError } = await supabase
       .from('profiles')
       .update({
         extended_data: jsonSafeProfile as unknown as Json,
         phone_number: profileData.phoneNumber || null,
         phone_country_code: profileData.phoneCountryCode || null,
-        // Ensure we're updating at the user's correct row
       })
       .eq('id', userId);
 

@@ -6,7 +6,7 @@ import { UseFormReturn } from 'react-hook-form';
 
 export interface AccountTabProps {
   handleLogout: () => Promise<void>;
-  handleDeleteAccount?: () => Promise<void>; // Keep the prop as optional but we won't use it
+  handleDeleteAccount: () => Promise<void>;
   handleResetPassword?: () => Promise<void> | undefined;
   settingsForm?: UseFormReturn<any>;
   onSettingsSubmit?: (values: any) => Promise<void>;
@@ -16,7 +16,7 @@ export interface AccountTabProps {
 
 export const AccountTab: React.FC<AccountTabProps> = ({
   handleLogout,
-  // handleDeleteAccount, - removed from props destructuring since we won't use it
+  handleDeleteAccount,
   handleResetPassword,
   settingsForm,
   onSettingsSubmit,
@@ -73,7 +73,14 @@ export const AccountTab: React.FC<AccountTabProps> = ({
         </CardContent>
       </Card>
       
-      {/* Removed the "Delete Account" button that was previously here */}
+      <div className="mt-8 text-center">
+        <button 
+          onClick={handleDeleteAccount}
+          className="text-red-500 text-sm hover:underline"
+        >
+          Delete Account
+        </button>
+      </div>
     </>
   );
 };

@@ -1,38 +1,34 @@
 
-import { useAuthorActions } from '@/hooks/review/useAuthorActions';
+import React from 'react';
+import ShareButton from './buttons/ShareButton';
 import EditButton from './buttons/EditButton';
 import DeleteButton from './buttons/DeleteButton';
-import ShareButton from './buttons/ShareButton';
-import LikeButton from './buttons/LikeButton';
+import { useShareAction } from '@/hooks/review/useShareAction';
+import { useAuthorActions } from '@/hooks/review/useAuthorActions';
 
 interface ReviewActionButtonsProps {
-  reviewId: string;
-  isAuthor: boolean;
-  likesCount?: number;
+  isAuthor?: boolean;
+  reviewId?: string;
 }
 
-const ReviewActionButtons = ({ 
-  reviewId, 
-  isAuthor,
-  likesCount = 0
+const ReviewActionButtons = ({
+  isAuthor = false,
+  reviewId
 }: ReviewActionButtonsProps) => {
-  const { handleEdit, handleDelete } = useAuthorActions({ reviewId, isAuthor });
+  // Use our custom hooks
+  const shareAction = useShareAction();
+  const authorActions = useAuthorActions({ reviewId, isAuthor });
   
   return (
-    <div className="flex items-center gap-4">
-      {/* Like button (for all users) */}
-      <LikeButton reviewId={reviewId} initialLikesCount={likesCount} />
-      
-      {/* Share button (for all users) */}
-      <ShareButton reviewId={reviewId} />
-      
-      {/* Edit & Delete buttons (only for authors) */}
-      {isAuthor && (
+    <div className="flex items-center gap-2">
+      {authorActions.isAuthor ? (
         <>
-          <EditButton onClick={handleEdit} />
-          <DeleteButton onClick={handleDelete} />
+          <EditButton onClick={authorActions.handleEdit} />
+          <DeleteButton onClick={authorActions.handleDelete} />
         </>
-      )}
+      ) : null}
+      
+      <ShareButton onClick={shareAction.handleCopyLink} />
     </div>
   );
 };

@@ -3,7 +3,6 @@ import { useAuth } from '@/contexts/AuthContext';
 import { useFetchReview } from './review/useFetchReview';
 import { useReviewNavigation } from './review/useReviewNavigation';
 import { useEffect, useRef } from 'react';
-import { syncLikesCount } from '@/lib/api';
 
 export const useReviewDetail = (id: string | undefined) => {
   const { user } = useAuth();
@@ -12,21 +11,22 @@ export const useReviewDetail = (id: string | undefined) => {
   const { review, loading, setReview, refetchReview } = useFetchReview(id);
   const { navigateToUserProfile, relatedReviews } = useReviewNavigation(review);
   
-  // Sync likes count when the component mounts
+  // Only refresh data periodically to update data, but don't track view again
   useEffect(() => {
-    if (id && !initialLoadRef.current) {
+    if (!id || !review) return;
+    
+    // Skip the initial refresh since useFetchReview already fetched the data
+    if (!initialLoadRef.current) {
       initialLoadRef.current = true;
-      
-      // Sync likes count for this review
-      syncLikesCount(id)
-        .then(() => {
-          console.log(`Successfully synced likes count for review ${id}`);
-          // Refetch the review to get updated likes count
-          return refetchReview(true);
-        })
-        .catch(err => console.error('Error syncing likes count:', err));
+      return;
     }
-  }, [id, refetchReview]);
+    
+    // Disable periodic refreshes
+    
+    return () => {
+      // Nothing to clean up
+    };
+  }, [id, review, refetchReview]);
   
   return {
     review,

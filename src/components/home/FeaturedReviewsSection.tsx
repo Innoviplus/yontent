@@ -1,3 +1,4 @@
+
 import { Link } from 'react-router-dom';
 import { ChevronRight } from 'lucide-react';
 import ReviewCard from '@/components/ReviewCard';
@@ -18,14 +19,6 @@ const FeaturedReviewsSection = ({
   useEffect(() => {
     const fetchReviews = async () => {
       try {
-        // First, sync the likes counts for all reviews to ensure they're accurate
-        try {
-          await syncAllLikesCounts();
-        } catch (syncError) {
-          console.error('Error syncing likes counts:', syncError);
-          // Continue with fetching even if sync fails
-        }
-
         const {
           data,
           error
@@ -62,7 +55,7 @@ const FeaturedReviewsSection = ({
           images: review.images || [],
           videos: review.videos || [],
           viewsCount: review.views_count,
-          likesCount: review.likes_count || 0,  // Ensure likes count is always present
+          likesCount: review.likes_count,
           createdAt: new Date(review.created_at),
           productName: 'Review',
           rating: 5,
