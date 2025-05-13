@@ -18,9 +18,15 @@ export const useReviewDetail = (id: string | undefined) => {
       initialLoadRef.current = true;
       
       // Sync likes count for this review
-      syncLikesCount(id).catch(err => console.error('Error syncing likes count:', err));
+      syncLikesCount(id)
+        .then(() => {
+          console.log(`Successfully synced likes count for review ${id}`);
+          // Refetch the review to get updated likes count
+          return refetchReview(true);
+        })
+        .catch(err => console.error('Error syncing likes count:', err));
     }
-  }, [id]);
+  }, [id, refetchReview]);
   
   return {
     review,

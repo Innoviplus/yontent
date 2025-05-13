@@ -35,7 +35,7 @@ const LikeButton = ({ reviewId, initialLikesCount }: LikeButtonProps) => {
     syncLikesCount();
     
     // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [user?.id, reviewId, initialLikesCount, checkUserLike, setLikesCount]);
+  }, [user?.id, reviewId, initialLikesCount]);
 
   const handleLikeClick = async () => {
     if (!user) {

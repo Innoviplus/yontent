@@ -64,8 +64,7 @@ export const useFetchReview = (id: string | undefined) => {
           images: data.images || [],
           videos: data.videos || [],
           viewsCount: data.views_count,
-          // Make sure to use the likes_count from the database and default to 0 if not present
-          likesCount: data.likes_count || 0,
+          likesCount: data.likes_count || 0,  // Use data.likes_count with fallback
           createdAt: new Date(data.created_at),
           user: data.profiles ? {
             id: data.profiles.id || data.user_id,
