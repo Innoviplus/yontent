@@ -1,5 +1,4 @@
 
-// Fix the import of dompurify
 import DOMPurify from 'dompurify';
 import { sanitizerConfig } from '@/utils/sanitizerConfig';
 
