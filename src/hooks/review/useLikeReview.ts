@@ -1,5 +1,5 @@
 
-import { useState, useCallback, useEffect } from 'react';
+import { useState, useCallback } from 'react';
 import { supabase } from '@/integrations/supabase/client';
 import { toast } from 'sonner';
 import { useAuth } from '@/contexts/AuthContext';
@@ -10,11 +10,6 @@ export const useLikeReview = (reviewId: string, initialLikesCount: number = 0) =
   const [userHasLiked, setUserHasLiked] = useState(false);
   const { user } = useAuth();
 
-  // Initialize the likes count on mount and when initialLikesCount changes
-  useEffect(() => {
-    setLikesCount(initialLikesCount);
-  }, [initialLikesCount]);
-
   // Check if the current user has liked this review
   const checkUserLike = useCallback(async () => {
     if (!user?.id || !reviewId) return;
@@ -23,9 +18,9 @@ export const useLikeReview = (reviewId: string, initialLikesCount: number = 0) =
       const { data, error } = await supabase
         .from('review_likes')
         .select('id')
-        .eq('user_id_likes', user.id)
+        .eq('user_id_likes', user.id)  // Using the renamed column
         .eq('review_id', reviewId)
-        .maybeSingle();
+        .single();
         
       if (error && error.code !== 'PGRST116') { // PGRST116 is the error for no rows returned
         console.error('Error checking like status:', error);
@@ -54,7 +49,7 @@ export const useLikeReview = (reviewId: string, initialLikesCount: number = 0) =
         const { error } = await supabase
           .from('review_likes')
           .delete()
-          .eq('user_id_likes', user.id)
+          .eq('user_id_likes', user.id)  // Using the renamed column
           .eq('review_id', reviewId);
           
         if (error) throw error;
@@ -80,7 +75,7 @@ export const useLikeReview = (reviewId: string, initialLikesCount: number = 0) =
         const { error } = await supabase
           .from('review_likes')
           .insert({
-            user_id_likes: user.id,
+            user_id_likes: user.id,  // Using the renamed column
             review_id: reviewId
           });
           
