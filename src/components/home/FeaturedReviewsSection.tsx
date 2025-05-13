@@ -5,7 +5,6 @@ import ReviewCard from '@/components/ReviewCard';
 import { Review } from '@/lib/types';
 import { useEffect, useState } from 'react';
 import { supabase } from '@/integrations/supabase/client';
-import { syncAllLikesCounts } from '@/lib/api';
 
 interface FeaturedReviewsSectionProps {
   loading?: boolean;
@@ -20,9 +19,6 @@ const FeaturedReviewsSection = ({
   useEffect(() => {
     const fetchReviews = async () => {
       try {
-        // Sync likes count before fetching reviews
-        await syncAllLikesCounts();
-        
         const {
           data,
           error
@@ -58,8 +54,8 @@ const FeaturedReviewsSection = ({
           content: review.content,
           images: review.images || [],
           videos: review.videos || [],
-          viewsCount: review.views_count || 0,
-          likesCount: review.likes_count || 0, // Ensure we're using the correct value from DB
+          viewsCount: review.views_count,
+          likesCount: review.likes_count,
           createdAt: new Date(review.created_at),
           productName: 'Review',
           rating: 5,
@@ -73,7 +69,6 @@ const FeaturedReviewsSection = ({
           }
         }));
         
-        console.log('Featured reviews with likes:', transformedReviews.map(r => ({ id: r.id, likes: r.likesCount })));
         setReviews(transformedReviews);
       } catch (error) {
         console.error('Unexpected error:', error);

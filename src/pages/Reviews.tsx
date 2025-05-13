@@ -13,7 +13,6 @@ import ReviewsPagination from '@/components/review/ReviewsPagination';
 import { Sheet, SheetContent, SheetTrigger } from '@/components/ui/sheet';
 import { useIsMobile } from '@/hooks/use-mobile';
 import { Card, CardContent } from '@/components/ui/card';
-import { syncAllLikesCounts } from '@/lib/api';
 
 const Reviews = () => {
   usePageTitle('Reviews');
@@ -33,45 +32,11 @@ const Reviews = () => {
     totalPages 
   } = useReviewsList(user?.id);
 
-  // On initial load, sync all likes counts and refresh data
-  useEffect(() => {
-    console.log('Reviews page: Initial likes sync');
-    syncAllLikesCounts()
-      .then(() => {
-        console.log('Reviews page: Refreshing data after sync');
-        refetch();
-      })
-      .catch(err => console.error('Error syncing likes on Reviews page:', err));
-      
-    // Set an interval to refresh likes count every 30 seconds
-    const intervalId = setInterval(() => {
-      console.log('Reviews page: Periodic refresh');
-      refetch();
-    }, 30000);
-    
-    return () => clearInterval(intervalId);
-  }, [refetch]);
-
-  // Debug likes count for reviews
-  useEffect(() => {
-    if (reviews && reviews.length > 0) {
-      console.log('Reviews in Reviews page:', reviews.map(r => ({ 
-        id: r.id.substring(0, 8), 
-        likes: r.likesCount 
-      })));
-      
-      const targetReview = reviews.find(r => r.id === 'efed29eb-34fd-461f-bbce-0d591e8110de');
-      if (targetReview) {
-        console.log('Target review in Reviews page:', targetReview.id, 'likes:', targetReview.likesCount);
-      }
-    }
-  }, [reviews]);
-
   useEffect(() => {
     if (isMobile && page < totalPages) {
       const handleScroll = () => {
         if (window.innerHeight + window.scrollY >= document.body.offsetHeight - 1000) {
-          // This is intentionally left empty as noted in the original code
+          const nextPageReviews = (page + 1);
         }
       };
       
@@ -84,16 +49,6 @@ const Reviews = () => {
     setSortBy(value as SortOption);
     setPage(1);
   };
-
-  // Force an immediate refresh when the component mounts
-  useEffect(() => {
-    const loadData = async () => {
-      await syncAllLikesCounts();
-      refetch();
-    };
-    
-    loadData();
-  }, [refetch]);
 
   return (
     <div className="min-h-screen bg-gray-50">
@@ -143,9 +98,7 @@ const Reviews = () => {
           <ReviewsError onRetry={refetch} />
         ) : reviews.length > 0 ? (
           <>
-            <p className="text-sm text-gray-500 mb-3">
-              {allReviewsCount} {allReviewsCount === 1 ? 'review' : 'reviews'}
-            </p>
+            <p className="text-sm text-gray-500 mb-3">{allReviewsCount} reviews</p>
             <Suspense fallback={<div className="animate-pulse bg-gray-200 h-screen w-full"></div>}>
               <ReviewsGrid reviews={reviews} />
             </Suspense>

@@ -5,26 +5,27 @@ import { syncAllLikesCounts } from '@/lib/api';
 
 // Cache for review data
 const reviewsCache = new Map<string, { data: Review[], timestamp: number }>();
-const CACHE_EXPIRY = 30 * 1000; // 30 second cache expiry for more frequent updates
+const CACHE_EXPIRY = 2 * 60 * 1000; // 2 minutes cache expiry for more frequent updates
 
 export const fetchReviews = async (sortBy: string, userId?: string): Promise<Review[]> => {
   try {
     const cacheKey = `${sortBy}-${userId || 'no-user'}`;
+    const cachedResult = reviewsCache.get(cacheKey);
     
-    // Always clear cache to ensure fresh data
-    reviewsCache.delete(cacheKey);
+    // Return cached data if it exists and hasn't expired
+    if (cachedResult && (Date.now() - cachedResult.timestamp) < CACHE_EXPIRY) {
+      return cachedResult.data;
+    }
     
-    console.log('Fetching fresh reviews data');
+    console.log('Cache miss, fetching fresh reviews data');
     
-    // Force sync all likes counts before fetching reviews
-    console.log('Syncing all likes counts before fetching reviews');
-    await syncAllLikesCounts();
-    console.log('Finished syncing all likes counts');
+    // Periodically sync all likes counts (do this in the background)
+    syncAllLikesCounts().catch(err => 
+      console.error('Background sync of all likes counts failed:', err)
+    );
     
     // Limit the amount of data we're retrieving
-    const FETCH_LIMIT = 50;
-    
-    console.log(`Fetching reviews with sortBy: ${sortBy}`);
+    const FETCH_LIMIT = 50; // Fetch fewer items for better performance
     
     let query = supabase
       .from('reviews')
@@ -51,6 +52,7 @@ export const fetchReviews = async (sortBy: string, userId?: string): Promise<Rev
     } else if (sortBy === 'popular') {
       query = query.order('views_count', { ascending: false });
     } else if (sortBy === 'trending') {
+      // Trending is a combination of recent and popularity
       query = query.order('likes_count', { ascending: false });
     } else if (sortBy === 'relevant' && userId) {
       query = query.order('created_at', { ascending: false });
@@ -64,45 +66,39 @@ export const fetchReviews = async (sortBy: string, userId?: string): Promise<Rev
     }
     
     if (data) {
-      const transformedReviews: Review[] = data.map(review => {
-        console.log(`Review ${review.id} has likes_count:`, review.likes_count);
-        
-        // Debug if this is the specific review we're looking for
-        if (review.id === 'efed29eb-34fd-461f-bbce-0d591e8110de') {
-          console.log('Found our target review with likes:', review.likes_count);
-        }
-        
-        return {
-          id: review.id,
-          userId: review.user_id,
-          productName: "Review",
-          rating: 5,
-          content: review.content,
-          images: review.images || [],
-          videos: review.videos || [],
-          viewsCount: review.views_count || 0,
-          likesCount: review.likes_count || 0,
-          createdAt: new Date(review.created_at),
-          user: review.profiles ? {
-            id: review.profiles.id || review.user_id,
-            username: review.profiles.username || 'Anonymous',
-            email: '',
-            points: 0,
-            createdAt: new Date(),
-            avatar: review.profiles.avatar
-          } : undefined
-        };
-      });
+      const transformedReviews: Review[] = data.map(review => ({
+        id: review.id,
+        userId: review.user_id,
+        productName: "Review",
+        rating: 5,
+        content: review.content,
+        images: review.images || [],
+        videos: review.videos || [],
+        viewsCount: review.views_count || 0,
+        likesCount: review.likes_count || 0,
+        createdAt: new Date(review.created_at),
+        user: review.profiles ? {
+          id: review.profiles.id || review.user_id,
+          username: review.profiles.username || 'Anonymous',
+          email: '',
+          points: 0,
+          createdAt: new Date(),
+          avatar: review.profiles.avatar
+        } : undefined
+      }));
       
-      console.log('Reviews transformed, total count:', transformedReviews.length);
-      console.log('Sample review like counts:', transformedReviews.slice(0, 3).map(r => ({ id: r.id.substring(0, 8), likes: r.likesCount })));
+      // Cache the results
+      reviewsCache.set(cacheKey, { 
+        data: transformedReviews, 
+        timestamp: Date.now() 
+      });
       
       return transformedReviews;
     }
     
     return [];
   } catch (error) {
-    console.error('Unexpected error in fetchReviews:', error);
+    console.error('Unexpected error:', error);
     throw new Error('An unexpected error occurred');
   }
 };

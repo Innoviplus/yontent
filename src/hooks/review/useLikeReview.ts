@@ -28,7 +28,6 @@ export const useLikeReview = (reviewId: string, initialLikesCount: number = 0) =
       }
       
       setUserHasLiked(!!data);
-      console.log(`User ${user.id} has liked review ${reviewId}: ${!!data}`);
     } catch (error) {
       console.error('Error checking like status:', error);
     }
@@ -67,8 +66,6 @@ export const useLikeReview = (reviewId: string, initialLikesCount: number = 0) =
         setUserHasLiked(false);
         setLikesCount(newCount);
         
-        console.log(`Unliked review ${reviewId}, new count: ${newCount}`);
-        
         return { liked: false, totalLikes: newCount };
       } else {
         // Like the review
@@ -101,8 +98,6 @@ export const useLikeReview = (reviewId: string, initialLikesCount: number = 0) =
         setUserHasLiked(true);
         setLikesCount(newCount);
         
-        console.log(`Liked review ${reviewId}, new count: ${newCount}`);
-        
         return { liked: true, totalLikes: newCount };
       }
     } catch (error) {
@@ -126,7 +121,6 @@ export const useLikeReview = (reviewId: string, initialLikesCount: number = 0) =
       }
       
       if (data !== null && typeof data === 'number') {
-        console.log(`Synced likes count for review ${reviewId}: ${data}`);
         setLikesCount(data);
       }
     } catch (error) {

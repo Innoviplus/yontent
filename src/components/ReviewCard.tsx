@@ -5,7 +5,6 @@ import { Review } from '@/lib/types';
 import { cn } from '@/lib/utils';
 import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
 import { useIsMobile } from '@/hooks/use-mobile';
-import { useEffect, useState } from 'react';
 
 interface ReviewCardProps {
   review: Review;
@@ -16,19 +15,6 @@ const ReviewCard = ({ review, className }: ReviewCardProps) => {
   const navigate = useNavigate();
   const isMobile = useIsMobile();
   const hasVideo = review.videos && review.videos.length > 0;
-  const [likesCount, setLikesCount] = useState<number>(0);
-
-  // Initialize and update likes count whenever the review prop changes
-  useEffect(() => {
-    // Ensure we have a valid number
-    const count = typeof review.likesCount === 'number' ? review.likesCount : 0;
-    setLikesCount(count);
-    
-    // For debugging specific review
-    if (review.id === 'efed29eb-34fd-461f-bbce-0d591e8110de') {
-      console.log('ReviewCard: Target review likes count set to:', count);
-    }
-  }, [review.id, review.likesCount]);
 
   const handleCardClick = () => {
     navigate(`/review/${review.id}`);
@@ -113,9 +99,7 @@ const ReviewCard = ({ review, className }: ReviewCardProps) => {
           
           <div className="flex items-center text-xs text-gray-500">
             <Heart className="h-3 w-3 mr-0.5" />
-            <span data-testid={`likes-count-${review.id}`}>
-              {likesCount}
-            </span>
+            <span>{review.likesCount || 0}</span>
           </div>
         </div>
       </div>

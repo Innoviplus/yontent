@@ -4,7 +4,6 @@ import { Review } from '@/lib/types';
 import { supabase } from '@/integrations/supabase/client';
 import { toast } from 'sonner';
 import { trackReviewView } from '@/services/review';
-import { syncLikesCount } from '@/lib/api';
 
 export const useFetchReview = (id: string | undefined) => {
   const [review, setReview] = useState<Review | null>(null);
@@ -20,10 +19,8 @@ export const useFetchReview = (id: string | undefined) => {
         setLoading(true);
       }
       
-      console.log(`Fetching review: ${id}`);
-      
-      // Sync likes count first to ensure we have accurate data
-      await syncLikesCount(id);
+      // Call sync_review_likes_count to make sure we have the correct likes count
+      await supabase.rpc('sync_review_likes_count', { review_id_param: id });
       
       // Get the review data with actual likes count from reviews table
       const { data, error } = await supabase
@@ -54,8 +51,6 @@ export const useFetchReview = (id: string | undefined) => {
       
       if (data) {
         // Explicitly verify likes_count is present in the data
-        console.log('Review data from DB:', data);
-        
         if (data.likes_count === undefined || data.likes_count === null) {
           console.warn('Likes count is undefined or null in fetched data');
         }
@@ -68,7 +63,8 @@ export const useFetchReview = (id: string | undefined) => {
           content: data.content,
           images: data.images || [],
           videos: data.videos || [],
-          viewsCount: data.views_count || 0,
+          viewsCount: data.views_count,
+          // Make sure to use the likes_count from the database and default to 0 if not present
           likesCount: data.likes_count || 0,
           createdAt: new Date(data.created_at),
           user: data.profiles ? {
@@ -84,9 +80,8 @@ export const useFetchReview = (id: string | undefined) => {
         setReview(transformedReview);
         
         // Log the review data for debugging
-        console.log('Fetched review with id:', transformedReview.id);
+        console.log('Fetched review data:', transformedReview);
         console.log('Like count from database:', data.likes_count);
-        console.log('Transformed review likes count:', transformedReview.likesCount);
         
         // Only track the view if this is not a refresh operation
         if (!skipViewTracking && !isRefetching) {
@@ -94,7 +89,7 @@ export const useFetchReview = (id: string | undefined) => {
         }
       }
     } catch (error) {
-      console.error('Unexpected error in useFetchReview:', error);
+      console.error('Unexpected error:', error);
       toast.error('An unexpected error occurred');
     } finally {
       setLoading(false);
