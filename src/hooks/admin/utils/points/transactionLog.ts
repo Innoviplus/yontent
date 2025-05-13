@@ -16,40 +16,54 @@ export const logPointsTransaction = async (
   try {
     console.log(`Logging points transaction: ${amount} points for user ${userId} (${type} from ${source})`);
     
-    // Include the source information in the description to maintain this data
+    // Include the source information in the description
     const fullDescription = sourceId 
       ? `${description} [${source}:${sourceId}]`
       : `${description} [${source}]`;
     
-    // Insert the transaction record into the database
-    const { data, error } = await supabase
-      .from('point_transactions')
-      .insert({
-        user_id: userId,
-        amount: amount,
-        type: type as string, // Cast to string as the DB accepts any string
-        description: fullDescription
-      })
-      .select()
-      .single();
+    // Call the Supabase function with correctly named parameters
+    const { data, error } = await supabase.rpc(
+      'create_point_transaction',
+      {
+        p_user_id: userId,
+        p_amount: amount,
+        p_type: type,
+        p_description: fullDescription
+      }
+    );
     
     if (error) {
       console.error('Error inserting transaction record:', error);
       throw error;
     }
     
-    console.log('Transaction logged successfully:', data);
+    // If we got here, the transaction was successfully created but we need to fetch it
+    // since the create_point_transaction function doesn't return the complete record
+    const { data: transactionData, error: fetchError } = await supabase
+      .from('point_transactions')
+      .select('*')
+      .order('created_at', { ascending: false })
+      .eq('user_id_point', userId)  // Updated column name here
+      .limit(1)
+      .single();
+    
+    if (fetchError) {
+      console.error('Error fetching created transaction:', fetchError);
+      throw fetchError;
+    }
+    
+    console.log('Transaction logged successfully:', transactionData);
     
     // Transform to match our interface
     const transaction: PointTransaction = {
-      id: data.id,
-      userId: data.user_id,
-      amount: data.amount,
-      type: data.type as any, // Type assertion as our PointTransaction type is more strict
+      id: transactionData.id,
+      userId: transactionData.user_id_point,  // Updated column name here
+      amount: transactionData.amount,
+      type: transactionData.type as any, // Type assertion as our PointTransaction type is more strict
       source: source, // This is not stored in DB but we include it in the return object
       sourceId, // This is not stored in DB but we include it in the return object
-      description: data.description,
-      createdAt: new Date(data.created_at)
+      description: transactionData.description,
+      createdAt: new Date(transactionData.created_at)
     };
     
     return { success: true, transaction };
@@ -69,7 +83,7 @@ export const getUserTransactionHistory = async (
     const { data, error } = await supabase
       .from('point_transactions')
       .select('*')
-      .eq('user_id', userId)
+      .eq('user_id_point', userId)  // Updated column name here
       .order('created_at', { ascending: false });
     
     if (error) {
@@ -103,7 +117,7 @@ export const getUserTransactionHistory = async (
       
       return {
         id: item.id,
-        userId: item.user_id,
+        userId: item.user_id_point,  // Updated column name here
         amount: item.amount,
         type: item.type as any, // Type assertion as our PointTransaction type is more strict
         source,

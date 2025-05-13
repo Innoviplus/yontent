@@ -1,4 +1,3 @@
-
 import { useState } from 'react';
 import { useForm } from 'react-hook-form';
 import { zodResolver } from '@hookform/resolvers/zod';
@@ -87,7 +86,7 @@ const PointsManagement = () => {
       const pointsAmount = type === 'ADD' ? amount : -amount;
       
       // Make sure we properly tag the source in the description
-      const fullDescription = `${description.trim()} [ADMIN_ADJUSTMENT]`;
+      const fullDescription = `${description.trim()}`;
       
       console.log('Calling addPointsToUser with:', {
         userId,
@@ -96,7 +95,7 @@ const PointsManagement = () => {
         fullDescription
       });
       
-      // Call the points service to add/deduct points with explicit parameter names
+      // Call the points service with the correct parameter names
       const result = await addPointsToUser(
         userId,
         pointsAmount,

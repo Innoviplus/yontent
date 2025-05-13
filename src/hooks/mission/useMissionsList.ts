@@ -5,11 +5,11 @@ import { supabase } from '@/integrations/supabase/client';
 import { toast } from 'sonner';
 import { fetchMissionParticipationCount } from '@/services/mission';
 
-export type SortOption = 'recent' | 'expiringSoon' | 'highestReward';
+export type SortOption = 'default' | 'recent' | 'expiringSoon' | 'highestReward';
 
 export const useMissionsList = () => {
   const [missions, setMissions] = useState<Mission[]>([]);
-  const [sortBy, setSortBy] = useState<SortOption>('recent');
+  const [sortBy, setSortBy] = useState<SortOption>('default');
   const [isLoading, setIsLoading] = useState(true);
   const [loadError, setLoadError] = useState<string | null>(null);
   const [activeMissionsCount, setActiveMissionsCount] = useState(0);
@@ -100,8 +100,8 @@ export const useMissionsList = () => {
       const missionIds = transformedMissions.map(m => m.id);
       await fetchParticipationCounts(missionIds);
       
-      // Secondary sort will be handled based on sortBy, but respect display_order first
-      const sortedMissions = sortMissionsByExpiration(transformedMissions);
+      // Sort missions based on the current sortBy value
+      const sortedMissions = sortMissionsByOption(transformedMissions, sortBy);
       setMissions(sortedMissions);
       setLoadAttempts(0);
     } catch (error: any) {
@@ -118,58 +118,48 @@ export const useMissionsList = () => {
     }
   };
 
-  const sortMissionsByExpiration = (missionsToSort: Mission[]): Mission[] => {
+  const sortMissionsByOption = (missionsToSort: Mission[], sortOption: SortOption): Mission[] => {
     const now = new Date();
     
     // First separate active and expired missions
     const activeMissions = missionsToSort.filter(m => !m.expiresAt || now <= m.expiresAt);
     const expiredMissions = missionsToSort.filter(m => m.expiresAt && now > m.expiresAt);
     
-    // Then apply the display order as primary sort for active missions
-    activeMissions.sort((a, b) => {
-      // Primary sort by display_order
-      if (a.displayOrder !== b.displayOrder) {
-        return a.displayOrder - b.displayOrder;
-      }
-      
-      // Secondary sort based on user preference
-      switch (sortBy) {
-        case 'recent':
-          return b.startDate.getTime() - a.startDate.getTime();
-        case 'expiringSoon':
-          if (!a.expiresAt) return 1;
-          if (!b.expiresAt) return -1;
-          return a.expiresAt.getTime() - b.expiresAt.getTime();
-        case 'highestReward':
-          return b.pointsReward - a.pointsReward;
-        default:
-          return 0;
-      }
-    });
+    // Sort both active and expired missions
+    const sortMissions = (missions: Mission[]) => {
+      return [...missions].sort((a, b) => {
+        // For 'default' option, respect displayOrder as is
+        if (sortOption === 'default') {
+          return a.displayOrder - b.displayOrder;
+        }
+        
+        // For other options, first sort by displayOrder, then by the specific criteria
+        if (a.displayOrder !== b.displayOrder) {
+          return a.displayOrder - b.displayOrder;
+        }
+        
+        // Apply secondary sort based on user preference
+        switch (sortOption) {
+          case 'recent':
+            return b.startDate.getTime() - a.startDate.getTime();
+          case 'expiringSoon':
+            if (!a.expiresAt) return 1;
+            if (!b.expiresAt) return -1;
+            return a.expiresAt.getTime() - b.expiresAt.getTime();
+          case 'highestReward':
+            return b.pointsReward - a.pointsReward;
+          default:
+            return 0;
+        }
+      });
+    };
     
-    // Sort expired missions separately using the same logic
-    expiredMissions.sort((a, b) => {
-      // Primary sort by display_order
-      if (a.displayOrder !== b.displayOrder) {
-        return a.displayOrder - b.displayOrder;
-      }
-      
-      switch (sortBy) {
-        case 'recent':
-          return b.startDate.getTime() - a.startDate.getTime();
-        case 'expiringSoon':
-          if (!a.expiresAt) return 1;
-          if (!b.expiresAt) return -1;
-          return a.expiresAt.getTime() - b.expiresAt.getTime();
-        case 'highestReward':
-          return b.pointsReward - a.pointsReward;
-        default:
-          return 0;
-      }
-    });
+    // Sort both active and expired missions
+    const sortedActiveMissions = sortMissions(activeMissions);
+    const sortedExpiredMissions = sortMissions(expiredMissions);
     
     // Combine with active missions first, then expired missions
-    return [...activeMissions, ...expiredMissions];
+    return [...sortedActiveMissions, ...sortedExpiredMissions];
   };
 
   useEffect(() => {
@@ -188,7 +178,7 @@ export const useMissionsList = () => {
   useEffect(() => {
     // When sortBy changes, re-sort the existing missions without fetching again
     if (missions.length > 0) {
-      setMissions(sortMissionsByExpiration([...missions]));
+      setMissions(sortMissionsByOption([...missions], sortBy));
     }
   }, [sortBy]);
 

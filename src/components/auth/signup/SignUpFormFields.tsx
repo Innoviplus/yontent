@@ -6,6 +6,7 @@ import { UseFormReturn } from 'react-hook-form';
 import { PhoneSignUpFormValues } from '@/hooks/auth/usePhoneSignUpForm';
 import PhoneNumberInput from '../PhoneNumberInput';
 import PasswordInput from './PasswordInput';
+import type { Country } from 'react-phone-number-input';
 
 interface SignUpFormFieldsProps {
   form: UseFormReturn<PhoneSignUpFormValues>;
@@ -66,7 +67,7 @@ const SignUpFormFields = ({
               <PhoneNumberInput
                 value={field.value}
                 onChange={field.onChange}
-                defaultCountry={userCountry}
+                defaultCountry={userCountry as unknown as Country}
               />
             </FormControl>
             <FormMessage />

@@ -129,7 +129,7 @@ export type Database = {
           description: string
           id: string
           type: string
-          user_id: string
+          user_id_point: string
         }
         Insert: {
           amount: number
@@ -137,7 +137,7 @@ export type Database = {
           description: string
           id?: string
           type: string
-          user_id: string
+          user_id_point: string
         }
         Update: {
           amount?: number
@@ -145,7 +145,7 @@ export type Database = {
           description?: string
           id?: string
           type?: string
-          user_id?: string
+          user_id_point?: string
         }
         Relationships: []
       }
@@ -486,6 +486,15 @@ export type Database = {
       calculate_relevance_score: {
         Args: { views: number; likes: number; avg_time: number; ctr: number }
         Returns: number
+      }
+      create_point_transaction: {
+        Args: {
+          p_user_id: string
+          p_amount: number
+          p_type: string
+          p_description: string
+        }
+        Returns: Json
       }
       decrement_review_likes: {
         Args: { review_id_param: string }

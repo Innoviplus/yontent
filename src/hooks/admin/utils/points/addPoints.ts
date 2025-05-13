@@ -48,21 +48,26 @@ export const addPointsToUser = async (
       throw pointsError;
     }
     
-    console.log('Calling admin_add_point_transaction with parameters:', {
+    // Include the source information in the description
+    const fullDescription = sourceId 
+      ? `${description} [${source}:${sourceId}]`
+      : `${description} [${source}]`;
+    
+    console.log('Calling create_point_transaction with parameters:', {
       p_user_id: userId,
       p_amount: pointsAmount,
       p_type: type,
-      p_description: description
+      p_description: fullDescription
     });
     
-    // Use the admin_add_point_transaction RPC function with explicit parameter names
+    // Call the create_point_transaction function with the correct parameter names
     const { data: transactionData, error: transactionError } = await supabase.rpc(
-      'admin_add_point_transaction',
+      'create_point_transaction',
       {
         p_user_id: userId,
         p_amount: pointsAmount,
         p_type: type,
-        p_description: description
+        p_description: fullDescription
       }
     );
     

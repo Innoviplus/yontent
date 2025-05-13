@@ -61,9 +61,9 @@ export const createPointTransaction = async (
   try {
     console.log(`Creating point transaction record: ${userId}, ${amount}, ${type}, ${description}`);
     
-    // Use the admin_add_point_transaction function that bypasses RLS
+    // Use the create_point_transaction function with the updated column name
     const { data, error } = await supabase.rpc(
-      'admin_add_point_transaction',
+      'create_point_transaction',
       {
         p_user_id: userId,
         p_amount: amount,

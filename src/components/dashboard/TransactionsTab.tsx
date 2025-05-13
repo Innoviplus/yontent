@@ -23,7 +23,7 @@ const TransactionsTab = () => {
         const { data, error } = await supabase
           .from('point_transactions')
           .select('*')
-          .eq('user_id', user?.id)
+          .eq('user_id_point', user?.id)  // Updated column name reference
           .order('created_at', { ascending: false });
           
         if (error) {
@@ -67,7 +67,7 @@ const TransactionsTab = () => {
           
           return {
             id: item.id,
-            userId: item.user_id,
+            userId: item.user_id_point,  // Updated to use the correct column
             amount: item.amount,
             type: item.type,
             source,
