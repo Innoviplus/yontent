@@ -15,6 +15,10 @@ interface ProfileInfoFormProps {
 export const ProfileInfoForm: React.FC<ProfileInfoFormProps> = ({
   profileForm
 }) => {
+  // For debugging
+  const formValues = profileForm.watch();
+  console.log("Current form values:", formValues);
+  
   return (
     <div className="space-y-6">
       <FormField
