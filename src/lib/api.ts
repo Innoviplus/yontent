@@ -28,37 +28,17 @@ export const syncLikesCount = async (reviewId: string) => {
   console.log(`Syncing likes count for review: ${reviewId}`);
   
   try {
-    // Instead of using filtering on the database side which is causing type errors,
-    // we'll get all likes and filter them in memory
-    const { data: likes, error: likesError } = await supabase
-      .from('review_likes')
-      .select('*');
-      
-    if (likesError) {
-      console.error('Error fetching likes:', likesError);
-      throw likesError;
+    // First get review likes using RPC which has proper type definitions
+    const { data: syncResult, error: syncError } = await supabase
+      .rpc('sync_review_likes_count', { review_id_param: reviewId });
+    
+    if (syncError) {
+      console.error('Error syncing likes count:', syncError);
+      throw syncError;
     }
     
-    // Filter the likes for this specific review in JavaScript
-    const reviewLikes = likes ? likes.filter(like => like.review_id === reviewId) : [];
-    const actualCount = reviewLikes.length;
-    
-    console.log(`Direct count for review ${reviewId}: ${actualCount} likes`);
-    
-    // Update the reviews table with the correct count using normal update
-    const { data, error } = await supabase
-      .from('reviews')
-      .update({ likes_count: actualCount })
-      .eq('id', reviewId)
-      .select('likes_count');
-    
-    if (error) {
-      console.error('Error updating likes count:', error);
-      throw error;
-    }
-    
-    console.log(`Successfully updated likes count for review ${reviewId}: ${data?.[0]?.likes_count || actualCount}`);
-    return actualCount;
+    console.log(`Successfully updated likes count for review ${reviewId}: ${syncResult}`);
+    return syncResult;
   } catch (error) {
     console.error('Unexpected error in syncLikesCount:', error);
     throw error;
@@ -90,44 +70,23 @@ export const syncAllLikesCounts = async () => {
     
     console.log(`Found ${reviews.length} reviews to sync`);
     
-    // Get all likes without filtering by review_id - we'll process them in memory
-    const { data: allLikes, error: likesError } = await supabase
-      .from('review_likes')
-      .select('*');
-      
-    if (likesError) {
-      console.error('Error fetching likes:', likesError);
-      throw likesError;
-    }
-    
-    // Group likes by review_id
-    const likesMap = new Map<string, number>();
-    if (allLikes) {
-      allLikes.forEach(like => {
-        const reviewId = like.review_id;
-        if (reviewId) {
-          likesMap.set(reviewId, (likesMap.get(reviewId) || 0) + 1);
-        }
-      });
-    }
-    
-    // Update each review with the correct count
+    // Update each review with the correct count using our RPC function
     const updatePromises = reviews.map(async review => {
-      const likesCount = likesMap.get(review.id) || 0;
-      
-      const { data: updateResult, error: updateError } = await supabase
-        .from('reviews')
-        .update({ likes_count: likesCount })
-        .eq('id', review.id)
-        .select('id, likes_count');
+      try {
+        const { data: syncResult, error: syncError } = await supabase
+          .rpc('sync_review_likes_count', { review_id_param: review.id });
+          
+        if (syncError) {
+          console.error(`Error syncing review ${review.id}:`, syncError);
+          return { id: review.id, success: false, error: syncError };
+        }
         
-      if (updateError) {
-        console.error(`Error updating review ${review.id}:`, updateError);
-        return { id: review.id, success: false, error: updateError };
+        console.log(`Synced review ${review.id} likes count: ${syncResult}`);
+        return { id: review.id, likes: syncResult, success: true };
+      } catch (error) {
+        console.error(`Error syncing review ${review.id}:`, error);
+        return { id: review.id, success: false, error };
       }
-      
-      console.log(`Synced review ${review.id} likes count: ${likesCount}`);
-      return { id: review.id, likes: likesCount, success: true };
     });
     
     const results = await Promise.all(updatePromises);

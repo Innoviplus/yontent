@@ -4,6 +4,7 @@ import { useLikeReview } from '@/hooks/review/useLikeReview';
 import { useEffect } from 'react';
 import { useAuth } from '@/contexts/AuthContext';
 import { cn } from '@/lib/utils';
+import { toast } from 'sonner';
 
 interface LikeButtonProps {
   reviewId: string;
@@ -23,8 +24,10 @@ const LikeButton = ({ reviewId, initialLikesCount }: LikeButtonProps) => {
   } = useLikeReview(reviewId, initialLikesCount);
 
   useEffect(() => {
-    // Initialize likes count from props
-    setLikesCount(initialLikesCount);
+    // Initialize likes count from props whenever it changes
+    if (initialLikesCount !== undefined) {
+      setLikesCount(initialLikesCount);
+    }
     
     // Check if user has liked this review
     if (user?.id) {
@@ -35,15 +38,20 @@ const LikeButton = ({ reviewId, initialLikesCount }: LikeButtonProps) => {
     syncLikesCount();
     
     // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [user?.id, reviewId, initialLikesCount, checkUserLike, setLikesCount]);
+  }, [user?.id, reviewId, initialLikesCount]);
 
   const handleLikeClick = async () => {
     if (!user) {
       // If user is not logged in, inform them they need to log in
+      toast.error("Please log in to like reviews");
       return;
     }
     
-    await toggleLike();
+    try {
+      await toggleLike();
+    } catch (error) {
+      console.error("Error toggling like:", error);
+    }
   };
 
   return (
@@ -66,7 +74,7 @@ const LikeButton = ({ reviewId, initialLikesCount }: LikeButtonProps) => {
           isLiking && "animate-pulse"
         )}
       />
-      <span>{likesCount}</span>
+      <span data-testid={`like-count-${reviewId}`}>{likesCount}</span>
     </button>
   );
 };
