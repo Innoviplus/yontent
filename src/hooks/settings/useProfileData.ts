@@ -14,6 +14,7 @@ export const useProfileData = () => {
   // Initialize avatar URL from userProfile when component mounts
   useEffect(() => {
     if (userProfile && userProfile.avatar) {
+      console.log("Setting avatar URL from profile:", userProfile.avatar);
       setAvatarUrl(userProfile.avatar);
     }
   }, [userProfile]);

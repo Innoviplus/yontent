@@ -25,6 +25,7 @@ export const updateProfileData = async (userId: string, profileData: ExtendedPro
     };
 
     console.log("Prepared JSON safe profile data:", jsonSafeProfile);
+    console.log("Using user ID for profile update:", userId);
 
     // Always update the updated_at field when updating profile data
     const { data, error: updateError } = await supabase
@@ -35,7 +36,7 @@ export const updateProfileData = async (userId: string, profileData: ExtendedPro
         phone_country_code: profileData.phoneCountryCode || null,
         updated_at: new Date().toISOString()
       })
-      .eq('id', userId)
+      .eq('id', userId)  // Use 'id' which is the correct column name in the profiles table
       .select();
 
     if (updateError) {
