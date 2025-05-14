@@ -91,7 +91,8 @@ export const reducer = (state: State, action: Action): State => {
             open: true,
             onOpenChange: (open) => {
               if (!open) {
-                dispatch({ type: "DISMISS_TOAST", toastId: action.toast.id });
+                // Remove reference to non-existent id property
+                dispatch({ type: "DISMISS_TOAST" });
               }
             }
           },
@@ -154,9 +155,10 @@ function dispatch(action: Action) {
   });
 }
 
+// Define Toast type properly without id since it will be generated
 type Toast = Omit<ToasterToast, "id" | "onOpenChange" | "open">;
 
-function toast({ ...props }: Toast) {
+function toast(props: Toast) {
   const id = genId();
 
   const update = (props: Toast) =>
@@ -169,14 +171,7 @@ function toast({ ...props }: Toast) {
 
   dispatch({
     type: "ADD_TOAST",
-    toast: {
-      ...props,
-      id,
-      open: true,
-      onOpenChange: (open) => {
-        if (!open) dismiss();
-      },
-    },
+    toast: props,
   });
 
   return {
