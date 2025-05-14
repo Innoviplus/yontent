@@ -1,3 +1,4 @@
+
 import { useState } from 'react';
 import { useForm } from 'react-hook-form';
 import { zodResolver } from '@hookform/resolvers/zod';
@@ -85,8 +86,8 @@ const PointsManagement = () => {
       const transactionType = type === 'ADD' ? 'ADJUSTED' : 'DEDUCTED';
       const pointsAmount = type === 'ADD' ? amount : -amount;
       
-      // Make sure we properly tag the source in the description
-      const fullDescription = `${description.trim()}`;
+      // Make sure we use a clean description without any special tagging
+      const fullDescription = description.trim();
       
       console.log('Calling addPointsToUser with:', {
         userId,

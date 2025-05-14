@@ -36,21 +36,35 @@ export const addPointsToUser = async (
     const currentPoints = user.points || 0;
     console.log("Current user points:", currentPoints);
     
-    // Update user's points directly in the profiles table
+    // Calculate new points total
     const newPointsTotal = currentPoints + amount;
     console.log("New points total:", newPointsTotal);
     
-    // Create transaction record using the fixed RPC function call
-    console.log("Calling create_point_transaction with parameters:", {
+    // IMPORTANT: First update user's points in the profiles table
+    // This was missing in the previous implementation
+    const { error: updateError } = await supabase
+      .from('profiles')
+      .update({ points: newPointsTotal, updated_at: new Date().toISOString() })
+      .eq('id', userId);
+      
+    if (updateError) {
+      console.error("Error updating user points:", updateError);
+      throw updateError;
+    }
+    
+    console.log("Successfully updated user points to:", newPointsTotal);
+    
+    // Then create transaction record
+    console.log("Calling admin_add_point_transaction with parameters:", {
       p_user_id: userId,
       p_amount: amount,
       p_type: type,
       p_description: description
     });
     
-    // Call the create_point_transaction function with the correct parameter names
+    // Call the admin_add_point_transaction function with the correct parameter names
     const { data: transactionData, error: transactionError } = await supabase.rpc(
-      'create_point_transaction',
+      'admin_add_point_transaction',
       {
         p_user_id: userId,
         p_amount: amount,
@@ -62,23 +76,22 @@ export const addPointsToUser = async (
     if (transactionError) {
       console.error("Error creating transaction record:", transactionError);
       console.error("Transaction error details:", JSON.stringify(transactionError));
+      
+      // If transaction creation fails, try to revert the points update
+      try {
+        await supabase
+          .from('profiles')
+          .update({ points: currentPoints, updated_at: new Date().toISOString() })
+          .eq('id', userId);
+        console.log("Points update reverted due to transaction error");
+      } catch (revertError) {
+        console.error("Error reverting points update:", revertError);
+      }
+      
       throw transactionError;
     }
     
     console.log("Transaction recorded successfully:", transactionData);
-    
-    // Update user points
-    const { error: updateError } = await supabase
-      .from('profiles')
-      .update({ points: newPointsTotal })
-      .eq('id', userId);
-      
-    if (updateError) {
-      console.error("Error updating user points:", updateError);
-      throw updateError;
-    }
-    
-    console.log("Successfully updated user points to:", newPointsTotal);
     
     // Return the new points total for UI updates
     return { success: true, newPointsTotal };

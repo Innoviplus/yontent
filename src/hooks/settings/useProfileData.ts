@@ -49,13 +49,16 @@ export const useProfileData = () => {
   // Update profile data with proper type handling
   const updateProfileData = async (profileData: ExtendedProfile): Promise<boolean> => {
     if (!user) {
+      console.error("No authenticated user found");
       return false;
     }
     
+    console.log("useProfileData: Updating profile for user ID:", user.id);
     const success = await updateProfileInDb(user.id, profileData);
     
     if (success && refreshUserProfile) {
       // Refresh user profile data after updating
+      console.log("Profile update successful, refreshing user data");
       await refreshUserProfile();
     }
     

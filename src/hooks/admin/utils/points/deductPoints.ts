@@ -41,7 +41,7 @@ export const deductPointsFromUser = async (
     // Update user points
     const { error: pointsError } = await supabase
       .from('profiles')
-      .update({ points: newPointsTotal })
+      .update({ points: newPointsTotal, updated_at: new Date().toISOString() })
       .eq('id', userId);
     
     if (pointsError) {
@@ -73,7 +73,7 @@ export const deductPointsFromUser = async (
       try {
         await supabase
           .from('profiles')
-          .update({ points: currentPoints })
+          .update({ points: currentPoints, updated_at: new Date().toISOString() })
           .eq('id', userId);
         console.log('Points reverted due to transaction error');
       } catch (revertError) {
