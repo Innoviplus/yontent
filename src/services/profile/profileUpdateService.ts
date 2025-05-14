@@ -26,12 +26,14 @@ export const updateProfileData = async (userId: string, profileData: ExtendedPro
 
     console.log("Prepared JSON safe profile data:", jsonSafeProfile);
 
+    // Always update the updated_at field when updating profile data
     const { error: updateError } = await supabase
       .from('profiles')
       .update({
         extended_data: jsonSafeProfile as unknown as Json,
         phone_number: profileData.phoneNumber || null,
         phone_country_code: profileData.phoneCountryCode || null,
+        updated_at: new Date().toISOString()
       })
       .eq('id', userId);
 
