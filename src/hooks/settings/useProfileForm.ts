@@ -59,7 +59,7 @@ export const useProfileForm = (
     
     setIsUpdating(true);
     console.log("Submitting profile data:", values);
-    console.log("Birth date:", values.birthDate);
+    console.log("User ID:", user.id);
     
     try {
       // Validate birthdate

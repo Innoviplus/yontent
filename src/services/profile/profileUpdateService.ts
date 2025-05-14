@@ -27,7 +27,7 @@ export const updateProfileData = async (userId: string, profileData: ExtendedPro
     console.log("Prepared JSON safe profile data:", jsonSafeProfile);
 
     // Always update the updated_at field when updating profile data
-    const { error: updateError } = await supabase
+    const { data, error: updateError } = await supabase
       .from('profiles')
       .update({
         extended_data: jsonSafeProfile as unknown as Json,
@@ -35,18 +35,19 @@ export const updateProfileData = async (userId: string, profileData: ExtendedPro
         phone_country_code: profileData.phoneCountryCode || null,
         updated_at: new Date().toISOString()
       })
-      .eq('id', userId);
+      .eq('id', userId)
+      .select();
 
     if (updateError) {
       console.error("Supabase update error:", updateError);
       throw updateError;
     }
     
-    console.log("Profile updated successfully in Supabase!");
+    console.log("Profile updated successfully in Supabase! Response:", data);
     return true;
   } catch (error: any) {
-    console.error("Error updating profile:", error.message);
-    toast.error("Failed to update profile. Please try again.");
+    console.error("Error updating profile:", error.message, error);
+    toast.error(`Failed to update profile: ${error.message || 'Unknown error'}`);
     return false;
   }
 };

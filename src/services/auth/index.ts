@@ -4,4 +4,5 @@ export * from './phoneAuth';
 export * from './otpAuth';
 export * from './sessionAuth';
 export * from './points';
+export * from './authService';
 
