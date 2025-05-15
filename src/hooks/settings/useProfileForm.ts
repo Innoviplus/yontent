@@ -79,7 +79,7 @@ export const useProfileForm = (
       console.log("Saving extended data with user ID:", user.id);
       console.log("Extended data to be saved:", extendedData);
       
-      // Use the updateProfileData service function with updated timestamp
+      // Use the updateProfileData service function with the correct userId
       const success = await updateProfileData(user.id, extendedData);
       
       if (success) {
