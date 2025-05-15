@@ -59,6 +59,10 @@ const ProfileTab = ({
   });
 
   const onSubmit = async (values: ProfileFormValues) => {
+    console.log("ProfileTab - Save Profile button clicked");
+    console.log("ProfileTab - Current form values:", values);
+    console.log("ProfileTab - Current extended profile:", extendedProfile);
+    
     await handleProfileSubmit(values, onProfileSubmit, profileForm);
   };
 

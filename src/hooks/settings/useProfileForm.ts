@@ -45,6 +45,7 @@ export const useProfileForm = (
       youtubeUrl: '',
       tiktokUrl: '',
       phoneNumber: userProfile?.phone_number || '',
+      phoneCountryCode: userProfile?.phone_country_code || '',
     },
   });
 
@@ -76,7 +77,7 @@ export const useProfileForm = (
       const extendedData = formatProfileFormValues(values, currentExtendedProfile);
       
       console.log("Saving extended data with user ID:", user.id);
-      console.log("Extended data:", extendedData);
+      console.log("Extended data to be saved:", extendedData);
       
       // Use the updateProfileData service function with updated timestamp
       const success = await updateProfileData(user.id, extendedData);

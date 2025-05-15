@@ -36,7 +36,7 @@ export const updateProfileData = async (userId: string, profileData: ExtendedPro
         phone_country_code: profileData.phoneCountryCode || null,
         updated_at: new Date().toISOString()
       })
-      .eq('id', userId)  // Use 'id' which is the correct column name in the profiles table
+      .eq('id', userId)  // Using 'id' which is the correct column name in the profiles table
       .select();
 
     if (updateError) {

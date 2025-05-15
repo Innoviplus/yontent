@@ -55,12 +55,16 @@ export const useProfileData = () => {
     }
     
     console.log("useProfileData: Updating profile for user ID:", user.id);
+    console.log("Profile data being sent to updateProfileInDb:", profileData);
+    
     const success = await updateProfileInDb(user.id, profileData);
     
     if (success && refreshUserProfile) {
       // Refresh user profile data after updating
       console.log("Profile update successful, refreshing user data");
       await refreshUserProfile();
+    } else if (!success) {
+      console.error("Failed to update profile data");
     }
     
     return success;
