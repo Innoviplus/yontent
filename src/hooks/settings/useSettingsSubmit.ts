@@ -45,7 +45,7 @@ export const useSettingsSubmit = () => {
       const profileData = prepareProfileData(values);
       
       console.log("Using user ID:", user.id);
-      const success = await updateProfileData(profileData);
+      const success = await updateProfileData(user.id, profileData);
       
       if (success) {
         debounceToast(() => {

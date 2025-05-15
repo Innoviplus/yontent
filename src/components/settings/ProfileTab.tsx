@@ -62,6 +62,7 @@ const ProfileTab = ({
     console.log("ProfileTab - Save Profile button clicked");
     console.log("ProfileTab - Current form values:", values);
     console.log("ProfileTab - Current extended profile:", extendedProfile);
+    console.log("ProfileTab - User information:", user ? { id: user.id } : "No user");
     
     await handleProfileSubmit(values, onProfileSubmit, profileForm);
   };
