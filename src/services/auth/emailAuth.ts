@@ -84,4 +84,3 @@ export const signUp = async (email: string, password: string, username: string) 
     return { error: { ...error, message: errorMessage } };
   }
 };
-

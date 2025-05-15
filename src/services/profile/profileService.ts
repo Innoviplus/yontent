@@ -16,7 +16,7 @@ export async function fetchUserProfile(userId: string, userEmail?: string | null
       return null;
     }
 
-    console.log('User profile data:', data);
+    console.log('User profile data fetched:', data);
     
     // Update user email in profile if needed
     if (userEmail && (!data.email || data.email !== userEmail)) {
