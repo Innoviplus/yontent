@@ -45,6 +45,7 @@ export const useProfileForm = (
       youtubeUrl: '',
       tiktokUrl: '',
       phoneNumber: userProfile?.phone_number || '',
+      phoneCountryCode: userProfile?.phone_country_code || '',
     },
   });
 
@@ -59,7 +60,7 @@ export const useProfileForm = (
     
     setIsUpdating(true);
     console.log("Submitting profile data:", values);
-    console.log("Birth date:", values.birthDate);
+    console.log("User ID:", user.id);
     
     try {
       // Validate birthdate
@@ -76,9 +77,9 @@ export const useProfileForm = (
       const extendedData = formatProfileFormValues(values, currentExtendedProfile);
       
       console.log("Saving extended data with user ID:", user.id);
-      console.log("Extended data:", extendedData);
+      console.log("Extended data to be saved:", extendedData);
       
-      // Use the updateProfileData service function
+      // Use the updateProfileData service function with the correct userId
       const success = await updateProfileData(user.id, extendedData);
       
       if (success) {

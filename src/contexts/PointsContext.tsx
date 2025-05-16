@@ -89,7 +89,7 @@ export const PointsProvider = ({ children }: { children: ReactNode }) => {
           event: 'INSERT', 
           schema: 'public',
           table: 'point_transactions',
-          filter: `user_id=eq.${user.id}`
+          filter: `user_id_point=eq.${user.id}`  // Using the correct column name here
         }, 
         () => {
           // When a new transaction is added, refresh the points

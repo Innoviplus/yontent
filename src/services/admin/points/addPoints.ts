@@ -41,7 +41,6 @@ export const addPointsToUser = async (
     console.log("New points total:", newPointsTotal);
     
     // IMPORTANT: First update user's points in the profiles table
-    // This was missing in the previous implementation
     const { error: updateError } = await supabase
       .from('profiles')
       .update({ points: newPointsTotal, updated_at: new Date().toISOString() })

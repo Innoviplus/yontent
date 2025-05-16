@@ -17,7 +17,7 @@ DECLARE
 BEGIN
   -- Insert the transaction record with fully qualified column references
   INSERT INTO public.point_transactions(
-    user_id,
+    user_id_point,
     amount,
     type, 
     description

@@ -43,12 +43,12 @@ const ReviewsGrid = memo(({ reviews }: ReviewsGridProps) => {
   }
 
   return (
-    <div className="grid grid-cols-2 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 xl:grid-cols-5 gap-3">
+    <div className="columns-2 sm:columns-2 md:columns-3 lg:columns-4 xl:columns-5 gap-3 space-y-3">
       {loadedReviews.map((review) => (
         <div 
           key={review.id} 
           onClick={() => handleReviewClick(review.id)} 
-          className="mb-3 cursor-pointer"
+          className="break-inside-avoid mb-3 cursor-pointer"
         >
           <ReviewCard review={review} />
         </div>

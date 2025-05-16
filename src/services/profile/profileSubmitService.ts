@@ -23,5 +23,6 @@ export const prepareProfileData = (values: SettingsFormValues): ExtendedProfile 
     country: values.country,
   };
 
+  console.log("[profileSubmitService] Prepared profile data:", profileData);
   return profileData;
 };
