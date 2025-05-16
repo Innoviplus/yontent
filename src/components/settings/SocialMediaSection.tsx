@@ -11,17 +11,6 @@ interface SocialMediaSectionProps {
 export const SocialMediaSection: React.FC<SocialMediaSectionProps> = ({
   profileForm
 }) => {
-  // For debugging
-  const formValues = profileForm.watch();
-  console.log("SocialMediaSection - Current values:", {
-    websiteUrl: formValues.websiteUrl,
-    facebookUrl: formValues.facebookUrl,
-    instagramUrl: formValues.instagramUrl,
-    youtubeUrl: formValues.youtubeUrl,
-    tiktokUrl: formValues.tiktokUrl,
-    twitterUrl: formValues.twitterUrl
-  });
-  
   return (
     <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
       <FormField
@@ -32,20 +21,6 @@ export const SocialMediaSection: React.FC<SocialMediaSectionProps> = ({
             <FormLabel>Website</FormLabel>
             <FormControl>
               <Input placeholder="https://yourwebsite.com" {...field} value={field.value || ''} />
-            </FormControl>
-            <FormMessage />
-          </FormItem>
-        )}
-      />
-      
-      <FormField
-        control={profileForm.control}
-        name="twitterUrl"
-        render={({ field }) => (
-          <FormItem className="text-left">
-            <FormLabel>Twitter</FormLabel>
-            <FormControl>
-              <Input placeholder="https://twitter.com/username" {...field} value={field.value || ''} />
             </FormControl>
             <FormMessage />
           </FormItem>

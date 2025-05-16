@@ -29,22 +29,21 @@ const Reviews = () => {
     setSortBy, 
     page, 
     setPage, 
-    totalPages,
-    loadMore
+    totalPages 
   } = useReviewsList(user?.id);
 
   useEffect(() => {
     if (isMobile && page < totalPages) {
       const handleScroll = () => {
         if (window.innerHeight + window.scrollY >= document.body.offsetHeight - 1000) {
-          loadMore();
+          const nextPageReviews = (page + 1);
         }
       };
       
       window.addEventListener('scroll', handleScroll);
       return () => window.removeEventListener('scroll', handleScroll);
     }
-  }, [page, totalPages, isMobile, loadMore]);
+  }, [page, totalPages, isMobile]);
 
   const handleSortChange = (value: string) => {
     setSortBy(value as SortOption);

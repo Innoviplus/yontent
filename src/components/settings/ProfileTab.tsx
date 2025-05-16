@@ -59,11 +59,6 @@ const ProfileTab = ({
   });
 
   const onSubmit = async (values: ProfileFormValues) => {
-    console.log("ProfileTab - Save Profile button clicked");
-    console.log("ProfileTab - Current form values:", values);
-    console.log("ProfileTab - Current extended profile:", extendedProfile);
-    console.log("ProfileTab - User information:", user ? { id: user.id } : "No user");
-    
     await handleProfileSubmit(values, onProfileSubmit, profileForm);
   };
 
@@ -124,9 +119,9 @@ const ProfileTab = ({
             <Button 
               type="submit"
               className="bg-brand-teal hover:bg-brand-darkTeal text-white"
-              disabled={isUpdating || isLoading || !profileForm.formState.isDirty}
+              disabled={isLoading || !profileForm.formState.isDirty}
             >
-              {(isUpdating || isLoading) ? (
+              {isLoading ? (
                 <>
                   <Loader2 className="mr-2 h-4 w-4 animate-spin" />
                   Saving...

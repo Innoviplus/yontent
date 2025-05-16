@@ -1,5 +1,5 @@
 
-import { useState, useEffect } from 'react';
+import { useState } from 'react';
 import { useAuth } from '@/contexts/AuthContext';
 import { ExtendedProfile } from '@/lib/types';
 import { uploadAvatar, updateAvatarUrl } from '@/services/profile/avatarService';
@@ -12,12 +12,11 @@ export const useProfileData = () => {
   const [uploading, setUploading] = useState(false);
 
   // Initialize avatar URL from userProfile when component mounts
-  useEffect(() => {
+  useState(() => {
     if (userProfile && userProfile.avatar) {
-      console.log("Setting avatar URL from profile:", userProfile.avatar);
       setAvatarUrl(userProfile.avatar);
     }
-  }, [userProfile]);
+  });
 
   const handleAvatarUpload = async (file: File) => {
     try {
@@ -48,23 +47,19 @@ export const useProfileData = () => {
   };
 
   // Update profile data with proper type handling
-  const updateProfileData = async (userId: string, profileData: ExtendedProfile): Promise<boolean> => {
+  const updateProfileData = async (profileData: ExtendedProfile): Promise<boolean> => {
     if (!user) {
       console.error("No authenticated user found");
       return false;
     }
     
-    console.log("useProfileData: Updating profile for user ID:", userId);
-    console.log("Profile data being sent to updateProfileInDb:", profileData);
-    
-    const success = await updateProfileInDb(userId, profileData);
+    console.log("useProfileData: Updating profile for user ID:", user.id);
+    const success = await updateProfileInDb(user.id, profileData);
     
     if (success && refreshUserProfile) {
       // Refresh user profile data after updating
       console.log("Profile update successful, refreshing user data");
       await refreshUserProfile();
-    } else if (!success) {
-      console.error("Failed to update profile data");
     }
     
     return success;

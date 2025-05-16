@@ -13,9 +13,12 @@ export const signOut = async (): Promise<void> => {
   toast.info('You have been signed out.');
 };
 
-// Note: getCurrentSession and getCurrentUser are now in authService.ts
-// to avoid duplicate exports
-export const getSessionUser = async () => {
+export const getCurrentSession = async () => {
+  const { data } = await supabase.auth.getSession();
+  return data.session;
+};
+
+export const getCurrentUser = async () => {
   const { data } = await supabase.auth.getUser();
   return data.user;
 };

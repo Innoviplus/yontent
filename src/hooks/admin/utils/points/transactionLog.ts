@@ -43,7 +43,7 @@ export const logPointsTransaction = async (
       .from('point_transactions')
       .select('*')
       .order('created_at', { ascending: false })
-      .eq('user_id_point', userId)
+      .eq('user_id_point', userId)  // Using the correct column name here
       .limit(1)
       .single();
     
@@ -57,7 +57,7 @@ export const logPointsTransaction = async (
     // Transform to match our interface
     const transaction: PointTransaction = {
       id: transactionData.id,
-      userId: transactionData.user_id_point,
+      userId: transactionData.user_id_point,  // Using the correct column name here
       amount: transactionData.amount,
       type: transactionData.type as any, // Type assertion as our PointTransaction type is more strict
       source: source, // This is not stored in DB but we include it in the return object
@@ -83,7 +83,7 @@ export const getUserTransactionHistory = async (
     const { data, error } = await supabase
       .from('point_transactions')
       .select('*')
-      .eq('user_id_point', userId)
+      .eq('user_id_point', userId)  // Using the correct column name here
       .order('created_at', { ascending: false });
     
     if (error) {
@@ -117,7 +117,7 @@ export const getUserTransactionHistory = async (
       
       return {
         id: item.id,
-        userId: item.user_id_point,
+        userId: item.user_id_point,  // Using the correct column name here
         amount: item.amount,
         type: item.type as any, // Type assertion as our PointTransaction type is more strict
         source,
