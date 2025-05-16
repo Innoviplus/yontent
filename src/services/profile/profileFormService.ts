@@ -11,11 +11,11 @@ export const formatProfileFormValues = (values: ProfileFormValues, currentExtend
   const extendedData: ExtendedProfile = { ...currentExtendedProfile };
   
   // Update with new values
-  extendedData.firstName = values.firstName || null;
-  extendedData.lastName = values.lastName || null;
-  extendedData.bio = values.bio || null;
-  extendedData.gender = values.gender || null;
-  extendedData.birthDate = values.birthDate || null;
+  extendedData.firstName = values.firstName;
+  extendedData.lastName = values.lastName;
+  extendedData.bio = values.bio;
+  extendedData.gender = values.gender;
+  extendedData.birthDate = values.birthDate;
   
   // Social media URLs - format if provided
   extendedData.websiteUrl = formatURL(values.websiteUrl);
@@ -25,10 +25,8 @@ export const formatProfileFormValues = (values: ProfileFormValues, currentExtend
   extendedData.tiktokUrl = formatURL(values.tiktokUrl);
   
   // Phone fields are stored directly in the profile table, not in extended_data
-  extendedData.phoneNumber = values.phoneNumber || null;
-  extendedData.phoneCountryCode = values.phoneCountryCode || null;
-  
-  console.log("Formatted extended profile data:", extendedData);
+  extendedData.phoneNumber = values.phoneNumber;
+  extendedData.phoneCountryCode = values.phoneCountryCode;
   
   return extendedData;
 };

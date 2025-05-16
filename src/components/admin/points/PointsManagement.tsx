@@ -96,7 +96,7 @@ const PointsManagement = () => {
         fullDescription
       });
       
-      // Call the points service with the correct parameters
+      // Call the points service with the correct parameter names
       const result = await addPointsToUser(
         userId,
         pointsAmount,

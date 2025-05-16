@@ -1,5 +1,5 @@
 
--- Update the handle_mission_approval function if it exists
+-- Update the handle_mission_approval function to use user_id_point
 CREATE OR REPLACE FUNCTION public.handle_mission_approval(p_participation_id uuid, p_status text)
  RETURNS jsonb
  LANGUAGE plpgsql
