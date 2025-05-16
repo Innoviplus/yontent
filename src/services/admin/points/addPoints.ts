@@ -53,7 +53,7 @@ export const addPointsToUser = async (
     
     console.log("Successfully updated user points to:", newPointsTotal);
     
-    // Then create transaction record
+    // Then create transaction record using correct parameter names
     console.log("Calling admin_add_point_transaction with parameters:", {
       p_user_id: userId,
       p_amount: amount,
@@ -61,7 +61,7 @@ export const addPointsToUser = async (
       p_description: description
     });
     
-    // Call the admin_add_point_transaction function with the correct parameter names
+    // Call the database function with the correct parameter names
     const { data: transactionData, error: transactionError } = await supabase.rpc(
       'admin_add_point_transaction',
       {
