@@ -11,43 +11,20 @@ export const useProfileFormInitialization = (
 
     try {
       const formValues = {
-        username: userProfile.username || '',
-        email: userProfile.email || '',
-        firstName: '',
-        lastName: '',
-        bio: '',
-        gender: '',
-        birthDate: undefined,
-        websiteUrl: '',
-        facebookUrl: '',
-        instagramUrl: '',
-        youtubeUrl: '',
-        tiktokUrl: '',
-        phoneNumber: userProfile.phone_number || '',
+        username: userProfile?.username || '',
+        email: userProfile?.email || '',
+        firstName: userProfile?.first_name || '',
+        lastName: userProfile?.last_name || '',
+        bio: userProfile?.bio || '',
+        gender: userProfile?.gender || '',
+        birthDate: userProfile?.birth_date ? new Date(userProfile.birth_date) : undefined,
+        websiteUrl: userProfile?.website_url || '',
+        facebookUrl: userProfile?.facebook_url || '',
+        instagramUrl: userProfile?.instagram_url || '',
+        youtubeUrl: userProfile?.youtube_url || '',
+        tiktokUrl: userProfile?.tiktok_url || '',
+        phoneNumber: userProfile?.phone_number || '',
       };
-
-      if (userProfile.extended_data) {
-        const extData = userProfile.extended_data;
-
-        // Set form values from extended data
-        if (extData.firstName) formValues.firstName = extData.firstName;
-        if (extData.lastName) formValues.lastName = extData.lastName;
-        if (extData.bio) formValues.bio = extData.bio;
-        if (extData.gender) formValues.gender = extData.gender;
-        if (extData.birthDate) {
-          formValues.birthDate = new Date(extData.birthDate);
-        }
-        if (extData.websiteUrl) formValues.websiteUrl = extData.websiteUrl;
-        if (extData.facebookUrl) formValues.facebookUrl = extData.facebookUrl;
-        if (extData.instagramUrl) formValues.instagramUrl = extData.instagramUrl;
-        if (extData.youtubeUrl) formValues.youtubeUrl = extData.youtubeUrl;
-        if (extData.tiktokUrl) formValues.tiktokUrl = extData.tiktokUrl;
-        
-        // If the email is in extended data but not in the profile root, use it
-        if (extData.email && !formValues.email) {
-          formValues.email = extData.email;
-        }
-      }
 
       console.log("Profile form initialized with:", formValues);
       

@@ -1,6 +1,6 @@
 
 import { ExtendedProfile } from '@/lib/types';
-import { toast } from 'sonner';
+import { formatURL } from './profileFormService';
 import { SettingsFormValues } from '@/schemas/settingsFormSchema';
 
 export const prepareProfileData = (values: SettingsFormValues): ExtendedProfile => {
@@ -11,12 +11,12 @@ export const prepareProfileData = (values: SettingsFormValues): ExtendedProfile 
     bio: values.bio,
     gender: values.gender,
     birthDate: values.birthDate,
-    websiteUrl: values.websiteUrl,
-    twitterUrl: values.twitterUrl,
-    instagramUrl: values.instagramUrl,
-    facebookUrl: values.facebookUrl,
-    tiktokUrl: values.tiktokUrl,
-    youtubeUrl: values.youtubeUrl,
+    websiteUrl: formatURL(values.websiteUrl),
+    twitterUrl: formatURL(values.twitterUrl),
+    instagramUrl: formatURL(values.instagramUrl),
+    facebookUrl: formatURL(values.facebookUrl),
+    tiktokUrl: formatURL(values.tiktokUrl),
+    youtubeUrl: formatURL(values.youtubeUrl),
     email: values.email,
     phoneNumber: values.phoneNumber,
     phoneCountryCode: values.phoneCountryCode,

@@ -24,7 +24,7 @@ export const formatProfileFormValues = (values: ProfileFormValues, currentExtend
   extendedData.youtubeUrl = formatURL(values.youtubeUrl);
   extendedData.tiktokUrl = formatURL(values.tiktokUrl);
   
-  // Phone fields are stored directly in the profile table, not in extended_data
+  // Phone fields are stored directly in the profile table
   extendedData.phoneNumber = values.phoneNumber;
   extendedData.phoneCountryCode = values.phoneCountryCode;
   
@@ -36,7 +36,7 @@ export const formatProfileFormValues = (values: ProfileFormValues, currentExtend
 /**
  * Format URL by ensuring it has proper protocol
  */
-const formatURL = (url: string | null | undefined): string | null => {
+export const formatURL = (url: string | null | undefined): string | null => {
   if (!url || url.trim() === '') return null;
   
   // Remove any leading/trailing whitespace

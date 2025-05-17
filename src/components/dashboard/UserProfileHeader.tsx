@@ -9,19 +9,20 @@ interface UserProfileHeaderProps {
   user: UserType & {
     completedReviews: number;
     completedMissions: number;
-    extendedData?: any;
+    first_name?: string;
+    last_name?: string;
+    bio?: string;
     followersCount?: number;
     followingCount?: number;
   };
 }
 
 const UserProfileHeader = ({ user }: UserProfileHeaderProps) => {
-  // Extract extended data for bio and social links
-  const extendedData = user?.extendedData || {};
-  const bio = extendedData?.bio || '';
-  const hasSocialMedia = !!extendedData?.websiteUrl || !!extendedData?.facebookUrl ||
-    !!extendedData?.instagramUrl || !!extendedData?.youtubeUrl ||
-    !!extendedData?.tiktokUrl;
+  // Extract profile data
+  const bio = user?.bio || '';
+  const hasSocialMedia = !!user?.website_url || !!user?.facebook_url ||
+    !!user?.instagram_url || !!user?.youtube_url ||
+    !!user?.tiktok_url;
 
   // Prepare stats for UserStatsCard
   const userStats: UserStats = {
@@ -67,7 +68,7 @@ const UserProfileHeader = ({ user }: UserProfileHeaderProps) => {
 
           {/* Social Media Icons */}
           {hasSocialMedia ? (
-            <SocialMediaIcons extendedData={extendedData} className="mb-4" />
+            <SocialMediaIcons user={user} className="mb-4" />
           ) : (
             <Link to="/settings" className="block text-brand-teal text-sm mb-4 hover:underline text-left">
               Add your social media links

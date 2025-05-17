@@ -1,11 +1,12 @@
 
 import { toast } from 'sonner';
 
+// Re-export the toast function directly
 export { toast };
 
-// Re-export the useToast hook for backward compatibility
+// Create a simple hook for backward compatibility
 export const useToast = () => {
-  return { 
+  return {
     toast
   };
 };

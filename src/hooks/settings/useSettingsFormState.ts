@@ -32,25 +32,23 @@ export const useSettingsFormState = () => {
 
   // Initialize form with profile data when it becomes available
   useEffect(() => {
-    if (userProfile && userProfile.extended_data) {
-      const profileData = userProfile.extended_data;
-      
+    if (userProfile) {
       form.reset({
-        firstName: profileData.firstName || "",
-        lastName: profileData.lastName || "",
-        bio: profileData.bio || "",
-        gender: profileData.gender || "",
-        birthDate: profileData.birthDate ? new Date(profileData.birthDate) : null,
-        websiteUrl: profileData.websiteUrl || "",
-        twitterUrl: profileData.twitterUrl || "",
-        instagramUrl: profileData.instagramUrl || "",
-        facebookUrl: profileData.facebookUrl || "",
-        tiktokUrl: profileData.tiktokUrl || "",
-        youtubeUrl: profileData.youtubeUrl || "",
-        email: profileData.email || user?.email || "",
+        firstName: userProfile.first_name || "",
+        lastName: userProfile.last_name || "",
+        bio: userProfile.bio || "",
+        gender: userProfile.gender || "",
+        birthDate: userProfile.birth_date ? new Date(userProfile.birth_date) : null,
+        websiteUrl: userProfile.website_url || "",
+        twitterUrl: userProfile.twitter_url || "",
+        instagramUrl: userProfile.instagram_url || "",
+        facebookUrl: userProfile.facebook_url || "",
+        tiktokUrl: userProfile.tiktok_url || "",
+        youtubeUrl: userProfile.youtube_url || "",
+        email: userProfile.email || user?.email || "",
         phoneNumber: userProfile.phone_number || "",
         phoneCountryCode: userProfile.phone_country_code || "",
-        country: profileData.country || "",
+        country: userProfile.country || "",
       });
     }
   }, [userProfile, user, form]);

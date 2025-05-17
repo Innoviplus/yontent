@@ -152,45 +152,81 @@ export type Database = {
       profiles: {
         Row: {
           avatar: string | null
+          bio: string | null
+          birth_date: string | null
+          country: string | null
           created_at: string
           email: string | null
           extended_data: Json | null
+          facebook_url: string | null
+          first_name: string | null
           followers_count: number
           following_count: number
+          gender: string | null
           id: string
+          instagram_url: string | null
+          last_name: string | null
           phone_country_code: string | null
           phone_number: string | null
           points: number
+          tiktok_url: string | null
+          twitter_url: string | null
           updated_at: string
           username: string | null
+          website_url: string | null
+          youtube_url: string | null
         }
         Insert: {
           avatar?: string | null
+          bio?: string | null
+          birth_date?: string | null
+          country?: string | null
           created_at?: string
           email?: string | null
           extended_data?: Json | null
+          facebook_url?: string | null
+          first_name?: string | null
           followers_count?: number
           following_count?: number
+          gender?: string | null
           id: string
+          instagram_url?: string | null
+          last_name?: string | null
           phone_country_code?: string | null
           phone_number?: string | null
           points?: number
+          tiktok_url?: string | null
+          twitter_url?: string | null
           updated_at?: string
           username?: string | null
+          website_url?: string | null
+          youtube_url?: string | null
         }
         Update: {
           avatar?: string | null
+          bio?: string | null
+          birth_date?: string | null
+          country?: string | null
           created_at?: string
           email?: string | null
           extended_data?: Json | null
+          facebook_url?: string | null
+          first_name?: string | null
           followers_count?: number
           following_count?: number
+          gender?: string | null
           id?: string
+          instagram_url?: string | null
+          last_name?: string | null
           phone_country_code?: string | null
           phone_number?: string | null
           points?: number
+          tiktok_url?: string | null
+          twitter_url?: string | null
           updated_at?: string
           username?: string | null
+          website_url?: string | null
+          youtube_url?: string | null
         }
         Relationships: []
       }

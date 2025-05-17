@@ -1,6 +1,6 @@
 
 import { supabase } from '@/integrations/supabase/client';
-import { ExtendedProfile, Json } from '@/lib/types';
+import { ExtendedProfile } from '@/lib/types';
 import { toast } from 'sonner';
 
 export const updateProfileData = async (userId: string, profileData: ExtendedProfile): Promise<boolean> => {
@@ -12,25 +12,22 @@ export const updateProfileData = async (userId: string, profileData: ExtendedPro
   try {
     console.log("Updating profile with data:", profileData);
     
-    // Convert the Date object to ISO string for JSON compatibility
-    const jsonSafeProfile = {
-      ...profileData,
-      birthDate: profileData.birthDate ? profileData.birthDate.toISOString() : null,
-      // Ensure social media URLs are properly formatted
-      websiteUrl: profileData.websiteUrl || null,
-      facebookUrl: profileData.facebookUrl || null,
-      instagramUrl: profileData.instagramUrl || null,
-      youtubeUrl: profileData.youtubeUrl || null,
-      tiktokUrl: profileData.tiktokUrl || null,
-    };
-
-    console.log("Prepared JSON safe profile data:", jsonSafeProfile);
-
-    // Update the extended_data in the profiles table
+    // Update the profile with the new column structure
     const { error: updateError } = await supabase
       .from('profiles')
       .update({
-        extended_data: jsonSafeProfile as unknown as Json,
+        first_name: profileData.firstName || null,
+        last_name: profileData.lastName || null,
+        bio: profileData.bio || null,
+        gender: profileData.gender || null,
+        birth_date: profileData.birthDate ? profileData.birthDate.toISOString() : null,
+        website_url: profileData.websiteUrl || null,
+        facebook_url: profileData.facebookUrl || null,
+        instagram_url: profileData.instagramUrl || null,
+        youtube_url: profileData.youtubeUrl || null,
+        tiktok_url: profileData.tiktokUrl || null,
+        twitter_url: profileData.twitterUrl || null,
+        country: profileData.country || null,
         phone_number: profileData.phoneNumber || null,
         phone_country_code: profileData.phoneCountryCode || null,
         updated_at: new Date().toISOString()

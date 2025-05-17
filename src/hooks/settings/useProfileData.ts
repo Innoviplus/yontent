@@ -1,5 +1,5 @@
 
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import { useAuth } from '@/contexts/AuthContext';
 import { ExtendedProfile } from '@/lib/types';
 import { uploadAvatar, updateAvatarUrl } from '@/services/profile/avatarService';
@@ -12,11 +12,11 @@ export const useProfileData = () => {
   const [uploading, setUploading] = useState(false);
 
   // Initialize avatar URL from userProfile when component mounts
-  useState(() => {
+  useEffect(() => {
     if (userProfile && userProfile.avatar) {
       setAvatarUrl(userProfile.avatar);
     }
-  });
+  }, [userProfile]);
 
   const handleAvatarUpload = async (file: File) => {
     try {
