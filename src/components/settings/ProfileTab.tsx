@@ -4,7 +4,7 @@ import { Form } from '@/components/ui/form';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { ProfileFormValues } from '@/schemas/profileFormSchema';
 import { AvatarSection } from './AvatarSection';
-import { ProfileInfoForm } from './ProfileInfoForm';
+import { ProfileInfoForm } from '../ProfileInfoForm';
 import { SocialMediaSection } from './SocialMediaSection';
 import { LoadingSpinner } from './LoadingSpinner';
 import { useProfilePageState } from '@/hooks/settings/useProfilePageState';
@@ -119,9 +119,9 @@ const ProfileTab = ({
             <Button 
               type="submit"
               className="bg-brand-teal hover:bg-brand-darkTeal text-white"
-              disabled={isLoading || !profileForm.formState.isDirty}
+              disabled={isLoading || isUpdating || !profileForm.formState.isDirty}
             >
-              {isLoading ? (
+              {isLoading || isUpdating ? (
                 <>
                   <Loader2 className="mr-2 h-4 w-4 animate-spin" />
                   Saving...
