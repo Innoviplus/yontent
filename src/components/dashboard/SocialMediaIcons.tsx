@@ -3,25 +3,25 @@ import { Globe, Facebook, Instagram, Youtube, Baseline } from 'lucide-react';
 import { cn } from '@/lib/utils';
 
 interface SocialMediaIconsProps {
-  extendedData: any;
+  user: any;
   className?: string;
 }
 
-export const SocialMediaIcons = ({ extendedData, className }: SocialMediaIconsProps) => {
-  if (!extendedData) return null;
+export const SocialMediaIcons = ({ user, className }: SocialMediaIconsProps) => {
+  if (!user) return null;
   
-  const { websiteUrl, facebookUrl, instagramUrl, youtubeUrl, tiktokUrl } = extendedData;
+  const { website_url, facebook_url, instagram_url, youtube_url, tiktok_url } = user;
   
   // If no social links are available, don't render anything
-  if (!websiteUrl && !facebookUrl && !instagramUrl && !youtubeUrl && !tiktokUrl) {
+  if (!website_url && !facebook_url && !instagram_url && !youtube_url && !tiktok_url) {
     return null;
   }
   
   return (
     <div className={cn("flex gap-3", className)}>
-      {websiteUrl && (
+      {website_url && (
         <a 
-          href={websiteUrl.startsWith('http') ? websiteUrl : `https://${websiteUrl}`} 
+          href={website_url.startsWith('http') ? website_url : `https://${website_url}`} 
           target="_blank" 
           rel="noopener noreferrer"
           className="text-gray-600 hover:text-brand-teal transition-colors"
@@ -30,9 +30,9 @@ export const SocialMediaIcons = ({ extendedData, className }: SocialMediaIconsPr
         </a>
       )}
       
-      {facebookUrl && (
+      {facebook_url && (
         <a 
-          href={facebookUrl.startsWith('http') ? facebookUrl : `https://${facebookUrl}`} 
+          href={facebook_url.startsWith('http') ? facebook_url : `https://${facebook_url}`} 
           target="_blank" 
           rel="noopener noreferrer"
           className="text-gray-600 hover:text-blue-600 transition-colors"
@@ -41,9 +41,9 @@ export const SocialMediaIcons = ({ extendedData, className }: SocialMediaIconsPr
         </a>
       )}
       
-      {instagramUrl && (
+      {instagram_url && (
         <a 
-          href={instagramUrl.startsWith('http') ? instagramUrl : `https://${instagramUrl}`} 
+          href={instagram_url.startsWith('http') ? instagram_url : `https://${instagram_url}`} 
           target="_blank" 
           rel="noopener noreferrer"
           className="text-gray-600 hover:text-pink-600 transition-colors"
@@ -52,9 +52,9 @@ export const SocialMediaIcons = ({ extendedData, className }: SocialMediaIconsPr
         </a>
       )}
       
-      {youtubeUrl && (
+      {youtube_url && (
         <a 
-          href={youtubeUrl.startsWith('http') ? youtubeUrl : `https://${youtubeUrl}`} 
+          href={youtube_url.startsWith('http') ? youtube_url : `https://${youtube_url}`} 
           target="_blank" 
           rel="noopener noreferrer"
           className="text-gray-600 hover:text-red-600 transition-colors"
@@ -63,9 +63,9 @@ export const SocialMediaIcons = ({ extendedData, className }: SocialMediaIconsPr
         </a>
       )}
       
-      {tiktokUrl && (
+      {tiktok_url && (
         <a 
-          href={tiktokUrl.startsWith('http') ? tiktokUrl : `https://${tiktokUrl}`} 
+          href={tiktok_url.startsWith('http') ? tiktok_url : `https://${tiktok_url}`} 
           target="_blank" 
           rel="noopener noreferrer"
           className="text-gray-600 hover:text-black transition-colors"

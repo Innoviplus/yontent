@@ -4,7 +4,7 @@ import { zodResolver } from '@hookform/resolvers/zod';
 import { toast } from 'sonner';
 import { ExtendedProfile } from '@/lib/types';
 import { profileFormSchema, ProfileFormValues } from '@/schemas/profileFormSchema';
-import { useProfileFormInitialization } from './useProfileFormInitialization';
+import { useProfileFormInitialization } from './settings/useProfileFormInitialization';
 import { formatProfileFormValues, validateBirthDate } from '@/services/profile/profileFormService';
 import { updateProfileData } from '@/services/profile/profileUpdateService';
 

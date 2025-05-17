@@ -4,7 +4,7 @@ import { Form } from '@/components/ui/form';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { ProfileFormValues } from '@/schemas/profileFormSchema';
 import { AvatarSection } from './AvatarSection';
-import { ProfileInfoForm } from './ProfileInfoForm';
+import { ProfileInfoForm } from '../ProfileInfoForm';
 import { SocialMediaSection } from './SocialMediaSection';
 import { LoadingSpinner } from './LoadingSpinner';
 import { useProfilePageState } from '@/hooks/settings/useProfilePageState';
@@ -59,11 +59,6 @@ const ProfileTab = ({
   });
 
   const onSubmit = async (values: ProfileFormValues) => {
-    console.log("ProfileTab - Save Profile button clicked");
-    console.log("ProfileTab - Current form values:", values);
-    console.log("ProfileTab - Current extended profile:", extendedProfile);
-    console.log("ProfileTab - User information:", user ? { id: user.id } : "No user");
-    
     await handleProfileSubmit(values, onProfileSubmit, profileForm);
   };
 
@@ -102,6 +97,8 @@ const ProfileTab = ({
             <CardContent className="grid gap-6">
               <ProfileInfoForm 
                 profileForm={profileForm}
+                onProfileSubmit={onProfileSubmit}
+                isUpdating={isUpdating}
               />
             </CardContent>
           </Card>
@@ -124,9 +121,9 @@ const ProfileTab = ({
             <Button 
               type="submit"
               className="bg-brand-teal hover:bg-brand-darkTeal text-white"
-              disabled={isUpdating || isLoading || !profileForm.formState.isDirty}
+              disabled={isLoading || isUpdating || !profileForm.formState.isDirty}
             >
-              {(isUpdating || isLoading) ? (
+              {isLoading || isUpdating ? (
                 <>
                   <Loader2 className="mr-2 h-4 w-4 animate-spin" />
                   Saving...

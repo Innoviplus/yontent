@@ -1,5 +1,6 @@
 
 import { supabase } from '@/integrations/supabase/client';
+import { ExtendedProfile } from '@/lib/types';
 
 export async function fetchUserProfile(userId: string, userEmail?: string | null) {
   try {
@@ -16,7 +17,7 @@ export async function fetchUserProfile(userId: string, userEmail?: string | null
       return null;
     }
 
-    console.log('User profile data fetched:', data);
+    console.log('User profile data:', data);
     
     // Update user email in profile if needed
     if (userEmail && (!data.email || data.email !== userEmail)) {
@@ -36,6 +37,31 @@ export async function fetchUserProfile(userId: string, userEmail?: string | null
         // Update the local data with the new email
         data.email = userEmail;
       }
+    }
+
+    // Convert database profile to ExtendedProfile format for compatibility
+    if (data) {
+      // Create extended profile object from the new column structure
+      const extendedProfile: ExtendedProfile = {
+        firstName: data.first_name,
+        lastName: data.last_name,
+        bio: data.bio,
+        gender: data.gender,
+        birthDate: data.birth_date ? new Date(data.birth_date) : null,
+        websiteUrl: data.website_url,
+        facebookUrl: data.facebook_url,
+        instagramUrl: data.instagram_url,
+        youtubeUrl: data.youtube_url,
+        tiktokUrl: data.tiktok_url,
+        twitterUrl: data.twitter_url,
+        country: data.country,
+        phoneNumber: data.phone_number,
+        phoneCountryCode: data.phone_country_code,
+        email: data.email
+      };
+
+      // Store the extended profile in the data object for backward compatibility
+      data.extended_data = extendedProfile;
     }
     
     return data;

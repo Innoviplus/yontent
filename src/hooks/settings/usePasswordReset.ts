@@ -1,43 +1,39 @@
 
 import { useState } from 'react';
+import { toast } from 'sonner';
 import { supabase } from '@/integrations/supabase/client';
-import { useToast } from '@/hooks/use-toast';
-import { toast as sonnerToast } from 'sonner';
 
 export const usePasswordReset = () => {
-  const { toast } = useToast();
-  const [isResetting, setIsResetting] = useState(false);
-  
+  const [isLoading, setIsLoading] = useState(false);
+
   const handleResetPassword = async (email: string) => {
     if (!email) {
-      sonnerToast.error('Email is required for password reset');
+      toast.error('Please enter your email address');
       return;
     }
-    
-    setIsResetting(true);
-    
+
+    setIsLoading(true);
+
     try {
-      const { error } = await supabase.auth.resetPasswordForEmail(
-        email,
-        { redirectTo: `${window.location.origin}/reset-password` }
-      );
-      
-      if (error) throw error;
-      
-      sonnerToast.success('Password reset email sent. Please check your inbox.');
-    } catch (error: any) {
-      toast({
-        title: "Password Reset Failed",
-        description: error.message,
-        variant: "destructive",
+      const { error } = await supabase.auth.resetPasswordForEmail(email, {
+        redirectTo: `${window.location.origin}/reset-password`,
       });
+
+      if (error) {
+        throw error;
+      }
+
+      toast.success('Password reset email sent. Please check your inbox.');
+    } catch (error: any) {
+      console.error('Password reset error:', error);
+      toast.error(`Failed to send reset email: ${error.message}`);
     } finally {
-      setIsResetting(false);
+      setIsLoading(false);
     }
   };
 
   return {
+    isLoading,
     handleResetPassword,
-    isResetting
   };
 };

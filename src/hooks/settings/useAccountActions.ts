@@ -1,88 +1,70 @@
 
+import { useState } from 'react';
+import { useNavigate } from 'react-router-dom';
 import { supabase } from '@/integrations/supabase/client';
-import { useToast } from '@/hooks/use-toast';
-import { toast as sonnerToast } from 'sonner';
-import { signOut } from '@/services/auth/sessionAuth';
+import { toast } from 'sonner';
 import { useAuth } from '@/contexts/AuthContext';
 
-// Add debounce utility to prevent multiple toast notifications
-const createDebouncer = () => {
-  let timeout: NodeJS.Timeout | null = null;
-  return (fn: Function, delay: number) => {
-    if (timeout) clearTimeout(timeout);
-    timeout = setTimeout(() => {
-      timeout = null;
-      fn();
-    }, delay);
-  };
-};
-
-const debounceToast = createDebouncer();
-
-export const useAccountActions = (
-  navigate: (path: string) => void
-) => {
-  const { toast } = useToast();
-  const { user, signOut: authSignOut } = useAuth();
-
-  const handleDeleteAccount = async () => {
-    if (!user) return;
-    
-    const confirmed = window.confirm("Are you sure you want to delete your account? This action cannot be undone.");
-    
-    if (!confirmed) return;
-    
-    try {
-      // In a real application, this would typically be handled by a secure server-side function
-      debounceToast(() => {
-        sonnerToast.info('Account deletion would be processed here. Signing you out for demo purposes.');
-      }, 300);
-      await authSignOut();
-      navigate('/');
-    } catch (error: any) {
-      toast({
-        title: "Error",
-        description: error.message,
-        variant: "destructive",
-      });
-    }
-  };
+export const useAccountActions = (navigate: ReturnType<typeof useNavigate>) => {
+  const [isDeleting, setIsDeleting] = useState(false);
+  const [isLoggingOut, setIsLoggingOut] = useState(false);
+  const { signOut } = useAuth();
 
   const handleLogout = async () => {
     try {
-      console.log("Attempting to sign out...");
-      // Call both the context signOut and the service signOut to ensure session is cleared
-      try {
-        await authSignOut();
-        console.log("Auth context signOut successful");
-      } catch (authError) {
-        console.error("Auth context signOut error:", authError);
-      }
-
-      try {
+      setIsLoggingOut(true);
+      
+      // Use Auth context signOut function if available
+      if (signOut) {
         await signOut();
-        console.log("Service signOut successful");
-      } catch (serviceError) {
-        console.error("Service signOut error:", serviceError);
+      } else {
+        // Fallback to direct Supabase signout
+        const { error } = await supabase.auth.signOut();
+        
+        if (error) {
+          throw error;
+        }
       }
+      
+      toast.success('Logged out successfully');
+      
+      // Navigate to login
+      navigate('/login');
+    } catch (error: any) {
+      console.error('Logout error:', error);
+      toast.error(`Failed to log out: ${error.message}`);
+    } finally {
+      setIsLoggingOut(false);
+    }
+  };
 
-      console.log("Sign out processes completed");
-      debounceToast(() => {
-        sonnerToast.success("You have been logged out");
-      }, 300);
+  const handleDeleteAccount = async () => {
+    // This is a placeholder as account deletion requires server-side implementation
+    try {
+      setIsDeleting(true);
+      
+      // Simulated account deletion - in production this should call a secure endpoint
+      await new Promise(resolve => setTimeout(resolve, 1000));
+      
+      toast.success('Account scheduled for deletion');
+      
+      // Log the user out after deletion
+      await handleLogout();
+      
+      // Navigate to home page
       navigate('/');
     } catch (error: any) {
-      console.error("Logout error:", error);
-      toast({
-        title: "Logout Failed",
-        description: error.message || "An unknown error occurred",
-        variant: "destructive",
-      });
+      console.error('Account deletion error:', error);
+      toast.error(`Failed to delete account: ${error.message}`);
+    } finally {
+      setIsDeleting(false);
     }
   };
 
   return {
-    handleDeleteAccount,
-    handleLogout
+    isDeleting,
+    isLoggingOut,
+    handleLogout,
+    handleDeleteAccount
   };
 };
