@@ -28,6 +28,8 @@ export const formatProfileFormValues = (values: ProfileFormValues, currentExtend
   extendedData.phoneNumber = values.phoneNumber;
   extendedData.phoneCountryCode = values.phoneCountryCode;
   
+  console.log("Formatted profile data:", extendedData);
+  
   return extendedData;
 };
 
@@ -37,13 +39,16 @@ export const formatProfileFormValues = (values: ProfileFormValues, currentExtend
 const formatURL = (url: string | null | undefined): string | null => {
   if (!url || url.trim() === '') return null;
   
+  // Remove any leading/trailing whitespace
+  const trimmedUrl = url.trim();
+  
   // Check if URL already has a protocol
-  if (url.match(/^(https?:\/\/|ftp:\/\/)/i)) {
-    return url;
+  if (trimmedUrl.match(/^(https?:\/\/|ftp:\/\/)/i)) {
+    return trimmedUrl;
   }
   
   // Add http:// as default protocol
-  return `http://${url}`;
+  return `http://${trimmedUrl}`;
 };
 
 /**

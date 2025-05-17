@@ -97,7 +97,7 @@ export const useProfileForm = (
       
     } catch (error: any) {
       console.error("Profile update error:", error);
-      toast.error("Update Failed: " + (error.message || "Unknown error"));
+      toast.error(`Update Failed: ${error.message || "Unknown error"}`);
     } finally {
       setIsUpdating(false);
     }

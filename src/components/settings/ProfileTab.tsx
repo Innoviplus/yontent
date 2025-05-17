@@ -97,6 +97,8 @@ const ProfileTab = ({
             <CardContent className="grid gap-6">
               <ProfileInfoForm 
                 profileForm={profileForm}
+                onProfileSubmit={onProfileSubmit}
+                isUpdating={isUpdating}
               />
             </CardContent>
           </Card>

@@ -21,10 +21,11 @@ import {
 } from '@/components/ui/select';
 import { BirthDateInput } from '@/components/settings/BirthDateInput';
 import { Loader2 } from 'lucide-react';
+import { ProfileFormValues } from '@/schemas/profileFormSchema';
 
 interface ProfileInfoFormProps {
   profileForm: UseFormReturn<any>;
-  onProfileSubmit: (values: any) => Promise<void>;
+  onProfileSubmit: (values: ProfileFormValues) => Promise<void>;
   isUpdating: boolean;
 }
 

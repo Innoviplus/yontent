@@ -16,7 +16,7 @@ export const updateProfileData = async (userId: string, profileData: ExtendedPro
     const jsonSafeProfile = {
       ...profileData,
       birthDate: profileData.birthDate ? profileData.birthDate.toISOString() : null,
-      // Ensure social media URLs are properly handled
+      // Ensure social media URLs are properly formatted
       websiteUrl: profileData.websiteUrl || null,
       facebookUrl: profileData.facebookUrl || null,
       instagramUrl: profileData.instagramUrl || null,
@@ -39,14 +39,15 @@ export const updateProfileData = async (userId: string, profileData: ExtendedPro
 
     if (updateError) {
       console.error("Supabase update error:", updateError);
-      throw updateError;
+      toast.error(`Failed to update profile: ${updateError.message}`);
+      return false;
     }
     
     console.log("Profile updated successfully in Supabase!");
     return true;
   } catch (error: any) {
     console.error("Error updating profile:", error.message);
-    toast.error("Failed to update profile. Please try again.");
+    toast.error(`Failed to update profile: ${error.message}`);
     return false;
   }
 };
