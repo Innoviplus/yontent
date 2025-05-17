@@ -57,7 +57,7 @@ export const logPointsTransaction = async (
     // Transform to match our interface
     const transaction: PointTransaction = {
       id: transactionData.id,
-      userId: transactionData.user_id_point,  // Using the correct column name here
+      userId: transactionData.user_id_point,  // Using the correct column name
       amount: transactionData.amount,
       type: transactionData.type as any, // Type assertion as our PointTransaction type is more strict
       source: source, // This is not stored in DB but we include it in the return object
