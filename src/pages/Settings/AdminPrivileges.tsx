@@ -2,7 +2,7 @@
 import React from 'react';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardDescription, CardFooter, CardHeader, CardTitle } from '@/components/ui/card';
-import { toast } from '@/hooks/use-toast';
+import { toast } from 'sonner';
 import { supabase } from '@/integrations/supabase/client';
 import { useNavigate } from 'react-router-dom';
 import { useAuth } from '@/contexts/AuthContext';
@@ -34,15 +34,11 @@ function AdminPrivileges() {
         navigate('/admin');
       } else {
         // User is not an admin
-        toast({
-          description: 'You do not have admin privileges'
-        });
+        toast.error('You do not have admin privileges');
       }
     } catch (error: any) {
       console.error('Error checking admin status:', error);
-      toast({
-        description: `Failed to check admin status: ${error.message}`
-      });
+      toast.error(`Failed to check admin status: ${error.message}`);
     } finally {
       setIsAdminChecking(false);
     }
