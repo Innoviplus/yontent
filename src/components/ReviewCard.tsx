@@ -25,25 +25,41 @@ const ReviewCard = ({ review, className }: ReviewCardProps) => {
     const doc = new DOMParser().parseFromString(html, 'text/html');
     return doc.body.textContent || '';
   };
+  
+  // Calculate aspect ratio for images to maintain consistent width but variable height
+  const getAspectRatio = () => {
+    // Default to 1:1 if no images
+    if (review.images.length === 0 && (!review.videos || review.videos.length === 0)) {
+      return "100%"; // Square
+    }
+    
+    // Random aspect ratios for visual variety in the masonry layout
+    const options = ["56.25%", "75%", "100%", "125%"];
+    const randomIndex = Math.floor(review.id.charCodeAt(0) % options.length);
+    return options[randomIndex];
+  };
 
   return (
     <div 
       onClick={handleCardClick}
       className={cn(
-        "bg-white rounded-lg overflow-hidden shadow-sm w-full card-hover",
+        "bg-white rounded-lg overflow-hidden shadow-sm w-full card-hover h-full",
         "hover:shadow-md transform hover:-translate-y-1 transition-all duration-200",
         className
       )}
     >
       {/* Review images - Show only first image or video thumbnail */}
       {(review.images.length > 0 || hasVideo) && (
-        <div className="relative overflow-hidden bg-gray-100">
+        <div 
+          className="relative overflow-hidden bg-gray-100"
+          style={{ paddingBottom: getAspectRatio() }}
+        >
           {hasVideo ? (
             <>
               <img 
                 src={review.images[0] || review.videos[0]} 
                 alt="Video thumbnail" 
-                className="w-full h-auto object-cover"
+                className="absolute top-0 left-0 w-full h-full object-cover"
               />
               <div className="absolute inset-0 flex items-center justify-center">
                 <div className="bg-black/50 rounded-full p-1.5 backdrop-blur-sm">
@@ -55,7 +71,7 @@ const ReviewCard = ({ review, className }: ReviewCardProps) => {
             <img 
               src={review.images[0]} 
               alt="Review image" 
-              className="w-full h-auto object-cover"
+              className="absolute top-0 left-0 w-full h-full object-cover"
             />
           )}
           
