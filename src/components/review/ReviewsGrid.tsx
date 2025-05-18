@@ -4,6 +4,7 @@ import ReviewCard from '@/components/ReviewCard';
 import { trackReviewView } from '@/services/review/trackViews';
 import { memo, useState, useEffect, useRef } from 'react';
 import { useNavigate } from 'react-router-dom';
+import { Skeleton } from '@/components/ui/skeleton';
 
 interface ReviewsGridProps {
   reviews: Review[];
@@ -15,6 +16,7 @@ const ReviewsGrid = memo(({ reviews }: ReviewsGridProps) => {
   const [loadedReviews, setLoadedReviews] = useState<Review[]>([]);
   const [isLoading, setIsLoading] = useState(true);
   const gridRef = useRef<HTMLDivElement>(null);
+  const resizeObserverRef = useRef<ResizeObserver | null>(null);
 
   useEffect(() => {
     // Only set reviews when the data is available
@@ -30,54 +32,64 @@ const ReviewsGrid = memo(({ reviews }: ReviewsGridProps) => {
   };
 
   useEffect(() => {
-    // Apply masonry layout after reviews are loaded
+    // Clean up any existing resize observer to prevent memory leaks
+    if (resizeObserverRef.current) {
+      resizeObserverRef.current.disconnect();
+    }
+
+    // Only initialize after reviews are loaded and DOM is ready
     if (!isLoading && gridRef.current) {
-      const resizeObserver = new ResizeObserver(() => {
-        if (gridRef.current) {
-          applyMasonryLayout();
-        }
-      });
-      
-      resizeObserver.observe(gridRef.current);
+      // Initial layout application
       applyMasonryLayout();
       
-      return () => {
-        if (gridRef.current) {
-          resizeObserver.unobserve(gridRef.current);
-        }
-      };
+      // Create and save the observer instance
+      resizeObserverRef.current = new ResizeObserver(() => {
+        requestAnimationFrame(applyMasonryLayout);
+      });
+      
+      // Observe the grid and all masonry items for any resize changes
+      resizeObserverRef.current.observe(gridRef.current);
+      
+      // Also add window resize listener
+      window.addEventListener('resize', applyMasonryLayout);
     }
+    
+    // Clean up function
+    return () => {
+      if (resizeObserverRef.current) {
+        resizeObserverRef.current.disconnect();
+      }
+      window.removeEventListener('resize', applyMasonryLayout);
+    };
   }, [isLoading, loadedReviews]);
 
-  // Function to apply masonry layout
+  // Function to apply masonry layout with performance optimizations
   const applyMasonryLayout = () => {
     if (!gridRef.current) return;
     
     const grid = gridRef.current;
-    const items = grid.getElementsByClassName('masonry-item');
+    const items = grid.querySelectorAll('.masonry-item');
     
-    // Reset positions
-    for (let i = 0; i < items.length; i++) {
-      const item = items[i] as HTMLElement;
-      item.style.gridRowEnd = '';
-    }
-    
-    // Set new positions
-    for (let i = 0; i < items.length; i++) {
-      const item = items[i] as HTMLElement;
-      const rowSpan = Math.ceil(item.getBoundingClientRect().height / 10); // 10px grid row height
-      item.style.gridRowEnd = `span ${rowSpan}`;
-    }
+    // Using a more efficient approach to set positions
+    items.forEach((item) => {
+      const itemElement = item as HTMLElement;
+      const height = itemElement.getBoundingClientRect().height;
+      const rowSpan = Math.ceil(height / 10);
+      
+      if (itemElement.style.gridRowEnd !== `span ${rowSpan}`) {
+        itemElement.style.gridRowEnd = `span ${rowSpan}`;
+      }
+    });
   };
 
   if (isLoading && reviews.length === 0) {
     return (
-      <div className="grid grid-cols-2 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 xl:grid-cols-5 gap-3">
+      <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-5 gap-3">
         {Array(10).fill(0).map((_, index) => (
-          <div key={index} className="mb-3 animate-pulse">
-            <div className="bg-gray-200 h-40 rounded-lg mb-2"></div>
-            <div className="bg-gray-200 h-4 rounded mb-2 w-3/4"></div>
-            <div className="bg-gray-200 h-3 rounded w-1/2"></div>
+          <div key={index} className="mb-3">
+            <Skeleton className="h-40 rounded-lg mb-2" />
+            <Skeleton className="h-4 rounded mb-2 w-3/4" />
+            <Skeleton className="h-3 rounded w-1/2" />
           </div>
         ))}
       </div>
@@ -88,19 +100,12 @@ const ReviewsGrid = memo(({ reviews }: ReviewsGridProps) => {
     <div 
       ref={gridRef}
       className="masonry-grid"
-      style={{
-        display: 'grid',
-        gridTemplateColumns: 'repeat(auto-fill, minmax(150px, 1fr))',
-        gridAutoRows: '10px',
-        gap: '12px'
-      }}
     >
       {loadedReviews.map((review) => (
         <div 
           key={review.id} 
           className="masonry-item"
-          onClick={() => handleReviewClick(review.id)} 
-          style={{ marginBottom: 0 }}
+          onClick={() => handleReviewClick(review.id)}
         >
           <ReviewCard review={review} />
         </div>

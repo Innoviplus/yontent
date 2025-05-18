@@ -5,13 +5,15 @@ import { Review } from '@/lib/types';
 import { cn } from '@/lib/utils';
 import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
 import { useIsMobile } from '@/hooks/use-mobile';
+import { memo } from 'react';
 
 interface ReviewCardProps {
   review: Review;
   className?: string;
 }
 
-const ReviewCard = ({ review, className }: ReviewCardProps) => {
+// Memoize the card component to prevent unnecessary re-renders
+const ReviewCard = memo(({ review, className }: ReviewCardProps) => {
   const navigate = useNavigate();
   const isMobile = useIsMobile();
   const hasVideo = review.videos && review.videos.length > 0;
@@ -34,17 +36,17 @@ const ReviewCard = ({ review, className }: ReviewCardProps) => {
     }
     
     // Random aspect ratios for visual variety in the masonry layout
+    // Using the review ID as a seed to ensure consistent rendering
     const options = ["56.25%", "75%", "100%", "125%"];
-    const randomIndex = Math.floor(review.id.charCodeAt(0) % options.length);
+    const randomIndex = Math.floor((review.id.charCodeAt(0) % options.length + review.id.charCodeAt(1) % options.length) % options.length);
     return options[randomIndex];
   };
 
   return (
     <div 
-      onClick={handleCardClick}
       className={cn(
         "bg-white rounded-lg overflow-hidden shadow-sm w-full card-hover h-full",
-        "hover:shadow-md transform hover:-translate-y-1 transition-all duration-200",
+        "hover:shadow-md transition-all duration-200",
         className
       )}
     >
@@ -60,6 +62,7 @@ const ReviewCard = ({ review, className }: ReviewCardProps) => {
                 src={review.images[0] || review.videos[0]} 
                 alt="Video thumbnail" 
                 className="absolute top-0 left-0 w-full h-full object-cover"
+                loading="lazy"
               />
               <div className="absolute inset-0 flex items-center justify-center">
                 <div className="bg-black/50 rounded-full p-1.5 backdrop-blur-sm">
@@ -72,6 +75,7 @@ const ReviewCard = ({ review, className }: ReviewCardProps) => {
               src={review.images[0]} 
               alt="Review image" 
               className="absolute top-0 left-0 w-full h-full object-cover"
+              loading="lazy"
             />
           )}
           
@@ -86,7 +90,7 @@ const ReviewCard = ({ review, className }: ReviewCardProps) => {
       )}
       
       <div className="p-2">
-        {/* User info at the top - No longer clickable */}
+        {/* User info at the top */}
         <div className="flex items-center mb-1.5">
           <Avatar className="h-5 w-5 mr-1.5">
             <AvatarImage src={review.user?.avatar || ''} alt={review.user?.username || 'User'} />
@@ -116,6 +120,8 @@ const ReviewCard = ({ review, className }: ReviewCardProps) => {
       </div>
     </div>
   );
-};
+});
+
+ReviewCard.displayName = 'ReviewCard';
 
 export default ReviewCard;
