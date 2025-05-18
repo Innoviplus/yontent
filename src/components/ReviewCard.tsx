@@ -5,7 +5,7 @@ import { Review } from '@/lib/types';
 import { cn } from '@/lib/utils';
 import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
 import { useIsMobile } from '@/hooks/use-mobile';
-import { memo } from 'react';
+import { memo, useState, useEffect } from 'react';
 
 interface ReviewCardProps {
   review: Review;
@@ -17,10 +17,7 @@ const ReviewCard = memo(({ review, className }: ReviewCardProps) => {
   const navigate = useNavigate();
   const isMobile = useIsMobile();
   const hasVideo = review.videos && review.videos.length > 0;
-
-  const handleCardClick = () => {
-    navigate(`/review/${review.id}`);
-  };
+  const [imageLoaded, setImageLoaded] = useState(false);
 
   // Function to strip HTML tags from content
   const stripHtml = (html: string) => {
@@ -28,18 +25,23 @@ const ReviewCard = memo(({ review, className }: ReviewCardProps) => {
     return doc.body.textContent || '';
   };
   
-  // Calculate aspect ratio for images to maintain consistent width but variable height
+  // Generate consistent seed-based aspect ratio to improve masonry layout
   const getAspectRatio = () => {
-    // Default to 1:1 if no images
     if (review.images.length === 0 && (!review.videos || review.videos.length === 0)) {
-      return "100%"; // Square
+      return null; // No aspect ratio if no media
     }
     
-    // Random aspect ratios for visual variety in the masonry layout
-    // Using the review ID as a seed to ensure consistent rendering
-    const options = ["56.25%", "75%", "100%", "125%"];
-    const randomIndex = Math.floor((review.id.charCodeAt(0) % options.length + review.id.charCodeAt(1) % options.length) % options.length);
-    return options[randomIndex];
+    // Use review ID to generate a consistent pseudo-random aspect ratio
+    const seed = review.id.split('').reduce((acc, char) => acc + char.charCodeAt(0), 0);
+    const baseRatio = 0.75; // Default 4:3
+    const variation = (seed % 50) / 100; // +/- 25% variation
+    return baseRatio + variation - 0.25;
+  };
+
+  const aspectRatio = getAspectRatio();
+  
+  const handleImageLoad = () => {
+    setImageLoaded(true);
   };
 
   return (
@@ -50,36 +52,48 @@ const ReviewCard = memo(({ review, className }: ReviewCardProps) => {
         className
       )}
     >
-      {/* Review images - Show only first image or video thumbnail */}
+      {/* Review images/video with optimized loading */}
       {(review.images.length > 0 || hasVideo) && (
         <div 
-          className="relative overflow-hidden bg-gray-100"
-          style={{ paddingBottom: getAspectRatio() }}
+          className="relative bg-gray-100 overflow-hidden"
+          style={aspectRatio ? { paddingBottom: `${aspectRatio * 100}%` } : undefined}
         >
           {hasVideo ? (
             <>
               <img 
-                src={review.images[0] || review.videos[0]} 
+                src={review.videos[0] || review.images[0]} 
                 alt="Video thumbnail" 
-                className="absolute top-0 left-0 w-full h-full object-cover"
+                className={cn(
+                  "absolute top-0 left-0 w-full h-full object-cover",
+                  !imageLoaded && "opacity-0"
+                )}
                 loading="lazy"
+                onLoad={handleImageLoad}
               />
-              <div className="absolute inset-0 flex items-center justify-center">
+              {!imageLoaded && <div className="absolute inset-0 bg-gray-200 animate-pulse" />}
+              <div className="absolute inset-0 flex items-center justify-center z-10">
                 <div className="bg-black/50 rounded-full p-1.5 backdrop-blur-sm">
                   <Play className="h-6 w-6 text-white" fill="white" />
                 </div>
               </div>
             </>
           ) : (
-            <img 
-              src={review.images[0]} 
-              alt="Review image" 
-              className="absolute top-0 left-0 w-full h-full object-cover"
-              loading="lazy"
-            />
+            <>
+              <img 
+                src={review.images[0]} 
+                alt="Review image" 
+                className={cn(
+                  "absolute top-0 left-0 w-full h-full object-cover",
+                  !imageLoaded && "opacity-0"
+                )}
+                loading="lazy"
+                onLoad={handleImageLoad}
+              />
+              {!imageLoaded && <div className="absolute inset-0 bg-gray-200 animate-pulse" />}
+            </>
           )}
           
-          {/* Image count badge - only show if there are multiple images or videos */}
+          {/* Image count badge */}
           {(review.images.length > 1 || (review.videos && review.videos.length > 0)) && (
             <div className="absolute top-2 right-2 bg-black/50 text-white text-xs px-2 py-1 rounded-full backdrop-blur-sm flex items-center gap-1">
               <Camera className="h-3 w-3" />
@@ -103,7 +117,7 @@ const ReviewCard = memo(({ review, className }: ReviewCardProps) => {
           </span>
         </div>
         
-        {/* Content - max 2 lines with truncation, with HTML tags stripped */}
+        {/* Content - with HTML tags stripped */}
         <div className="text-gray-600 text-xs mb-1.5">
           <p className="line-clamp-2">
             {stripHtml(review.content)}

@@ -17,9 +17,9 @@ const ReviewsGrid = memo(({ reviews }: ReviewsGridProps) => {
   const [isLoading, setIsLoading] = useState(true);
   const gridRef = useRef<HTMLDivElement>(null);
   const resizeObserverRef = useRef<ResizeObserver | null>(null);
-
+  
+  // Only set reviews when the data is available
   useEffect(() => {
-    // Only set reviews when the data is available
     if (reviews.length > 0) {
       setLoadedReviews(reviews);
       setIsLoading(false);
@@ -31,57 +31,84 @@ const ReviewsGrid = memo(({ reviews }: ReviewsGridProps) => {
     navigate(`/review/${reviewId}`);
   };
 
+  // Initialize and clean up the masonry layout
   useEffect(() => {
-    // Clean up any existing resize observer to prevent memory leaks
-    if (resizeObserverRef.current) {
-      resizeObserverRef.current.disconnect();
-    }
-
-    // Only initialize after reviews are loaded and DOM is ready
-    if (!isLoading && gridRef.current) {
-      // Initial layout application
-      applyMasonryLayout();
-      
-      // Create and save the observer instance
-      resizeObserverRef.current = new ResizeObserver(() => {
-        requestAnimationFrame(applyMasonryLayout);
-      });
-      
-      // Observe the grid and all masonry items for any resize changes
-      resizeObserverRef.current.observe(gridRef.current);
-      
-      // Also add window resize listener
-      window.addEventListener('resize', applyMasonryLayout);
-    }
-    
-    // Clean up function
+    // Clean up any existing observer
     return () => {
       if (resizeObserverRef.current) {
         resizeObserverRef.current.disconnect();
       }
-      window.removeEventListener('resize', applyMasonryLayout);
+    };
+  }, []);
+
+  // Set up the masonry layout with ResizeObserver after reviews are loaded
+  useEffect(() => {
+    if (isLoading || !gridRef.current) return;
+
+    const initMasonry = () => {
+      const grid = gridRef.current;
+      if (!grid) return;
+
+      // Calculate column width based on viewport
+      const columns = window.innerWidth < 640 ? 2 : 
+                     window.innerWidth < 768 ? 3 : 
+                     window.innerWidth < 1024 ? 4 : 5;
+      
+      const items = Array.from(grid.children) as HTMLElement[];
+      const columnHeights = Array(columns).fill(0);
+      
+      // Position each item
+      items.forEach((item) => {
+        // Find the shortest column
+        const shortestColumn = columnHeights.indexOf(Math.min(...columnHeights));
+        const x = `${(shortestColumn / columns) * 100}%`;
+        const y = `${columnHeights[shortestColumn]}px`;
+        
+        // Set the position
+        item.style.position = 'absolute';
+        item.style.left = x;
+        item.style.top = y;
+        item.style.width = `${100 / columns}%`;
+        item.style.padding = '0 6px';
+        
+        // Update the column height
+        columnHeights[shortestColumn] += item.offsetHeight + 12; // 12px for gap
+      });
+      
+      // Set the grid height to the tallest column
+      grid.style.height = `${Math.max(...columnHeights)}px`;
+    };
+    
+    // Initial layout
+    initMasonry();
+    
+    // Create resize observer
+    resizeObserverRef.current = new ResizeObserver(() => {
+      requestAnimationFrame(initMasonry);
+    });
+    
+    // Observe the grid and all its children
+    if (gridRef.current) {
+      resizeObserverRef.current.observe(gridRef.current);
+      
+      Array.from(gridRef.current.children).forEach(child => {
+        resizeObserverRef.current?.observe(child);
+      });
+    }
+    
+    // Also add window resize listener
+    window.addEventListener('resize', initMasonry);
+    
+    // Clean up
+    return () => {
+      if (resizeObserverRef.current) {
+        resizeObserverRef.current.disconnect();
+      }
+      window.removeEventListener('resize', initMasonry);
     };
   }, [isLoading, loadedReviews]);
 
-  // Function to apply masonry layout with performance optimizations
-  const applyMasonryLayout = () => {
-    if (!gridRef.current) return;
-    
-    const grid = gridRef.current;
-    const items = grid.querySelectorAll('.masonry-item');
-    
-    // Using a more efficient approach to set positions
-    items.forEach((item) => {
-      const itemElement = item as HTMLElement;
-      const height = itemElement.getBoundingClientRect().height;
-      const rowSpan = Math.ceil(height / 10);
-      
-      if (itemElement.style.gridRowEnd !== `span ${rowSpan}`) {
-        itemElement.style.gridRowEnd = `span ${rowSpan}`;
-      }
-    });
-  };
-
+  // Render loading skeleton when no reviews are available
   if (isLoading && reviews.length === 0) {
     return (
       <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-5 gap-3">
@@ -99,7 +126,7 @@ const ReviewsGrid = memo(({ reviews }: ReviewsGridProps) => {
   return (
     <div 
       ref={gridRef}
-      className="masonry-grid"
+      className="masonry-container"
     >
       {loadedReviews.map((review) => (
         <div 
