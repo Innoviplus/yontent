@@ -1,3 +1,4 @@
+
 @tailwind base;
 @tailwind components;
 @tailwind utilities;
@@ -80,6 +81,52 @@
   
   .text-center-allowed {
     @apply text-center;
+  }
+}
+
+/* True Masonry Layout */
+.masonry-container {
+  position: relative;
+  width: 100%;
+  min-height: 600px; /* Base height that will be updated dynamically */
+}
+
+.masonry-item {
+  position: absolute;
+  transition: transform 0.2s ease-in-out;
+  padding: 0 6px;
+  margin-bottom: 12px;
+  break-inside: avoid;
+  will-change: transform, opacity;
+}
+
+.masonry-item:hover {
+  transform: translateY(-4px);
+  z-index: 1;
+}
+
+/* Responsive masonry item widths */
+@media (max-width: 639px) {
+  .masonry-item {
+    width: 50%;
+  }
+}
+
+@media (min-width: 640px) and (max-width: 767px) {
+  .masonry-item {
+    width: 33.333%;
+  }
+}
+
+@media (min-width: 768px) and (max-width: 1023px) {
+  .masonry-item {
+    width: 25%;
+  }
+}
+
+@media (min-width: 1024px) {
+  .masonry-item {
+    width: 20%;
   }
 }
 

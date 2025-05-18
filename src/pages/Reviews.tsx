@@ -12,7 +12,7 @@ import ReviewsGrid from '@/components/review/ReviewsGrid';
 import ReviewsPagination from '@/components/review/ReviewsPagination';
 import { Sheet, SheetContent, SheetTrigger } from '@/components/ui/sheet';
 import { useIsMobile } from '@/hooks/use-mobile';
-import { Card, CardContent } from '@/components/ui/card';
+import { Card } from '@/components/ui/card';
 
 const Reviews = () => {
   usePageTitle('Reviews');
@@ -29,21 +29,26 @@ const Reviews = () => {
     setSortBy, 
     page, 
     setPage, 
-    totalPages 
+    totalPages,
+    loadMore,
+    hasMore 
   } = useReviewsList(user?.id);
 
   useEffect(() => {
-    if (isMobile && page < totalPages) {
+    if (isMobile) {
       const handleScroll = () => {
-        if (window.innerHeight + window.scrollY >= document.body.offsetHeight - 1000) {
-          const nextPageReviews = (page + 1);
+        const scrollPosition = window.innerHeight + window.scrollY;
+        const threshold = document.body.offsetHeight - 800;
+        
+        if (scrollPosition >= threshold && hasMore) {
+          loadMore();
         }
       };
       
       window.addEventListener('scroll', handleScroll);
       return () => window.removeEventListener('scroll', handleScroll);
     }
-  }, [page, totalPages, isMobile]);
+  }, [isMobile, hasMore, loadMore]);
 
   const handleSortChange = (value: string) => {
     setSortBy(value as SortOption);
@@ -104,23 +109,22 @@ const Reviews = () => {
             </Suspense>
             
             {!isMobile && (
-              <ReviewsPagination 
-                currentPage={page} 
-                totalPages={totalPages} 
-                onPageChange={setPage} 
-              />
+              <div className="mt-8">
+                <ReviewsPagination 
+                  currentPage={page} 
+                  totalPages={totalPages} 
+                  onPageChange={setPage} 
+                />
+              </div>
             )}
             
-            {isMobile && totalPages > 1 && (
-              <Card className="mt-6 mb-2 shadow-sm">
-                <CardContent className="p-4">
-                  <ReviewsPagination 
-                    currentPage={page} 
-                    totalPages={totalPages} 
-                    onPageChange={setPage} 
-                  />
-                </CardContent>
-              </Card>
+            {isMobile && hasMore && (
+              <div className="flex justify-center mt-6 mb-4">
+                <Card className="p-3 flex items-center justify-center">
+                  <Loader2 className="h-5 w-5 text-brand-teal animate-spin" />
+                  <span className="ml-2 text-sm">Loading more...</span>
+                </Card>
+              </div>
             )}
           </>
         ) : (
