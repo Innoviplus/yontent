@@ -49,7 +49,7 @@ export const useSubmitReview = (onSuccess?: () => void) => {
     if (isEditing) {
       console.log('Edit mode detected with data:', {
         reviewId,
-        content: form.getValues('content'),
+        content: form.getValues('content') || 'No content',
         imageCount: imagePreviewUrls.length,
         hasVideo: !!videoPreviewUrl,
         isDraft

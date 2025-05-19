@@ -57,13 +57,21 @@ export const useReviewFormState = () => {
         }
         
         // Set form values - ensure content is properly handled
-        form.setValue('content', data.content || '');
-        console.log('Setting form content:', data.content || '');
+        if (data.content) {
+          form.setValue('content', data.content);
+          console.log('Setting form content:', data.content);
+        } else {
+          console.log('No content to set, using empty string');
+          form.setValue('content', '');
+        }
         
         // Set draft status
         if (data.status === 'DRAFT') {
           console.log('Setting isDraft to true');
           form.setValue('isDraft', true);
+        } else {
+          console.log('Setting isDraft to false');
+          form.setValue('isDraft', false);
         }
         
         // Set existing images

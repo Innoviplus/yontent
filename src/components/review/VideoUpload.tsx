@@ -1,4 +1,3 @@
-
 import { useState, useRef, useEffect } from 'react';
 import { Upload, X, Video, Clock, AlertCircle } from 'lucide-react';
 import { Button } from '@/components/ui/button';
@@ -33,53 +32,57 @@ const VideoUpload = ({
 
   // Generate thumbnail when an existing video is provided
   useEffect(() => {
-    if (videoPreviewUrls && videoPreviewUrls.length > 0 && videoPreviewUrls[0]) {
-      const videoUrl = videoPreviewUrls[0];
-      console.log('Attempting to create thumbnail for existing video:', videoUrl);
+    if (!videoPreviewUrls || videoPreviewUrls.length === 0 || !videoPreviewUrls[0]) {
+      setThumbnailUrl(null);
+      setVideoLoaded(false);
+      return;
+    }
+
+    const videoUrl = videoPreviewUrls[0];
+    console.log('Attempting to create thumbnail for video:', videoUrl);
       
-      try {
-        const video = document.createElement('video');
-        video.crossOrigin = 'anonymous';
-        video.src = videoUrl;
-        video.muted = true;
-        video.preload = 'metadata';
+    try {
+      const video = document.createElement('video');
+      video.crossOrigin = 'anonymous';
+      video.src = videoUrl;
+      video.muted = true;
+      video.preload = 'metadata';
         
-        video.onloadedmetadata = () => {
-          console.log('Video metadata loaded, seeking to frame');
-          // Set to a slight offset for better thumbnails
-          video.currentTime = 0.5;
-        };
+      video.onloadedmetadata = () => {
+        console.log('Video metadata loaded, seeking to frame');
+        // Set to a slight offset for better thumbnails
+        video.currentTime = 0.5;
+      };
         
-        video.onseeked = () => {
-          try {
-            console.log('Creating thumbnail from video frame');
-            // Create a canvas and draw the video frame
-            const canvas = document.createElement('canvas');
-            canvas.width = video.videoWidth;
-            canvas.height = video.videoHeight;
-            const ctx = canvas.getContext('2d');
+      video.onseeked = () => {
+        try {
+          console.log('Creating thumbnail from video frame');
+          // Create a canvas and draw the video frame
+          const canvas = document.createElement('canvas');
+          canvas.width = video.videoWidth;
+          canvas.height = video.videoHeight;
+          const ctx = canvas.getContext('2d');
             
-            if (ctx) {
-              ctx.drawImage(video, 0, 0, canvas.width, canvas.height);
-              const thumbnail = canvas.toDataURL('image/jpeg');
-              console.log('Thumbnail created successfully');
-              setThumbnailUrl(thumbnail);
-              setVideoLoaded(true);
-            }
-          } catch (err) {
-            console.error('Error generating video thumbnail:', err);
+          if (ctx) {
+            ctx.drawImage(video, 0, 0, canvas.width, canvas.height);
+            const thumbnail = canvas.toDataURL('image/jpeg');
+            console.log('Thumbnail created successfully');
+            setThumbnailUrl(thumbnail);
+            setVideoLoaded(true);
           }
-        };
+        } catch (err) {
+          console.error('Error generating video thumbnail:', err);
+        }
+      };
         
-        video.onerror = (e) => {
-          console.error('Error loading video for thumbnail generation:', e);
-          setVideoLoaded(false);
-        };
+      video.onerror = (e) => {
+        console.error('Error loading video for thumbnail generation:', e);
+        setVideoLoaded(false);
+      };
         
-        console.log('Video element created and source set');
-      } catch (error) {
-        console.error('Exception in thumbnail creation:', error);
-      }
+      console.log('Video element created and source set');
+    } catch (error) {
+      console.error('Exception in thumbnail creation:', error);
     }
   }, [videoPreviewUrls]);
 
@@ -172,7 +175,7 @@ const VideoUpload = ({
     }
   };
 
-  const hasVideo = videoPreviewUrls.length > 0 && videoPreviewUrls[0];
+  const hasVideo = videoPreviewUrls && videoPreviewUrls.length > 0 && videoPreviewUrls[0];
 
   return (
     <div className="space-y-4">
