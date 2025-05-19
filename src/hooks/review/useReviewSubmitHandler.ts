@@ -3,9 +3,8 @@ import { useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { toast } from 'sonner';
 import { useAuth } from '@/contexts/AuthContext';
-import { supabase } from '@/integrations/supabase/client';
 import { ReviewFormValues } from './useReviewForm';
-import { clearReviewsCache } from '@/services/review';
+import { submitReview } from '@/services/review';
 
 export const useReviewSubmitHandler = (
   reviewId: string | null,
@@ -16,95 +15,61 @@ export const useReviewSubmitHandler = (
   const navigate = useNavigate();
   const [uploading, setUploading] = useState(false);
 
-  const handleSubmit = async (data: ReviewFormValues) => {
+  const handleSubmit = async (formData: ReviewFormValues) => {
     if (!user) {
       toast.error('You must be logged in to submit a review');
       return;
     }
-    
+
+    setUploading(true);
     try {
-      setUploading(true);
-      console.log('Starting review submission process...', {
-        isUpdate: !!reviewId,
-        isDraft: data.isDraft,
+      console.log('Preparing to submit review:', {
+        reviewId,
+        isDraft: formData.isDraft,
+        contentLength: formData.content?.length || 0
       });
-      
-      const imagePaths = await uploadImages(user.id);
-      console.log('Image paths after upload:', imagePaths);
-      
-      const videoPaths = await uploadVideo(user.id);
-      console.log('Video paths after upload:', videoPaths);
-      
-      // Content is now optional, using empty string as default
-      const reviewContent = data.content || '';
-      
-      // Add proper object structure for insert/update
-      const reviewData = {
-        content: reviewContent,
-        images: imagePaths,
-        videos: videoPaths,
-        status: data.isDraft ? 'DRAFT' : 'PUBLISHED',
-        updated_at: new Date().toISOString()
-      };
-      
-      console.log('Preparing to save review data:', reviewData);
-      
-      // Update or create the review
-      if (reviewId) {
-        console.log('Updating existing review:', reviewId);
-        // Update existing review
-        const { data: updatedData, error } = await supabase
-          .from('reviews')
-          .update(reviewData)
-          .eq('id', reviewId)
-          .eq('user_id', user.id)
-          .select();
-          
-        if (error) {
-          console.error('Error updating review:', error);
-          throw error;
-        }
-        
-        console.log('Review updated successfully:', updatedData);
-        toast.success(data.isDraft ? 'Draft updated successfully!' : 'Review updated successfully!');
+
+      // 1. Upload images and video
+      const uploadedImageUrls = await uploadImages(user.id);
+      const uploadedVideoUrls = await uploadVideo(user.id);
+
+      console.log('Uploads complete:', {
+        imageCount: uploadedImageUrls.length,
+        videoCount: uploadedVideoUrls.length
+      });
+
+      // 2. Submit review to database
+      const result = await submitReview({
+        userId: user.id,
+        content: formData.content || '',
+        images: [],  // We only pass the File objects to uploadImages, not here
+        videos: null,  // We only pass the File object to uploadVideo, not here
+        isDraft: formData.isDraft || false,
+        reviewId: reviewId
+      });
+
+      console.log('Review submission result:', result);
+
+      // 3. Show success message and redirect
+      const actionText = formData.isDraft ? 'saved as draft' : (reviewId ? 'updated' : 'published');
+      toast.success(`Review ${actionText} successfully!`);
+
+      // 4. Redirect based on context
+      if (formData.isDraft) {
+        navigate('/dashboard?tab=drafts');
       } else {
-        console.log('Creating new review');
-        // Create new review with the user ID
-        const newReviewData = {
-          ...reviewData,
-          user_id: user.id
-        };
-        
-        const { data: insertedData, error } = await supabase
-          .from('reviews')
-          .insert(newReviewData)
-          .select();
-          
-        if (error) {
-          console.error('Error creating review:', error);
-          throw error;
-        }
-        
-        console.log('Review created successfully:', insertedData);
-        toast.success(data.isDraft ? 'Draft saved successfully!' : 'Review submitted successfully!');
+        navigate('/reviews');
       }
-      
-      // Clear the reviews cache to ensure fresh data is loaded
-      clearReviewsCache();
-      
-      // Navigate to the appropriate page based on draft status
-      navigate(data.isDraft ? '/dashboard' : '/reviews');
     } catch (error) {
-      console.error('Unexpected error:', error);
-      toast.error('An unexpected error occurred. Please try again.');
+      console.error('Error in review submission:', error);
+      toast.error('Failed to submit review');
     } finally {
       setUploading(false);
     }
   };
 
   return {
-    uploading,
-    setUploading,
-    handleSubmit
+    handleSubmit,
+    uploading
   };
 };

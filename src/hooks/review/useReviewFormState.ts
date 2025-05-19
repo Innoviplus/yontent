@@ -4,6 +4,7 @@ import { useSearchParams } from 'react-router-dom';
 import { supabase } from '@/integrations/supabase/client';
 import { useReviewForm } from './useReviewForm';
 import { useReviewMedia } from './useReviewMedia';
+import { toast } from 'sonner';
 
 export const useReviewFormState = () => {
   const [searchParams] = useSearchParams();
@@ -38,14 +39,18 @@ export const useReviewFormState = () => {
           
         if (error) {
           console.error('Error loading review:', error);
+          toast.error('Error loading review data');
           throw error;
         }
         
         if (review) {
           console.log('Loaded review data:', review);
           
-          // Set form values
-          form.setValue('content', review.content || '');
+          // Set form values immediately
+          if (review.content) {
+            console.log('Setting content:', review.content.substring(0, 50) + '...');
+            form.setValue('content', review.content);
+          }
           
           // Set draft state
           const isDraftReview = review.status === 'DRAFT';
@@ -53,16 +58,21 @@ export const useReviewFormState = () => {
           form.setValue('isDraft', isDraftReview);
           
           // Set images
-          if (review.images && Array.isArray(review.images)) {
+          if (review.images && Array.isArray(review.images) && review.images.length > 0) {
+            console.log('Setting images:', review.images.length);
             setExistingImages(review.images);
             setImagePreviewUrls(review.images);
           }
           
           // Set videos
           if (review.videos && Array.isArray(review.videos) && review.videos.length > 0) {
+            console.log('Setting video:', review.videos[0]);
             setExistingVideo(review.videos[0]);
             setVideoPreviewUrl(review.videos[0]);
           }
+        } else {
+          console.warn('No review found with ID:', reviewId);
+          toast.error('Review not found');
         }
       } catch (error) {
         console.error('Error in loadReviewData:', error);
@@ -71,8 +81,11 @@ export const useReviewFormState = () => {
       }
     };
     
-    loadReviewData();
-  }, [reviewId, form]);
+    if (reviewId) {
+      console.log('Initializing review data loading for ID:', reviewId);
+      loadReviewData();
+    }
+  }, [reviewId, form, setExistingImages, setImagePreviewUrls, setExistingVideo, setVideoPreviewUrl]);
   
   return {
     isLoading,

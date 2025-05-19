@@ -1,152 +1,102 @@
 
-import { useState, useRef } from 'react';
-import { Button } from '@/components/ui/button';
-import VideoUploadArea from './VideoComponents/VideoUploadArea';
-import VideoValidator from './VideoComponents/VideoValidator';
-import ErrorAlert from './VideoComponents/ErrorAlert';
+import React, { useRef } from 'react';
 import VideoPreview from './VideoComponents/VideoPreview';
+import VideoValidator from './VideoComponents/VideoValidator';
+import VideoUploadArea from './VideoComponents/VideoUploadArea';
+import ErrorAlert from './VideoComponents/ErrorAlert';
+import { useState } from 'react';
 
 interface VideoUploadProps {
   videoPreviewUrls: string[];
   onFileSelect: (files: FileList | null) => void;
-  onRemoveVideo: (index: number) => void;
+  onRemoveVideo: () => void;
   error: string | null;
   uploading: boolean;
-  maxDuration?: number; // in seconds
+  maxDuration?: number;
 }
 
-const VideoUpload = ({
-  videoPreviewUrls,
-  onFileSelect,
-  onRemoveVideo,
-  error,
+const VideoUpload = ({ 
+  videoPreviewUrls, 
+  onFileSelect, 
+  onRemoveVideo, 
+  error, 
   uploading,
-  maxDuration = 60
+  maxDuration = 60 
 }: VideoUploadProps) => {
-  const fileInputRef = useRef<HTMLInputElement>(null);
   const [validating, setValidating] = useState(false);
-  const [validationProgress, setValidationProgress] = useState(0);
-  const [validationError, setValidationError] = useState<string | null>(null);
-
-  console.log('VideoUpload rendered with videoPreviewUrls:', videoPreviewUrls);
-
-  const handleFileChange = async (e: React.ChangeEvent<HTMLInputElement>) => {
-    if (!e.target.files || e.target.files.length === 0) return;
-    
-    const file = e.target.files[0];
-    console.log('Video file selected:', file.name, file.size, file.type);
-    
-    if (!file.type.startsWith('video/')) {
-      setValidationError('Please select a video file');
-      return;
-    }
-    
-    if (file.size > 100 * 1024 * 1024) {
-      setValidationError('Video file size must be less than 100MB');
-      return;
-    }
-    
-    setValidating(true);
-    setValidationProgress(10);
-    
-    try {
-      // Create a video element to check metadata
-      const video = document.createElement('video');
-      video.preload = 'metadata';
-      
-      // Set up event handlers first
-      video.onloadedmetadata = () => {
-        setValidationProgress(50);
-        
-        if (video.duration > maxDuration) {
-          setValidationError(`Video must be ${maxDuration} seconds or less. Selected video is ${Math.round(video.duration)} seconds.`);
-          setValidating(false);
-          URL.revokeObjectURL(video.src);
-          return;
-        }
-        
-        video.currentTime = 0.1;
-      };
-      
-      video.onseeked = () => {
-        try {
-          setValidationProgress(100);
-          setValidationError(null);
-          setValidating(false);
-          
-          console.log('Video validated successfully, sending to parent component');
-          onFileSelect(e.target.files);
-          
-          // Cleanup
-          URL.revokeObjectURL(video.src);
-        } catch (err) {
-          console.error('Error during video validation:', err);
-          setValidationError('Could not validate video');
-          setValidating(false);
-          URL.revokeObjectURL(video.src);
-        }
-      };
-      
-      video.onerror = () => {
-        setValidationError('Could not validate video. Please try another file.');
-        setValidating(false);
-        URL.revokeObjectURL(video.src);
-      };
-      
-      // Set source after adding event listeners
-      video.src = URL.createObjectURL(file);
-      setValidationProgress(30);
-    } catch (error) {
-      console.error('Video validation error:', error);
-      setValidationError('Error validating video');
-      setValidating(false);
-    }
-  };
-
-  const triggerFileInput = () => {
+  const [progress, setProgress] = useState(0);
+  const fileInputRef = useRef<HTMLInputElement>(null);
+  
+  const handleFileSelect = () => {
     if (fileInputRef.current) {
       fileInputRef.current.click();
     }
   };
-
-  const hasVideo = videoPreviewUrls && videoPreviewUrls.length > 0 && videoPreviewUrls[0];
-
-  return (
-    <div className="space-y-4">
-      {/* Hidden file input */}
-      <input
-        ref={fileInputRef}
-        type="file"
-        onChange={handleFileChange}
-        accept="video/*"
-        className="hidden"
-        disabled={uploading || validating}
-      />
+  
+  const handleFileInputChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+    const files = e.target.files;
+    
+    if (files && files.length > 0) {
+      // Show validation UI
+      setValidating(true);
+      setProgress(0);
       
-      {/* Either show upload area or video preview */}
-      {!hasVideo ? (
-        <VideoUploadArea 
-          onFileSelect={triggerFileInput} 
-          fileInputRef={fileInputRef}
-          disabled={uploading || validating} 
-        />
-      ) : (
-        <VideoPreview
-          videoUrl={videoPreviewUrls[0]}
-          onRemove={() => onRemoveVideo(0)}
+      // Simulate validation progress for better UX
+      const interval = setInterval(() => {
+        setProgress((prevProgress) => {
+          const newProgress = prevProgress + 10;
+          if (newProgress >= 100) {
+            clearInterval(interval);
+            setValidating(false);
+            return 100;
+          }
+          return newProgress;
+        });
+      }, 200);
+      
+      // Pass the files to parent component
+      onFileSelect(files);
+    }
+  };
+  
+  return (
+    <div className="mb-6">
+      <div className="mb-2">
+        <h3 className="font-medium text-gray-900">Video</h3>
+      </div>
+      
+      {/* Video Preview or Upload Area */}
+      {videoPreviewUrls.length > 0 ? (
+        <VideoPreview 
+          videoUrl={videoPreviewUrls[0]} 
+          onRemove={onRemoveVideo} 
           maxDuration={maxDuration}
           uploading={uploading}
         />
+      ) : (
+        <>
+          <VideoUploadArea 
+            onFileSelect={handleFileSelect} 
+            fileInputRef={fileInputRef} 
+            disabled={uploading || validating} 
+          />
+          
+          <input
+            ref={fileInputRef}
+            type="file"
+            accept="video/mp4,video/mov,video/webm"
+            className="hidden"
+            onChange={handleFileInputChange}
+            disabled={uploading || validating}
+          />
+        </>
       )}
       
-      {/* Validation progress indicator */}
-      <VideoValidator 
-        validating={validating} 
-        progress={validationProgress} 
-      />
+      {/* Validation Progress */}
+      <VideoValidator validating={validating} progress={progress} />
       
-      {/* Error messages */}
-      <ErrorAlert error={error || validationError} />
+      {/* Error Message */}
+      <ErrorAlert error={error} />
     </div>
   );
 };
