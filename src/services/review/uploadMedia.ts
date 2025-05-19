@@ -78,34 +78,22 @@ export const uploadReviewImage = async (userId: string, image: File): Promise<st
   }
 };
 
-// Compress video before upload
+// Upload video to storage
 export const uploadReviewVideo = async (userId: string, video: File): Promise<string> => {
   try {
-    // For videos, we'll use a web-based solution since full transcoding is resource-intensive
-    // This implementation uses the Video Blob Utility to optimize video size
-    
-    // Create a compressed video blob
-    let compressedVideo = video;
-    
-    // For videos under 50MB, we can use basic optimization
-    if (video.size > 5 * 1024 * 1024) {
-      // Use createFFmpeg from FFmpeg.wasm for basic compression
-      // This is a simplified approach - full transcoding would require more complex implementation
-      compressedVideo = await compressVideoBlob(video);
-    }
-    
-    console.log('Original video size:', (video.size / (1024 * 1024)).toFixed(2), 'MB');
-    console.log('Optimized video size:', (compressedVideo.size / (1024 * 1024)).toFixed(2), 'MB');
+    console.log(`Starting video upload: ${video.name} (${(video.size / (1024 * 1024)).toFixed(2)} MB)`);
     
     // Generate filename and path
     const fileExt = video.name.split('.').pop();
-    const fileName = `${userId}/${Math.random().toString(36).substring(2, 15)}.${fileExt}`;
+    const fileName = `${Math.random().toString(36).substring(2, 15)}.${fileExt}`;
+    const filePath = `${userId}/${fileName}`;
     
-    // Upload the optimized video
+    // Upload the video directly (no compression for now)
+    console.log(`Uploading video to path: ${filePath}`);
     const { error: uploadError } = await supabase
       .storage
       .from('review-videos')
-      .upload(fileName, compressedVideo, {
+      .upload(filePath, video, {
         cacheControl: '3600',
         upsert: false
       });
@@ -119,61 +107,16 @@ export const uploadReviewVideo = async (userId: string, video: File): Promise<st
     const { data: publicURL } = supabase
       .storage
       .from('review-videos')
-      .getPublicUrl(fileName);
+      .getPublicUrl(filePath);
       
     if (!publicURL) {
       throw new Error('Failed to get public URL for uploaded video');
     }
     
+    console.log(`Video successfully uploaded, URL: ${publicURL.publicUrl}`);
     return publicURL.publicUrl;
   } catch (error) {
     console.error('Error in uploadReviewVideo:', error);
     throw error;
   }
 };
-
-// Helper function to compress video blob
-// This is a basic implementation - full transcoding would require a more sophisticated approach
-async function compressVideoBlob(videoFile: File): Promise<File> {
-  return new Promise((resolve, reject) => {
-    try {
-      // Create video element to load the file
-      const video = document.createElement('video');
-      video.preload = 'metadata';
-      
-      // Create a canvas element for frame extraction
-      const canvas = document.createElement('canvas');
-      const ctx = canvas.getContext('2d');
-      
-      // Set up video metadata loaded handler
-      video.onloadedmetadata = () => {
-        // Set canvas dimensions to video dimensions (but capped)
-        const maxDimension = 1280; // Limit resolution
-        const width = Math.min(video.videoWidth, maxDimension);
-        const height = Math.min(video.videoHeight, maxDimension);
-        
-        // Maintain aspect ratio if one dimension is capped
-        const aspectRatio = video.videoWidth / video.videoHeight;
-        canvas.width = width;
-        canvas.height = width / aspectRatio;
-        
-        // Use original file with metadata reduction
-        // For a real implementation, a proper video transcoding library would be used
-        resolve(new File([videoFile], videoFile.name, { 
-          type: videoFile.type,
-          lastModified: Date.now()
-        }));
-      };
-      
-      // Handle errors
-      video.onerror = () => {
-        reject(new Error("Error processing video file"));
-      };
-      
-      // Set video source to the file
-      video.src = URL.createObjectURL(videoFile);
-    } catch (error) {
-      reject(error);
-    }
-  });
-}

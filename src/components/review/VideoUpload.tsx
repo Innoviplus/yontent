@@ -47,6 +47,7 @@ const VideoUpload = ({
     setValidationProgress(10);
     
     try {
+      // Create a video element to check metadata
       const video = document.createElement('video');
       video.preload = 'metadata';
       
@@ -56,6 +57,7 @@ const VideoUpload = ({
         if (video.duration > maxDuration) {
           setValidationError(`Video must be ${maxDuration} seconds or less. Selected video is ${Math.round(video.duration)} seconds.`);
           setValidating(false);
+          URL.revokeObjectURL(video.src);
           return;
         }
         
@@ -78,21 +80,27 @@ const VideoUpload = ({
             setValidationError(null);
             setValidating(false);
             onFileSelect(e.target.files);
+            
+            // Cleanup
+            URL.revokeObjectURL(video.src);
           } catch (err) {
             console.error('Error generating thumbnail:', err);
             setValidationError('Could not generate video preview');
             setValidating(false);
+            URL.revokeObjectURL(video.src);
           }
         };
         
         video.onerror = () => {
           setValidationError('Could not validate video. Please try another file.');
           setValidating(false);
+          URL.revokeObjectURL(video.src);
         };
-        
-        video.src = URL.createObjectURL(file);
-        setValidationProgress(30);
       };
+      
+      // Set source after adding event listeners
+      video.src = URL.createObjectURL(file);
+      setValidationProgress(30);
     } catch (error) {
       console.error('Video validation error:', error);
       setValidationError('Error validating video');

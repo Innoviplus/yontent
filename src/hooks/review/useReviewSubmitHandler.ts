@@ -82,7 +82,7 @@ export const useReviewSubmitHandler = (
       navigate(data.isDraft ? '/dashboard' : '/reviews');
     } catch (error) {
       console.error('Unexpected error:', error);
-      toast.error('An unexpected error occurred');
+      toast.error('An unexpected error occurred. Please try again.');
     } finally {
       setUploading(false);
     }
