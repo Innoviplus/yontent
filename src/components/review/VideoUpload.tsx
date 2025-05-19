@@ -1,3 +1,4 @@
+
 import { useState, useRef } from 'react';
 import { Upload, X, Video, Clock, AlertCircle } from 'lucide-react';
 import { Button } from '@/components/ui/button';
