@@ -3,7 +3,6 @@ import { useState, useEffect } from 'react';
 import { useSearchParams } from 'react-router-dom';
 import { supabase } from '@/integrations/supabase/client';
 import { useReviewForm } from './useReviewForm';
-import { useReviewMedia } from './useReviewMedia';
 import { toast } from 'sonner';
 
 export const useReviewFormState = () => {
@@ -14,9 +13,9 @@ export const useReviewFormState = () => {
   const [isDraft, setIsDraft] = useState<boolean>(false);
   const [isEditing, setIsEditing] = useState<boolean>(!!reviewId);
   
-  const {
-    form,
-    setImagePreviewUrls,
+  const { 
+    form, 
+    setImagePreviewUrls, 
     setExistingImages,
     setVideoPreviewUrl,
     setExistingVideo
@@ -44,9 +43,9 @@ export const useReviewFormState = () => {
         }
         
         if (review) {
-          console.log('Loaded review data:', review);
+          console.log('Loaded review data from DB:', review);
           
-          // Set form values immediately
+          // Set form values 
           if (review.content) {
             console.log('Setting content:', review.content.substring(0, 50) + '...');
             form.setValue('content', review.content);
@@ -59,7 +58,7 @@ export const useReviewFormState = () => {
           
           // Set images
           if (review.images && Array.isArray(review.images) && review.images.length > 0) {
-            console.log('Setting images:', review.images.length);
+            console.log('Setting images:', review.images);
             setExistingImages(review.images);
             setImagePreviewUrls(review.images);
           }

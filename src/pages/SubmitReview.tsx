@@ -9,7 +9,6 @@ import ImageUpload from '@/components/review/ImageUpload';
 import VideoUpload from '@/components/review/VideoUpload';
 import RichTextEditor from '@/components/RichTextEditor';
 import { useEffect } from 'react';
-import { toast } from 'sonner';
 import { useSearchParams } from 'react-router-dom';
 
 const SubmitReview = () => {
@@ -50,14 +49,6 @@ const SubmitReview = () => {
       content: form.getValues('content') || 'No content'
     });
   }, [reviewId, isDraft, isEditing, isLoading, imagePreviewUrls, videoPreviewUrl, form]);
-
-  // Force form refetch if the content is empty but there should be content
-  useEffect(() => {
-    if (!isLoading && isEditing && !form.getValues('content') && 
-        imagePreviewUrls.length === 0 && videoPreviewUrl.length === 0) {
-      console.log('Form appears to be empty when it should have content. Check Supabase connection.');
-    }
-  }, [isLoading, isEditing, form, imagePreviewUrls, videoPreviewUrl]);
 
   return (
     <div className="min-h-screen bg-gray-50">
@@ -151,7 +142,7 @@ const SubmitReview = () => {
                           <Loader2 className="mr-2 h-4 w-4 animate-spin" />
                           {isEditing ? 'Updating...' : 'Uploading...'}
                         </>
-                      ) : (isEditing ? "Update Review" : "Publish Review")}
+                      ) : (isEditing ? (isDraft ? "Publish Review" : "Update Review") : "Publish Review")}
                     </Button>
                   </div>
                 </form>

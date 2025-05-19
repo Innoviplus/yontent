@@ -54,18 +54,23 @@ export const useReviewMedia = () => {
         const newExistingImages = [...existingImages];
         newExistingImages.splice(index, 1);
         setExistingImages(newExistingImages);
+        
+        // Also update the preview URLs to stay in sync
+        const newImagePreviewUrls = [...imagePreviewUrls];
+        newImagePreviewUrls.splice(index, 1);
+        setImagePreviewUrls(newImagePreviewUrls);
       } else {
         // Removing from newly selected images
         const selectedIndex = index - existingImages.length;
         const newSelectedImages = [...selectedImages];
         newSelectedImages.splice(selectedIndex, 1);
         setSelectedImages(newSelectedImages);
+        
+        // Update preview URLs
+        const newImagePreviewUrls = [...imagePreviewUrls];
+        newImagePreviewUrls.splice(index, 1);
+        setImagePreviewUrls(newImagePreviewUrls);
       }
-      
-      // Update the preview URLs
-      const newImagePreviewUrls = [...imagePreviewUrls];
-      newImagePreviewUrls.splice(index, 1);
-      setImagePreviewUrls(newImagePreviewUrls);
     }
     
     console.log('After removing image at index', index, 'existingImages:', existingImages.length, 'selectedImages:', selectedImages.length);
