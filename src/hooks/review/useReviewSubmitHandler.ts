@@ -42,8 +42,8 @@ export const useReviewSubmitHandler = (
       const result = await submitReview({
         userId: user.id,
         content: formData.content || '',
-        images: [],  // We only pass the File objects to uploadImages, not here
-        videos: null,  // We only pass the File object to uploadVideo, not here
+        images: uploadedImageUrls,  // Pass the uploaded image URLs here
+        videos: uploadedVideoUrls.length > 0 ? uploadedVideoUrls : null,  // Pass video URLs
         isDraft: formData.isDraft || false,
         reviewId: reviewId
       });

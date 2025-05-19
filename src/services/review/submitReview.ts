@@ -1,7 +1,6 @@
 
 import { supabase } from '@/integrations/supabase/client';
 import { toast } from 'sonner';
-import { uploadReviewImage, uploadReviewVideo } from './uploadMedia';
 
 export const submitReview = async ({ 
   userId, 
@@ -13,34 +12,26 @@ export const submitReview = async ({
 }: { 
   userId: string; 
   content: string; 
-  images: File[];
-  videos?: File | null; 
+  images: string[];
+  videos?: string[] | null; 
   isDraft?: boolean;
   reviewId?: string | null;
 }) => {
   try {
-    // Upload and compress images
-    const imageUrls: string[] = [];
-    
-    for (const image of images) {
-      const imageUrl = await uploadReviewImage(userId, image);
-      imageUrls.push(imageUrl);
-    }
-    
-    // Upload and compress video if provided
-    const videoUrls: string[] = [];
-    
-    if (videos) {
-      const videoUrl = await uploadReviewVideo(userId, videos);
-      videoUrls.push(videoUrl);
-    }
+    console.log('Submitting review with data:', {
+      isDraft,
+      reviewId,
+      contentLength: content.length,
+      imageCount: images?.length || 0,
+      videoCount: videos?.length || 0
+    });
     
     // Data to insert or update
     const reviewData = {
       user_id: userId,
       content,
-      images: imageUrls,
-      videos: videoUrls,
+      images,
+      videos,
       status: isDraft ? 'DRAFT' : 'PUBLISHED'
     };
     
@@ -62,6 +53,7 @@ export const submitReview = async ({
       }
       
       result = data;
+      console.log('Review updated successfully:', result);
     } else {
       // Insert new review
       const { data, error } = await supabase
@@ -75,6 +67,7 @@ export const submitReview = async ({
       }
       
       result = data;
+      console.log('Review created successfully:', result);
     }
     
     return result;
