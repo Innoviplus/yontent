@@ -10,21 +10,22 @@ import VideoUpload from '@/components/review/VideoUpload';
 import RichTextEditor from '@/components/RichTextEditor';
 import { useSubmitReview } from '@/hooks/useSubmitReview';
 import { toast } from 'sonner';
+import { useAuth } from '@/contexts/AuthContext';
 
 const EditReview = () => {
   const { id } = useParams<{ id: string }>();
   const navigate = useNavigate();
+  const { user } = useAuth();
   const {
     form,
-    loading,
     uploading,
+    isLoading, // Use isLoading instead of loading
     imagePreviewUrls,
     imageError,
     videoPreviewUrl,
     videoError,
     isDraft,
     isEditing,
-    user,
     onSubmit,
     saveDraft,
     handleImageSelection,
@@ -39,14 +40,14 @@ const EditReview = () => {
     console.log('EditReview component rendered with:', {
       id,
       isDraft,
-      loading,
+      isLoading, // Use isLoading instead of loading
       imageCount: imagePreviewUrls.length,
       hasVideo: videoPreviewUrl.length > 0,
       formContent: form.getValues('content')?.substring(0, 50) || 'No content'
     });
-  }, [id, isDraft, loading, imagePreviewUrls, videoPreviewUrl, form]);
+  }, [id, isDraft, isLoading, imagePreviewUrls, videoPreviewUrl, form]);
 
-  if (loading) {
+  if (isLoading) { // Use isLoading instead of loading
     return (
       <div className="min-h-screen bg-gray-50">
         <Navbar />
@@ -88,7 +89,7 @@ const EditReview = () => {
                 <VideoUpload
                   videoPreviewUrls={videoPreviewUrl}
                   onFileSelect={handleVideoSelection}
-                  onRemoveVideo={() => removeVideo(0)}
+                  onRemoveVideo={() => removeVideo()} // Fix: Remove the argument
                   error={videoError}
                   uploading={uploading}
                   maxDuration={60}

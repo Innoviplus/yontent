@@ -6,11 +6,14 @@ import { useReviewSubmitHandler } from './review/useReviewSubmitHandler';
 import { toast } from 'sonner';
 import { ReviewFormValues } from './review/useReviewForm';
 import { useEffect } from 'react';
+import { useAuth } from '@/contexts/AuthContext';
 
 export const useSubmitReview = (onSuccess?: () => void) => {
   const {
     form,
   } = useReviewForm();
+  
+  const { user } = useAuth();
   
   const {
     selectedImages,
@@ -132,6 +135,7 @@ export const useSubmitReview = (onSuccess?: () => void) => {
     existingImages,
     isDraft,
     isEditing,
+    user,
     onSubmit,
     saveDraft,
     handleImageSelection: handleImageSelectionWithValidation,
@@ -142,7 +146,7 @@ export const useSubmitReview = (onSuccess?: () => void) => {
     videoPreviewUrl: videoPreviewUrl ? [videoPreviewUrl] : [],
     videoError,
     handleVideoSelection,
-    removeVideo: () => removeVideo(),
+    removeVideo,
     setVideoError
   };
 };
