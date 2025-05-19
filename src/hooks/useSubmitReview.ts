@@ -1,93 +1,51 @@
-import { useState, useEffect } from 'react';
-import { useSearchParams, useNavigate } from 'react-router-dom';
+import { useReviewForm } from './review/useReviewForm';
+import { useReviewMedia } from './review/useReviewMedia';
+import { useReviewFormState } from './review/useReviewFormState';
+import { useReviewSubmitHandler } from './review/useReviewSubmitHandler';
 import { toast } from 'sonner';
-import { useAuth } from '@/contexts/AuthContext';
-import { supabase } from '@/integrations/supabase/client';
-import { useReviewForm, ReviewFormValues } from './review/useReviewForm';
-import { uploadReviewImage, uploadReviewVideo } from '@/services/review/uploadMedia';
+import { ReviewFormValues } from './review/useReviewForm';
 
 export const useSubmitReview = (onSuccess?: () => void) => {
-  const { user } = useAuth();
-  const navigate = useNavigate();
-  const [searchParams] = useSearchParams();
-  const draftId = searchParams.get('draft');
-  const editId = searchParams.get('edit');
-  const reviewId = draftId || editId || null;
-  
-  const [isLoading, setIsLoading] = useState(false);
-  
   const {
     form,
-    uploading,
-    setUploading,
+  } = useReviewForm();
+  
+  const {
     selectedImages,
     imagePreviewUrls,
     imageError,
     existingImages,
-    setExistingImages,
-    setImagePreviewUrls,
-    handleImageSelection,
-    removeImage,
     setImageError,
+    handleImageSelection: handleRawImageSelection,
+    removeImage,
     uploadImages,
-    // Video related properties
-    selectedVideo,
+    // Video related
     videoPreviewUrl,
     videoError,
-    existingVideo,
-    setExistingVideo,
-    setVideoPreviewUrl,
     handleVideoSelection,
     removeVideo,
     setVideoError,
-    uploadVideo
-  } = useReviewForm();
+    uploadVideo,
+    // Upload state
+    uploading,
+    setUploading
+  } = useReviewMedia();
   
-  // Fetch the existing review if we're editing
-  useEffect(() => {
-    const fetchReview = async () => {
-      if (!reviewId || !user) return;
-      
-      setIsLoading(true);
-      try {
-        const { data, error } = await supabase
-          .from('reviews')
-          .select('*')
-          .eq('id', reviewId)
-          .eq('user_id', user.id)
-          .single();
-          
-        if (error) throw error;
-        
-        // Set form values
-        form.setValue('content', data.content);
-        
-        // Set existing images
-        if (data.images && data.images.length > 0) {
-          setExistingImages(data.images);
-          setImagePreviewUrls(data.images);
-        }
-        
-        // Set existing video
-        if (data.videos && data.videos.length > 0) {
-          setExistingVideo(data.videos[0]);
-          setVideoPreviewUrl(data.videos[0]);
-        }
-      } catch (error) {
-        console.error('Error fetching review:', error);
-        toast.error('Failed to load review data');
-      } finally {
-        setIsLoading(false);
-      }
-    };
-    
-    fetchReview();
-  }, [reviewId, user, form, setExistingImages, setImagePreviewUrls, setExistingVideo, setVideoPreviewUrl]);
+  const {
+    isLoading,
+    isDraft,
+    isEditing,
+    reviewId
+  } = useReviewFormState();
+  
+  const {
+    handleSubmit
+  } = useReviewSubmitHandler(reviewId, uploadImages, uploadVideo);
   
   // Handle image reordering
   const reorderImages = (newOrder: string[]) => {
-    setExistingImages(newOrder);
-    setImagePreviewUrls(newOrder);
+    existingImages.splice(0, existingImages.length, ...newOrder);
+    imagePreviewUrls.splice(0, imagePreviewUrls.length, ...newOrder);
   };
   
   // Custom image selection handler that sets error if too many files are selected
@@ -98,15 +56,26 @@ export const useSubmitReview = (onSuccess?: () => void) => {
     }
     
     // Otherwise use the regular handler
-    handleImageSelection(files);
+    handleRawImageSelection(files);
   };
   
-  const handleSubmit = async (data: ReviewFormValues) => {
-    if (!user) {
-      toast.error('You must be logged in to submit a review');
+  // Save as draft functionality
+  const saveDraft = () => {
+    const values = form.getValues();
+    form.setValue('isDraft', true);
+    
+    // For drafts, allow empty content only if there are images or videos
+    if (values.content.length === 0 && selectedImages.length === 0 && existingImages.length === 0 
+        && !videoPreviewUrl) {
+      toast.error('Please add some content, images, or video to save as draft');
       return;
     }
     
+    handleSubmit(form.getValues());
+  };
+  
+  // Form submission wrapper
+  const onSubmit = async (data: ReviewFormValues) => {
     // Check for maximum image count
     const totalImageCount = selectedImages.length + existingImages.length;
     if (totalImageCount > 10) {
@@ -120,69 +89,10 @@ export const useSubmitReview = (onSuccess?: () => void) => {
       return;
     }
     
-    try {
-      setUploading(true);
-      
-      const imagePaths = await uploadImages(user.id);
-      const videoPaths = await uploadVideo(user.id);
-      
-      // Update or create the review
-      if (reviewId) {
-        // Update existing review
-        const { error } = await supabase
-          .from('reviews')
-          .update({
-            content: data.content,
-            images: imagePaths,
-            videos: videoPaths,
-            status: data.isDraft ? 'DRAFT' : 'PUBLISHED',
-            updated_at: new Date().toISOString()
-          })
-          .eq('id', reviewId);
-          
-        if (error) throw error;
-        
-        toast.success(data.isDraft ? 'Draft updated successfully!' : 'Review updated successfully!');
-      } else {
-        // Create new review
-        const { error } = await supabase
-          .from('reviews')
-          .insert({
-            user_id: user.id,
-            content: data.content,
-            images: imagePaths,
-            videos: videoPaths,
-            status: data.isDraft ? 'DRAFT' : 'PUBLISHED'
-          });
-          
-        if (error) throw error;
-        
-        toast.success(data.isDraft ? 'Draft saved successfully!' : 'Review submitted successfully!');
-      }
-      
-      navigate(data.isDraft ? '/dashboard' : '/reviews');
-    } catch (error) {
-      console.error('Unexpected error:', error);
-      toast.error('An unexpected error occurred');
-    } finally {
-      setUploading(false);
-    }
+    await handleSubmit(data);
+    if (onSuccess) onSuccess();
   };
-  
-  const saveDraft = () => {
-    const values = form.getValues();
-    form.setValue('isDraft', true);
-    
-    // For drafts, allow empty content only if there are images or videos
-    if (values.content.length === 0 && selectedImages.length === 0 && existingImages.length === 0 
-        && !selectedVideo && !existingVideo) {
-      toast.error('Please add some content, images, or video to save as draft');
-      return;
-    }
-    
-    handleSubmit(form.getValues());
-  };
-  
+
   return {
     form,
     uploading,
@@ -191,9 +101,9 @@ export const useSubmitReview = (onSuccess?: () => void) => {
     imagePreviewUrls,
     imageError,
     existingImages,
-    isDraft: !!draftId,
-    isEditing: !!reviewId,
-    onSubmit: handleSubmit,
+    isDraft,
+    isEditing,
+    onSubmit,
     saveDraft,
     handleImageSelection: handleImageSelectionWithValidation,
     removeImage,
