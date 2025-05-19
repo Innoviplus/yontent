@@ -57,13 +57,8 @@ export const useReviewFormState = () => {
         }
         
         // Set form values - ensure content is properly handled
-        if (data.content) {
-          console.log('Setting form content:', data.content);
-          form.setValue('content', data.content);
-        } else {
-          console.log('No content to set');
-          form.setValue('content', '');
-        }
+        form.setValue('content', data.content || '');
+        console.log('Setting form content:', data.content || '');
         
         // Set draft status
         if (data.status === 'DRAFT') {
@@ -83,7 +78,7 @@ export const useReviewFormState = () => {
         }
         
         // Set existing video
-        if (data.videos && data.videos.length > 0) {
+        if (data.videos && data.videos.length > 0 && data.videos[0]) {
           console.log('Setting video:', data.videos[0]);
           setExistingVideo(data.videos[0]);
           setVideoPreviewUrl(data.videos[0]);

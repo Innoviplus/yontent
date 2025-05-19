@@ -1,3 +1,4 @@
+
 import { useReviewForm } from './review/useReviewForm';
 import { useReviewMedia } from './review/useReviewMedia';
 import { useReviewFormState } from './review/useReviewFormState';
@@ -47,13 +48,14 @@ export const useSubmitReview = (onSuccess?: () => void) => {
   useEffect(() => {
     if (isEditing) {
       console.log('Edit mode detected with data:', {
+        reviewId,
         content: form.getValues('content'),
         imageCount: imagePreviewUrls.length,
         hasVideo: !!videoPreviewUrl,
         isDraft
       });
     }
-  }, [isEditing, form, imagePreviewUrls, videoPreviewUrl, isDraft]);
+  }, [isEditing, form, imagePreviewUrls, videoPreviewUrl, isDraft, reviewId]);
   
   // Handle image reordering
   const reorderImages = (newOrder: string[]) => {

@@ -39,7 +39,7 @@ const SubmitReview = () => {
 
   // Enhanced logging for debugging
   useEffect(() => {
-    console.log('SubmitReview component loaded with:', {
+    console.log('SubmitReview component rendered with:', {
       reviewId,
       isDraft,
       isEditing,
@@ -47,13 +47,17 @@ const SubmitReview = () => {
       imagePreviewUrlsCount: imagePreviewUrls.length,
       imageUrls: imagePreviewUrls,
       videoUrl: videoPreviewUrl.length > 0 ? videoPreviewUrl[0] : 'No video',
-      content: form.getValues('content')
+      content: form.getValues('content') || 'No content'
     });
-    
-    if (isLoading) {
-      console.log('Loading review data...');
-    }
   }, [reviewId, isDraft, isEditing, isLoading, imagePreviewUrls, videoPreviewUrl, form]);
+
+  // Force form refetch if the content is empty but there should be content
+  useEffect(() => {
+    if (!isLoading && isEditing && !form.getValues('content') && 
+        imagePreviewUrls.length === 0 && videoPreviewUrl.length === 0) {
+      console.log('Form appears to be empty when it should have content. Check Supabase connection.');
+    }
+  }, [isLoading, isEditing, form, imagePreviewUrls, videoPreviewUrl]);
 
   return (
     <div className="min-h-screen bg-gray-50">

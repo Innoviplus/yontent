@@ -57,6 +57,7 @@ export const useReviewSubmitHandler = (
           .from('reviews')
           .update(reviewData)
           .eq('id', reviewId)
+          .eq('user_id', user.id)
           .select();
           
         if (error) {
@@ -91,6 +92,7 @@ export const useReviewSubmitHandler = (
       // Clear the reviews cache to ensure fresh data is loaded
       clearReviewsCache();
       
+      // Navigate to the appropriate page based on draft status
       navigate(data.isDraft ? '/dashboard' : '/reviews');
     } catch (error) {
       console.error('Unexpected error:', error);

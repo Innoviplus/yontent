@@ -1,5 +1,5 @@
 
-import { useState, useRef } from 'react';
+import { useState, useRef, useEffect } from 'react';
 import { Upload, X, Video, Clock, AlertCircle } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Progress } from '@/components/ui/progress';
@@ -27,8 +27,61 @@ const VideoUpload = ({
   const [validationProgress, setValidationProgress] = useState(0);
   const [validationError, setValidationError] = useState<string | null>(null);
   const [thumbnailUrl, setThumbnailUrl] = useState<string | null>(null);
+  const [videoLoaded, setVideoLoaded] = useState(false);
 
-  console.log('VideoUpload - videoPreviewUrls:', videoPreviewUrls);
+  console.log('VideoUpload rendered with videoPreviewUrls:', videoPreviewUrls);
+
+  // Generate thumbnail when an existing video is provided
+  useEffect(() => {
+    if (videoPreviewUrls && videoPreviewUrls.length > 0 && videoPreviewUrls[0]) {
+      const videoUrl = videoPreviewUrls[0];
+      console.log('Attempting to create thumbnail for existing video:', videoUrl);
+      
+      try {
+        const video = document.createElement('video');
+        video.crossOrigin = 'anonymous';
+        video.src = videoUrl;
+        video.muted = true;
+        video.preload = 'metadata';
+        
+        video.onloadedmetadata = () => {
+          console.log('Video metadata loaded, seeking to frame');
+          // Set to a slight offset for better thumbnails
+          video.currentTime = 0.5;
+        };
+        
+        video.onseeked = () => {
+          try {
+            console.log('Creating thumbnail from video frame');
+            // Create a canvas and draw the video frame
+            const canvas = document.createElement('canvas');
+            canvas.width = video.videoWidth;
+            canvas.height = video.videoHeight;
+            const ctx = canvas.getContext('2d');
+            
+            if (ctx) {
+              ctx.drawImage(video, 0, 0, canvas.width, canvas.height);
+              const thumbnail = canvas.toDataURL('image/jpeg');
+              console.log('Thumbnail created successfully');
+              setThumbnailUrl(thumbnail);
+              setVideoLoaded(true);
+            }
+          } catch (err) {
+            console.error('Error generating video thumbnail:', err);
+          }
+        };
+        
+        video.onerror = (e) => {
+          console.error('Error loading video for thumbnail generation:', e);
+          setVideoLoaded(false);
+        };
+        
+        console.log('Video element created and source set');
+      } catch (error) {
+        console.error('Exception in thumbnail creation:', error);
+      }
+    }
+  }, [videoPreviewUrls]);
 
   const handleFileChange = async (e: React.ChangeEvent<HTMLInputElement>) => {
     if (!e.target.files || e.target.files.length === 0) return;
@@ -119,34 +172,38 @@ const VideoUpload = ({
     }
   };
 
+  const hasVideo = videoPreviewUrls.length > 0 && videoPreviewUrls[0];
+
   return (
     <div className="space-y-4">
-      <div className="border-2 border-dashed rounded-xl p-6 text-center transition-colors hover:border-gray-400">
-        <div className="flex flex-col items-center justify-center space-y-2 text-gray-500">
-          <Video className="h-8 w-8 text-brand-slate/60" />
-          <p className="text-sm font-medium">Upload a video of your experience</p>
-          <p className="text-xs">Maximum 1 video • Max 60 seconds • MP4, MOV, WEBM formats</p>
+      {!hasVideo && (
+        <div className="border-2 border-dashed rounded-xl p-6 text-center transition-colors hover:border-gray-400">
+          <div className="flex flex-col items-center justify-center space-y-2 text-gray-500">
+            <Video className="h-8 w-8 text-brand-slate/60" />
+            <p className="text-sm font-medium">Upload a video of your experience</p>
+            <p className="text-xs">Maximum 1 video • Max 60 seconds • MP4, MOV, WEBM formats</p>
+          </div>
+          
+          <input
+            ref={fileInputRef}
+            type="file"
+            onChange={handleFileChange}
+            accept="video/*"
+            className="hidden"
+            disabled={uploading || validating}
+          />
+          
+          <Button
+            type="button"
+            onClick={triggerFileInput}
+            className="mt-4"
+            variant="outline"
+            disabled={uploading || validating}
+          >
+            Select Video
+          </Button>
         </div>
-        
-        <input
-          ref={fileInputRef}
-          type="file"
-          onChange={handleFileChange}
-          accept="video/*"
-          className="hidden"
-          disabled={uploading || validating}
-        />
-        
-        <Button
-          type="button"
-          onClick={triggerFileInput}
-          className="mt-4"
-          variant="outline"
-          disabled={uploading || validating || videoPreviewUrls.length > 0}
-        >
-          Select Video
-        </Button>
-      </div>
+      )}
       
       {validating && (
         <div className="space-y-2">
@@ -167,7 +224,7 @@ const VideoUpload = ({
         </Alert>
       )}
       
-      {videoPreviewUrls.length > 0 && (
+      {hasVideo && (
         <div className="space-y-4">
           <h3 className="text-sm font-medium">Uploaded Video:</h3>
           <div className="relative">
@@ -177,7 +234,20 @@ const VideoUpload = ({
               poster={thumbnailUrl || undefined}
               preload="metadata"
               className="w-full h-auto rounded-lg border border-gray-200"
+              onError={(e) => {
+                console.error('Video element error:', e);
+                setVideoLoaded(false);
+              }}
+              onLoadedData={() => setVideoLoaded(true)}
             />
+            {!videoLoaded && (
+              <div className="absolute inset-0 flex items-center justify-center bg-gray-100 rounded-lg">
+                <div className="text-center">
+                  <Video className="h-10 w-10 mx-auto text-gray-400 mb-2" />
+                  <p className="text-sm text-gray-500">Video loading...</p>
+                </div>
+              </div>
+            )}
             <div className="absolute top-2 right-2 flex space-x-2">
               <button
                 type="button"

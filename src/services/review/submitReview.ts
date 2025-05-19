@@ -8,13 +8,15 @@ export const submitReview = async ({
   content, 
   images,
   videos, 
-  isDraft = false 
+  isDraft = false,
+  reviewId = null // Add reviewId parameter to support updates
 }: { 
   userId: string; 
   content: string; 
   images: File[];
   videos?: File | null; 
   isDraft?: boolean;
+  reviewId?: string | null;
 }) => {
   try {
     // Upload and compress images
@@ -33,25 +35,49 @@ export const submitReview = async ({
       videoUrls.push(videoUrl);
     }
     
-    // Insert review
-    const { error: insertError } = await supabase
-      .from('reviews')
-      .insert({
-        user_id: userId,
-        content,
-        images: imageUrls,
-        videos: videoUrls,
-        views_count: 0,
-        likes_count: 0,
-        status: isDraft ? 'DRAFT' : 'PUBLISHED'
-      });
+    // Data to insert or update
+    const reviewData = {
+      user_id: userId,
+      content,
+      images: imageUrls,
+      videos: videoUrls,
+      status: isDraft ? 'DRAFT' : 'PUBLISHED'
+    };
+    
+    let result;
+    
+    // Insert or update based on reviewId
+    if (reviewId) {
+      // Update existing review
+      const { data, error } = await supabase
+        .from('reviews')
+        .update(reviewData)
+        .eq('id', reviewId)
+        .eq('user_id', userId)
+        .select();
+        
+      if (error) {
+        console.error('Error updating review:', error);
+        throw new Error(`Failed to update review: ${error.message}`);
+      }
       
-    if (insertError) {
-      console.error('Error creating review:', insertError);
-      throw new Error(`Failed to create review: ${insertError.message}`);
+      result = data;
+    } else {
+      // Insert new review
+      const { data, error } = await supabase
+        .from('reviews')
+        .insert(reviewData)
+        .select();
+        
+      if (error) {
+        console.error('Error creating review:', error);
+        throw new Error(`Failed to create review: ${error.message}`);
+      }
+      
+      result = data;
     }
     
-    return true;
+    return result;
   } catch (error) {
     console.error('Unexpected error:', error);
     if (error instanceof Error) {
