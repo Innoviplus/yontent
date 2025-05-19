@@ -1,120 +1,83 @@
 
 import { useState, useEffect } from 'react';
 import { useSearchParams } from 'react-router-dom';
-import { toast } from 'sonner';
-import { useAuth } from '@/contexts/AuthContext';
 import { supabase } from '@/integrations/supabase/client';
 import { useReviewForm } from './useReviewForm';
+import { useReviewMedia } from './useReviewMedia';
 
 export const useReviewFormState = () => {
-  const { user } = useAuth();
   const [searchParams] = useSearchParams();
-  const draftId = searchParams.get('draft');
-  const editId = searchParams.get('edit');
-  const reviewId = draftId || editId || null;
+  const reviewId = searchParams.get('draft') || searchParams.get('edit');
   
-  const [isLoading, setIsLoading] = useState(false);
-  const { 
-    form, 
-    setExistingImages, 
-    setImagePreviewUrls, 
-    setExistingVideo, 
-    setVideoPreviewUrl 
+  const [isLoading, setIsLoading] = useState<boolean>(!!reviewId);
+  const [isDraft, setIsDraft] = useState<boolean>(false);
+  const [isEditing, setIsEditing] = useState<boolean>(!!reviewId);
+  
+  const {
+    form,
+    setImagePreviewUrls,
+    setExistingImages,
+    setVideoPreviewUrl,
+    setExistingVideo
   } = useReviewForm();
-
-  // Fetch the existing review if we're editing
+  
+  // Load review data if in edit mode
   useEffect(() => {
-    const fetchReview = async () => {
-      if (!reviewId || !user) {
-        console.log('No reviewId or user, skipping fetch', { reviewId, userId: user?.id });
-        return;
-      }
-      
-      console.log('Fetching review data for:', reviewId, 'user:', user.id, 'draft status:', !!draftId);
-      setIsLoading(true);
+    const loadReviewData = async () => {
+      if (!reviewId) return;
       
       try {
-        // Fetch the review with a specific ID belonging to the current user
-        const { data, error } = await supabase
+        console.log('Loading review data for ID:', reviewId);
+        setIsLoading(true);
+        
+        const { data: review, error } = await supabase
           .from('reviews')
           .select('*')
           .eq('id', reviewId)
-          .eq('user_id', user.id)
           .single();
           
         if (error) {
-          console.error('Error fetching review data:', error);
-          toast.error('Failed to load review data');
-          setIsLoading(false);
-          return;
+          console.error('Error loading review:', error);
+          throw error;
         }
         
-        console.log('Retrieved review data:', data);
-        
-        if (!data) {
-          console.error('No review data found for ID:', reviewId);
-          toast.error('Review not found');
-          setIsLoading(false);
-          return;
+        if (review) {
+          console.log('Loaded review data:', review);
+          
+          // Set form values
+          form.setValue('content', review.content || '');
+          
+          // Set draft state
+          const isDraftReview = review.status === 'DRAFT';
+          setIsDraft(isDraftReview);
+          form.setValue('isDraft', isDraftReview);
+          
+          // Set images
+          if (review.images && Array.isArray(review.images)) {
+            setExistingImages(review.images);
+            setImagePreviewUrls(review.images);
+          }
+          
+          // Set videos
+          if (review.videos && Array.isArray(review.videos) && review.videos.length > 0) {
+            setExistingVideo(review.videos[0]);
+            setVideoPreviewUrl(review.videos[0]);
+          }
         }
-        
-        // Set form values immediately to avoid race conditions
-        if (data.content) {
-          console.log('Setting form content:', data.content);
-          form.setValue('content', data.content);
-        } else {
-          console.log('No content to set, using empty string');
-          form.setValue('content', '');
-        }
-        
-        // Set draft status
-        if (data.status === 'DRAFT') {
-          console.log('Setting isDraft to true');
-          form.setValue('isDraft', true);
-        } else {
-          console.log('Setting isDraft to false');
-          form.setValue('isDraft', false);
-        }
-        
-        // Set existing images
-        if (data.images && data.images.length > 0) {
-          console.log('Setting images:', data.images);
-          setExistingImages(data.images);
-          setImagePreviewUrls(data.images);
-        } else {
-          console.log('No images to set');
-          setExistingImages([]);
-          setImagePreviewUrls([]);
-        }
-        
-        // Set existing video
-        if (data.videos && data.videos.length > 0 && data.videos[0]) {
-          console.log('Setting video:', data.videos[0]);
-          setExistingVideo(data.videos[0]);
-          setVideoPreviewUrl(data.videos[0]);
-        } else {
-          console.log('No video to set');
-          setExistingVideo(null);
-          setVideoPreviewUrl('');
-        }
-        
       } catch (error) {
-        console.error('Unexpected error fetching review:', error);
-        toast.error('Failed to load review data');
+        console.error('Error in loadReviewData:', error);
       } finally {
         setIsLoading(false);
       }
     };
     
-    if (reviewId && user) {
-      fetchReview();
-    }
-  }, [reviewId, user, form, setExistingImages, setImagePreviewUrls, setExistingVideo, setVideoPreviewUrl, draftId]);
-
+    loadReviewData();
+  }, [reviewId, form]);
+  
   return {
     isLoading,
-    isDraft: !!draftId,
-    isEditing: !!reviewId,
+    isDraft,
+    isEditing,
     reviewId
   };
 };
