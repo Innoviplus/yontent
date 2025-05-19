@@ -37,45 +37,53 @@ export const useReviewSubmitHandler = (
       // Content is now optional, using empty string as default
       const reviewContent = data.content || '';
       
+      // Add proper object structure for insert/update
+      const reviewData = {
+        content: reviewContent,
+        images: imagePaths,
+        videos: videoPaths,
+        status: data.isDraft ? 'DRAFT' : 'PUBLISHED',
+        updated_at: new Date().toISOString()
+      };
+      
+      console.log('Preparing to save review data:', reviewData);
+      
       // Update or create the review
       if (reviewId) {
         console.log('Updating existing review:', reviewId);
         // Update existing review
-        const { error } = await supabase
+        const { data: updatedData, error } = await supabase
           .from('reviews')
-          .update({
-            content: reviewContent,
-            images: imagePaths,
-            videos: videoPaths,
-            status: data.isDraft ? 'DRAFT' : 'PUBLISHED',
-            updated_at: new Date().toISOString()
-          })
-          .eq('id', reviewId);
+          .update(reviewData)
+          .eq('id', reviewId)
+          .select();
           
         if (error) {
           console.error('Error updating review:', error);
           throw error;
         }
         
+        console.log('Review updated successfully:', updatedData);
         toast.success(data.isDraft ? 'Draft updated successfully!' : 'Review updated successfully!');
       } else {
         console.log('Creating new review');
-        // Create new review
-        const { error } = await supabase
+        // Create new review with the user ID
+        const newReviewData = {
+          ...reviewData,
+          user_id: user.id
+        };
+        
+        const { data: insertedData, error } = await supabase
           .from('reviews')
-          .insert({
-            user_id: user.id,
-            content: reviewContent,
-            images: imagePaths,
-            videos: videoPaths,
-            status: data.isDraft ? 'DRAFT' : 'PUBLISHED'
-          });
+          .insert(newReviewData)
+          .select();
           
         if (error) {
           console.error('Error creating review:', error);
           throw error;
         }
         
+        console.log('Review created successfully:', insertedData);
         toast.success(data.isDraft ? 'Draft saved successfully!' : 'Review submitted successfully!');
       }
       

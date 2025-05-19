@@ -12,14 +12,18 @@ interface ReviewImagesProps {
   videos?: string[];
 }
 
-const ReviewImages = ({ images, videos = [] }: ReviewImagesProps) => {
+const ReviewImages = ({ images = [], videos = [] }: ReviewImagesProps) => {
   const [currentImageIndex, setCurrentImageIndex] = useState(0);
-  const [showVideo, setShowVideo] = useState(videos.length > 0);
+  const [showVideo, setShowVideo] = useState(false);
   const [videoThumbnail, setVideoThumbnail] = useState<string | null>(null);
   const isMobile = useIsMobile();
   
   const hasMedia = images.length > 0 || videos.length > 0;
   const mediaCount = images.length + videos.length;
+  
+  // Log for debugging
+  console.log('ReviewImages - videos:', videos);
+  console.log('ReviewImages - images:', images);
   
   // Reset to first image when images array changes
   useEffect(() => {
@@ -29,7 +33,8 @@ const ReviewImages = ({ images, videos = [] }: ReviewImagesProps) => {
   
   // Generate a thumbnail for the video if it exists
   useEffect(() => {
-    if (videos.length > 0) {
+    if (videos && videos.length > 0 && videos[0]) {
+      console.log('Creating video thumbnail for:', videos[0]);
       const videoEl = document.createElement('video');
       videoEl.crossOrigin = 'anonymous';
       videoEl.src = videos[0];
@@ -50,7 +55,9 @@ const ReviewImages = ({ images, videos = [] }: ReviewImagesProps) => {
             
             if (ctx) {
               ctx.drawImage(videoEl, 0, 0, canvas.width, canvas.height);
-              setVideoThumbnail(canvas.toDataURL('image/jpeg'));
+              const thumbnail = canvas.toDataURL('image/jpeg');
+              console.log('Video thumbnail created successfully');
+              setVideoThumbnail(thumbnail);
             }
           } catch (err) {
             console.error('Error generating video thumbnail:', err);
@@ -58,17 +65,17 @@ const ReviewImages = ({ images, videos = [] }: ReviewImagesProps) => {
         };
       };
       
-      videoEl.onerror = () => {
-        console.error('Error loading video for thumbnail generation');
+      videoEl.onerror = (e) => {
+        console.error('Error loading video for thumbnail generation:', e);
       };
     }
   }, [videos]);
 
-  // If no images, display a placeholder
+  // If no images or videos, display a placeholder
   if (!hasMedia) {
     return (
       <div className="h-[400px] md:h-[500px] bg-gray-100 flex items-center justify-center">
-        <p className="text-gray-400">No images available</p>
+        <p className="text-gray-400">No images or videos available</p>
       </div>
     );
   }
@@ -86,7 +93,7 @@ const ReviewImages = ({ images, videos = [] }: ReviewImagesProps) => {
     <div className="relative overflow-hidden">
       {/* Main Image or Video - with increased height */}
       <AspectRatio ratio={isMobile ? 4/5 : 16/9} className="bg-gray-100">
-        {showVideo && videos.length > 0 ? (
+        {showVideo && videos.length > 0 && videos[0] ? (
           <VideoPlayer videoUrl={videos[0]} />
         ) : (
           <ImageDisplay 

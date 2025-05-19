@@ -19,6 +19,8 @@ export const useFetchReview = (id: string | undefined) => {
         setLoading(true);
       }
       
+      console.log(`Fetching review data for ID: ${id}`);
+      
       // Get the review data with actual likes count from reviews table
       const { data, error } = await supabase
         .from('reviews')
@@ -30,6 +32,7 @@ export const useFetchReview = (id: string | undefined) => {
           videos,
           views_count,
           likes_count,
+          status,
           created_at,
           profiles:user_id (
             id,
@@ -47,6 +50,9 @@ export const useFetchReview = (id: string | undefined) => {
       }
       
       if (data) {
+        // Log the raw data for debugging
+        console.log('Raw review data from DB:', data);
+        
         // Explicitly verify likes_count is present in the data
         if (data.likes_count === undefined || data.likes_count === null) {
           console.warn('Likes count is undefined or null in fetched data');
@@ -63,6 +69,7 @@ export const useFetchReview = (id: string | undefined) => {
           viewsCount: data.views_count,
           // Make sure to use the likes_count from the database and default to 0 if not present
           likesCount: data.likes_count || 0,
+          status: data.status || 'PUBLISHED',
           createdAt: new Date(data.created_at),
           user: data.profiles ? {
             id: data.profiles.id || data.user_id,
@@ -76,9 +83,9 @@ export const useFetchReview = (id: string | undefined) => {
         
         setReview(transformedReview);
         
-        // Log the review data for debugging
-        console.log('Fetched review data:', transformedReview);
-        console.log('Like count from database:', data.likes_count);
+        // Log the transformed review data for debugging
+        console.log('Transformed review data:', transformedReview);
+        console.log('Video URLs:', data.videos);
         
         // Only track the view if this is not a refresh operation
         if (!skipViewTracking && !isRefetching) {
@@ -86,8 +93,8 @@ export const useFetchReview = (id: string | undefined) => {
         }
       }
     } catch (error) {
-      console.error('Unexpected error:', error);
-      toast.error('An unexpected error occurred');
+      console.error('Unexpected error in fetchReview:', error);
+      toast.error('An unexpected error occurred while loading the review');
     } finally {
       setLoading(false);
       setIsRefetching(false);

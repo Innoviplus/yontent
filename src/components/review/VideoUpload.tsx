@@ -28,10 +28,13 @@ const VideoUpload = ({
   const [validationError, setValidationError] = useState<string | null>(null);
   const [thumbnailUrl, setThumbnailUrl] = useState<string | null>(null);
 
+  console.log('VideoUpload - videoPreviewUrls:', videoPreviewUrls);
+
   const handleFileChange = async (e: React.ChangeEvent<HTMLInputElement>) => {
     if (!e.target.files || e.target.files.length === 0) return;
     
     const file = e.target.files[0];
+    console.log('Video file selected:', file.name, file.size, file.type);
     
     if (!file.type.startsWith('video/')) {
       setValidationError('Please select a video file');
@@ -79,6 +82,8 @@ const VideoUpload = ({
             setValidationProgress(100);
             setValidationError(null);
             setValidating(false);
+            
+            console.log('Video validated successfully, sending to parent component');
             onFileSelect(e.target.files);
             
             // Cleanup
