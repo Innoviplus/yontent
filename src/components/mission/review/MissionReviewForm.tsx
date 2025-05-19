@@ -1,4 +1,5 @@
 
+import { useState, useEffect } from 'react';
 import { Mission } from '@/lib/types';
 import { Form, FormControl, FormField, FormItem, FormLabel, FormMessage } from '@/components/ui/form';
 import { Textarea } from '@/components/ui/textarea';
@@ -22,6 +23,16 @@ const MissionReviewForm = ({ mission, userId }: MissionReviewFormProps) => {
     onSubmit
   } = useReviewSubmission(mission, userId);
 
+  const [wordCount, setWordCount] = useState(0);
+
+  // Calculate word count whenever content changes
+  useEffect(() => {
+    const content = form.watch('content') || '';
+    const plainText = content.replace(/<[^>]*>?/gm, '');
+    const words = plainText.trim().split(/\s+/).filter(word => word.length > 0);
+    setWordCount(words.length);
+  }, [form.watch('content')]);
+
   return (
     <Form {...form}>
       <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-6">
@@ -38,11 +49,16 @@ const MissionReviewForm = ({ mission, userId }: MissionReviewFormProps) => {
           name="content"
           render={({ field }) => (
             <FormItem>
-              <FormLabel>Review</FormLabel>
+              <div className="flex justify-between items-center">
+                <FormLabel>Review</FormLabel>
+                <span className={`text-xs ${wordCount < 100 ? 'text-red-500' : 'text-green-500'}`}>
+                  {wordCount} / 100 words {wordCount < 100 ? 'required' : '✓'}
+                </span>
+              </div>
               <FormControl>
                 <Textarea 
                   {...field}
-                  placeholder="Share your experience with the product..."
+                  placeholder="Share your experience with the product (minimum 100 words required)..."
                   className="min-h-[200px]"
                 />
               </FormControl>
