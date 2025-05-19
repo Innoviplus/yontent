@@ -34,13 +34,11 @@ export const useReviewFormState = () => {
       setIsLoading(true);
       
       try {
-        // Instead of using single() which throws an error if no row is found,
-        // let's use maybeSingle() for more graceful handling
+        // Use maybeSingle() instead of single() for more graceful handling
         const { data, error } = await supabase
           .from('reviews')
           .select('*')
           .eq('id', reviewId)
-          .eq('user_id', user.id)
           .maybeSingle();
           
         if (error) {

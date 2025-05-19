@@ -114,7 +114,7 @@ export const useSubmitReview = (onSuccess?: () => void) => {
     removeImage,
     reorderImages,
     setImageError,
-    // Video related returns - Fix here: return a string[] instead of string[][]
+    // Fix: Return videoPreviewUrl as a string array
     videoPreviewUrl: videoPreviewUrl ? [videoPreviewUrl] : [],
     videoError,
     handleVideoSelection,

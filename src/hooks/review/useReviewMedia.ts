@@ -22,9 +22,9 @@ export const useReviewMedia = () => {
   const handleImageSelection = (files: FileList | null) => {
     if (!files) return;
     
-    // Check for maximum image count (10 total)
-    if (selectedImages.length + existingImages.length + files.length > 10) {
-      setImageError('You can only upload up to 10 images in total');
+    // Check for maximum image count (12 total)
+    if (selectedImages.length + existingImages.length + files.length > 12) {
+      setImageError('You can only upload up to 12 images in total');
       return;
     }
     
@@ -45,23 +45,26 @@ export const useReviewMedia = () => {
 
   // Remove image (either from selected or existing)
   const removeImage = (index: number) => {
+    // Copy arrays to avoid direct mutation
+    const newExistingImages = [...existingImages];
+    const newImagePreviewUrls = [...imagePreviewUrls];
+    
     if (index < existingImages.length) {
       // Remove from existing images
-      setExistingImages(prev => prev.filter((_, i) => i !== index));
-      setImagePreviewUrls(prev => {
-        const newPreviews = [...prev];
-        newPreviews.splice(index, 1);
-        return newPreviews;
-      });
+      newExistingImages.splice(index, 1);
+      setExistingImages(newExistingImages);
+      
+      // Also remove from preview urls
+      newImagePreviewUrls.splice(index, 1);
+      setImagePreviewUrls(newImagePreviewUrls);
     } else {
       // Adjust index for selectedImages array
       const adjustedIndex = index - existingImages.length;
       setSelectedImages(prev => prev.filter((_, i) => i !== adjustedIndex));
-      setImagePreviewUrls(prev => {
-        const newPreviews = [...prev];
-        newPreviews.splice(index, 1);
-        return newPreviews;
-      });
+      
+      // Remove from preview urls as well
+      newImagePreviewUrls.splice(index, 1);
+      setImagePreviewUrls(newImagePreviewUrls);
     }
   };
 
@@ -87,7 +90,7 @@ export const useReviewMedia = () => {
 
   // Remove video
   const removeVideo = () => {
-    if (videoPreviewUrl) {
+    if (videoPreviewUrl && !existingVideo) {
       URL.revokeObjectURL(videoPreviewUrl);
     }
     

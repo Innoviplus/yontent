@@ -30,7 +30,6 @@ const SubmitReview = () => {
     removeImage,
     reorderImages,
     setImageError,
-    // Video related props
     videoPreviewUrl,
     videoError,
     handleVideoSelection,
