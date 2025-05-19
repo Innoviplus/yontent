@@ -1,3 +1,4 @@
+
 import { useState, useRef, useEffect } from 'react';
 import { Upload, X, Video, Clock, AlertCircle } from 'lucide-react';
 import { Button } from '@/components/ui/button';
@@ -47,9 +48,8 @@ const VideoUpload = ({
       video.src = videoUrl;
       video.muted = true;
       video.preload = 'metadata';
-      video.style.display = 'none'; // Hide the element
-      document.body.appendChild(video); // Needed for some browsers
-        
+      
+      // Add event listeners first
       video.onloadedmetadata = () => {
         console.log('Video metadata loaded, seeking to frame');
         // Set to a slight offset for better thumbnails
@@ -70,11 +70,8 @@ const VideoUpload = ({
             const thumbnail = canvas.toDataURL('image/jpeg');
             console.log('Thumbnail created successfully');
             setThumbnailUrl(thumbnail);
-            setVideoLoaded(true);
           }
-
-          // Clean up
-          document.body.removeChild(video);
+          setVideoLoaded(true);
         } catch (err) {
           console.error('Error generating video thumbnail:', err);
           setVideoLoaded(true); // Still mark as loaded even if thumbnail fails
@@ -84,13 +81,18 @@ const VideoUpload = ({
       video.onerror = (e) => {
         console.error('Error loading video for thumbnail generation:', e);
         setVideoLoaded(true); // Mark as loaded anyway to show the video element
-        // Clean up
+      };
+      
+      // Now load the video
+      document.body.appendChild(video); // Needed for some browsers
+      video.style.display = 'none'; // Hide the element
+        
+      // Clean up function
+      return () => {
         if (document.body.contains(video)) {
           document.body.removeChild(video);
         }
       };
-        
-      console.log('Video element created and source set');
     } catch (error) {
       console.error('Exception in thumbnail creation:', error);
       setVideoLoaded(true); // Mark as loaded anyway to show the video element
@@ -121,6 +123,7 @@ const VideoUpload = ({
       const video = document.createElement('video');
       video.preload = 'metadata';
       
+      // Set up event handlers first
       video.onloadedmetadata = () => {
         setValidationProgress(50);
         
@@ -132,42 +135,42 @@ const VideoUpload = ({
         }
         
         video.currentTime = 0.1;
-        
-        video.onseeked = () => {
-          try {
-            const canvas = document.createElement('canvas');
-            canvas.width = video.videoWidth;
-            canvas.height = video.videoHeight;
-            const ctx = canvas.getContext('2d');
-            
-            if (ctx) {
-              ctx.drawImage(video, 0, 0, canvas.width, canvas.height);
-              const thumbnailDataUrl = canvas.toDataURL('image/jpeg');
-              setThumbnailUrl(thumbnailDataUrl);
-            }
-            
-            setValidationProgress(100);
-            setValidationError(null);
-            setValidating(false);
-            
-            console.log('Video validated successfully, sending to parent component');
-            onFileSelect(e.target.files);
-            
-            // Cleanup
-            URL.revokeObjectURL(video.src);
-          } catch (err) {
-            console.error('Error generating thumbnail:', err);
-            setValidationError('Could not generate video preview');
-            setValidating(false);
-            URL.revokeObjectURL(video.src);
+      };
+      
+      video.onseeked = () => {
+        try {
+          const canvas = document.createElement('canvas');
+          canvas.width = video.videoWidth;
+          canvas.height = video.videoHeight;
+          const ctx = canvas.getContext('2d');
+          
+          if (ctx) {
+            ctx.drawImage(video, 0, 0, canvas.width, canvas.height);
+            const thumbnailDataUrl = canvas.toDataURL('image/jpeg');
+            setThumbnailUrl(thumbnailDataUrl);
           }
-        };
-        
-        video.onerror = () => {
-          setValidationError('Could not validate video. Please try another file.');
+          
+          setValidationProgress(100);
+          setValidationError(null);
+          setValidating(false);
+          
+          console.log('Video validated successfully, sending to parent component');
+          onFileSelect(e.target.files);
+          
+          // Cleanup
+          URL.revokeObjectURL(video.src);
+        } catch (err) {
+          console.error('Error generating thumbnail:', err);
+          setValidationError('Could not generate video preview');
           setValidating(false);
           URL.revokeObjectURL(video.src);
-        };
+        }
+      };
+      
+      video.onerror = () => {
+        setValidationError('Could not validate video. Please try another file.');
+        setValidating(false);
+        URL.revokeObjectURL(video.src);
       };
       
       // Set source after adding event listeners

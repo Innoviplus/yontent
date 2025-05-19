@@ -30,7 +30,7 @@ export const useReviewFormState = () => {
         return;
       }
       
-      console.log('Fetching review data for:', reviewId, 'user:', user.id);
+      console.log('Fetching review data for:', reviewId, 'user:', user.id, 'draft status:', !!draftId);
       setIsLoading(true);
       
       try {
@@ -45,6 +45,7 @@ export const useReviewFormState = () => {
         if (error) {
           console.error('Error fetching review data:', error);
           toast.error('Failed to load review data');
+          setIsLoading(false);
           return;
         }
         
@@ -53,51 +54,49 @@ export const useReviewFormState = () => {
         if (!data) {
           console.error('No review data found for ID:', reviewId);
           toast.error('Review not found');
+          setIsLoading(false);
           return;
         }
         
-        // Set form values with timeout to ensure React has time to process
-        setTimeout(() => {
-          // Set content
-          if (data.content) {
-            form.setValue('content', data.content);
-            console.log('Setting form content:', data.content);
-          } else {
-            console.log('No content to set, using empty string');
-            form.setValue('content', '');
-          }
-          
-          // Set draft status
-          if (data.status === 'DRAFT') {
-            console.log('Setting isDraft to true');
-            form.setValue('isDraft', true);
-          } else {
-            console.log('Setting isDraft to false');
-            form.setValue('isDraft', false);
-          }
-          
-          // Set existing images
-          if (data.images && data.images.length > 0) {
-            console.log('Setting images:', data.images);
-            setExistingImages(data.images);
-            setImagePreviewUrls(data.images);
-          } else {
-            console.log('No images to set');
-            setExistingImages([]);
-            setImagePreviewUrls([]);
-          }
-          
-          // Set existing video
-          if (data.videos && data.videos.length > 0 && data.videos[0]) {
-            console.log('Setting video:', data.videos[0]);
-            setExistingVideo(data.videos[0]);
-            setVideoPreviewUrl(data.videos[0]);
-          } else {
-            console.log('No video to set');
-            setExistingVideo(null);
-            setVideoPreviewUrl('');
-          }
-        }, 100);
+        // Set form values immediately to avoid race conditions
+        if (data.content) {
+          console.log('Setting form content:', data.content);
+          form.setValue('content', data.content);
+        } else {
+          console.log('No content to set, using empty string');
+          form.setValue('content', '');
+        }
+        
+        // Set draft status
+        if (data.status === 'DRAFT') {
+          console.log('Setting isDraft to true');
+          form.setValue('isDraft', true);
+        } else {
+          console.log('Setting isDraft to false');
+          form.setValue('isDraft', false);
+        }
+        
+        // Set existing images
+        if (data.images && data.images.length > 0) {
+          console.log('Setting images:', data.images);
+          setExistingImages(data.images);
+          setImagePreviewUrls(data.images);
+        } else {
+          console.log('No images to set');
+          setExistingImages([]);
+          setImagePreviewUrls([]);
+        }
+        
+        // Set existing video
+        if (data.videos && data.videos.length > 0 && data.videos[0]) {
+          console.log('Setting video:', data.videos[0]);
+          setExistingVideo(data.videos[0]);
+          setVideoPreviewUrl(data.videos[0]);
+        } else {
+          console.log('No video to set');
+          setExistingVideo(null);
+          setVideoPreviewUrl('');
+        }
         
       } catch (error) {
         console.error('Unexpected error fetching review:', error);
@@ -107,8 +106,10 @@ export const useReviewFormState = () => {
       }
     };
     
-    fetchReview();
-  }, [reviewId, user, form, setExistingImages, setImagePreviewUrls, setExistingVideo, setVideoPreviewUrl]);
+    if (reviewId && user) {
+      fetchReview();
+    }
+  }, [reviewId, user, form, setExistingImages, setImagePreviewUrls, setExistingVideo, setVideoPreviewUrl, draftId]);
 
   return {
     isLoading,
