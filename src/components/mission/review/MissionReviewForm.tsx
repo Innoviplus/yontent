@@ -4,6 +4,7 @@ import { Mission } from '@/lib/types';
 import { Form, FormControl, FormField, FormItem, FormLabel, FormMessage } from '@/components/ui/form';
 import { Textarea } from '@/components/ui/textarea';
 import ImageUpload from '@/components/review/ImageUpload';
+import VideoUpload from '@/components/review/VideoUpload';
 import ReviewFormButtons from './ReviewFormButtons';
 import { useReviewSubmission } from './useReviewSubmission';
 
@@ -18,8 +19,12 @@ const MissionReviewForm = ({ mission, userId }: MissionReviewFormProps) => {
     isSubmitting,
     imagePreviewUrls,
     imageError,
+    videoPreviewUrl,
+    videoError,
     handleImageSelection,
     removeImage,
+    handleVideoSelection,
+    removeVideo,
     onSubmit
   } = useReviewSubmission(mission, userId);
 
@@ -42,6 +47,15 @@ const MissionReviewForm = ({ mission, userId }: MissionReviewFormProps) => {
           onRemoveImage={removeImage}
           error={imageError}
           uploading={isSubmitting}
+        />
+        
+        <VideoUpload 
+          videoPreviewUrls={videoPreviewUrl ? [videoPreviewUrl] : []}
+          onFileSelect={handleVideoSelection}
+          onRemoveVideo={() => removeVideo(0)}
+          error={videoError}
+          uploading={isSubmitting}
+          maxDuration={60}
         />
         
         <FormField

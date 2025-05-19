@@ -15,6 +15,11 @@ export const useReviewSubmission = (mission: Mission, userId: string) => {
   const [imagePreviewUrls, setImagePreviewUrls] = useState<string[]>([]);
   const [imageError, setImageError] = useState<string | null>(null);
   
+  // Add video state
+  const [selectedVideo, setSelectedVideo] = useState<File | null>(null);
+  const [videoPreviewUrl, setVideoPreviewUrl] = useState<string>('');
+  const [videoError, setVideoError] = useState<string | null>(null);
+  
   const form = useForm<ReviewFormValues>({
     resolver: zodResolver(reviewSchema),
     defaultValues: {
@@ -49,6 +54,31 @@ export const useReviewSubmission = (mission: Mission, userId: string) => {
     setImagePreviewUrls(prev => prev.filter((_, i) => i !== index));
   };
 
+  // Handle video selection
+  const handleVideoSelection = (files: FileList | null) => {
+    if (!files || files.length === 0) return;
+    
+    // Only allow one video
+    const videoFile = files[0];
+    
+    // Create preview URL
+    const videoUrl = URL.createObjectURL(videoFile);
+    
+    setSelectedVideo(videoFile);
+    setVideoPreviewUrl(videoUrl);
+    setVideoError(null);
+  };
+
+  // Remove video
+  const removeVideo = (index: number) => {
+    if (videoPreviewUrl) {
+      URL.revokeObjectURL(videoPreviewUrl);
+    }
+    
+    setSelectedVideo(null);
+    setVideoPreviewUrl('');
+  };
+
   const onSubmit = async (values: ReviewFormValues) => {
     if (selectedImages.length === 0) {
       setImageError('Please upload at least one image');
@@ -59,7 +89,7 @@ export const useReviewSubmission = (mission: Mission, userId: string) => {
     
     try {
       // Upload each image to Supabase storage
-      const uploadedUrls: string[] = [];
+      const uploadedImageUrls: string[] = [];
       
       for (const file of selectedImages) {
         const fileExt = file.name.split('.').pop();
@@ -78,7 +108,30 @@ export const useReviewSubmission = (mission: Mission, userId: string) => {
           .from('missions')
           .getPublicUrl(filePath);
           
-        uploadedUrls.push(data.publicUrl);
+        uploadedImageUrls.push(data.publicUrl);
+      }
+      
+      // Upload video if selected
+      let uploadedVideoUrl: string | null = null;
+      
+      if (selectedVideo) {
+        const videoExt = selectedVideo.name.split('.').pop();
+        const videoName = `video_${Math.random().toString(36).substring(2, 15)}.${videoExt}`;
+        const videoPath = `reviews/${userId}/${mission.id}/${videoName}`;
+        
+        const { error: videoUploadError } = await supabase.storage
+          .from('missions')
+          .upload(videoPath, selectedVideo);
+          
+        if (videoUploadError) {
+          throw videoUploadError;
+        }
+        
+        const { data: videoData } = supabase.storage
+          .from('missions')
+          .getPublicUrl(videoPath);
+          
+        uploadedVideoUrl = videoData.publicUrl;
       }
       
       // Create a review in the reviews table
@@ -87,7 +140,8 @@ export const useReviewSubmission = (mission: Mission, userId: string) => {
         .insert({
           user_id: userId,
           content: values.content,
-          images: uploadedUrls,
+          images: uploadedImageUrls,
+          videos: uploadedVideoUrl ? [uploadedVideoUrl] : [],
           status: 'PUBLISHED'
         })
         .select('id')
@@ -96,7 +150,6 @@ export const useReviewSubmission = (mission: Mission, userId: string) => {
       if (reviewError) throw reviewError;
       
       // Save the participation record with the review ID
-      // This is the line with the error - changing user_id to user_id_p
       const { error: insertError } = await supabase
         .from('mission_participations')
         .insert({
@@ -105,7 +158,8 @@ export const useReviewSubmission = (mission: Mission, userId: string) => {
           status: 'PENDING',
           submission_data: {
             review_id: reviewData.id,
-            review_images: uploadedUrls,
+            review_images: uploadedImageUrls,
+            review_video: uploadedVideoUrl,
             submission_type: 'REVIEW'
           }
         });
@@ -127,8 +181,12 @@ export const useReviewSubmission = (mission: Mission, userId: string) => {
     isSubmitting,
     imagePreviewUrls,
     imageError,
+    videoPreviewUrl,
+    videoError,
     handleImageSelection,
     removeImage,
+    handleVideoSelection,
+    removeVideo,
     onSubmit
   };
 };
