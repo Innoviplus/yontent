@@ -2,6 +2,7 @@
 import { useForm } from 'react-hook-form';
 import { zodResolver } from '@hookform/resolvers/zod';
 import { z } from 'zod';
+import { useState } from 'react';
 
 // Form schema with isDraft property
 export const reviewFormSchema = z.object({
@@ -20,7 +21,43 @@ export const useReviewForm = () => {
     },
   });
 
+  // Image state
+  const [selectedImages, setSelectedImages] = useState<File[]>([]);
+  const [imagePreviewUrls, setImagePreviewUrls] = useState<string[]>([]);
+  const [imageError, setImageError] = useState<string | null>(null);
+  const [existingImages, setExistingImages] = useState<string[]>([]);
+  
+  // Video state
+  const [selectedVideo, setSelectedVideo] = useState<File | null>(null);
+  const [videoPreviewUrl, setVideoPreviewUrl] = useState<string>('');
+  const [videoError, setVideoError] = useState<string | null>(null);
+  const [existingVideo, setExistingVideo] = useState<string | null>(null);
+  
+  // Upload state
+  const [uploading, setUploading] = useState(false);
+
   return {
-    form
+    form,
+    // Image related
+    selectedImages,
+    setSelectedImages,
+    imagePreviewUrls,
+    setImagePreviewUrls,
+    imageError,
+    setImageError,
+    existingImages,
+    setExistingImages,
+    // Video related
+    selectedVideo,
+    setSelectedVideo,
+    videoPreviewUrl,
+    setVideoPreviewUrl,
+    videoError,
+    setVideoError,
+    existingVideo,
+    setExistingVideo,
+    // Upload state
+    uploading,
+    setUploading
   };
 };

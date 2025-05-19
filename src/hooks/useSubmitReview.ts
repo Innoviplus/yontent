@@ -16,7 +16,7 @@ export const useSubmitReview = (onSuccess?: () => void) => {
     imageError,
     existingImages,
     setImageError,
-    handleImageSelection: handleRawImageSelection,
+    handleImageSelection,
     removeImage,
     uploadImages,
     // Video related
@@ -51,12 +51,16 @@ export const useSubmitReview = (onSuccess?: () => void) => {
   // Custom image selection handler that sets error if too many files are selected
   const handleImageSelectionWithValidation = (files: FileList | null) => {
     if (!files) {
-      setImageError("You can only upload up to 10 images. Please select fewer images.");
+      return;
+    }
+    
+    if (files.length + imagePreviewUrls.length > 12) {
+      setImageError("You can only upload up to 12 images. Please select fewer images.");
       return;
     }
     
     // Otherwise use the regular handler
-    handleRawImageSelection(files);
+    handleImageSelection(files);
   };
   
   // Save as draft functionality
@@ -78,8 +82,8 @@ export const useSubmitReview = (onSuccess?: () => void) => {
   const onSubmit = async (data: ReviewFormValues) => {
     // Check for maximum image count
     const totalImageCount = selectedImages.length + existingImages.length;
-    if (totalImageCount > 10) {
-      setImageError(`You can only upload up to 10 images. Please remove ${totalImageCount - 10} images.`);
+    if (totalImageCount > 12) {
+      setImageError(`You can only upload up to 12 images. Please remove ${totalImageCount - 12} images.`);
       return;
     }
     

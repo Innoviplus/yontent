@@ -5,6 +5,7 @@ import { toast } from 'sonner';
 import { useAuth } from '@/contexts/AuthContext';
 import { useReviewForm, ReviewFormValues } from './useReviewForm';
 import { submitReview } from '@/services/review';
+import { useReviewMedia } from './useReviewMedia';
 
 export const useReviewSubmit = (onSuccess?: () => void) => {
   const { user } = useAuth();
@@ -12,11 +13,14 @@ export const useReviewSubmit = (onSuccess?: () => void) => {
   const [uploading, setUploading] = useState(false);
   
   const {
-    form,
+    form
+  } = useReviewForm();
+
+  const {
     selectedImages,
     imagePreviewUrls,
     imageError,
-    existingImages,
+    existingImages, 
     setImageError,
     // Video related properties
     selectedVideo,
@@ -24,7 +28,7 @@ export const useReviewSubmit = (onSuccess?: () => void) => {
     videoError,
     existingVideo,
     setVideoError
-  } = useReviewForm();
+  } = useReviewMedia();
   
   // Submit the review
   const handleSubmit = async (data: ReviewFormValues) => {

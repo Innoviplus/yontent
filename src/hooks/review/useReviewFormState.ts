@@ -14,14 +14,25 @@ export const useReviewFormState = () => {
   const reviewId = draftId || editId || null;
   
   const [isLoading, setIsLoading] = useState(false);
-  const { form, setExistingImages, setImagePreviewUrls, setExistingVideo, setVideoPreviewUrl } = useReviewForm();
+  const { 
+    form, 
+    setExistingImages, 
+    setImagePreviewUrls, 
+    setExistingVideo, 
+    setVideoPreviewUrl 
+  } = useReviewForm();
 
   // Fetch the existing review if we're editing
   useEffect(() => {
     const fetchReview = async () => {
-      if (!reviewId || !user) return;
+      if (!reviewId || !user) {
+        console.log('No reviewId or user, skipping fetch', { reviewId, userId: user?.id });
+        return;
+      }
       
+      console.log('Fetching review data for:', reviewId, 'user:', user.id);
       setIsLoading(true);
+      
       try {
         const { data, error } = await supabase
           .from('reviews')
@@ -30,19 +41,28 @@ export const useReviewFormState = () => {
           .eq('user_id', user.id)
           .single();
           
-        if (error) throw error;
+        if (error) {
+          console.error('Error fetching review data:', error);
+          toast.error('Failed to load review data');
+          throw error;
+        }
+        
+        console.log('Retrieved review data:', data);
         
         // Set form values
         form.setValue('content', data.content);
+        console.log('Set form content:', data.content);
         
         // Set existing images
         if (data.images && data.images.length > 0) {
+          console.log('Setting images:', data.images);
           setExistingImages(data.images);
           setImagePreviewUrls(data.images);
         }
         
         // Set existing video
         if (data.videos && data.videos.length > 0) {
+          console.log('Setting video:', data.videos[0]);
           setExistingVideo(data.videos[0]);
           setVideoPreviewUrl(data.videos[0]);
         }

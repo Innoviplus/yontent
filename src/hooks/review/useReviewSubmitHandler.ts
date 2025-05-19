@@ -27,6 +27,14 @@ export const useReviewSubmitHandler = (
       const imagePaths = await uploadImages(user.id);
       const videoPaths = await uploadVideo(user.id);
       
+      console.log('Uploading review:', {
+        content: data.content,
+        isDraft: data.isDraft,
+        images: imagePaths,
+        videos: videoPaths, 
+        reviewId
+      });
+      
       // Update or create the review
       if (reviewId) {
         // Update existing review
