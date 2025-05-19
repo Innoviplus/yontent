@@ -1,3 +1,4 @@
+
 import { useReviewForm } from './review/useReviewForm';
 import { useReviewMedia } from './review/useReviewMedia';
 import { useReviewFormState } from './review/useReviewFormState';
@@ -38,6 +39,13 @@ export const useSubmitReview = (onSuccess?: () => void) => {
     isEditing,
     reviewId
   } = useReviewFormState();
+  
+  // Import the handleSubmit function from useReviewSubmitHandler
+  const { handleSubmit } = useReviewSubmitHandler(
+    reviewId,
+    uploadImages,
+    uploadVideo
+  );
   
   // Log loaded data for debugging
   useEffect(() => {
