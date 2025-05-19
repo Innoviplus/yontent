@@ -5,7 +5,7 @@ import { Review } from '@/lib/types';
 import { cn } from '@/lib/utils';
 import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
 import { useIsMobile } from '@/hooks/use-mobile';
-import { memo, useState, useEffect } from 'react';
+import { memo, useState } from 'react';
 
 interface ReviewCardProps {
   review: Review;
@@ -34,9 +34,9 @@ const ReviewCard = memo(({ review, className }: ReviewCardProps) => {
     // Use review ID to generate a consistent aspect ratio per item
     const seed = review.id.split('').reduce((acc, char) => acc + char.charCodeAt(0), 0);
     
-    // Create more variation in heights (from 1.0 to 1.8)
+    // Create more variation in heights (from 1.2 to 2.0)
     // This will generate taller images like in the reference
-    const baseRatio = 1.0;
+    const baseRatio = 1.2;
     const variation = (seed % 100) / 125; // +/- 40% variation
     return baseRatio + variation;
   };

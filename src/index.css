@@ -89,14 +89,15 @@
   position: relative;
   width: 100%;
   min-height: 600px; /* Base height that will be updated dynamically */
+  margin: 0 auto;
 }
 
 .masonry-item {
   position: absolute;
-  transition: transform 0.2s ease-in-out;
-  margin-bottom: 12px;
-  break-inside: avoid;
+  transition: transform 0.2s ease-in-out, opacity 0.2s ease;
   will-change: transform, opacity;
+  backface-visibility: hidden; /* Reduce flickering */
+  transform: translateZ(0); /* Force GPU acceleration */
 }
 
 .masonry-item:hover {
@@ -104,27 +105,39 @@
   z-index: 10;
 }
 
-/* Responsive masonry item widths - these are the default widths
-   The actual positioning is handled by JavaScript */
+/* Media queries for responsive layout - These define default widths
+   Actual positioning is handled by JavaScript */
 @media (max-width: 639px) {
+  .masonry-container {
+    padding: 0 6px;
+  }
   .masonry-item {
     width: 50%;
   }
 }
 
 @media (min-width: 640px) and (max-width: 767px) {
+  .masonry-container {
+    padding: 0 6px;
+  }
   .masonry-item {
     width: 33.333%;
   }
 }
 
 @media (min-width: 768px) and (max-width: 1023px) {
+  .masonry-container {
+    padding: 0 6px;
+  }
   .masonry-item {
     width: 25%;
   }
 }
 
 @media (min-width: 1024px) {
+  .masonry-container {
+    padding: 0 6px;
+  }
   .masonry-item {
     width: 20%;
   }

@@ -17,6 +17,7 @@ const ReviewsGrid = memo(({ reviews }: ReviewsGridProps) => {
   const [isLoading, setIsLoading] = useState(true);
   const gridRef = useRef<HTMLDivElement>(null);
   const resizeObserverRef = useRef<ResizeObserver | null>(null);
+  const layoutTimeoutRef = useRef<number | null>(null);
   
   // Only set reviews when the data is available
   useEffect(() => {
@@ -45,6 +46,11 @@ const ReviewsGrid = memo(({ reviews }: ReviewsGridProps) => {
     const grid = gridRef.current;
     if (!grid || isLoading) return;
 
+    // Clear any pending layout operations to prevent flickering
+    if (layoutTimeoutRef.current) {
+      window.clearTimeout(layoutTimeoutRef.current);
+    }
+
     // Calculate columns based on viewport width
     const columns = getColumnCount();
     const items = Array.from(grid.children) as HTMLElement[];
@@ -66,17 +72,11 @@ const ReviewsGrid = memo(({ reviews }: ReviewsGridProps) => {
       item.style.padding = '0 6px';
       
       // Update the column height
-      // We need to wait a bit for the image to render to get accurate height
-      setTimeout(() => {
-        columnHeights[shortestColumnIndex] += item.offsetHeight + columnGap;
-        
-        // Update the grid height to the height of the tallest column
-        grid.style.height = `${Math.max(...columnHeights)}px`;
-      }, 10);
+      columnHeights[shortestColumnIndex] += item.offsetHeight + columnGap;
+      
+      // Update the grid height to the height of the tallest column
+      grid.style.height = `${Math.max(...columnHeights) || 600}px`;
     });
-    
-    // Initial grid height (will be updated as items load)
-    grid.style.height = `${Math.max(...columnHeights)}px`;
   }, [isLoading, getColumnCount]);
 
   // Initialize and clean up layout effect
@@ -110,6 +110,9 @@ const ReviewsGrid = memo(({ reviews }: ReviewsGridProps) => {
         resizeObserverRef.current.disconnect();
       }
       window.removeEventListener('resize', handleResize);
+      if (layoutTimeoutRef.current) {
+        window.clearTimeout(layoutTimeoutRef.current);
+      }
     };
   }, [createMasonryLayout, isLoading, loadedReviews]);
 
@@ -117,12 +120,20 @@ const ReviewsGrid = memo(({ reviews }: ReviewsGridProps) => {
   useEffect(() => {
     const handleImageLoad = () => {
       if (!isLoading) {
-        createMasonryLayout();
+        // Debounce layout recalculation to prevent excessive reflows
+        if (layoutTimeoutRef.current) {
+          window.clearTimeout(layoutTimeoutRef.current);
+        }
+        
+        layoutTimeoutRef.current = window.setTimeout(() => {
+          createMasonryLayout();
+          layoutTimeoutRef.current = null;
+        }, 50);
       }
     };
 
     // Wait for all images to load before calculating final layout
-    const images = document.querySelectorAll('.masonry-container img');
+    const images = document.querySelectorAll('.masonry-item img');
     images.forEach(img => {
       if (img.complete) {
         handleImageLoad();
