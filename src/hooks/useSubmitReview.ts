@@ -1,3 +1,4 @@
+
 import { useReviewForm } from './review/useReviewForm';
 import { useReviewMedia } from './review/useReviewMedia';
 import { useReviewFormState } from './review/useReviewFormState';
@@ -10,16 +11,18 @@ import { useAuth } from '@/contexts/AuthContext';
 export const useSubmitReview = (onSuccess?: () => void) => {
   const { user } = useAuth();
   
-  // Get the review state first to access reviewContent
+  // Get the review state first to access reviewContent and other draft data
   const {
     isLoading,
     isDraft,
     isEditing,
     reviewId,
-    reviewContent
+    reviewContent,
+    existingImages: loadedImages,
+    existingVideo: loadedVideo
   } = useReviewFormState();
   
-  // Create a single instance of the form hook
+  // Create a single instance of the form hook with initial content
   const reviewForm = useReviewForm(reviewContent);
   const {
     form,
@@ -34,7 +37,22 @@ export const useSubmitReview = (onSuccess?: () => void) => {
     setUploading
   } = reviewForm;
   
-  // Use the review media hook
+  // Initialize media with existing content from the database
+  useEffect(() => {
+    if (loadedImages && loadedImages.length > 0) {
+      console.log('Setting existing images from database:', loadedImages);
+      setExistingImages(loadedImages);
+      setImagePreviewUrls(loadedImages);
+    }
+    
+    if (loadedVideo) {
+      console.log('Setting existing video from database:', loadedVideo);
+      setExistingVideo(loadedVideo);
+      setVideoPreviewUrl(loadedVideo);
+    }
+  }, [loadedImages, loadedVideo]);
+  
+  // Use the review media hook for handling uploads
   const {
     selectedImages,
     imagePreviewUrls,
@@ -51,7 +69,7 @@ export const useSubmitReview = (onSuccess?: () => void) => {
     uploadVideo,
     // Upload state
     uploading
-  } = useReviewMedia();
+  } = useReviewMedia(loadedImages, loadedVideo);
   
   // Import the handleSubmit function from useReviewSubmitHandler
   const { handleSubmit } = useReviewSubmitHandler(
@@ -60,45 +78,18 @@ export const useSubmitReview = (onSuccess?: () => void) => {
     uploadVideo
   );
   
-  // Log loaded data for debugging
-  useEffect(() => {
-    if (isEditing) {
-      const formContent = form.getValues('content');
-      console.log('Edit mode detected with data:', {
-        reviewId,
-        content: reviewContent && reviewContent.length > 0 
-          ? reviewContent.substring(0, 50) + '...' 
-          : (formContent && formContent.length > 0 
-              ? formContent.substring(0, 50) + '...' 
-              : 'No content'),
-        imageCount: imagePreviewUrls.length,
-        hasVideo: !!videoPreviewUrl,
-        isDraft
-      });
-      
-      // Try to set the content directly if needed
-      if (reviewContent && (!formContent || formContent.length === 0)) {
-        console.log('Setting form content directly in useSubmitReview');
-        form.setValue('content', reviewContent);
-      }
-    }
-  }, [isEditing, form, imagePreviewUrls, videoPreviewUrl, isDraft, reviewId, reviewContent]);
-  
-  // Handle image reordering
+  // Handle image reordering - no conditionals
   const reorderImages = (newOrder: string[]) => {
     console.log('Reordering images to:', newOrder);
     
-    // Simply update the arrays with the new order
-    // Don't call hooks here!
     if (newOrder.length > 0) {
       console.log('Setting reordered images');
-      // Use the setter functions from the hooks
       setExistingImages(newOrder);
       setImagePreviewUrls(newOrder);
     }
   };
   
-  // Custom image selection handler that sets error if too many files are selected
+  // Custom image selection handler - no conditionals
   const handleImageSelectionWithValidation = (files: FileList | null) => {
     if (!files) {
       return;
@@ -109,16 +100,14 @@ export const useSubmitReview = (onSuccess?: () => void) => {
       return;
     }
     
-    // Otherwise use the regular handler
     handleImageSelection(files);
   };
   
-  // Save as draft functionality - make content optional for draft
+  // Save as draft functionality - no conditionals
   const saveDraft = () => {
     const values = form.getValues();
     form.setValue('isDraft', true);
     
-    // For drafts, require at least one of: content, images, or video
     if (!values.content && selectedImages.length === 0 && existingImages.length === 0 
         && !videoPreviewUrl) {
       toast.error('Please add some content, images, or video to save as draft');
@@ -128,16 +117,14 @@ export const useSubmitReview = (onSuccess?: () => void) => {
     handleSubmit(form.getValues());
   };
   
-  // Form submission wrapper
+  // Form submission wrapper - no conditionals
   const onSubmit = async (data: ReviewFormValues) => {
-    // Check for maximum image count
     const totalImageCount = selectedImages.length + existingImages.length;
     if (totalImageCount > 12) {
       setImageError(`You can only upload up to 12 images. Please remove ${totalImageCount - 12} images.`);
       return;
     }
     
-    // For published reviews, only require images if content is empty
     if (!data.isDraft && !data.content && selectedImages.length === 0 && existingImages.length === 0 && !videoPreviewUrl) {
       setImageError("Please add some text, images, or video to your review");
       return;

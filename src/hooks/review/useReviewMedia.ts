@@ -1,8 +1,8 @@
 
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import { uploadReviewImage, uploadReviewVideo } from '@/services/review/uploadMedia';
 
-export const useReviewMedia = () => {
+export const useReviewMedia = (initialImages?: string[], initialVideo?: string | null) => {
   // Image state
   const [selectedImages, setSelectedImages] = useState<File[]>([]);
   const [imagePreviewUrls, setImagePreviewUrls] = useState<string[]>([]);
@@ -17,6 +17,21 @@ export const useReviewMedia = () => {
   
   // Upload state
   const [uploading, setUploading] = useState(false);
+
+  // Initialize with existing media if provided
+  useEffect(() => {
+    if (initialImages && initialImages.length > 0) {
+      setExistingImages(initialImages);
+      setImagePreviewUrls(initialImages);
+      console.log('Initialized with existing images:', initialImages);
+    }
+    
+    if (initialVideo) {
+      setExistingVideo(initialVideo);
+      setVideoPreviewUrl(initialVideo);
+      console.log('Initialized with existing video:', initialVideo);
+    }
+  }, [initialImages, initialVideo]);
   
   // Handle image selection
   const handleImageSelection = (files: FileList | null) => {

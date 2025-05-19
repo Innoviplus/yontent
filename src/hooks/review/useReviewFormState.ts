@@ -12,11 +12,16 @@ export const useReviewFormState = () => {
   const [isDraft, setIsDraft] = useState<boolean>(false);
   const [isEditing, setIsEditing] = useState<boolean>(!!reviewId);
   const [reviewContent, setReviewContent] = useState<string>('');
+  const [existingImages, setExistingImages] = useState<string[]>([]);
+  const [existingVideo, setExistingVideo] = useState<string | null>(null);
   
-  // Load review data if in edit mode
+  // Load review data if in edit mode - always executed regardless of reviewId
   useEffect(() => {
     const loadReviewData = async () => {
-      if (!reviewId) return;
+      if (!reviewId) {
+        setIsLoading(false);
+        return;
+      }
       
       try {
         console.log('Loading review data for ID:', reviewId);
@@ -42,6 +47,18 @@ export const useReviewFormState = () => {
             setReviewContent(review.content);
           }
           
+          // Set images if they exist
+          if (review.images && review.images.length > 0) {
+            console.log('Setting existing images:', review.images);
+            setExistingImages(review.images);
+          }
+          
+          // Set video if it exists
+          if (review.videos && review.videos.length > 0) {
+            console.log('Setting existing video:', review.videos[0]);
+            setExistingVideo(review.videos[0]);
+          }
+          
           // Set draft state
           const isDraftReview = review.status === 'DRAFT';
           setIsDraft(isDraftReview);
@@ -56,10 +73,8 @@ export const useReviewFormState = () => {
       }
     };
     
-    if (reviewId) {
-      console.log('Initializing review data loading for ID:', reviewId);
-      loadReviewData();
-    }
+    // Always call loadReviewData - it will early return if no reviewId
+    loadReviewData();
   }, [reviewId]);
   
   return {
@@ -67,6 +82,8 @@ export const useReviewFormState = () => {
     isDraft,
     isEditing,
     reviewId,
-    reviewContent
+    reviewContent,
+    existingImages,
+    existingVideo
   };
 };

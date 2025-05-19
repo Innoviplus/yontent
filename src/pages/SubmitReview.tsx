@@ -12,6 +12,7 @@ import { useEffect } from 'react';
 import { toast } from 'sonner';
 
 const SubmitReview = () => {
+  // All hooks must be called at the top level, in the same order on every render
   const {
     form,
     uploading,
@@ -33,10 +34,10 @@ const SubmitReview = () => {
     reviewContent
   } = useSubmitReview();
 
-  // Enhanced logging for debugging - executed once on component mount
+  // Single useEffect for logging - always present
   useEffect(() => {
     // Log key info on initial load
-    console.log('SubmitReview component initial render:', {
+    console.log('SubmitReview component mounted with:', {
       isLoading,
       isEditing,
       isDraft,
@@ -51,7 +52,7 @@ const SubmitReview = () => {
     if (isEditing && reviewContent) {
       toast.success('Draft review loaded successfully');
     }
-  }, [isLoading, isEditing, isDraft, reviewContent, imagePreviewUrls, videoPreviewUrl, form]);
+  }, []); // Empty dependency array to run only once on mount
 
   // If loading, show skeleton UI
   if (isLoading) {
@@ -81,14 +82,6 @@ const SubmitReview = () => {
       </div>
     );
   }
-
-  // Initialize form value with the content if available and form is empty
-  useEffect(() => {
-    if (reviewContent && !form.getValues('content')) {
-      console.log('Setting form content from reviewContent');
-      form.setValue('content', reviewContent);
-    }
-  }, [reviewContent, form]);
   
   return (
     <div className="min-h-screen bg-gray-50">

@@ -13,6 +13,7 @@ export const reviewFormSchema = z.object({
 export type ReviewFormValues = z.infer<typeof reviewFormSchema>;
 
 export const useReviewForm = (initialContent?: string) => {
+  // Initialize form with resolver and default values
   const form = useForm<ReviewFormValues>({
     resolver: zodResolver(reviewFormSchema),
     defaultValues: {
@@ -37,7 +38,7 @@ export const useReviewForm = (initialContent?: string) => {
   // Upload state
   const [uploading, setUploading] = useState(false);
   
-  // Debug logging for form values
+  // Debug logging for form values - always present
   useEffect(() => {
     const subscription = form.watch((value) => {
       console.log('Form values changed:', value);
@@ -46,7 +47,7 @@ export const useReviewForm = (initialContent?: string) => {
     return () => subscription.unsubscribe();
   }, [form]);
   
-  // Save form state to sessionStorage to prevent loss
+  // Save form state to sessionStorage to prevent loss - always present
   useEffect(() => {
     try {
       // Get form values
@@ -63,10 +64,10 @@ export const useReviewForm = (initialContent?: string) => {
     }
   }, [form.watch('content')]);
 
-  // Set content when initialContent changes
+  // Set content when initialContent changes - always present
   useEffect(() => {
-    if (initialContent) {
-      console.log('Setting content with:', initialContent.substring(0, 50) + '...');
+    if (initialContent && initialContent.trim().length > 0) {
+      console.log('Setting form content with initial value:', initialContent.substring(0, 50) + '...');
       form.setValue('content', initialContent);
     }
   }, [initialContent, form]);
