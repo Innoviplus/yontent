@@ -45,13 +45,14 @@ const SubmitReview = () => {
       isEditing,
       isLoading,
       imagePreviewUrlsCount: imagePreviewUrls.length,
-      videoUrl: videoPreviewUrl.length > 0 ? 'Has video' : 'No video'
+      videoUrl: videoPreviewUrl.length > 0 ? 'Has video' : 'No video',
+      content: form.getValues('content')
     });
     
     if (isLoading) {
       console.log('Loading review data...');
     }
-  }, [reviewId, isDraft, isEditing, isLoading, imagePreviewUrls, videoPreviewUrl]);
+  }, [reviewId, isDraft, isEditing, isLoading, imagePreviewUrls, videoPreviewUrl, form]);
 
   return (
     <div className="min-h-screen bg-gray-50">
@@ -107,7 +108,7 @@ const SubmitReview = () => {
                         <FormLabel>Review</FormLabel>
                         <FormControl>
                           <RichTextEditor 
-                            value={field.value}
+                            value={field.value || ''}
                             onChange={field.onChange}
                             placeholder="Share your experience..."
                             simpleToolbar={true}

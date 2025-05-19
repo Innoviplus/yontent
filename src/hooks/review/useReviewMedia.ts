@@ -45,24 +45,25 @@ export const useReviewMedia = () => {
 
   // Remove image (either from selected or existing)
   const removeImage = (index: number) => {
-    // Copy arrays to avoid direct mutation
-    const newExistingImages = [...existingImages];
-    const newImagePreviewUrls = [...imagePreviewUrls];
+    // Get total count of all images
+    const totalImageUrls = [...imagePreviewUrls];
     
-    if (index < existingImages.length) {
-      // Remove from existing images
-      newExistingImages.splice(index, 1);
-      setExistingImages(newExistingImages);
+    if (index >= 0 && index < totalImageUrls.length) {
+      // Check if we're removing from existing images
+      if (index < existingImages.length) {
+        const newExistingImages = [...existingImages];
+        newExistingImages.splice(index, 1);
+        setExistingImages(newExistingImages);
+      } else {
+        // Removing from newly selected images
+        const selectedIndex = index - existingImages.length;
+        const newSelectedImages = [...selectedImages];
+        newSelectedImages.splice(selectedIndex, 1);
+        setSelectedImages(newSelectedImages);
+      }
       
-      // Also remove from preview urls
-      newImagePreviewUrls.splice(index, 1);
-      setImagePreviewUrls(newImagePreviewUrls);
-    } else {
-      // Adjust index for selectedImages array
-      const adjustedIndex = index - existingImages.length;
-      setSelectedImages(prev => prev.filter((_, i) => i !== adjustedIndex));
-      
-      // Remove from preview urls as well
+      // Update the preview URLs
+      const newImagePreviewUrls = [...imagePreviewUrls];
       newImagePreviewUrls.splice(index, 1);
       setImagePreviewUrls(newImagePreviewUrls);
     }

@@ -1,10 +1,10 @@
-
 import { useReviewForm } from './review/useReviewForm';
 import { useReviewMedia } from './review/useReviewMedia';
 import { useReviewFormState } from './review/useReviewFormState';
 import { useReviewSubmitHandler } from './review/useReviewSubmitHandler';
 import { toast } from 'sonner';
 import { ReviewFormValues } from './review/useReviewForm';
+import { useEffect } from 'react';
 
 export const useSubmitReview = (onSuccess?: () => void) => {
   const {
@@ -43,10 +43,28 @@ export const useSubmitReview = (onSuccess?: () => void) => {
     handleSubmit
   } = useReviewSubmitHandler(reviewId, uploadImages, uploadVideo);
   
+  // Log loaded data for debugging
+  useEffect(() => {
+    if (isEditing) {
+      console.log('Edit mode detected with data:', {
+        content: form.getValues('content'),
+        imageCount: imagePreviewUrls.length,
+        hasVideo: !!videoPreviewUrl,
+        isDraft
+      });
+    }
+  }, [isEditing, form, imagePreviewUrls, videoPreviewUrl, isDraft]);
+  
   // Handle image reordering
   const reorderImages = (newOrder: string[]) => {
-    existingImages.splice(0, existingImages.length, ...newOrder);
-    imagePreviewUrls.splice(0, imagePreviewUrls.length, ...newOrder);
+    // Update both arrays to maintain consistency
+    const newExistingImages = [...existingImages];
+    newExistingImages.splice(0, newExistingImages.length, ...newOrder);
+    
+    const newImagePreviewUrls = [...imagePreviewUrls];
+    newImagePreviewUrls.splice(0, newImagePreviewUrls.length, ...newOrder);
+    
+    // This approach ensures we keep the arrays synchronized
   };
   
   // Custom image selection handler that sets error if too many files are selected

@@ -71,6 +71,10 @@ export const useReviewFormState = () => {
           console.log('Setting images:', data.images);
           setExistingImages(data.images);
           setImagePreviewUrls(data.images);
+        } else {
+          console.log('No images to set');
+          setExistingImages([]);
+          setImagePreviewUrls([]);
         }
         
         // Set existing video
@@ -78,6 +82,10 @@ export const useReviewFormState = () => {
           console.log('Setting video:', data.videos[0]);
           setExistingVideo(data.videos[0]);
           setVideoPreviewUrl(data.videos[0]);
+        } else {
+          console.log('No video to set');
+          setExistingVideo(null);
+          setVideoPreviewUrl('');
         }
       } catch (error) {
         console.error('Unexpected error fetching review:', error);
