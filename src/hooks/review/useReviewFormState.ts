@@ -34,13 +34,13 @@ export const useReviewFormState = () => {
       setIsLoading(true);
       
       try {
-        // Use maybeSingle() for more graceful handling but include user ID filter to ensure ownership
+        // Fetch the review with a specific ID belonging to the current user
         const { data, error } = await supabase
           .from('reviews')
           .select('*')
           .eq('id', reviewId)
           .eq('user_id', user.id)
-          .maybeSingle();
+          .single();
           
         if (error) {
           console.error('Error fetching review data:', error);
@@ -48,22 +48,27 @@ export const useReviewFormState = () => {
           return;
         }
         
+        console.log('Retrieved review data:', data);
+        
         if (!data) {
           console.error('No review data found for ID:', reviewId);
           toast.error('Review not found');
           return;
         }
         
-        console.log('Successfully retrieved review data:', data);
-        
-        // Set form values - ensure content is handled properly even if empty
-        form.setValue('content', data.content || '');
-        console.log('Set form content:', data.content);
+        // Set form values - ensure content is properly handled
+        if (data.content) {
+          console.log('Setting form content:', data.content);
+          form.setValue('content', data.content);
+        } else {
+          console.log('No content to set');
+          form.setValue('content', '');
+        }
         
         // Set draft status
         if (data.status === 'DRAFT') {
-          form.setValue('isDraft', true);
           console.log('Setting isDraft to true');
+          form.setValue('isDraft', true);
         }
         
         // Set existing images

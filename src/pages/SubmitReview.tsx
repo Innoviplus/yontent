@@ -37,7 +37,7 @@ const SubmitReview = () => {
     setVideoError
   } = useSubmitReview();
 
-  // Log for debugging
+  // Enhanced logging for debugging
   useEffect(() => {
     console.log('SubmitReview component loaded with:', {
       reviewId,
@@ -45,7 +45,8 @@ const SubmitReview = () => {
       isEditing,
       isLoading,
       imagePreviewUrlsCount: imagePreviewUrls.length,
-      videoUrl: videoPreviewUrl.length > 0 ? 'Has video' : 'No video',
+      imageUrls: imagePreviewUrls,
+      videoUrl: videoPreviewUrl.length > 0 ? videoPreviewUrl[0] : 'No video',
       content: form.getValues('content')
     });
     

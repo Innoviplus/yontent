@@ -91,6 +91,7 @@ export const useReviewMedia = () => {
 
   // Remove video
   const removeVideo = () => {
+    // Revoke object URL to prevent memory leaks
     if (videoPreviewUrl && !existingVideo) {
       URL.revokeObjectURL(videoPreviewUrl);
     }
@@ -105,6 +106,7 @@ export const useReviewMedia = () => {
     let imagePaths = [...existingImages];
     
     if (selectedImages.length > 0) {
+      console.log(`Uploading ${selectedImages.length} new images`);
       for (const image of selectedImages) {
         try {
           const imageUrl = await uploadReviewImage(userId, image);
@@ -114,6 +116,8 @@ export const useReviewMedia = () => {
           throw error;
         }
       }
+    } else {
+      console.log(`No new images to upload. Using ${existingImages.length} existing images.`);
     }
     
     return imagePaths;
@@ -124,10 +128,12 @@ export const useReviewMedia = () => {
     let videoPaths: string[] = [];
     
     if (existingVideo) {
+      console.log('Using existing video:', existingVideo);
       videoPaths.push(existingVideo);
     }
     
     if (selectedVideo) {
+      console.log('Uploading new video');
       try {
         const videoUrl = await uploadReviewVideo(userId, selectedVideo);
         videoPaths = [videoUrl]; // Replace existing video path if any
