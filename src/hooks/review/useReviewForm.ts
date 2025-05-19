@@ -4,9 +4,9 @@ import { zodResolver } from '@hookform/resolvers/zod';
 import { z } from 'zod';
 import { useState } from 'react';
 
-// Form schema with isDraft property
+// Form schema with isDraft property and optional content
 export const reviewFormSchema = z.object({
-  content: z.string().min(10, { message: "Review must be at least 10 characters" }),
+  content: z.string().optional().default(''),
   isDraft: z.boolean().optional().default(false)
 });
 

@@ -64,13 +64,13 @@ export const useSubmitReview = (onSuccess?: () => void) => {
     handleImageSelection(files);
   };
   
-  // Save as draft functionality
+  // Save as draft functionality - make content optional for draft
   const saveDraft = () => {
     const values = form.getValues();
     form.setValue('isDraft', true);
     
-    // For drafts, allow empty content only if there are images or videos
-    if (values.content.length === 0 && selectedImages.length === 0 && existingImages.length === 0 
+    // For drafts, require at least one of: content, images, or video
+    if (!values.content && selectedImages.length === 0 && existingImages.length === 0 
         && !videoPreviewUrl) {
       toast.error('Please add some content, images, or video to save as draft');
       return;
@@ -88,9 +88,9 @@ export const useSubmitReview = (onSuccess?: () => void) => {
       return;
     }
     
-    // For published reviews, validate that at least one image is selected or exists
-    if (!data.isDraft && selectedImages.length === 0 && existingImages.length === 0) {
-      setImageError("At least one image is required");
+    // For published reviews, only require images if content is empty
+    if (!data.isDraft && !data.content && selectedImages.length === 0 && existingImages.length === 0 && !videoPreviewUrl) {
+      setImageError("Please add some text, images, or video to your review");
       return;
     }
     
@@ -114,7 +114,7 @@ export const useSubmitReview = (onSuccess?: () => void) => {
     removeImage,
     reorderImages,
     setImageError,
-    // Fix: Return videoPreviewUrl as a string array
+    // Return videoPreviewUrl as a string array as expected by the VideoUpload component
     videoPreviewUrl: videoPreviewUrl ? [videoPreviewUrl] : [],
     videoError,
     handleVideoSelection,

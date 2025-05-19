@@ -34,6 +34,9 @@ export const useReviewSubmitHandler = (
       const videoPaths = await uploadVideo(user.id);
       console.log('Video paths after upload:', videoPaths);
       
+      // Content is now optional, using empty string as default
+      const reviewContent = data.content || '';
+      
       // Update or create the review
       if (reviewId) {
         console.log('Updating existing review:', reviewId);
@@ -41,7 +44,7 @@ export const useReviewSubmitHandler = (
         const { error } = await supabase
           .from('reviews')
           .update({
-            content: data.content,
+            content: reviewContent,
             images: imagePaths,
             videos: videoPaths,
             status: data.isDraft ? 'DRAFT' : 'PUBLISHED',
@@ -62,7 +65,7 @@ export const useReviewSubmitHandler = (
           .from('reviews')
           .insert({
             user_id: user.id,
-            content: data.content,
+            content: reviewContent,
             images: imagePaths,
             videos: videoPaths,
             status: data.isDraft ? 'DRAFT' : 'PUBLISHED'

@@ -34,11 +34,12 @@ export const useReviewFormState = () => {
       setIsLoading(true);
       
       try {
-        // Use maybeSingle() instead of single() for more graceful handling
+        // Use maybeSingle() for more graceful handling but include user ID filter to ensure ownership
         const { data, error } = await supabase
           .from('reviews')
           .select('*')
           .eq('id', reviewId)
+          .eq('user_id', user.id)
           .maybeSingle();
           
         if (error) {
@@ -55,11 +56,9 @@ export const useReviewFormState = () => {
         
         console.log('Successfully retrieved review data:', data);
         
-        // Set form values
-        if (data.content) {
-          form.setValue('content', data.content);
-          console.log('Set form content:', data.content);
-        }
+        // Set form values - ensure content is handled properly even if empty
+        form.setValue('content', data.content || '');
+        console.log('Set form content:', data.content);
         
         // Set draft status
         if (data.status === 'DRAFT') {
