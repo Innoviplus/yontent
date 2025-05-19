@@ -9,6 +9,8 @@ const CACHE_EXPIRY = 2 * 60 * 1000; // 2 minutes cache expiry for more frequent 
 export const fetchReviews = async (sortBy: string, userId?: string): Promise<Review[]> => {
   try {
     const cacheKey = `${sortBy}-${userId || 'no-user'}`;
+    
+    // Force a cache miss when requested to get fresh data (useful after new review submissions)
     const cachedResult = reviewsCache.get(cacheKey);
     
     // Return cached data if it exists and hasn't expired
@@ -95,4 +97,9 @@ export const fetchReviews = async (sortBy: string, userId?: string): Promise<Rev
     console.error('Unexpected error:', error);
     throw new Error('An unexpected error occurred');
   }
+};
+
+// Function to clear the cache after a review is submitted
+export const clearReviewsCache = () => {
+  reviewsCache.clear();
 };

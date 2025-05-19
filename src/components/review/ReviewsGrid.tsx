@@ -175,8 +175,7 @@ const ReviewsGrid = memo(({ reviews }: ReviewsGridProps) => {
       {loadedReviews.map((review) => (
         <div 
           key={review.id} 
-          className="masonry-item"
-          onClick={() => handleReviewClick(review.id)}
+          className="masonry-item mb-3"
         >
           <ReviewCard review={review} />
         </div>

@@ -5,6 +5,7 @@ import { toast } from 'sonner';
 import { useAuth } from '@/contexts/AuthContext';
 import { supabase } from '@/integrations/supabase/client';
 import { ReviewFormValues } from './useReviewForm';
+import { clearReviewsCache } from '@/services/review';
 
 export const useReviewSubmitHandler = (
   reviewId: string | null,
@@ -86,6 +87,9 @@ export const useReviewSubmitHandler = (
         console.log('Review created successfully:', insertedData);
         toast.success(data.isDraft ? 'Draft saved successfully!' : 'Review submitted successfully!');
       }
+      
+      // Clear the reviews cache to ensure fresh data is loaded
+      clearReviewsCache();
       
       navigate(data.isDraft ? '/dashboard' : '/reviews');
     } catch (error) {
