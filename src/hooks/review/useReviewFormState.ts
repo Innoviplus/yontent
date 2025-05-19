@@ -61,6 +61,10 @@ export const useReviewFormState = () => {
             console.log('Setting images:', review.images);
             setExistingImages(review.images);
             setImagePreviewUrls(review.images);
+          } else {
+            // Reset the image arrays when there are no images
+            setExistingImages([]);
+            setImagePreviewUrls([]);
           }
           
           // Set videos
@@ -68,6 +72,10 @@ export const useReviewFormState = () => {
             console.log('Setting video:', review.videos[0]);
             setExistingVideo(review.videos[0]);
             setVideoPreviewUrl(review.videos[0]);
+          } else {
+            // Reset video state when there's no video
+            setExistingVideo(null);
+            setVideoPreviewUrl('');
           }
         } else {
           console.warn('No review found with ID:', reviewId);

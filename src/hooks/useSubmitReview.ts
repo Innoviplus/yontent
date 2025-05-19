@@ -1,4 +1,3 @@
-
 import { useReviewForm } from './review/useReviewForm';
 import { useReviewMedia } from './review/useReviewMedia';
 import { useReviewFormState } from './review/useReviewFormState';
@@ -66,14 +65,26 @@ export const useSubmitReview = (onSuccess?: () => void) => {
   
   // Handle image reordering
   const reorderImages = (newOrder: string[]) => {
-    // Update both arrays to maintain consistency
-    const newExistingImages = [...existingImages];
-    newExistingImages.splice(0, newExistingImages.length, ...newOrder);
+    console.log('Reordering images to:', newOrder);
     
-    const newImagePreviewUrls = [...imagePreviewUrls];
-    newImagePreviewUrls.splice(0, newImagePreviewUrls.length, ...newOrder);
+    // Simply update the arrays with the new order
+    const newExistingImages = [...newOrder];
+    const newImagePreviewUrls = [...newOrder];
     
-    // This approach ensures we keep the arrays synchronized
+    if (existingImages.length !== newOrder.length) {
+      console.warn('Image arrays length mismatch during reordering:', {
+        existingImagesLength: existingImages.length,
+        newOrderLength: newOrder.length
+      });
+    }
+    
+    // This ensures we keep the arrays synchronized
+    if (newOrder.length > 0) {
+      console.log('Setting reordered images');
+      // Use the setter functions to update the state
+      useReviewMedia().setExistingImages(newExistingImages);
+      useReviewMedia().setImagePreviewUrls(newImagePreviewUrls);
+    }
   };
   
   // Custom image selection handler that sets error if too many files are selected

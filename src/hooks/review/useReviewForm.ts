@@ -2,7 +2,7 @@
 import { useForm } from 'react-hook-form';
 import { zodResolver } from '@hookform/resolvers/zod';
 import { z } from 'zod';
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 
 // Form schema with isDraft property and optional content
 export const reviewFormSchema = z.object({
@@ -19,6 +19,7 @@ export const useReviewForm = () => {
       content: '',
       isDraft: false
     },
+    mode: 'onChange'
   });
 
   // Image state
@@ -35,6 +36,15 @@ export const useReviewForm = () => {
   
   // Upload state
   const [uploading, setUploading] = useState(false);
+
+  // Debug logging for form values
+  useEffect(() => {
+    const subscription = form.watch((value) => {
+      console.log('Form values changed:', value);
+    });
+    
+    return () => subscription.unsubscribe();
+  }, [form]);
 
   return {
     form,

@@ -50,6 +50,18 @@ const SubmitReview = () => {
     });
   }, [reviewId, isDraft, isEditing, isLoading, imagePreviewUrls, videoPreviewUrl, form]);
 
+  // Additional effect to check form initialization
+  useEffect(() => {
+    if (!isLoading && isEditing && reviewId) {
+      const content = form.getValues('content');
+      console.log('Form content after loading:', content?.substring(0, 30));
+      
+      if (!content && imagePreviewUrls.length === 0 && videoPreviewUrl.length === 0) {
+        console.warn('Form appears empty when it should contain data. Check Supabase connection and data loading.');
+      }
+    }
+  }, [isLoading, isEditing, reviewId, form, imagePreviewUrls, videoPreviewUrl]);
+
   return (
     <div className="min-h-screen bg-gray-50">
       <Navbar />
