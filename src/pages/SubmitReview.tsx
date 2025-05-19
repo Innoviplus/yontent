@@ -38,16 +38,20 @@ const SubmitReview = () => {
 
   // Enhanced logging for debugging
   useEffect(() => {
-    console.log('SubmitReview component rendered with:', {
-      reviewId,
-      isDraft,
-      isEditing,
-      isLoading,
-      imagePreviewUrlsCount: imagePreviewUrls.length,
-      imageUrls: imagePreviewUrls,
-      videoUrl: videoPreviewUrl.length > 0 ? videoPreviewUrl[0] : 'No video',
-      content: form.getValues('content') || 'No content'
-    });
+    if (isLoading) {
+      console.log('SubmitReview is in loading state');
+    } else {
+      console.log('SubmitReview component rendered with:', {
+        reviewId,
+        isDraft,
+        isEditing,
+        isLoading,
+        imagePreviewUrlsCount: imagePreviewUrls.length,
+        imageUrls: imagePreviewUrls,
+        videoUrl: videoPreviewUrl.length > 0 ? videoPreviewUrl[0] : 'No video',
+        content: form.getValues('content') || 'No content'
+      });
+    }
   }, [reviewId, isDraft, isEditing, isLoading, imagePreviewUrls, videoPreviewUrl, form]);
 
   // Additional effect to check form initialization

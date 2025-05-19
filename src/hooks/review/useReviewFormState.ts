@@ -48,15 +48,18 @@ export const useReviewFormState = () => {
           // Set form values 
           if (review.content) {
             console.log('Setting content:', review.content.substring(0, 50) + '...');
-            form.setValue('content', review.content);
+            // Make sure to clear form first, then set content
+            form.reset({
+              content: review.content,
+              isDraft: review.status === 'DRAFT'
+            });
           }
           
           // Set draft state
           const isDraftReview = review.status === 'DRAFT';
           setIsDraft(isDraftReview);
-          form.setValue('isDraft', isDraftReview);
           
-          // Set images
+          // Set images - handle both null and empty array cases
           if (review.images && Array.isArray(review.images) && review.images.length > 0) {
             console.log('Setting images:', review.images);
             setExistingImages(review.images);
@@ -67,7 +70,7 @@ export const useReviewFormState = () => {
             setImagePreviewUrls([]);
           }
           
-          // Set videos
+          // Set videos - handle both null and empty array cases
           if (review.videos && Array.isArray(review.videos) && review.videos.length > 0) {
             console.log('Setting video:', review.videos[0]);
             setExistingVideo(review.videos[0]);
