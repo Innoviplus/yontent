@@ -8,8 +8,14 @@ import { Skeleton } from '@/components/ui/skeleton';
 import ImageUpload from '@/components/review/ImageUpload';
 import VideoUpload from '@/components/review/VideoUpload';
 import RichTextEditor from '@/components/RichTextEditor';
+import { useEffect } from 'react';
+import { toast } from 'sonner';
+import { useSearchParams } from 'react-router-dom';
 
 const SubmitReview = () => {
+  const [searchParams] = useSearchParams();
+  const reviewId = searchParams.get('draft') || searchParams.get('edit');
+  
   const {
     form,
     uploading,
@@ -31,6 +37,22 @@ const SubmitReview = () => {
     removeVideo,
     setVideoError
   } = useSubmitReview();
+
+  // Log for debugging
+  useEffect(() => {
+    console.log('SubmitReview component loaded with:', {
+      reviewId,
+      isDraft,
+      isEditing,
+      isLoading,
+      imagePreviewUrlsCount: imagePreviewUrls.length,
+      videoUrl: videoPreviewUrl.length > 0 ? 'Has video' : 'No video'
+    });
+    
+    if (isLoading) {
+      console.log('Loading review data...');
+    }
+  }, [reviewId, isDraft, isEditing, isLoading, imagePreviewUrls, videoPreviewUrl]);
 
   return (
     <div className="min-h-screen bg-gray-50">
@@ -64,16 +86,17 @@ const SubmitReview = () => {
                     onReorderImages={reorderImages}
                     error={imageError}
                     uploading={uploading}
+                    maxImages={12}
                   />
                   
                   {/* Video Upload Section */}
                   <VideoUpload
-                    videoPreviewUrls={videoPreviewUrl}
+                    videoPreviewUrls={videoPreviewUrl ? [videoPreviewUrl] : []}
                     onFileSelect={handleVideoSelection}
                     onRemoveVideo={removeVideo}
                     error={videoError}
                     uploading={uploading}
-                    maxDuration={45}
+                    maxDuration={60}
                   />
                   
                   {/* Review Content */}

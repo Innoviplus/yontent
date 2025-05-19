@@ -34,24 +34,40 @@ export const useReviewFormState = () => {
       setIsLoading(true);
       
       try {
+        // Instead of using single() which throws an error if no row is found,
+        // let's use maybeSingle() for more graceful handling
         const { data, error } = await supabase
           .from('reviews')
           .select('*')
           .eq('id', reviewId)
           .eq('user_id', user.id)
-          .single();
+          .maybeSingle();
           
         if (error) {
           console.error('Error fetching review data:', error);
           toast.error('Failed to load review data');
-          throw error;
+          return;
         }
         
-        console.log('Retrieved review data:', data);
+        if (!data) {
+          console.error('No review data found for ID:', reviewId);
+          toast.error('Review not found');
+          return;
+        }
+        
+        console.log('Successfully retrieved review data:', data);
         
         // Set form values
-        form.setValue('content', data.content);
-        console.log('Set form content:', data.content);
+        if (data.content) {
+          form.setValue('content', data.content);
+          console.log('Set form content:', data.content);
+        }
+        
+        // Set draft status
+        if (data.status === 'DRAFT') {
+          form.setValue('isDraft', true);
+          console.log('Setting isDraft to true');
+        }
         
         // Set existing images
         if (data.images && data.images.length > 0) {
@@ -67,7 +83,7 @@ export const useReviewFormState = () => {
           setVideoPreviewUrl(data.videos[0]);
         }
       } catch (error) {
-        console.error('Error fetching review:', error);
+        console.error('Unexpected error fetching review:', error);
         toast.error('Failed to load review data');
       } finally {
         setIsLoading(false);

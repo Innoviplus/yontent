@@ -23,20 +23,20 @@ export const useReviewSubmitHandler = (
     
     try {
       setUploading(true);
+      console.log('Starting review submission process...', {
+        isUpdate: !!reviewId,
+        isDraft: data.isDraft,
+      });
       
       const imagePaths = await uploadImages(user.id);
-      const videoPaths = await uploadVideo(user.id);
+      console.log('Image paths after upload:', imagePaths);
       
-      console.log('Uploading review:', {
-        content: data.content,
-        isDraft: data.isDraft,
-        images: imagePaths,
-        videos: videoPaths, 
-        reviewId
-      });
+      const videoPaths = await uploadVideo(user.id);
+      console.log('Video paths after upload:', videoPaths);
       
       // Update or create the review
       if (reviewId) {
+        console.log('Updating existing review:', reviewId);
         // Update existing review
         const { error } = await supabase
           .from('reviews')
@@ -49,10 +49,14 @@ export const useReviewSubmitHandler = (
           })
           .eq('id', reviewId);
           
-        if (error) throw error;
+        if (error) {
+          console.error('Error updating review:', error);
+          throw error;
+        }
         
         toast.success(data.isDraft ? 'Draft updated successfully!' : 'Review updated successfully!');
       } else {
+        console.log('Creating new review');
         // Create new review
         const { error } = await supabase
           .from('reviews')
@@ -64,7 +68,10 @@ export const useReviewSubmitHandler = (
             status: data.isDraft ? 'DRAFT' : 'PUBLISHED'
           });
           
-        if (error) throw error;
+        if (error) {
+          console.error('Error creating review:', error);
+          throw error;
+        }
         
         toast.success(data.isDraft ? 'Draft saved successfully!' : 'Review submitted successfully!');
       }
