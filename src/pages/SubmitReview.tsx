@@ -94,7 +94,7 @@ const SubmitReview = () => {
                     maxImages={12}
                   />
                   
-                  {/* Video Upload Section */}
+                  {/* Video Upload Section - using the refactored component */}
                   <VideoUpload
                     videoPreviewUrls={videoPreviewUrl}
                     onFileSelect={handleVideoSelection}
