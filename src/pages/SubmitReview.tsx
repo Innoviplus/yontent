@@ -8,15 +8,10 @@ import { Skeleton } from '@/components/ui/skeleton';
 import ImageUpload from '@/components/review/ImageUpload';
 import VideoUpload from '@/components/review/VideoUpload';
 import RichTextEditor from '@/components/RichTextEditor';
-import { useEffect, useState } from 'react';
-import { useSearchParams } from 'react-router-dom';
+import { useEffect } from 'react';
 import { toast } from 'sonner';
 
 const SubmitReview = () => {
-  const [searchParams] = useSearchParams();
-  const reviewId = searchParams.get('draft') || searchParams.get('edit');
-  const [contentLoaded, setContentLoaded] = useState(false);
-  
   const {
     form,
     uploading,
@@ -35,43 +30,31 @@ const SubmitReview = () => {
     videoError,
     handleVideoSelection,
     removeVideo,
-    setVideoError
+    setVideoError,
+    reviewContent
   } = useSubmitReview();
 
   // Enhanced logging for debugging
   useEffect(() => {
-    if (isLoading) {
-      console.log('SubmitReview is in loading state');
-    } else {
-      // Check if form has content after loading completes
-      const formContent = form.getValues('content');
-      const hasContent = formContent && formContent.length > 0;
-      
-      console.log('SubmitReview component rendered with:', {
-        reviewId,
-        isDraft,
-        isEditing,
-        isLoading,
-        hasContent,
-        imagePreviewUrlsCount: imagePreviewUrls.length,
-        imageUrls: imagePreviewUrls,
-        videoUrl: videoPreviewUrl.length > 0 ? videoPreviewUrl[0] : 'No video',
-        content: hasContent ? formContent.substring(0, 50) + '...' : 'No content'
-      });
-      
-      if (isEditing && !hasContent && !contentLoaded && reviewId) {
-        // Force a refetch of the content if it's missing
-        console.log('Content missing after load - may need to refresh');
-        if (!isLoading) {
-          setContentLoaded(true);
-          toast.info('Loading draft content...');
-        }
-      } else if (hasContent && !contentLoaded) {
-        setContentLoaded(true);
-      }
+    // Log key info on initial load
+    console.log('SubmitReview component initial render:', {
+      isLoading,
+      isEditing,
+      isDraft,
+      hasContent: reviewContent ? 'Yes' : 'No',
+      contentPreview: reviewContent ? reviewContent.substring(0, 50) + '...' : 'None',
+      imageCount: imagePreviewUrls?.length || 0,
+      videoCount: videoPreviewUrl?.length || 0,
+      formContent: form.getValues('content'),
+    });
+    
+    // Display toast if the form has content from a draft
+    if (isEditing && reviewContent) {
+      toast.success('Draft review loaded successfully');
     }
-  }, [reviewId, isDraft, isEditing, isLoading, imagePreviewUrls, videoPreviewUrl, form, contentLoaded]);
+  }, []);
 
+  // If loading, show skeleton UI
   if (isLoading) {
     return (
       <div className="min-h-screen bg-gray-50">
@@ -80,7 +63,7 @@ const SubmitReview = () => {
         <div className="container mx-auto px-4 pt-28 pb-16">
           <div className="max-w-2xl mx-auto">
             <h1 className="text-2xl font-bold mb-6">
-              {isEditing ? (isDraft ? 'Edit Draft Review' : 'Edit Review') : 'Submit a Review'}
+              {isEditing ? (isDraft ? 'Loading Draft Review...' : 'Loading Review...') : 'Submit a Review'}
             </h1>
             
             <div className="bg-white rounded-xl shadow-card p-6">
@@ -100,6 +83,14 @@ const SubmitReview = () => {
     );
   }
 
+  // Initialize form value with the content if available and form is empty
+  useEffect(() => {
+    if (reviewContent && !form.getValues('content')) {
+      console.log('Setting form content from reviewContent');
+      form.setValue('content', reviewContent);
+    }
+  }, [reviewContent, form]);
+  
   return (
     <div className="min-h-screen bg-gray-50">
       <Navbar />

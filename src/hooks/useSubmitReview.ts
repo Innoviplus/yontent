@@ -1,3 +1,4 @@
+
 import { useReviewForm } from './review/useReviewForm';
 import { useReviewMedia } from './review/useReviewMedia';
 import { useReviewFormState } from './review/useReviewFormState';
@@ -8,11 +9,21 @@ import { useEffect } from 'react';
 import { useAuth } from '@/contexts/AuthContext';
 
 export const useSubmitReview = (onSuccess?: () => void) => {
+  const { user } = useAuth();
+  
+  // Get the review state first to access reviewContent
+  const {
+    isLoading,
+    isDraft,
+    isEditing,
+    reviewId,
+    reviewContent
+  } = useReviewFormState();
+  
+  // Then pass reviewContent to useReviewForm
   const {
     form,
-  } = useReviewForm();
-  
-  const { user } = useAuth();
+  } = useReviewForm(reviewContent);
   
   const {
     selectedImages,
@@ -35,13 +46,6 @@ export const useSubmitReview = (onSuccess?: () => void) => {
     setUploading
   } = useReviewMedia();
   
-  const {
-    isLoading,
-    isDraft,
-    isEditing,
-    reviewId
-  } = useReviewFormState();
-  
   // Import the handleSubmit function from useReviewSubmitHandler
   const { handleSubmit } = useReviewSubmitHandler(
     reviewId,
@@ -55,13 +59,23 @@ export const useSubmitReview = (onSuccess?: () => void) => {
       const formContent = form.getValues('content');
       console.log('Edit mode detected with data:', {
         reviewId,
-        content: formContent && formContent.length > 0 ? formContent.substring(0, 50) + '...' : 'No content',
+        content: reviewContent && reviewContent.length > 0 
+          ? reviewContent.substring(0, 50) + '...' 
+          : (formContent && formContent.length > 0 
+              ? formContent.substring(0, 50) + '...' 
+              : 'No content'),
         imageCount: imagePreviewUrls.length,
         hasVideo: !!videoPreviewUrl,
         isDraft
       });
+      
+      // Try to set the content directly if needed
+      if (reviewContent && (!formContent || formContent.length === 0)) {
+        console.log('Setting form content directly in useSubmitReview');
+        form.setValue('content', reviewContent);
+      }
     }
-  }, [isEditing, form, imagePreviewUrls, videoPreviewUrl, isDraft, reviewId]);
+  }, [isEditing, form, imagePreviewUrls, videoPreviewUrl, isDraft, reviewId, reviewContent]);
   
   // Handle image reordering
   const reorderImages = (newOrder: string[]) => {
@@ -147,6 +161,7 @@ export const useSubmitReview = (onSuccess?: () => void) => {
     isDraft,
     isEditing,
     user,
+    reviewContent,
     onSubmit,
     saveDraft,
     handleImageSelection: handleImageSelectionWithValidation,

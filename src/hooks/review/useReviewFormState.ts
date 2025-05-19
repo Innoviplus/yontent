@@ -12,6 +12,7 @@ export const useReviewFormState = () => {
   const [isLoading, setIsLoading] = useState<boolean>(!!reviewId);
   const [isDraft, setIsDraft] = useState<boolean>(false);
   const [isEditing, setIsEditing] = useState<boolean>(!!reviewId);
+  const [reviewContent, setReviewContent] = useState<string>('');
   
   const { 
     form, 
@@ -19,7 +20,7 @@ export const useReviewFormState = () => {
     setExistingImages,
     setVideoPreviewUrl,
     setExistingVideo
-  } = useReviewForm();
+  } = useReviewForm(reviewContent);
   
   // Load review data if in edit mode
   useEffect(() => {
@@ -45,12 +46,10 @@ export const useReviewFormState = () => {
         if (review) {
           console.log('Loaded review data from DB:', review);
           
-          // Important: Reset the form with all values at once
-          form.reset({
-            content: review.content || '',
-            isDraft: review.status === 'DRAFT'
-          });
-          console.log('Form reset with content:', review.content?.substring(0, 50));
+          // Set the content state
+          if (review.content) {
+            setReviewContent(review.content);
+          }
           
           // Set draft state
           const isDraftReview = review.status === 'DRAFT';
@@ -79,15 +78,6 @@ export const useReviewFormState = () => {
             setExistingVideo(null);
             setVideoPreviewUrl('');
           }
-          
-          // Log the form values after setting
-          setTimeout(() => {
-            console.log('Form values after loading:', {
-              content: form.getValues('content')?.substring(0, 50),
-              isDraft: form.getValues('isDraft'),
-              formState: form.formState
-            });
-          }, 100);
         } else {
           console.warn('No review found with ID:', reviewId);
           toast.error('Review not found');
@@ -103,12 +93,13 @@ export const useReviewFormState = () => {
       console.log('Initializing review data loading for ID:', reviewId);
       loadReviewData();
     }
-  }, [reviewId, form, setExistingImages, setImagePreviewUrls, setExistingVideo, setVideoPreviewUrl]);
+  }, [reviewId, setExistingImages, setImagePreviewUrls, setExistingVideo, setVideoPreviewUrl]);
   
   return {
     isLoading,
     isDraft,
     isEditing,
-    reviewId
+    reviewId,
+    reviewContent
   };
 };
