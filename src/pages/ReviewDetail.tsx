@@ -33,6 +33,15 @@ const ReviewDetail = () => {
   // Check if current user is the author of the review
   const isAuthor = user && review && user.id === review.userId;
   
+  // Debug log when review data changes
+  useEffect(() => {
+    if (review) {
+      console.log('Review data in component:', review);
+      console.log('Review has videos:', review.videos && review.videos.length > 0);
+      console.log('Video URLs:', review.videos);
+    }
+  }, [review]);
+  
   // Only fetch review data when component mounts and when route changes
   // but avoid triggering view tracking on every render
   useEffect(() => {
@@ -76,7 +85,10 @@ const ReviewDetail = () => {
             <div className="md:col-span-5 space-y-4 md:space-y-6">
               <div className="bg-white rounded-xl overflow-hidden shadow-subtle">
                 {/* Review images and videos with increased height */}
-                <ReviewImages images={review.images} videos={review.videos} />
+                <ReviewImages 
+                  images={review.images} 
+                  videos={review.videos || []} 
+                />
                 
                 <div className="p-4 md:p-6">
                   {/* User and date info */}

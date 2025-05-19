@@ -1,181 +1,115 @@
-import { useState, useEffect } from 'react';
-import { useSearchParams, useNavigate } from 'react-router-dom';
+
+import { useReviewForm } from './review/useReviewForm';
+import { useReviewMedia } from './review/useReviewMedia';
+import { useReviewFormState } from './review/useReviewFormState';
+import { useReviewSubmitHandler } from './review/useReviewSubmitHandler';
 import { toast } from 'sonner';
+import { ReviewFormValues } from './review/useReviewForm';
+import { useEffect } from 'react';
 import { useAuth } from '@/contexts/AuthContext';
-import { supabase } from '@/integrations/supabase/client';
-import { useReviewForm, ReviewFormValues } from './review/useReviewForm';
-import { uploadReviewImage, uploadReviewVideo } from '@/services/review/uploadMedia';
 
 export const useSubmitReview = (onSuccess?: () => void) => {
   const { user } = useAuth();
-  const navigate = useNavigate();
-  const [searchParams] = useSearchParams();
-  const draftId = searchParams.get('draft');
-  const editId = searchParams.get('edit');
-  const reviewId = draftId || editId || null;
   
-  const [isLoading, setIsLoading] = useState(false);
+  // Get the review state first to access reviewContent and other draft data
+  const {
+    isLoading,
+    isDraft,
+    isEditing,
+    reviewId,
+    reviewContent,
+    existingImages: loadedImages,
+    existingVideo: loadedVideo
+  } = useReviewFormState();
   
+  // Create a single instance of the form hook with initial content
+  const reviewForm = useReviewForm(reviewContent);
   const {
     form,
-    uploading,
-    setUploading,
+    setSelectedImages,
+    setImagePreviewUrls,
+    setImageError,
+    setExistingImages,
+    setSelectedVideo,
+    setVideoPreviewUrl,
+    setVideoError,
+    setExistingVideo,
+    setUploading
+  } = reviewForm;
+  
+  // Initialize media with existing content from the database
+  useEffect(() => {
+    if (loadedImages && loadedImages.length > 0) {
+      console.log('Setting existing images from database:', loadedImages);
+      setExistingImages(loadedImages);
+      setImagePreviewUrls(loadedImages);
+    }
+    
+    if (loadedVideo) {
+      console.log('Setting existing video from database:', loadedVideo);
+      setExistingVideo(loadedVideo);
+      setVideoPreviewUrl(loadedVideo);
+    }
+  }, [loadedImages, loadedVideo]);
+  
+  // Use the review media hook for handling uploads
+  const {
     selectedImages,
     imagePreviewUrls,
     imageError,
     existingImages,
-    setExistingImages,
-    setImagePreviewUrls,
     handleImageSelection,
     removeImage,
-    setImageError,
     uploadImages,
-    // Video related properties
-    selectedVideo,
+    // Video related
     videoPreviewUrl,
     videoError,
-    existingVideo,
-    setExistingVideo,
-    setVideoPreviewUrl,
     handleVideoSelection,
     removeVideo,
-    setVideoError,
+    uploadVideo,
+    // Upload state
+    uploading
+  } = useReviewMedia(loadedImages, loadedVideo);
+  
+  // Import the handleSubmit function from useReviewSubmitHandler
+  const { handleSubmit } = useReviewSubmitHandler(
+    reviewId,
+    uploadImages,
     uploadVideo
-  } = useReviewForm();
+  );
   
-  // Fetch the existing review if we're editing
-  useEffect(() => {
-    const fetchReview = async () => {
-      if (!reviewId || !user) return;
-      
-      setIsLoading(true);
-      try {
-        const { data, error } = await supabase
-          .from('reviews')
-          .select('*')
-          .eq('id', reviewId)
-          .eq('user_id', user.id)
-          .single();
-          
-        if (error) throw error;
-        
-        // Set form values
-        form.setValue('content', data.content);
-        
-        // Set existing images
-        if (data.images && data.images.length > 0) {
-          setExistingImages(data.images);
-          setImagePreviewUrls(data.images);
-        }
-        
-        // Set existing video
-        if (data.videos && data.videos.length > 0) {
-          setExistingVideo(data.videos[0]);
-          setVideoPreviewUrl(data.videos[0]);
-        }
-      } catch (error) {
-        console.error('Error fetching review:', error);
-        toast.error('Failed to load review data');
-      } finally {
-        setIsLoading(false);
-      }
-    };
-    
-    fetchReview();
-  }, [reviewId, user, form, setExistingImages, setImagePreviewUrls, setExistingVideo, setVideoPreviewUrl]);
-  
-  // Handle image reordering
+  // Handle image reordering - no conditionals
   const reorderImages = (newOrder: string[]) => {
-    setExistingImages(newOrder);
-    setImagePreviewUrls(newOrder);
+    console.log('Reordering images to:', newOrder);
+    
+    if (newOrder.length > 0) {
+      console.log('Setting reordered images');
+      setExistingImages(newOrder);
+      setImagePreviewUrls(newOrder);
+    }
   };
   
-  // Custom image selection handler that sets error if too many files are selected
+  // Custom image selection handler - no conditionals
   const handleImageSelectionWithValidation = (files: FileList | null) => {
     if (!files) {
-      setImageError("You can only upload up to 10 images. Please select fewer images.");
       return;
     }
     
-    // Otherwise use the regular handler
+    if (files.length + imagePreviewUrls.length > 12) {
+      setImageError("You can only upload up to 12 images. Please select fewer images.");
+      return;
+    }
+    
     handleImageSelection(files);
   };
   
-  const handleSubmit = async (data: ReviewFormValues) => {
-    if (!user) {
-      toast.error('You must be logged in to submit a review');
-      return;
-    }
-    
-    // Check for maximum image count
-    const totalImageCount = selectedImages.length + existingImages.length;
-    if (totalImageCount > 10) {
-      setImageError(`You can only upload up to 10 images. Please remove ${totalImageCount - 10} images.`);
-      return;
-    }
-    
-    // For published reviews, validate that at least one image is selected or exists
-    if (!data.isDraft && selectedImages.length === 0 && existingImages.length === 0) {
-      setImageError("At least one image is required");
-      return;
-    }
-    
-    try {
-      setUploading(true);
-      
-      const imagePaths = await uploadImages(user.id);
-      const videoPaths = await uploadVideo(user.id);
-      
-      // Update or create the review
-      if (reviewId) {
-        // Update existing review
-        const { error } = await supabase
-          .from('reviews')
-          .update({
-            content: data.content,
-            images: imagePaths,
-            videos: videoPaths,
-            status: data.isDraft ? 'DRAFT' : 'PUBLISHED',
-            updated_at: new Date().toISOString()
-          })
-          .eq('id', reviewId);
-          
-        if (error) throw error;
-        
-        toast.success(data.isDraft ? 'Draft updated successfully!' : 'Review updated successfully!');
-      } else {
-        // Create new review
-        const { error } = await supabase
-          .from('reviews')
-          .insert({
-            user_id: user.id,
-            content: data.content,
-            images: imagePaths,
-            videos: videoPaths,
-            status: data.isDraft ? 'DRAFT' : 'PUBLISHED'
-          });
-          
-        if (error) throw error;
-        
-        toast.success(data.isDraft ? 'Draft saved successfully!' : 'Review submitted successfully!');
-      }
-      
-      navigate(data.isDraft ? '/dashboard' : '/reviews');
-    } catch (error) {
-      console.error('Unexpected error:', error);
-      toast.error('An unexpected error occurred');
-    } finally {
-      setUploading(false);
-    }
-  };
-  
+  // Save as draft functionality - no conditionals
   const saveDraft = () => {
     const values = form.getValues();
     form.setValue('isDraft', true);
     
-    // For drafts, allow empty content only if there are images or videos
-    if (values.content.length === 0 && selectedImages.length === 0 && existingImages.length === 0 
-        && !selectedVideo && !existingVideo) {
+    if (!values.content && selectedImages.length === 0 && existingImages.length === 0 
+        && !videoPreviewUrl) {
       toast.error('Please add some content, images, or video to save as draft');
       return;
     }
@@ -183,6 +117,23 @@ export const useSubmitReview = (onSuccess?: () => void) => {
     handleSubmit(form.getValues());
   };
   
+  // Form submission wrapper - no conditionals
+  const onSubmit = async (data: ReviewFormValues) => {
+    const totalImageCount = selectedImages.length + existingImages.length;
+    if (totalImageCount > 12) {
+      setImageError(`You can only upload up to 12 images. Please remove ${totalImageCount - 12} images.`);
+      return;
+    }
+    
+    if (!data.isDraft && !data.content && selectedImages.length === 0 && existingImages.length === 0 && !videoPreviewUrl) {
+      setImageError("Please add some text, images, or video to your review");
+      return;
+    }
+    
+    await handleSubmit(data);
+    if (onSuccess) onSuccess();
+  };
+
   return {
     form,
     uploading,
@@ -191,19 +142,21 @@ export const useSubmitReview = (onSuccess?: () => void) => {
     imagePreviewUrls,
     imageError,
     existingImages,
-    isDraft: !!draftId,
-    isEditing: !!reviewId,
-    onSubmit: handleSubmit,
+    isDraft,
+    isEditing,
+    user,
+    reviewContent,
+    onSubmit,
     saveDraft,
     handleImageSelection: handleImageSelectionWithValidation,
     removeImage,
     reorderImages,
     setImageError,
-    // Video related returns
+    // Return videoPreviewUrl as a string array as expected by the VideoUpload component
     videoPreviewUrl: videoPreviewUrl ? [videoPreviewUrl] : [],
     videoError,
     handleVideoSelection,
-    removeVideo: () => removeVideo(),
+    removeVideo,
     setVideoError
   };
 };

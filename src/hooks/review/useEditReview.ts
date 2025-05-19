@@ -5,6 +5,7 @@ import { toast } from 'sonner';
 import { useAuth } from '@/contexts/AuthContext';
 import { supabase } from '@/integrations/supabase/client';
 import { useReviewForm, ReviewFormValues } from './useReviewForm';
+import { useReviewMedia } from './useReviewMedia';
 
 export const useEditReview = () => {
   const { user } = useAuth();
@@ -15,6 +16,9 @@ export const useEditReview = () => {
   
   const {
     form,
+  } = useReviewForm();
+  
+  const {
     uploading,
     setUploading,
     imagePreviewUrls,
@@ -24,7 +28,7 @@ export const useEditReview = () => {
     handleImageSelection,
     removeImage,
     uploadImages
-  } = useReviewForm();
+  } = useReviewMedia();
 
   // Fetch the review data
   useEffect(() => {

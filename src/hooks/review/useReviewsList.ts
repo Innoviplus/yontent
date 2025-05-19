@@ -1,5 +1,5 @@
 
-import { useState, useCallback } from 'react';
+import { useState, useCallback, useEffect } from 'react';
 import { useQuery } from '@tanstack/react-query';
 import { fetchReviews } from '@/services/review';
 
@@ -14,7 +14,7 @@ export const useReviewsList = (userId?: string) => {
   const { data: allReviews = [], isLoading, error, refetch } = useQuery({
     queryKey: ['reviews', sortBy, userId],
     queryFn: () => fetchReviews(sortBy, userId),
-    staleTime: 5 * 60 * 1000, // 5 minutes
+    staleTime: 60 * 1000, // 1 minute
     meta: {
       onError: (err: Error) => {
         console.error('Error fetching reviews:', err);
@@ -22,8 +22,13 @@ export const useReviewsList = (userId?: string) => {
     }
   });
 
+  // Force a refetch on mount to ensure we have the latest data
+  useEffect(() => {
+    refetch();
+  }, []);
+
   // Memoize the paginated reviews to avoid unnecessary recalculations
-  const paginatedReviews = allReviews.slice((page - 1) * itemsPerPage, page * itemsPerPage);
+  const paginatedReviews = allReviews.slice(0, page * itemsPerPage);
   
   const totalPages = Math.ceil(allReviews.length / itemsPerPage);
   const hasMore = (page * itemsPerPage) < allReviews.length;

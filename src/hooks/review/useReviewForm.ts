@@ -1,198 +1,99 @@
-import { useState } from 'react';
+
 import { useForm } from 'react-hook-form';
 import { zodResolver } from '@hookform/resolvers/zod';
 import { z } from 'zod';
-import { supabase } from '@/integrations/supabase/client';
+import { useState, useEffect } from 'react';
 
-// Form schema with isDraft property
+// Form schema with isDraft property and optional content
 export const reviewFormSchema = z.object({
-  content: z.string().min(10, { message: "Review must be at least 10 characters" }),
+  content: z.string().optional().default(''),
   isDraft: z.boolean().optional().default(false)
 });
 
 export type ReviewFormValues = z.infer<typeof reviewFormSchema>;
 
-export const useReviewForm = () => {
-  const [uploading, setUploading] = useState(false);
+export const useReviewForm = (initialContent?: string) => {
+  // Initialize form with resolver and default values
+  const form = useForm<ReviewFormValues>({
+    resolver: zodResolver(reviewFormSchema),
+    defaultValues: {
+      content: initialContent || '',
+      isDraft: false
+    },
+    mode: 'onChange'
+  });
+
+  // Image state
   const [selectedImages, setSelectedImages] = useState<File[]>([]);
   const [imagePreviewUrls, setImagePreviewUrls] = useState<string[]>([]);
   const [imageError, setImageError] = useState<string | null>(null);
   const [existingImages, setExistingImages] = useState<string[]>([]);
   
-  // Added video states
+  // Video state
   const [selectedVideo, setSelectedVideo] = useState<File | null>(null);
   const [videoPreviewUrl, setVideoPreviewUrl] = useState<string>('');
   const [videoError, setVideoError] = useState<string | null>(null);
-  const [existingVideo, setExistingVideo] = useState<string>('');
-
-  const form = useForm<ReviewFormValues>({
-    resolver: zodResolver(reviewFormSchema),
-    defaultValues: {
-      content: '',
-      isDraft: false
-    },
-  });
-
-  // Handle image selection
-  const handleImageSelection = (files: FileList | null) => {
-    if (!files) return;
-    
-    if (selectedImages.length + files.length > 12) {
-      setImageError('You can only upload up to 12 images in total');
-      return;
-    }
-    
-    const newFiles = Array.from(files);
-    setSelectedImages(prev => [...prev, ...newFiles]);
-    
-    newFiles.forEach(file => {
-      const reader = new FileReader();
-      reader.onloadend = () => {
-        setImagePreviewUrls(prev => [...prev, reader.result as string]);
-      };
-      reader.readAsDataURL(file);
+  const [existingVideo, setExistingVideo] = useState<string | null>(null);
+  
+  // Upload state
+  const [uploading, setUploading] = useState(false);
+  
+  // Debug logging for form values - always present
+  useEffect(() => {
+    const subscription = form.watch((value) => {
+      console.log('Form values changed:', value);
     });
     
-    setImageError(null);
-  };
-
-  // Handle video selection
-  const handleVideoSelection = (files: FileList | null) => {
-    if (!files || files.length === 0) return;
-    
-    // Only allow one video
-    const videoFile = files[0];
-    
-    // Create a preview URL
-    const videoUrl = URL.createObjectURL(videoFile);
-    
-    setSelectedVideo(videoFile);
-    setVideoPreviewUrl(videoUrl);
-    setVideoError(null);
-  };
-
-  // Remove image
-  const removeImage = (index: number) => {
-    // Release the object URL to avoid memory leaks
-    URL.revokeObjectURL(imagePreviewUrls[index]);
-    
-    // Update state
-    const newPreviews = [...imagePreviewUrls];
-    newPreviews.splice(index, 1);
-    setImagePreviewUrls(newPreviews);
-    
-    const newFiles = [...selectedImages];
-    newFiles.splice(index, 1);
-    setSelectedImages(newFiles);
-  };
+    return () => subscription.unsubscribe();
+  }, [form]);
   
-  // Remove video
-  const removeVideo = () => {
-    if (videoPreviewUrl) {
-      URL.revokeObjectURL(videoPreviewUrl);
+  // Save form state to sessionStorage to prevent loss - always present
+  useEffect(() => {
+    try {
+      // Get form values
+      const formValues = form.getValues();
+      const content = formValues.content;
+      
+      if (content && content.length > 0) {
+        // Only save if there's actual content
+        console.log('Saving form state to sessionStorage');
+        sessionStorage.setItem('reviewFormContent', content);
+      }
+    } catch (e) {
+      console.error('Error saving form state:', e);
     }
-    
-    setSelectedVideo(null);
-    setVideoPreviewUrl('');
-  };
+  }, [form.watch('content')]);
 
-  // Upload images function
-  const uploadImages = async (userId: string): Promise<string[]> => {
-    const imagePaths = [...existingImages];
-    
-    // Upload new images if any
-    if (selectedImages.length > 0) {
-      for (const image of selectedImages) {
-        const fileExt = image.name.split('.').pop();
-        const fileName = `${Math.random().toString(36).substring(2, 15)}.${fileExt}`;
-        const filePath = `${userId}/${fileName}`;
-        
-        const { error: uploadError } = await supabase
-          .storage
-          .from('review-images')
-          .upload(filePath, image, {
-            cacheControl: '3600',
-            upsert: false
-          });
-          
-        if (uploadError) {
-          console.error('Error uploading image:', uploadError);
-          throw new Error(`Failed to upload image: ${uploadError.message}`);
-        }
-        
-        const { data: publicURL } = supabase
-          .storage
-          .from('review-images')
-          .getPublicUrl(filePath);
-          
-        if (publicURL) {
-          imagePaths.push(publicURL.publicUrl);
-        }
-      }
+  // Set content when initialContent changes - always present
+  useEffect(() => {
+    if (initialContent && initialContent.trim().length > 0) {
+      console.log('Setting form content with initial value:', initialContent.substring(0, 50) + '...');
+      form.setValue('content', initialContent);
     }
-    
-    return imagePaths;
-  };
-  
-  // Upload video function
-  const uploadVideo = async (userId: string): Promise<string[]> => {
-    const videoPaths: string[] = existingVideo ? [existingVideo] : [];
-    
-    // Upload new video if any
-    if (selectedVideo) {
-      const fileExt = selectedVideo.name.split('.').pop();
-      const fileName = `${userId}/${Math.random().toString(36).substring(2, 15)}.${fileExt}`;
-      
-      const { error: uploadError } = await supabase
-        .storage
-        .from('review-videos')
-        .upload(fileName, selectedVideo, {
-          cacheControl: '3600',
-          upsert: false
-        });
-        
-      if (uploadError) {
-        console.error('Error uploading video:', uploadError);
-        throw new Error(`Failed to upload video: ${uploadError.message}`);
-      }
-      
-      const { data: publicURL } = supabase
-        .storage
-        .from('review-videos')
-        .getPublicUrl(fileName);
-        
-      if (publicURL) {
-        videoPaths.push(publicURL.publicUrl);
-      }
-    }
-    
-    return videoPaths;
-  };
+  }, [initialContent, form]);
 
   return {
     form,
-    uploading,
-    setUploading,
+    // Image related
     selectedImages,
+    setSelectedImages,
     imagePreviewUrls,
+    setImagePreviewUrls,
     imageError,
+    setImageError,
     existingImages,
     setExistingImages,
-    setImagePreviewUrls,
-    handleImageSelection,
-    removeImage,
-    setImageError,
-    uploadImages,
-    // Video related returns
+    // Video related
     selectedVideo,
+    setSelectedVideo,
     videoPreviewUrl,
+    setVideoPreviewUrl,
     videoError,
+    setVideoError,
     existingVideo,
     setExistingVideo,
-    setVideoPreviewUrl,
-    handleVideoSelection,
-    removeVideo,
-    setVideoError,
-    uploadVideo
+    // Upload state
+    uploading,
+    setUploading
   };
 };

@@ -1,3 +1,4 @@
+
 import { useParams, Navigate } from 'react-router-dom';
 import { useAuth } from '@/contexts/AuthContext';
 import Navbar from '@/components/Navbar';
@@ -26,11 +27,13 @@ const MissionReviewSubmission = () => {
     return <MissionSubmissionError error={error || "Review mission not found"} />;
   }
 
-  const reviewRequirements = [
+  // Default requirements to use as fallback if no requirementDescription is provided
+  const fallbackRequirements = [
     'Write an honest, detailed review of the product',
     'Upload at least one clear photo of the product',
     'You can upload up to 10 images',
-    'Accepted formats: JPG, PNG, WEBP'
+    'Accepted formats: JPG, PNG, WEBP',
+    'You can upload 1 video (max 60 seconds) in MP4, MOV, or WEBM format'
   ];
 
   return (
@@ -41,13 +44,14 @@ const MissionReviewSubmission = () => {
           <CardHeader>
             <h1 className="text-2xl font-bold">Submit Review for "{mission.title}"</h1>
             <p className="text-gray-500 mt-2">
-              Share your experience and upload photos to complete this mission and earn {mission.pointsReward} points.
+              Share your experience and upload photos or video to complete this mission and earn {mission.pointsReward} points.
             </p>
           </CardHeader>
           
           <CardContent>
             <MissionRequirementsList 
-              requirements={reviewRequirements} 
+              requirements={fallbackRequirements} 
+              requirementDescription={mission.requirementDescription}
               title="Review Requirements:" 
             />
             

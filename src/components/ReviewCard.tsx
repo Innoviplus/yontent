@@ -5,7 +5,7 @@ import { Review } from '@/lib/types';
 import { cn } from '@/lib/utils';
 import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
 import { useIsMobile } from '@/hooks/use-mobile';
-import { memo, useState } from 'react';
+import { memo, useState, useEffect } from 'react';
 
 interface ReviewCardProps {
   review: Review;
@@ -18,6 +18,46 @@ const ReviewCard = memo(({ review, className }: ReviewCardProps) => {
   const isMobile = useIsMobile();
   const hasVideo = review.videos && review.videos.length > 0;
   const [imageLoaded, setImageLoaded] = useState(false);
+  const [videoThumbnail, setVideoThumbnail] = useState<string | null>(null);
+  
+  // Generate video thumbnail when component mounts
+  useEffect(() => {
+    if (hasVideo && review.videos && review.videos[0]) {
+      // Create a video element to extract the thumbnail
+      const videoEl = document.createElement('video');
+      videoEl.crossOrigin = 'anonymous';
+      videoEl.src = review.videos[0];
+      videoEl.preload = 'metadata';
+      
+      videoEl.onloadedmetadata = () => {
+        // Set to a slight offset from the beginning for better thumbnails
+        videoEl.currentTime = 0.5;
+        
+        videoEl.onseeked = () => {
+          try {
+            // Create a canvas and draw the video frame
+            const canvas = document.createElement('canvas');
+            canvas.width = videoEl.videoWidth || 320;
+            canvas.height = videoEl.videoHeight || 240;
+            const ctx = canvas.getContext('2d');
+            
+            if (ctx) {
+              ctx.drawImage(videoEl, 0, 0, canvas.width, canvas.height);
+              const thumbnail = canvas.toDataURL('image/jpeg');
+              setVideoThumbnail(thumbnail);
+              setImageLoaded(true);
+            }
+          } catch (err) {
+            console.error('Error generating video thumbnail:', err);
+          }
+        };
+      };
+      
+      videoEl.onerror = (e) => {
+        console.error('Error loading video for thumbnail generation:', e);
+      };
+    }
+  }, [hasVideo, review.videos]);
 
   // Function to strip HTML tags from content
   const stripHtml = (html: string) => {
@@ -46,14 +86,19 @@ const ReviewCard = memo(({ review, className }: ReviewCardProps) => {
   const handleImageLoad = () => {
     setImageLoaded(true);
   };
+  
+  const handleCardClick = () => {
+    navigate(`/review/${review.id}`);
+  };
 
   return (
     <div 
       className={cn(
         "bg-white rounded-lg overflow-hidden shadow-sm w-full card-hover h-full",
-        "hover:shadow-md transition-all duration-200",
+        "hover:shadow-md transition-all duration-200 cursor-pointer",
         className
       )}
+      onClick={handleCardClick}
     >
       {/* Review images/video with optimized loading */}
       {(review.images.length > 0 || hasVideo) && (
@@ -63,17 +108,20 @@ const ReviewCard = memo(({ review, className }: ReviewCardProps) => {
         >
           {hasVideo ? (
             <>
-              <img 
-                src={review.videos[0] || review.images[0]} 
-                alt="Video thumbnail" 
-                className={cn(
-                  "absolute top-0 left-0 w-full h-full object-cover",
-                  !imageLoaded && "opacity-0"
-                )}
-                loading="lazy"
-                onLoad={handleImageLoad}
-              />
-              {!imageLoaded && <div className="absolute inset-0 bg-gray-200 animate-pulse" />}
+              {videoThumbnail ? (
+                <img 
+                  src={videoThumbnail} 
+                  alt="Video thumbnail" 
+                  className={cn(
+                    "absolute top-0 left-0 w-full h-full object-cover",
+                    !imageLoaded && "opacity-0"
+                  )}
+                  onLoad={handleImageLoad}
+                />
+              ) : (
+                <div className="absolute inset-0 bg-gray-200" />
+              )}
+              
               <div className="absolute inset-0 flex items-center justify-center z-10">
                 <div className="bg-black/50 rounded-full p-1.5 backdrop-blur-sm">
                   <Play className="h-6 w-6 text-white" fill="white" />

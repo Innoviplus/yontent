@@ -135,7 +135,8 @@ const ReviewsGrid = memo(({ reviews }: ReviewsGridProps) => {
     // Wait for all images to load before calculating final layout
     const images = document.querySelectorAll('.masonry-item img');
     images.forEach(img => {
-      if (img.complete) {
+      // Fix: Use 'loaded' state instead of 'complete' property
+      if ((img as HTMLImageElement).complete) {
         handleImageLoad();
       } else {
         img.addEventListener('load', handleImageLoad);
@@ -174,8 +175,7 @@ const ReviewsGrid = memo(({ reviews }: ReviewsGridProps) => {
       {loadedReviews.map((review) => (
         <div 
           key={review.id} 
-          className="masonry-item"
-          onClick={() => handleReviewClick(review.id)}
+          className="masonry-item mb-3"
         >
           <ReviewCard review={review} />
         </div>

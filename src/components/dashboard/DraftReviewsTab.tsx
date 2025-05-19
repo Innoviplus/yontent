@@ -1,3 +1,4 @@
+
 import { Link } from 'react-router-dom';
 import { Review } from '@/lib/types';
 import { Edit, Trash2 } from 'lucide-react';
@@ -78,8 +79,8 @@ const DraftReviewsTab = ({ drafts }: DraftReviewsTabProps) => {
   if (drafts.length === 0) {
     return (
       <div className="text-center py-14 bg-white rounded-lg shadow-sm px-6">
-        <h3 className="text-lg font-medium text-gray-900 mb-4 pl-4">No draft reviews</h3>
-        <p className="text-gray-500 mb-8 pl-4">You haven't saved any reviews as drafts yet.</p>
+        <h3 className="text-lg font-medium text-gray-900 mb-4">No draft reviews</h3>
+        <p className="text-gray-500 mb-8">You haven't saved any reviews as drafts yet.</p>
         <Button asChild className="bg-brand-teal hover:bg-brand-teal/90">
           <Link to="/submit-review">Create a Review</Link>
         </Button>
@@ -114,7 +115,7 @@ const DraftReviewsTab = ({ drafts }: DraftReviewsTabProps) => {
                 </div>
                 
                 <div className="mt-3 flex flex-wrap gap-2">
-                  {review.images && review.images.map((image, idx) => (
+                  {review.images && review.images.length > 0 && review.images.map((image, idx) => (
                     <div 
                       key={idx} 
                       className="w-16 h-16 rounded-md bg-gray-100 overflow-hidden"
@@ -126,6 +127,18 @@ const DraftReviewsTab = ({ drafts }: DraftReviewsTabProps) => {
                       />
                     </div>
                   ))}
+                  
+                  {/* Display video thumbnail if available */}
+                  {review.videos && review.videos.length > 0 && (
+                    <div className="w-16 h-16 rounded-md bg-gray-100 overflow-hidden relative">
+                      <div className="absolute inset-0 flex items-center justify-center bg-black bg-opacity-30">
+                        <svg className="w-8 h-8 text-white" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                          <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M14.752 11.168l-3.197-2.132A1 1 0 0010 9.87v4.263a1 1 0 001.555.832l3.197-2.132a1 1 0 000-1.664z" />
+                          <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M21 12a9 9 0 11-18 0 9 9 0 0118 0z" />
+                        </svg>
+                      </div>
+                    </div>
+                  )}
                 </div>
               </div>
               
