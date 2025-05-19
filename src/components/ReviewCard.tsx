@@ -5,7 +5,7 @@ import { Review } from '@/lib/types';
 import { cn } from '@/lib/utils';
 import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
 import { useIsMobile } from '@/hooks/use-mobile';
-import { memo, useState, useEffect } from 'react';
+import { memo, useState } from 'react';
 
 interface ReviewCardProps {
   review: Review;
@@ -25,17 +25,20 @@ const ReviewCard = memo(({ review, className }: ReviewCardProps) => {
     return doc.body.textContent || '';
   };
   
-  // Generate consistent seed-based aspect ratio to improve masonry layout
+  // Generate dynamic aspect ratio based on various factors
   const getAspectRatio = () => {
     if (review.images.length === 0 && (!review.videos || review.videos.length === 0)) {
       return null; // No aspect ratio if no media
     }
     
-    // Use review ID to generate a consistent pseudo-random aspect ratio
+    // Use review ID to generate a consistent aspect ratio per item
     const seed = review.id.split('').reduce((acc, char) => acc + char.charCodeAt(0), 0);
-    const baseRatio = 0.75; // Default 4:3
-    const variation = (seed % 50) / 100; // +/- 25% variation
-    return baseRatio + variation - 0.25;
+    
+    // Create more variation in heights (from 1.2 to 2.0)
+    // This will generate taller images like in the reference
+    const baseRatio = 1.2;
+    const variation = (seed % 100) / 125; // +/- 40% variation
+    return baseRatio + variation;
   };
 
   const aspectRatio = getAspectRatio();
