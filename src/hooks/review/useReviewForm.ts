@@ -63,10 +63,10 @@ export const useReviewForm = (initialContent?: string) => {
     }
   }, [form.watch('content')]);
 
-  // Force-set content when initialContent changes
+  // Set content when initialContent changes
   useEffect(() => {
     if (initialContent) {
-      console.log('Forcing content update with:', initialContent.substring(0, 50));
+      console.log('Setting content with:', initialContent.substring(0, 50) + '...');
       form.setValue('content', initialContent);
     }
   }, [initialContent, form]);

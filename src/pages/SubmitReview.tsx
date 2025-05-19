@@ -30,11 +30,10 @@ const SubmitReview = () => {
     videoError,
     handleVideoSelection,
     removeVideo,
-    setVideoError,
     reviewContent
   } = useSubmitReview();
 
-  // Enhanced logging for debugging
+  // Enhanced logging for debugging - executed once on component mount
   useEffect(() => {
     // Log key info on initial load
     console.log('SubmitReview component initial render:', {
@@ -52,7 +51,7 @@ const SubmitReview = () => {
     if (isEditing && reviewContent) {
       toast.success('Draft review loaded successfully');
     }
-  }, []);
+  }, [isLoading, isEditing, isDraft, reviewContent, imagePreviewUrls, videoPreviewUrl, form]);
 
   // If loading, show skeleton UI
   if (isLoading) {

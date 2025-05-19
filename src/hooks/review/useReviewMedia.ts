@@ -156,6 +156,7 @@ export const useReviewMedia = () => {
   return {
     // Image related
     selectedImages,
+    setSelectedImages,
     existingImages,
     setExistingImages,
     imagePreviewUrls,
@@ -166,6 +167,7 @@ export const useReviewMedia = () => {
     removeImage,
     // Video related
     selectedVideo,
+    setSelectedVideo,
     existingVideo,
     setExistingVideo,
     videoPreviewUrl,

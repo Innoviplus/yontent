@@ -1,4 +1,3 @@
-
 import { useReviewForm } from './review/useReviewForm';
 import { useReviewMedia } from './review/useReviewMedia';
 import { useReviewFormState } from './review/useReviewFormState';
@@ -20,17 +19,27 @@ export const useSubmitReview = (onSuccess?: () => void) => {
     reviewContent
   } = useReviewFormState();
   
-  // Then pass reviewContent to useReviewForm
+  // Create a single instance of the form hook
+  const reviewForm = useReviewForm(reviewContent);
   const {
     form,
-  } = useReviewForm(reviewContent);
+    setSelectedImages,
+    setImagePreviewUrls,
+    setImageError,
+    setExistingImages,
+    setSelectedVideo,
+    setVideoPreviewUrl,
+    setVideoError,
+    setExistingVideo,
+    setUploading
+  } = reviewForm;
   
+  // Use the review media hook
   const {
     selectedImages,
     imagePreviewUrls,
     imageError,
     existingImages,
-    setImageError,
     handleImageSelection,
     removeImage,
     uploadImages,
@@ -39,11 +48,9 @@ export const useSubmitReview = (onSuccess?: () => void) => {
     videoError,
     handleVideoSelection,
     removeVideo,
-    setVideoError,
     uploadVideo,
     // Upload state
-    uploading,
-    setUploading
+    uploading
   } = useReviewMedia();
   
   // Import the handleSubmit function from useReviewSubmitHandler
@@ -82,22 +89,12 @@ export const useSubmitReview = (onSuccess?: () => void) => {
     console.log('Reordering images to:', newOrder);
     
     // Simply update the arrays with the new order
-    const newExistingImages = [...newOrder];
-    const newImagePreviewUrls = [...newOrder];
-    
-    if (existingImages.length !== newOrder.length) {
-      console.warn('Image arrays length mismatch during reordering:', {
-        existingImagesLength: existingImages.length,
-        newOrderLength: newOrder.length
-      });
-    }
-    
-    // This ensures we keep the arrays synchronized
+    // Don't call hooks here!
     if (newOrder.length > 0) {
       console.log('Setting reordered images');
-      // Use the setter functions to update the state
-      useReviewMedia().setExistingImages(newExistingImages);
-      useReviewMedia().setImagePreviewUrls(newImagePreviewUrls);
+      // Use the setter functions from the hooks
+      setExistingImages(newOrder);
+      setImagePreviewUrls(newOrder);
     }
   };
   
