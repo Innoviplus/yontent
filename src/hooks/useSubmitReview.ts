@@ -1,3 +1,4 @@
+
 import { useReviewForm } from './review/useReviewForm';
 import { useReviewMedia } from './review/useReviewMedia';
 import { useReviewFormState } from './review/useReviewFormState';
@@ -113,7 +114,7 @@ export const useSubmitReview = (onSuccess?: () => void) => {
     removeImage,
     reorderImages,
     setImageError,
-    // Video related returns
+    // Video related returns - Fix here: return a string[] instead of string[][]
     videoPreviewUrl: videoPreviewUrl ? [videoPreviewUrl] : [],
     videoError,
     handleVideoSelection,

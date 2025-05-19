@@ -91,7 +91,7 @@ const SubmitReview = () => {
                   
                   {/* Video Upload Section */}
                   <VideoUpload
-                    videoPreviewUrls={videoPreviewUrl ? [videoPreviewUrl] : []}
+                    videoPreviewUrls={videoPreviewUrl}
                     onFileSelect={handleVideoSelection}
                     onRemoveVideo={removeVideo}
                     error={videoError}
