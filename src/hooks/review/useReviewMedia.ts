@@ -67,6 +67,8 @@ export const useReviewMedia = () => {
       newImagePreviewUrls.splice(index, 1);
       setImagePreviewUrls(newImagePreviewUrls);
     }
+    
+    console.log('After removing image at index', index, 'existingImages:', existingImages.length, 'selectedImages:', selectedImages.length);
   };
 
   // Handle video selection

@@ -47,6 +47,8 @@ const VideoUpload = ({
       video.src = videoUrl;
       video.muted = true;
       video.preload = 'metadata';
+      video.style.display = 'none'; // Hide the element
+      document.body.appendChild(video); // Needed for some browsers
         
       video.onloadedmetadata = () => {
         console.log('Video metadata loaded, seeking to frame');
@@ -59,8 +61,8 @@ const VideoUpload = ({
           console.log('Creating thumbnail from video frame');
           // Create a canvas and draw the video frame
           const canvas = document.createElement('canvas');
-          canvas.width = video.videoWidth;
-          canvas.height = video.videoHeight;
+          canvas.width = video.videoWidth || 320;
+          canvas.height = video.videoHeight || 180;
           const ctx = canvas.getContext('2d');
             
           if (ctx) {
@@ -70,19 +72,28 @@ const VideoUpload = ({
             setThumbnailUrl(thumbnail);
             setVideoLoaded(true);
           }
+
+          // Clean up
+          document.body.removeChild(video);
         } catch (err) {
           console.error('Error generating video thumbnail:', err);
+          setVideoLoaded(true); // Still mark as loaded even if thumbnail fails
         }
       };
         
       video.onerror = (e) => {
         console.error('Error loading video for thumbnail generation:', e);
-        setVideoLoaded(false);
+        setVideoLoaded(true); // Mark as loaded anyway to show the video element
+        // Clean up
+        if (document.body.contains(video)) {
+          document.body.removeChild(video);
+        }
       };
         
       console.log('Video element created and source set');
     } catch (error) {
       console.error('Exception in thumbnail creation:', error);
+      setVideoLoaded(true); // Mark as loaded anyway to show the video element
     }
   }, [videoPreviewUrls]);
 

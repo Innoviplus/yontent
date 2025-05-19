@@ -1,4 +1,3 @@
-
 import { useReviewForm } from './review/useReviewForm';
 import { useReviewMedia } from './review/useReviewMedia';
 import { useReviewFormState } from './review/useReviewFormState';
@@ -40,16 +39,13 @@ export const useSubmitReview = (onSuccess?: () => void) => {
     reviewId
   } = useReviewFormState();
   
-  const {
-    handleSubmit
-  } = useReviewSubmitHandler(reviewId, uploadImages, uploadVideo);
-  
   // Log loaded data for debugging
   useEffect(() => {
     if (isEditing) {
+      const formContent = form.getValues('content');
       console.log('Edit mode detected with data:', {
         reviewId,
-        content: form.getValues('content') || 'No content',
+        content: formContent && formContent.length > 0 ? formContent.substring(0, 50) + '...' : 'No content',
         imageCount: imagePreviewUrls.length,
         hasVideo: !!videoPreviewUrl,
         isDraft
