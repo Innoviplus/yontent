@@ -1,3 +1,4 @@
+
 import { useParams, Navigate } from 'react-router-dom';
 import { useAuth } from '@/contexts/AuthContext';
 import Navbar from '@/components/Navbar';
@@ -26,7 +27,8 @@ const MissionReviewSubmission = () => {
     return <MissionSubmissionError error={error || "Review mission not found"} />;
   }
 
-  const reviewRequirements = [
+  // Default requirements to use as fallback if no requirementDescription is provided
+  const fallbackRequirements = [
     'Write an honest, detailed review of the product',
     'Upload at least one clear photo of the product',
     'You can upload up to 10 images',
@@ -47,7 +49,8 @@ const MissionReviewSubmission = () => {
           
           <CardContent>
             <MissionRequirementsList 
-              requirements={reviewRequirements} 
+              requirements={fallbackRequirements} 
+              requirementDescription={mission.requirementDescription}
               title="Review Requirements:" 
             />
             
