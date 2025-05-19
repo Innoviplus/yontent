@@ -45,6 +45,23 @@ export const useReviewForm = () => {
     
     return () => subscription.unsubscribe();
   }, [form]);
+  
+  // Save form state to sessionStorage to prevent loss
+  useEffect(() => {
+    try {
+      // Get form values
+      const formValues = form.getValues();
+      const content = formValues.content;
+      
+      if (content && content.length > 0) {
+        // Only save if there's actual content
+        console.log('Saving form state to sessionStorage');
+        sessionStorage.setItem('reviewFormContent', content);
+      }
+    } catch (e) {
+      console.error('Error saving form state:', e);
+    }
+  }, [form.watch('content')]);
 
   return {
     form,
