@@ -84,7 +84,7 @@
   }
 }
 
-/* True Masonry Layout */
+/* Improved Masonry Layout */
 .masonry-container {
   position: relative;
   width: 100%;
@@ -94,7 +94,6 @@
 .masonry-item {
   position: absolute;
   transition: transform 0.2s ease-in-out;
-  padding: 0 6px;
   margin-bottom: 12px;
   break-inside: avoid;
   will-change: transform, opacity;
@@ -102,10 +101,11 @@
 
 .masonry-item:hover {
   transform: translateY(-4px);
-  z-index: 1;
+  z-index: 10;
 }
 
-/* Responsive masonry item widths */
+/* Responsive masonry item widths - these are the default widths
+   The actual positioning is handled by JavaScript */
 @media (max-width: 639px) {
   .masonry-item {
     width: 50%;
