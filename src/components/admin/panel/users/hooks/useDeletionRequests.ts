@@ -75,7 +75,7 @@ export const useDeletionRequests = () => {
       }
       
       // 2. Update reviews by this user to show "Account Disabled" status
-      // Explicitly use the column name user_id to avoid ambiguity
+      // Use explicit column reference for user_id to avoid ambiguity
       const { error: reviewsError } = await supabase
         .from('reviews')
         .update({ status: 'ACCOUNT_DISABLED' })
@@ -127,7 +127,7 @@ export const useDeletionRequests = () => {
       }
       
       // 2. Update request status in account_deletion_requests table
-      // Using explicit column names to avoid ambiguity
+      // Using explicit column names to avoid ambiguity and unambiguous query path
       const { data, error } = await supabase
         .from('account_deletion_requests')
         .update({
@@ -135,7 +135,7 @@ export const useDeletionRequests = () => {
           processed_by: user.id
         })
         .eq('id', requestId)
-        .select();
+        .select('id, user_id_delete, status, processed_by');
       
       if (error) {
         console.error('Database error when rejecting request:', error);
@@ -168,3 +168,4 @@ export const useDeletionRequests = () => {
     rejectRequest
   };
 };
+
