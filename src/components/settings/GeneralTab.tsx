@@ -1,8 +1,8 @@
-
 import React from 'react';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { UseFormReturn } from 'react-hook-form';
+
 export interface GeneralTabProps {
   handleLogout: () => Promise<void>;
   handleDeleteAccount: () => Promise<void>;
@@ -10,11 +10,10 @@ export interface GeneralTabProps {
   onSettingsSubmit?: (values: any) => Promise<void>;
   isUpdating?: boolean;
 }
+
 export const GeneralTab: React.FC<GeneralTabProps> = ({
   handleLogout,
   handleDeleteAccount,
-  // We're not using these props in this component yet, but including them
-  // in the interface to avoid TypeScript errors
   settingsForm,
   onSettingsSubmit,
   isUpdating
@@ -49,20 +48,6 @@ export const GeneralTab: React.FC<GeneralTabProps> = ({
               <Button onClick={handleLogout} className="w-auto px-8 bg-brand-teal hover:bg-brand-teal/90">
                 Log out
               </Button>
-              
-              <div className="pt-6 border-t">
-                <h4 className="text-sm font-medium text-red-600 mb-2">Danger Zone</h4>
-                <p className="text-sm text-muted-foreground mb-4">
-                  Once you delete your account, there is no going back. Please be certain.
-                </p>
-                <Button 
-                  onClick={handleDeleteAccount} 
-                  variant="destructive" 
-                  className="w-auto"
-                >
-                  Delete My Account
-                </Button>
-              </div>
             </div>
           </div>
         </CardContent>
