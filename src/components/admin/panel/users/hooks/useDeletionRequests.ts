@@ -12,40 +12,40 @@ export const useDeletionRequests = () => {
   const fetchDeletionRequests = useCallback(async () => {
     setLoading(true);
     try {
-      // Fetch deletion requests and join with profiles table
-      const { data, error } = await supabase
+      // First, fetch all deletion requests
+      const { data: requestsData, error: requestsError } = await supabase
         .from('account_deletion_requests')
-        .select(`
-          id,
-          user_id_delete,
-          created_at,
-          status,
-          reason,
-          processed_by,
-          profiles:user_id_delete (
-            username,
-            avatar,
-            email
-          )
-        `)
+        .select('*')
         .order('created_at', { ascending: false });
       
-      if (error) {
-        throw error;
+      if (requestsError) {
+        throw requestsError;
       }
       
-      // Transform data to match frontend type
-      const formattedData: DeletionRequest[] = data.map(item => ({
-        id: item.id,
-        user_id: item.user_id_delete,
-        created_at: item.created_at,
-        status: item.status as DeletionRequestStatus,
-        reason: item.reason,
-        processed_by: item.processed_by,
-        profile: item.profiles || null // Handle case when profiles might be null
-      }));
+      // Now fetch profiles for each user_id_delete to properly join the data
+      const userRequests: DeletionRequest[] = [];
       
-      setRequests(formattedData);
+      for (const request of requestsData) {
+        // Get profile data for this user
+        const { data: profileData } = await supabase
+          .from('profiles')
+          .select('username, email, avatar')
+          .eq('id', request.user_id_delete)
+          .single();
+          
+        // Create a formatted request object with profile data
+        userRequests.push({
+          id: request.id,
+          user_id: request.user_id_delete,
+          created_at: request.created_at,
+          status: request.status as DeletionRequestStatus,
+          reason: request.reason,
+          processed_by: request.processed_by,
+          profile: profileData || null
+        });
+      }
+      
+      setRequests(userRequests);
     } catch (error: any) {
       console.error('Error fetching deletion requests:', error.message);
       toast.error('Failed to load deletion requests');
