@@ -77,11 +77,12 @@ export const useDeletionRequests = () => {
     try {
       console.log(`Disabling account for user ${userId}, request ${requestId}`);
       
-      // 1. Update user reviews to DISABLED status - Fix the ambiguous column reference
+      // FIX: Use direct SQL update instead of the .eq('reviews.user_id') approach
+      // which was causing the error
       const { error: reviewsError } = await supabase
         .from('reviews')
         .update({ status: 'DISABLED' })
-        .eq('reviews.user_id', userId); // Fully qualify the column name
+        .eq('user_id', userId); // Don't use table qualifier in .eq()
         
       if (reviewsError) {
         console.error('Error updating reviews:', reviewsError);
@@ -90,7 +91,7 @@ export const useDeletionRequests = () => {
       
       console.log('Reviews updated successfully');
       
-      // 2. Update request status to approved - Fix the ambiguous column reference
+      // Update request status to approved
       const { error: updateError } = await supabase
         .from('account_deletion_requests')
         .update({ status: 'APPROVED' })
