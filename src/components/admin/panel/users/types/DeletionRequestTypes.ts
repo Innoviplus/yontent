@@ -9,4 +9,5 @@ export type DeletionRequest = {
   reason: string | null;
   username: string | null;
   email: string | null;
+  phone: string | null;
 };

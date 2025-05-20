@@ -1,4 +1,3 @@
-
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import RewardsManagement from "@/components/admin/rewards/RewardsManagement";
 import RequestsManagement from "@/components/admin/rewards/RequestsManagement";
@@ -30,11 +29,6 @@ interface RequestsManagementProps {
 interface AdminTabsContainerProps {
   activeTab: string;
   setActiveTab: (tab: string) => void;
-  rewards: any[];
-  isLoadingRewards: boolean;
-  addReward: any;
-  updateReward: any;
-  deleteReward: any;
   requests: any[];
   isLoadingRequests: boolean;
   isRefreshingRequests: boolean;
@@ -50,6 +44,11 @@ interface AdminTabsContainerProps {
   deleteMission: any;
   refreshMissions: () => Promise<void>;
   maxLoadingTime: boolean;
+  rewards: any[];
+  isLoadingRewards: boolean;
+  addReward: any;
+  updateReward: any;
+  deleteReward: any;
 }
 
 const AdminTabsContainer: React.FC<AdminTabsContainerProps> = ({

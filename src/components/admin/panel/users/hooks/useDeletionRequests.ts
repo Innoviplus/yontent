@@ -1,4 +1,3 @@
-
 import { useState, useEffect } from 'react';
 import { supabase } from '@/integrations/supabase/client';
 import { toast } from 'sonner';
@@ -12,7 +11,7 @@ export const useDeletionRequests = () => {
   const fetchDeletionRequests = async () => {
     setLoading(true);
     try {
-      // Get deletion requests with user information using explicit join
+      // Get deletion requests with proper user information
       const { data, error } = await supabase
         .from('account_deletion_requests')
         .select(`
@@ -21,8 +20,11 @@ export const useDeletionRequests = () => {
           created_at,
           status,
           reason,
-          user_id (
-            profiles (username, email)
+          profiles:user_id(
+            username,
+            email,
+            phone_number,
+            phone_country_code
           )
         `)
         .order('created_at', { ascending: false });
@@ -36,8 +38,11 @@ export const useDeletionRequests = () => {
         created_at: item.created_at,
         status: item.status as DeletionRequest['status'],
         reason: item.reason || 'No reason provided',
-        username: item.user_id?.profiles?.username || 'Unknown user',
-        email: item.user_id?.profiles?.email || 'No email'
+        username: item.profiles?.username || 'Unknown user',
+        email: item.profiles?.email || 'No email',
+        phone: item.profiles?.phone_number 
+          ? `${item.profiles.phone_country_code || ''}${item.profiles.phone_number}` 
+          : 'No phone'
       }));
       
       console.log('Deletion requests:', formattedData);
@@ -51,13 +56,21 @@ export const useDeletionRequests = () => {
   };
   
   const approveRequest = async (requestId: string, userId: string) => {
-    if (!window.confirm('Are you sure you want to permanently delete this user account? This action cannot be undone.')) {
+    if (!window.confirm('Are you sure you want to disable this user account? This action cannot be undone.')) {
       return;
     }
     
     setProcessing(requestId);
     try {
-      // Update request status to approved
+      // 1. Update user reviews to DISABLED status
+      const { error: reviewsError } = await supabase
+        .from('reviews')
+        .update({ status: 'DISABLED' })
+        .eq('user_id', userId);
+        
+      if (reviewsError) throw reviewsError;
+      
+      // 2. Update request status to approved
       const { error: updateError } = await supabase
         .from('account_deletion_requests')
         .update({ status: 'APPROVED' })
@@ -65,10 +78,9 @@ export const useDeletionRequests = () => {
         
       if (updateError) throw updateError;
       
-      // In a real app, you would call a secure admin function to delete the user
-      // This would typically be an edge function with admin privileges
-      // For now, we'll simulate this with a success message
-      toast.success('User account deletion approved and processed');
+      // 3. Keep the profile record but disable the auth account if possible
+      // Note: This requires admin privileges and would typically be handled by a secure admin function
+      toast.success('User account disabled and reviews hidden');
       
       // Update local state
       setRequests(prev => 

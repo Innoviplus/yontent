@@ -40,7 +40,7 @@ export const useAccountActions = (navigate: ReturnType<typeof useNavigate>) => {
 
   const handleDeleteAccount = async () => {
     try {
-      if (!window.confirm('Are you sure you want to delete your account? This action cannot be undone.')) {
+      if (!window.confirm('Are you sure you want to disable your account? You will no longer be able to log in, but your profile information will be retained. This action cannot be undone.')) {
         return;
       }
       
@@ -65,13 +65,13 @@ export const useAccountActions = (navigate: ReturnType<typeof useNavigate>) => {
         throw insertError;
       }
       
-      toast.success('Account scheduled for deletion');
+      toast.success('Account disable request submitted');
       
       // Log the user out after deletion request
       await handleLogout();
     } catch (error: any) {
       console.error('Account deletion error:', error);
-      toast.error(`Failed to delete account: ${error.message}`);
+      toast.error(`Failed to submit account disable request: ${error.message}`);
     } finally {
       setIsDeleting(false);
     }

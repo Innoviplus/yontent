@@ -32,6 +32,7 @@ export const DeletionRequestsTable = ({
           <TableRow>
             <TableHead className="w-[200px]">User</TableHead>
             <TableHead>Request Date</TableHead>
+            <TableHead>Contact Info</TableHead>
             <TableHead>Status</TableHead>
             <TableHead>Reason</TableHead>
             <TableHead className="text-right">Actions</TableHead>
@@ -42,7 +43,6 @@ export const DeletionRequestsTable = ({
             <TableRow key={request.id}>
               <TableCell>
                 <div className="text-sm font-medium text-gray-900">{request.username || 'Unknown user'}</div>
-                <div className="text-xs text-gray-500">{request.email || 'No email'}</div>
               </TableCell>
               <TableCell>
                 <div className="text-sm text-gray-500">
@@ -50,6 +50,12 @@ export const DeletionRequestsTable = ({
                   <span className="block text-xs">
                     {new Date(request.created_at).toLocaleTimeString()}
                   </span>
+                </div>
+              </TableCell>
+              <TableCell>
+                <div className="text-xs text-gray-500">
+                  <div>{request.email || 'No email'}</div>
+                  <div>{request.phone || 'No phone'}</div>
                 </div>
               </TableCell>
               <TableCell>
@@ -73,7 +79,7 @@ export const DeletionRequestsTable = ({
                         <Loader2 className="h-4 w-4 animate-spin mr-1" /> : 
                         <Trash2 className="h-4 w-4 mr-1" />
                       }
-                      Delete User
+                      Disable Account
                     </Button>
                     <Button
                       variant="outline"
@@ -88,7 +94,7 @@ export const DeletionRequestsTable = ({
                 )}
                 {request.status !== 'PENDING' && (
                   <span className="text-gray-500">
-                    {request.status === 'APPROVED' ? 'User deleted' : 'Request rejected'}
+                    {request.status === 'APPROVED' ? 'Account disabled' : 'Request rejected'}
                   </span>
                 )}
               </TableCell>
