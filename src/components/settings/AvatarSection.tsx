@@ -2,7 +2,7 @@
 import React, { useRef } from 'react';
 import { AvatarUploader, AvatarUploaderProps } from './AvatarUploader';
 
-interface AvatarSectionProps extends AvatarUploaderProps {
+interface AvatarSectionProps extends Omit<AvatarUploaderProps, 'fileInputRef'> {
   username?: string;
 }
 

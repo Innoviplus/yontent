@@ -14,7 +14,7 @@ interface SettingsLayoutProps {
   isUpdating: boolean;
   isSubmitting: boolean;
   extendedProfile: any;
-  handleAvatarUpload: (file: File) => Promise<void>;
+  handleAvatarUpload: (event: React.ChangeEvent<HTMLInputElement>) => Promise<void>;
   profileForm: UseFormReturn<any>;
   settingsForm: UseFormReturn<any>;
   onProfileSubmit: (values: any) => Promise<void>;
@@ -71,8 +71,8 @@ export const SettingsLayout: React.FC<SettingsLayoutProps> = ({
               uploading={uploading}
               isUpdating={isUpdating}
               handleAvatarUpload={handleAvatarUpload}
-              form={profileForm}
-              onSubmit={onProfileSubmit}
+              profileForm={profileForm}
+              onProfileSubmit={onProfileSubmit}
               extendedProfile={extendedProfile}
             />
           </TabsContent>

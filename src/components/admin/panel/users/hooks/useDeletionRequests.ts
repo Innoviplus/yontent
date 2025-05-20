@@ -12,7 +12,7 @@ export const useDeletionRequests = () => {
   const fetchDeletionRequests = async () => {
     setLoading(true);
     try {
-      // Get deletion requests with user information
+      // Get deletion requests with user information using explicit join
       const { data, error } = await supabase
         .from('account_deletion_requests')
         .select(`
@@ -21,7 +21,9 @@ export const useDeletionRequests = () => {
           created_at,
           status,
           reason,
-          profiles(username, email)
+          user_id (
+            profiles (username, email)
+          )
         `)
         .order('created_at', { ascending: false });
 
@@ -34,8 +36,8 @@ export const useDeletionRequests = () => {
         created_at: item.created_at,
         status: item.status as DeletionRequest['status'],
         reason: item.reason || 'No reason provided',
-        username: item.profiles?.username,
-        email: item.profiles?.email
+        username: item.user_id?.profiles?.username || 'Unknown user',
+        email: item.user_id?.profiles?.email || 'No email'
       }));
       
       console.log('Deletion requests:', formattedData);
