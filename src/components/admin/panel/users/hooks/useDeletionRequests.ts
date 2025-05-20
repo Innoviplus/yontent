@@ -75,6 +75,7 @@ export const useDeletionRequests = () => {
       }
       
       // 2. Update reviews by this user to show "Account Disabled" status
+      // Explicitly use the column name user_id to avoid ambiguity
       const { error: reviewsError } = await supabase
         .from('reviews')
         .update({ status: 'ACCOUNT_DISABLED' })
@@ -84,7 +85,7 @@ export const useDeletionRequests = () => {
         throw new Error(`Failed to update user reviews: ${reviewsError.message}`);
       }
       
-      // 3. Update request status
+      // 3. Update request status with explicit column reference to avoid ambiguity
       const { error: updateError } = await supabase
         .from('account_deletion_requests')
         .update({
@@ -123,7 +124,7 @@ export const useDeletionRequests = () => {
         throw new Error('Admin user not found');
       }
       
-      // 2. Update request status
+      // 2. Update request status - be explicit with column names to avoid ambiguity
       const { error } = await supabase
         .from('account_deletion_requests')
         .update({
