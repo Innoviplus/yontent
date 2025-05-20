@@ -1,86 +1,71 @@
-
 import { useState } from 'react';
-import { useNavigate } from 'react-router-dom';
 import { supabase } from '@/integrations/supabase/client';
 import { toast } from 'sonner';
-import { useAuth } from '@/contexts/AuthContext';
 
-export const useAccountActions = (navigate: ReturnType<typeof useNavigate>) => {
+export const useAccountActions = (userId: string) => {
+  const [isSubmitting, setIsSubmitting] = useState(false);
   const [isDeleting, setIsDeleting] = useState(false);
-  const [isLoggingOut, setIsLoggingOut] = useState(false);
-  const { signOut } = useAuth();
-
-  const handleLogout = async () => {
+  
+  const requestAccountDeletion = async (reason: string) => {
+    if (!userId) return false;
+    
     try {
-      setIsLoggingOut(true);
+      setIsSubmitting(true);
       
-      // Use Auth context signOut function if available
-      if (signOut) {
-        await signOut();
-      } else {
-        // Fallback to direct Supabase signout
-        const { error } = await supabase.auth.signOut();
-        
-        if (error) {
-          throw error;
+      // Check if user already has a pending request
+      const { data: existingRequests, error: checkError } = await supabase
+        .from('account_deletion_requests')
+        .select('id, status')
+        .eq('user_id_delete', userId)
+        .order('created_at', { ascending: false })
+        .limit(1);
+      
+      if (checkError) {
+        console.error('Error checking existing deletion requests:', checkError);
+        toast.error('Unable to submit deletion request. Please try again later.');
+        return false;
+      }
+      
+      // If there's an existing pending request, don't create a new one
+      if (existingRequests && existingRequests.length > 0) {
+        const latestRequest = existingRequests[0];
+        if (latestRequest.status === 'PENDING') {
+          toast.error('You already have a pending account deletion request.');
+          return false;
         }
       }
       
-      toast.success('Logged out successfully');
-      
-      // Navigate to login
-      navigate('/login');
-    } catch (error: any) {
-      console.error('Logout error:', error);
-      toast.error(`Failed to log out: ${error.message}`);
-    } finally {
-      setIsLoggingOut(false);
-    }
-  };
-
-  const handleDeleteAccount = async () => {
-    try {
-      if (!window.confirm('Are you sure you want to disable your account? You will no longer be able to log in, but your profile information will be retained. This action cannot be undone.')) {
-        return;
-      }
-      
-      setIsDeleting(true);
-      
-      // Get the current user
-      const { data: userData } = await supabase.auth.getUser();
-      if (!userData.user) {
-        throw new Error('User not authenticated');
-      }
-
-      // Create account_deletion_requests record
-      const { error: insertError } = await supabase
+      // Create a new deletion request
+      const { error } = await supabase
         .from('account_deletion_requests')
         .insert({
-          user_id: userData.user.id,
-          status: 'PENDING',
-          reason: 'User requested account deletion',
+          user_id_delete: userId,
+          reason: reason,
+          status: 'PENDING'
         });
-
-      if (insertError) {
-        throw insertError;
+      
+      if (error) {
+        console.error('Error creating deletion request:', error);
+        toast.error('Failed to submit deletion request. Please try again later.');
+        return false;
       }
       
-      toast.success('Account disable request submitted');
-      
-      // Log the user out after deletion request
-      await handleLogout();
-    } catch (error: any) {
-      console.error('Account deletion error:', error);
-      toast.error(`Failed to submit account disable request: ${error.message}`);
+      toast.success('Your account deletion request has been submitted. An administrator will review your request.');
+      return true;
+    } catch (error) {
+      console.error('Error in requestAccountDeletion:', error);
+      toast.error('An unexpected error occurred. Please try again later.');
+      return false;
     } finally {
-      setIsDeleting(false);
+      setIsSubmitting(false);
     }
   };
 
+  // Other functions...
+  
   return {
-    isDeleting,
-    isLoggingOut,
-    handleLogout,
-    handleDeleteAccount
+    requestAccountDeletion,
+    isSubmitting,
+    isDeleting
   };
 };

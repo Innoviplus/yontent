@@ -3,6 +3,7 @@ import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import RewardsManagement from "@/components/admin/rewards/RewardsManagement";
 import RequestsManagement from "@/components/admin/rewards/RequestsManagement";
 import MissionsManagement from "@/components/admin/missions/MissionsManagement";
+import ParticipationsManagement from "@/components/admin/participations/ParticipationsManagement";
 import AdminUsersManagement from "@/components/admin/panel/AdminUsersManagement";
 import { UserDeletionRequests } from "@/components/admin/panel/users/UserDeletionRequests";
 
@@ -82,6 +83,7 @@ const AdminTabsContainer: React.FC<AdminTabsContainerProps> = ({
     <Tabs value={activeTab} onValueChange={setActiveTab} className="w-full">
       <TabsList className="mb-6 flex flex-wrap gap-2">
         <TabsTrigger value="missions">Missions</TabsTrigger>
+        <TabsTrigger value="participations">Mission Submissions</TabsTrigger>
         <TabsTrigger value="rewards">Rewards</TabsTrigger>
         <TabsTrigger value="requests">Redemption Requests</TabsTrigger>
         <TabsTrigger value="users">Users</TabsTrigger>
@@ -97,6 +99,10 @@ const AdminTabsContainer: React.FC<AdminTabsContainerProps> = ({
           deleteMission={deleteMission}
           refreshMissions={refreshMissions}
         />
+      </TabsContent>
+
+      <TabsContent value="participations" className="pt-2">
+        <ParticipationsManagement />
       </TabsContent>
 
       <TabsContent value="rewards" className="pt-2">
