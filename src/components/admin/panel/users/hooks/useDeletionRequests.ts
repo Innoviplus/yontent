@@ -118,31 +118,41 @@ export const useDeletionRequests = () => {
     setProcessing(prev => ({ ...prev, [requestId]: true }));
     
     try {
+      console.log('Rejecting request:', requestId);
+      
       // 1. Get current user as processor
       const { data: { user } } = await supabase.auth.getUser();
       if (!user) {
         throw new Error('Admin user not found');
       }
       
-      // 2. Update request status - be explicit with column names to avoid ambiguity
-      const { error } = await supabase
+      // 2. Update request status in account_deletion_requests table
+      // Using explicit column names to avoid ambiguity
+      const { data, error } = await supabase
         .from('account_deletion_requests')
         .update({
           status: 'REJECTED' as DeletionRequestStatus,
           processed_by: user.id
         })
-        .eq('id', requestId);
+        .eq('id', requestId)
+        .select();
       
       if (error) {
+        console.error('Database error when rejecting request:', error);
         throw error;
       }
       
+      if (!data || data.length === 0) {
+        throw new Error('No request was updated');
+      }
+      
+      console.log('Request rejected successfully:', data);
       toast.success('Account deletion request rejected');
-      fetchDeletionRequests();
+      await fetchDeletionRequests();
       return true;
     } catch (error: any) {
-      console.error('Error rejecting deletion request:', error.message);
-      toast.error('Failed to reject deletion request');
+      console.error('Error rejecting deletion request:', error);
+      toast.error(`Failed to reject deletion request: ${error.message}`);
       return false;
     } finally {
       setProcessing(prev => ({ ...prev, [requestId]: false }));
