@@ -17,7 +17,7 @@ export type Database = {
           reason: string | null
           status: string
           updated_at: string
-          user_id: string
+          user_id_delete: string
         }
         Insert: {
           created_at?: string
@@ -26,7 +26,7 @@ export type Database = {
           reason?: string | null
           status?: string
           updated_at?: string
-          user_id: string
+          user_id_delete: string
         }
         Update: {
           created_at?: string
@@ -35,7 +35,7 @@ export type Database = {
           reason?: string | null
           status?: string
           updated_at?: string
-          user_id?: string
+          user_id_delete?: string
         }
         Relationships: []
       }

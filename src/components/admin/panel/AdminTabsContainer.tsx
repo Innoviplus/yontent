@@ -13,6 +13,7 @@ interface AdminRewardsManagementProps {
   onAdd: (reward: any) => Promise<boolean>;
   onUpdate: (id: string, updates: any) => Promise<boolean>;
   onDelete: (id: string) => Promise<boolean>;
+  onRefresh?: () => Promise<void>;
 }
 
 interface AdminRequestsManagementProps {
@@ -105,6 +106,7 @@ const AdminTabsContainer: React.FC<AdminTabsContainerProps> = ({
           onAdd={addReward}
           onUpdate={updateReward}
           onDelete={deleteReward}
+          onRefresh={refreshRewards}
         />
       </TabsContent>
 

@@ -26,14 +26,14 @@ export const useDeletionRequests = () => {
           const { data: profileData, error: profileError } = await supabase
             .from('profiles')
             .select('username, email, phone_number, phone_country_code')
-            .eq('id', request.user_id)
+            .eq('id', request.user_id_delete) // Updated to use user_id_delete
             .single();
             
           if (profileError) {
-            console.error(`Error fetching profile for user ${request.user_id}:`, profileError);
+            console.error(`Error fetching profile for user ${request.user_id_delete}:`, profileError);
             return {
               id: request.id,
-              user_id: request.user_id,
+              user_id: request.user_id_delete, // Updated to use user_id_delete
               created_at: request.created_at,
               status: request.status as DeletionRequestStatus,
               reason: request.reason || 'No reason provided',
@@ -45,7 +45,7 @@ export const useDeletionRequests = () => {
           
           return {
             id: request.id,
-            user_id: request.user_id,
+            user_id: request.user_id_delete, // Updated to use user_id_delete
             created_at: request.created_at,
             status: request.status as DeletionRequestStatus,
             reason: request.reason || 'No reason provided',
@@ -77,12 +77,11 @@ export const useDeletionRequests = () => {
     try {
       console.log(`Disabling account for user ${userId}, request ${requestId}`);
       
-      // FIX: Use direct SQL update instead of the .eq('reviews.user_id') approach
-      // which was causing the error
+      // Update user reviews to DISABLED status
       const { error: reviewsError } = await supabase
         .from('reviews')
         .update({ status: 'DISABLED' })
-        .eq('user_id', userId); // Don't use table qualifier in .eq()
+        .eq('user_id', userId);
         
       if (reviewsError) {
         console.error('Error updating reviews:', reviewsError);
