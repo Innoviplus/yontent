@@ -14,9 +14,9 @@ import {
 
 interface DeletionRequestsTableProps {
   requests: DeletionRequest[];
-  processing: string | null;
-  onApprove: (requestId: string, userId: string) => Promise<void>;
-  onReject: (requestId: string) => Promise<void>;
+  processing: Record<string, boolean>;
+  onApprove: (requestId: string) => Promise<boolean>;
+  onReject: (requestId: string) => Promise<boolean>;
 }
 
 export const DeletionRequestsTable = ({
@@ -50,7 +50,7 @@ export const DeletionRequestsTable = ({
             <TableRow key={request.id}>
               <TableCell>
                 <div className="text-sm font-medium text-gray-900">
-                  {request.username || 'Unknown user'}
+                  {request.profile?.username || 'Unknown user'}
                 </div>
               </TableCell>
               <TableCell>
@@ -63,8 +63,7 @@ export const DeletionRequestsTable = ({
               </TableCell>
               <TableCell>
                 <div className="text-xs text-gray-500">
-                  <div>{request.email || 'No email'}</div>
-                  <div>{request.phone || 'No phone'}</div>
+                  <div>{request.profile?.email || 'No email'}</div>
                 </div>
               </TableCell>
               <TableCell>
@@ -81,10 +80,10 @@ export const DeletionRequestsTable = ({
                     <Button
                       variant="destructive"
                       size="sm"
-                      onClick={() => onApprove(request.id, request.user_id)}
-                      disabled={!!processing}
+                      onClick={() => onApprove(request.id)}
+                      disabled={!!processing[request.id]}
                     >
-                      {processing === request.id ? 
+                      {processing[request.id] ? 
                         <Loader2 className="h-4 w-4 animate-spin mr-1" /> : 
                         <ShieldBan className="h-4 w-4 mr-1" />
                       }
@@ -94,7 +93,7 @@ export const DeletionRequestsTable = ({
                       variant="outline"
                       size="sm"
                       onClick={() => onReject(request.id)}
-                      disabled={!!processing}
+                      disabled={!!processing[request.id]}
                     >
                       <X className="h-4 w-4 mr-1" />
                       Reject

@@ -17,6 +17,7 @@ interface RewardsManagementProps {
   onAdd: (reward: Omit<RedemptionItem, 'id'>) => Promise<boolean>;
   onUpdate: (id: string, updates: Partial<RedemptionItem>) => Promise<boolean>;
   onDelete: (id: string) => Promise<boolean>;
+  onRefresh?: () => Promise<void>;
 }
 
 const RewardsManagement = ({
@@ -24,7 +25,8 @@ const RewardsManagement = ({
   isLoading,
   onAdd,
   onUpdate,
-  onDelete
+  onDelete,
+  onRefresh
 }: RewardsManagementProps) => {
   const {
     showAddForm, setShowAddForm,

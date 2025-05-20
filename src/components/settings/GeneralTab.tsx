@@ -1,7 +1,9 @@
+
 import React from 'react';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { UseFormReturn } from 'react-hook-form';
+
 export interface GeneralTabProps {
   handleLogout: () => Promise<void>;
   handleDeleteAccount: () => Promise<void>;
@@ -9,6 +11,7 @@ export interface GeneralTabProps {
   onSettingsSubmit?: (values: any) => Promise<void>;
   isUpdating?: boolean;
 }
+
 export const GeneralTab: React.FC<GeneralTabProps> = ({
   handleLogout,
   handleDeleteAccount,
@@ -18,7 +21,8 @@ export const GeneralTab: React.FC<GeneralTabProps> = ({
   onSettingsSubmit,
   isUpdating
 }) => {
-  return <>
+  return (
+    <>
       <Card>
         <CardHeader>
           <CardTitle>General Settings</CardTitle>
@@ -48,13 +52,21 @@ export const GeneralTab: React.FC<GeneralTabProps> = ({
               <Button onClick={handleLogout} className="w-auto px-8 bg-brand-teal hover:bg-brand-teal/90">
                 Log out
               </Button>
+              
+              <div className="pt-6 border-t">
+                <h4 className="text-sm font-medium text-red-600 mb-2">Danger Zone</h4>
+                <Button 
+                  variant="destructive" 
+                  onClick={handleDeleteAccount}
+                  className="w-auto px-8"
+                >
+                  Disable My Account
+                </Button>
+              </div>
             </div>
           </div>
         </CardContent>
       </Card>
-      
-      <div className="mt-8 text-center">
-        
-      </div>
-    </>;
+    </>
+  );
 };

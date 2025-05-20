@@ -14,7 +14,7 @@ interface AdminRewardsManagementProps {
   onAdd: (reward: any) => Promise<boolean>;
   onUpdate: (id: string, updates: any) => Promise<boolean>;
   onDelete: (id: string) => Promise<boolean>;
-  onRefresh?: () => Promise<void>;
+  onRefresh: () => Promise<void>;
 }
 
 interface AdminRequestsManagementProps {

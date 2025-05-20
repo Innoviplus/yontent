@@ -1,5 +1,5 @@
 
-import { useState, useCallback } from 'react';
+import { useState, useCallback, useEffect } from 'react';
 import { toast } from 'sonner';
 import { supabase } from '@/integrations/supabase/client';
 import { DeletionRequest } from '../types/DeletionRequestTypes';
@@ -55,9 +55,9 @@ export const useDeletionRequests = () => {
   }, []);
   
   // Load requests on component mount
-  useState(() => {
+  useEffect(() => {
     fetchDeletionRequests();
-  });
+  }, [fetchDeletionRequests]);
   
   const approveRequest = useCallback(async (requestId: string) => {
     setProcessing(prev => ({ ...prev, [requestId]: true }));

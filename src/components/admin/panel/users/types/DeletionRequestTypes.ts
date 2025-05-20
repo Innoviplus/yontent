@@ -7,7 +7,10 @@ export interface DeletionRequest {
   created_at: string;
   status: DeletionRequestStatus;
   reason: string | null;
-  username: string;
-  email: string;
-  phone: string;
+  processed_by: string | null;
+  profile: {
+    username?: string;
+    avatar?: string;
+    email?: string;
+  } | null;
 }
