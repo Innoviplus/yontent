@@ -5,11 +5,12 @@ import { useReviewFormState } from './review/useReviewFormState';
 import { useReviewSubmitHandler } from './review/useReviewSubmitHandler';
 import { toast } from 'sonner';
 import { ReviewFormValues } from './review/useReviewForm';
-import { useEffect } from 'react';
+import { useEffect, useState } from 'react';
 import { useAuth } from '@/contexts/AuthContext';
 
 export const useSubmitReview = (onSuccess?: () => void) => {
   const { user } = useAuth();
+  const [isSavingDraft, setIsSavingDraft] = useState(false);
   
   // Get the review state first to access reviewContent and other draft data
   const {
@@ -104,7 +105,7 @@ export const useSubmitReview = (onSuccess?: () => void) => {
   };
   
   // Save as draft functionality - no conditionals
-  const saveDraft = () => {
+  const saveDraft = async () => {
     const values = form.getValues();
     form.setValue('isDraft', true);
     
@@ -114,7 +115,16 @@ export const useSubmitReview = (onSuccess?: () => void) => {
       return;
     }
     
-    handleSubmit(form.getValues());
+    setIsSavingDraft(true);
+    try {
+      await handleSubmit(form.getValues());
+      toast.success('Draft saved successfully');
+    } catch (error) {
+      console.error('Error saving draft:', error);
+      toast.error('Failed to save draft');
+    } finally {
+      setIsSavingDraft(false);
+    }
   };
   
   // Form submission wrapper - no conditionals
@@ -138,6 +148,7 @@ export const useSubmitReview = (onSuccess?: () => void) => {
     form,
     uploading,
     isLoading,
+    isSavingDraft,
     selectedImages,
     imagePreviewUrls,
     imageError,

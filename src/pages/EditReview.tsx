@@ -1,7 +1,7 @@
 
 import { useEffect } from 'react';
 import { useParams, useNavigate } from 'react-router-dom';
-import { Loader2 } from 'lucide-react';
+import { Loader2, Save } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Form, FormControl, FormField, FormItem, FormLabel, FormMessage } from '@/components/ui/form';
 import Navbar from '@/components/Navbar';
@@ -19,7 +19,8 @@ const EditReview = () => {
   const {
     form,
     uploading,
-    isLoading, // Use isLoading instead of loading
+    isLoading,
+    isSavingDraft,
     imagePreviewUrls,
     imageError,
     videoPreviewUrl,
@@ -40,14 +41,14 @@ const EditReview = () => {
     console.log('EditReview component rendered with:', {
       id,
       isDraft,
-      isLoading, // Use isLoading instead of loading
+      isLoading,
       imageCount: imagePreviewUrls.length,
       hasVideo: videoPreviewUrl.length > 0,
       formContent: form.getValues('content')?.substring(0, 50) || 'No content'
     });
   }, [id, isDraft, isLoading, imagePreviewUrls, videoPreviewUrl, form]);
 
-  if (isLoading) { // Use isLoading instead of loading
+  if (isLoading) {
     return (
       <div className="min-h-screen bg-gray-50">
         <Navbar />
@@ -121,15 +122,25 @@ const EditReview = () => {
                     type="button"
                     variant="outline"
                     onClick={saveDraft}
-                    disabled={uploading}
+                    disabled={uploading || isSavingDraft}
                   >
-                    Save as Draft
+                    {isSavingDraft ? (
+                      <>
+                        <Loader2 className="h-4 w-4 mr-2 animate-spin" />
+                        Saving Draft...
+                      </>
+                    ) : (
+                      <>
+                        <Save className="h-4 w-4 mr-2" />
+                        Save as Draft
+                      </>
+                    )}
                   </Button>
                   
                   <Button
                     type="submit"
                     className="bg-brand-teal hover:bg-brand-teal/90"
-                    disabled={uploading}
+                    disabled={uploading || isSavingDraft}
                   >
                     {uploading ? (
                       <>
