@@ -12,7 +12,7 @@ export const useDeletionRequests = () => {
   const fetchDeletionRequests = useCallback(async () => {
     setLoading(true);
     try {
-      // Fetch deletion requests with proper column mapping
+      // Fetch deletion requests and join with profiles table
       const { data, error } = await supabase
         .from('account_deletion_requests')
         .select(`
@@ -34,16 +34,15 @@ export const useDeletionRequests = () => {
         throw error;
       }
       
-      // Transform data to match frontend type (using user_id as the frontend property)
-      // and ensure status is properly typed
+      // Transform data to match frontend type
       const formattedData: DeletionRequest[] = data.map(item => ({
         id: item.id,
-        user_id: item.user_id_delete, // Map to expected property in frontend
+        user_id: item.user_id_delete,
         created_at: item.created_at,
-        status: item.status as DeletionRequestStatus, // Cast to our enum type
+        status: item.status as DeletionRequestStatus,
         reason: item.reason,
         processed_by: item.processed_by,
-        profile: item.profiles
+        profile: item.profiles || null // Handle case when profiles might be null
       }));
       
       setRequests(formattedData);
