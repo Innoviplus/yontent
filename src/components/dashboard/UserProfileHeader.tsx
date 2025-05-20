@@ -25,18 +25,27 @@ interface UserProfileHeaderProps {
 const UserProfileHeader = ({ user }: UserProfileHeaderProps) => {
   // Extract profile data
   const bio = user?.bio || '';
-  const hasSocialMedia = !!user?.website_url || !!user?.facebook_url ||
-    !!user?.instagram_url || !!user?.youtube_url ||
-    !!user?.tiktok_url;
-
+  
   // Check if any social media URL contains actual content
-  const hasSocialMediaContent = hasSocialMedia && Object.entries({
+  const hasSocialMediaContent = Object.entries({
     website_url: user?.website_url,
     facebook_url: user?.facebook_url,
     instagram_url: user?.instagram_url,
     youtube_url: user?.youtube_url,
     tiktok_url: user?.tiktok_url
   }).some(([_, value]) => value && value.trim().length > 0);
+
+  console.log('User profile header:', { 
+    bio, 
+    hasSocialMedia: hasSocialMediaContent,
+    socialLinks: {
+      website: user?.website_url,
+      facebook: user?.facebook_url,
+      instagram: user?.instagram_url,
+      youtube: user?.youtube_url,
+      tiktok: user?.tiktok_url
+    }
+  });
 
   return (
     <div className="bg-white rounded-xl shadow-card p-6 sm:p-8 mb-8 animate-fade-in relative">
@@ -61,7 +70,7 @@ const UserProfileHeader = ({ user }: UserProfileHeaderProps) => {
         <div className="flex-1 text-center sm:text-left">
           <h1 className="text-2xl font-bold text-gray-900">{user.username}</h1>
           {/* Bio or prompt to add bio - text aligned left */}
-          {bio ? (
+          {bio && bio.trim() ? (
             <p className="text-gray-600 mt-2 mb-4 text-left">{bio}</p>
           ) : (
             <Link

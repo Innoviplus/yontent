@@ -10,6 +10,14 @@ interface SocialMediaIconsProps {
 export const SocialMediaIcons = ({ user, className }: SocialMediaIconsProps) => {
   if (!user) return null;
   
+  console.log('SocialMediaIcons user data:', { 
+    website: user.website_url, 
+    facebook: user.facebook_url,
+    instagram: user.instagram_url,
+    youtube: user.youtube_url,
+    tiktok: user.tiktok_url
+  });
+  
   const { website_url, facebook_url, instagram_url, youtube_url, tiktok_url } = user;
   
   // Check if any social URL has content
@@ -21,6 +29,7 @@ export const SocialMediaIcons = ({ user, className }: SocialMediaIconsProps) => 
   
   // If no social links with content are available, don't render anything
   if (hasNoSocialLinks) {
+    console.log('No social media links with content found');
     return null;
   }
   
