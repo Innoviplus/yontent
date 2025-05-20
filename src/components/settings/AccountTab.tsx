@@ -1,10 +1,8 @@
-
 import React from 'react';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { UseFormReturn } from 'react-hook-form';
 import { Loader2 } from 'lucide-react';
-
 interface AccountTabProps {
   handleLogout: () => Promise<void>;
   handleDeleteAccount: () => Promise<void>;
@@ -16,7 +14,6 @@ interface AccountTabProps {
   isDeleting?: boolean;
   isLoggingOut?: boolean;
 }
-
 export const AccountTab: React.FC<AccountTabProps> = ({
   handleLogout,
   handleDeleteAccount,
@@ -28,8 +25,7 @@ export const AccountTab: React.FC<AccountTabProps> = ({
   isDeleting = false,
   isLoggingOut = false
 }) => {
-  return (
-    <div className="space-y-6">
+  return <div className="space-y-6">
       <Card>
         <CardHeader>
           <CardTitle>Account Security</CardTitle>
@@ -37,12 +33,7 @@ export const AccountTab: React.FC<AccountTabProps> = ({
         </CardHeader>
         <CardContent className="space-y-4">
           <div>
-            <Button 
-              type="button" 
-              variant="outline"
-              onClick={handleResetPassword}
-              disabled={isUpdating}
-            >
+            <Button type="button" variant="outline" onClick={handleResetPassword} disabled={isUpdating}>
               Reset Password
             </Button>
           </div>
@@ -55,19 +46,11 @@ export const AccountTab: React.FC<AccountTabProps> = ({
           <CardDescription>Manage your current session</CardDescription>
         </CardHeader>
         <CardContent>
-          <Button 
-            variant="outline" 
-            onClick={handleLogout}
-            disabled={isLoggingOut}
-          >
-            {isLoggingOut ? (
-              <>
+          <Button variant="outline" onClick={handleLogout} disabled={isLoggingOut}>
+            {isLoggingOut ? <>
                 <Loader2 className="mr-2 h-4 w-4 animate-spin" />
                 Logging out...
-              </>
-            ) : (
-              'Log out'
-            )}
+              </> : 'Log out'}
           </Button>
         </CardContent>
       </Card>
@@ -80,26 +63,14 @@ export const AccountTab: React.FC<AccountTabProps> = ({
           </CardDescription>
         </CardHeader>
         <CardContent>
-          <Button 
-            variant="destructive" 
-            onClick={handleDeleteAccount}
-            disabled={isDeleting}
-          >
-            {isDeleting ? (
-              <>
+          <Button variant="destructive" onClick={handleDeleteAccount} disabled={isDeleting}>
+            {isDeleting ? <>
                 <Loader2 className="mr-2 h-4 w-4 animate-spin" />
                 Processing...
-              </>
-            ) : (
-              'Request Account Disabling'
-            )}
+              </> : 'Request Account Disabling'}
           </Button>
-          <p className="mt-2 text-xs text-gray-500">
-            This will submit a request for account disabling. An admin will review your request and disable your account.
-            Your profile data will be retained but you will no longer be able to log in.
-          </p>
+          <p className="mt-2 text-xs text-gray-500">This will submit a request for account disabling. An admin will review your request and disable your account. </p>
         </CardContent>
       </Card>
-    </div>
-  );
+    </div>;
 };
