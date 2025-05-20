@@ -39,10 +39,19 @@ export const DeletionRequestsTable = ({
           </TableRow>
         </TableHeader>
         <TableBody>
+          {requests.length === 0 && (
+            <TableRow>
+              <TableCell colSpan={6} className="text-center py-6 text-muted-foreground">
+                No deletion requests found
+              </TableCell>
+            </TableRow>
+          )}
           {requests.map((request) => (
             <TableRow key={request.id}>
               <TableCell>
-                <div className="text-sm font-medium text-gray-900">{request.username || 'Unknown user'}</div>
+                <div className="text-sm font-medium text-gray-900">
+                  {request.username || 'Unknown user'}
+                </div>
               </TableCell>
               <TableCell>
                 <div className="text-sm text-gray-500">

@@ -10,9 +10,9 @@ import { UserDeletionRequests } from "@/components/admin/panel/users/UserDeletio
 interface AdminRewardsManagementProps {
   rewards: any[];
   isLoading: boolean;
-  addReward: (reward: any) => Promise<boolean>;
-  updateReward: (id: string, updates: any) => Promise<boolean>;
-  deleteReward: (id: string) => Promise<boolean>;
+  addReward?: (reward: any) => Promise<boolean>;
+  updateReward?: (id: string, updates: any) => Promise<boolean>;
+  deleteReward?: (id: string) => Promise<boolean>;
   refreshRewards?: () => Promise<void>;
 }
 
@@ -22,7 +22,7 @@ interface AdminRequestsManagementProps {
   isRefreshing: boolean;
   activeTab: string;
   setActiveTab: (tab: string) => void;
-  refreshRequests: () => Promise<void>;
+  refreshRequests?: () => Promise<void>;
   handleApproveRequest: (id: string) => Promise<boolean>;
   handleRejectRequest: (id: string) => Promise<boolean>;
 }
@@ -104,7 +104,7 @@ const AdminTabsContainer: React.FC<AdminTabsContainerProps> = ({
           addReward={addReward}
           updateReward={updateReward}
           deleteReward={deleteReward}
-          refreshRewards={() => {}} // Provide empty function to satisfy type
+          refreshRewards={refreshRewards}
         />
       </TabsContent>
 
