@@ -10,10 +10,10 @@ import { UserDeletionRequests } from "@/components/admin/panel/users/UserDeletio
 interface AdminRewardsManagementProps {
   rewards: any[];
   isLoading: boolean;
-  addReward?: (reward: any) => Promise<boolean>;
-  updateReward?: (id: string, updates: any) => Promise<boolean>;
-  deleteReward?: (id: string) => Promise<boolean>;
-  refreshRewards?: () => Promise<void>;
+  addReward: (reward: any) => Promise<boolean>;
+  updateReward: (id: string, updates: any) => Promise<boolean>;
+  deleteReward: (id: string) => Promise<boolean>;
+  refreshRewards: () => Promise<void>;
 }
 
 interface AdminRequestsManagementProps {
@@ -22,7 +22,7 @@ interface AdminRequestsManagementProps {
   isRefreshing: boolean;
   activeTab: string;
   setActiveTab: (tab: string) => void;
-  refreshRequests?: () => Promise<void>;
+  refreshRequests: () => Promise<void>;
   handleApproveRequest: (id: string) => Promise<boolean>;
   handleRejectRequest: (id: string) => Promise<boolean>;
 }
@@ -50,6 +50,7 @@ interface AdminTabsContainerProps {
   addReward: any;
   updateReward: any;
   deleteReward: any;
+  refreshRewards: () => Promise<void>;
 }
 
 const AdminTabsContainer: React.FC<AdminTabsContainerProps> = ({
@@ -60,6 +61,7 @@ const AdminTabsContainer: React.FC<AdminTabsContainerProps> = ({
   addReward,
   updateReward,
   deleteReward,
+  refreshRewards,
   requests,
   isLoadingRequests,
   isRefreshingRequests,
@@ -101,10 +103,9 @@ const AdminTabsContainer: React.FC<AdminTabsContainerProps> = ({
         <RewardsManagement
           rewards={rewards}
           isLoading={isLoadingRewards && !maxLoadingTime}
-          addReward={addReward}
-          updateReward={updateReward}
-          deleteReward={deleteReward}
-          refreshRewards={refreshRewards}
+          onAdd={addReward}
+          onUpdate={updateReward}
+          onDelete={deleteReward}
         />
       </TabsContent>
 
@@ -115,9 +116,9 @@ const AdminTabsContainer: React.FC<AdminTabsContainerProps> = ({
           isRefreshing={isRefreshingRequests}
           activeTab={requestsActiveTab}
           setActiveTab={setRequestsActiveTab}
-          refreshRequests={refreshRequests}
-          handleApproveRequest={handleApproveRequest}
-          handleRejectRequest={handleRejectRequest}
+          onRefresh={refreshRequests}
+          onApprove={handleApproveRequest}
+          onReject={handleRejectRequest}
         />
       </TabsContent>
 
