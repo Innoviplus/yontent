@@ -3,7 +3,7 @@ import { useState, useEffect } from 'react';
 import { supabase } from '@/integrations/supabase/client';
 import { Button } from '@/components/ui/button';
 import { toast } from 'sonner';
-import { Loader2, Trash2, Check, X, RefreshCw } from 'lucide-react';
+import { Loader2, Trash2, X, RefreshCw } from 'lucide-react';
 import { Badge } from '@/components/ui/badge';
 
 type DeletionRequest = {
@@ -28,18 +28,23 @@ export function UserDeletionRequests() {
       const { data, error } = await supabase
         .from('account_deletion_requests')
         .select(`
-          *,
+          id,
+          user_id,
+          created_at,
+          status,
+          reason,
           profiles:user_id (username, email)
         `)
         .order('created_at', { ascending: false });
 
       if (error) throw error;
       
+      // Transform data to our expected format
       const formattedData = data.map(item => ({
         id: item.id,
         user_id: item.user_id,
         created_at: item.created_at,
-        status: item.status,
+        status: item.status as 'PENDING' | 'APPROVED' | 'REJECTED',
         reason: item.reason || 'No reason provided',
         username: item.profiles?.username,
         email: item.profiles?.email

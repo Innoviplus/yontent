@@ -2,7 +2,7 @@
 import React from 'react';
 import { Card } from '@/components/ui/card';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
-import { ProfileTab } from './ProfileTab';
+import ProfileTab from './ProfileTab';
 import { AccountTab } from './AccountTab';
 import { GeneralTab } from './GeneralTab';
 import { UseFormReturn } from 'react-hook-form';

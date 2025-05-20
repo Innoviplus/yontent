@@ -46,7 +46,7 @@ export const useAccountActions = (navigate: ReturnType<typeof useNavigate>) => {
       
       setIsDeleting(true);
       
-      // Insert a deletion request into the database
+      // Get the current user
       const { data: userData } = await supabase.auth.getUser();
       if (!userData.user) {
         throw new Error('User not authenticated');
@@ -69,9 +69,6 @@ export const useAccountActions = (navigate: ReturnType<typeof useNavigate>) => {
       
       // Log the user out after deletion request
       await handleLogout();
-      
-      // Navigate to home page
-      navigate('/');
     } catch (error: any) {
       console.error('Account deletion error:', error);
       toast.error(`Failed to delete account: ${error.message}`);
