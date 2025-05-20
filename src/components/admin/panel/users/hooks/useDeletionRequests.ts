@@ -1,151 +1,153 @@
 
-import { useState, useEffect } from 'react';
-import { supabase } from '@/integrations/supabase/client';
+import { useState, useCallback } from 'react';
 import { toast } from 'sonner';
-import { DeletionRequest, DeletionRequestStatus } from '../types/DeletionRequestTypes';
+import { supabase } from '@/integrations/supabase/client';
+import { DeletionRequest } from '../types/DeletionRequestTypes';
 
 export const useDeletionRequests = () => {
   const [requests, setRequests] = useState<DeletionRequest[]>([]);
   const [loading, setLoading] = useState(true);
-  const [processing, setProcessing] = useState<string | null>(null);
+  const [processing, setProcessing] = useState<Record<string, boolean>>({});
   
-  const fetchDeletionRequests = async () => {
+  const fetchDeletionRequests = useCallback(async () => {
     setLoading(true);
     try {
-      // First get deletion requests
-      const { data: requestsData, error: requestsError } = await supabase
+      // Fetch deletion requests with proper column mapping
+      const { data, error } = await supabase
         .from('account_deletion_requests')
-        .select('*')
+        .select(`
+          id,
+          user_id_delete,
+          created_at,
+          status,
+          reason,
+          processed_by,
+          profiles:user_id_delete (
+            username,
+            avatar,
+            email
+          )
+        `)
         .order('created_at', { ascending: false });
-
-      if (requestsError) throw requestsError;
       
-      // Separately get user profiles for each request
-      const userRequests: DeletionRequest[] = await Promise.all(
-        requestsData.map(async (request) => {
-          const { data: profileData, error: profileError } = await supabase
-            .from('profiles')
-            .select('username, email, phone_number, phone_country_code')
-            .eq('id', request.user_id_delete) // Updated to use user_id_delete
-            .single();
-            
-          if (profileError) {
-            console.error(`Error fetching profile for user ${request.user_id_delete}:`, profileError);
-            return {
-              id: request.id,
-              user_id: request.user_id_delete, // Updated to use user_id_delete
-              created_at: request.created_at,
-              status: request.status as DeletionRequestStatus,
-              reason: request.reason || 'No reason provided',
-              username: 'Unknown user',
-              email: 'No email',
-              phone: 'No phone'
-            };
-          }
-          
-          return {
-            id: request.id,
-            user_id: request.user_id_delete, // Updated to use user_id_delete
-            created_at: request.created_at,
-            status: request.status as DeletionRequestStatus,
-            reason: request.reason || 'No reason provided',
-            username: profileData?.username || 'Unknown user',
-            email: profileData?.email || 'No email',
-            phone: profileData?.phone_number 
-              ? `${profileData?.phone_country_code || ''}${profileData?.phone_number}` 
-              : 'No phone'
-          };
-        })
-      );
+      if (error) {
+        throw error;
+      }
       
-      console.log('Deletion requests:', userRequests);
-      setRequests(userRequests);
-    } catch (error) {
-      console.error('Error fetching deletion requests:', error);
+      // Transform data to match frontend type (using user_id as the frontend property)
+      const formattedData: DeletionRequest[] = data.map(item => ({
+        id: item.id,
+        user_id: item.user_id_delete, // Map to expected property in frontend
+        created_at: item.created_at,
+        status: item.status,
+        reason: item.reason,
+        processed_by: item.processed_by,
+        profile: item.profiles
+      }));
+      
+      setRequests(formattedData);
+    } catch (error: any) {
+      console.error('Error fetching deletion requests:', error.message);
       toast.error('Failed to load deletion requests');
     } finally {
       setLoading(false);
     }
-  };
+  }, []);
   
-  const approveRequest = async (requestId: string, userId: string) => {
-    if (!window.confirm('Are you sure you want to disable this user account? This action cannot be undone. The user will no longer be able to log in, but their profile information will be retained.')) {
-      return;
-    }
+  // Load requests on component mount
+  useState(() => {
+    fetchDeletionRequests();
+  });
+  
+  const approveRequest = useCallback(async (requestId: string) => {
+    setProcessing(prev => ({ ...prev, [requestId]: true }));
     
-    setProcessing(requestId);
     try {
-      console.log(`Disabling account for user ${userId}, request ${requestId}`);
+      const requestDetails = requests.find(req => req.id === requestId);
+      if (!requestDetails) {
+        throw new Error('Request not found');
+      }
       
-      // Update user reviews to DISABLED status
+      // 1. Get current user as processor
+      const { data: { user } } = await supabase.auth.getUser();
+      if (!user) {
+        throw new Error('Admin user not found');
+      }
+      
+      // 2. Update reviews by this user to show "Account Disabled" status
       const { error: reviewsError } = await supabase
         .from('reviews')
-        .update({ status: 'DISABLED' })
-        .eq('user_id', userId);
+        .update({ status: 'ACCOUNT_DISABLED' })
+        .eq('user_id', requestDetails.user_id);
         
       if (reviewsError) {
-        console.error('Error updating reviews:', reviewsError);
         throw new Error(`Failed to update user reviews: ${reviewsError.message}`);
       }
       
-      console.log('Reviews updated successfully');
-      
-      // Update request status to approved
+      // 3. Update request status
       const { error: updateError } = await supabase
         .from('account_deletion_requests')
-        .update({ status: 'APPROVED' })
+        .update({
+          status: 'APPROVED',
+          processed_by: user.id
+        })
         .eq('id', requestId);
-        
+      
       if (updateError) {
-        console.error('Error updating request status:', updateError);
         throw new Error(`Failed to update request status: ${updateError.message}`);
       }
       
-      console.log('Request status updated successfully');
+      // 4. Success
+      toast.success('Account disabled successfully');
       
-      toast.success('User account disabled and reviews hidden');
+      // 5. Refresh the list
+      fetchDeletionRequests();
       
-      // Update local state
-      setRequests(prev => 
-        prev.map(r => r.id === requestId ? { ...r, status: 'APPROVED' } : r)
-      );
+      return true;
     } catch (error: any) {
-      console.error('Error approving deletion request:', error);
+      console.error('Error disabling user account:', error.message);
       toast.error(`Failed to disable user account: ${error.message}`);
+      return false;
     } finally {
-      setProcessing(null);
+      setProcessing(prev => ({ ...prev, [requestId]: false }));
     }
-  };
+  }, [requests, fetchDeletionRequests]);
   
-  const rejectRequest = async (requestId: string) => {
-    setProcessing(requestId);
+  const rejectRequest = useCallback(async (requestId: string) => {
+    setProcessing(prev => ({ ...prev, [requestId]: true }));
+    
     try {
-      // Update request status to rejected
+      // 1. Get current user as processor
+      const { data: { user } } = await supabase.auth.getUser();
+      if (!user) {
+        throw new Error('Admin user not found');
+      }
+      
+      // 2. Update request status
       const { error } = await supabase
         .from('account_deletion_requests')
-        .update({ status: 'REJECTED' })
+        .update({
+          status: 'REJECTED',
+          processed_by: user.id
+        })
         .eq('id', requestId);
-        
-      if (error) throw error;
       
-      toast.success('Deletion request rejected');
+      if (error) {
+        throw error;
+      }
       
-      // Update local state
-      setRequests(prev => 
-        prev.map(r => r.id === requestId ? { ...r, status: 'REJECTED' as DeletionRequestStatus } : r)
-      );
+      toast.success('Account deletion request rejected');
+      fetchDeletionRequests();
+      return true;
     } catch (error: any) {
-      console.error('Error rejecting deletion request:', error);
-      toast.error(`Failed to reject deletion request: ${error.message}`);
+      console.error('Error rejecting deletion request:', error.message);
+      toast.error('Failed to reject deletion request');
+      return false;
     } finally {
-      setProcessing(null);
+      setProcessing(prev => ({ ...prev, [requestId]: false }));
     }
-  };
-
-  useEffect(() => {
-    fetchDeletionRequests();
-  }, []);
-
+  }, [fetchDeletionRequests]);
+  
   return {
     requests,
     loading,

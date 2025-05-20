@@ -1,13 +1,24 @@
+
 import { useState } from 'react';
 import { supabase } from '@/integrations/supabase/client';
 import { toast } from 'sonner';
+import { NavigateFunction } from 'react-router-dom';
+import { useAuth } from '@/contexts/AuthContext';
 
-export const useAccountActions = (userId: string) => {
+export const useAccountActions = (navigateOrUserId: NavigateFunction | string) => {
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [isDeleting, setIsDeleting] = useState(false);
+  const [isLoggingOut, setIsLoggingOut] = useState(false);
+  const { signOut } = useAuth();
+  const isNavigate = typeof navigateOrUserId !== 'string';
+  const userId = isNavigate ? '' : navigateOrUserId;
   
   const requestAccountDeletion = async (reason: string) => {
-    if (!userId) return false;
+    const actualUserId = userId || (await supabase.auth.getUser()).data.user?.id;
+    if (!actualUserId) {
+      toast.error('User not authenticated');
+      return false;
+    }
     
     try {
       setIsSubmitting(true);
@@ -16,7 +27,7 @@ export const useAccountActions = (userId: string) => {
       const { data: existingRequests, error: checkError } = await supabase
         .from('account_deletion_requests')
         .select('id, status')
-        .eq('user_id_delete', userId)
+        .eq('user_id_delete', actualUserId)
         .order('created_at', { ascending: false })
         .limit(1);
       
@@ -35,11 +46,11 @@ export const useAccountActions = (userId: string) => {
         }
       }
       
-      // Create a new deletion request
+      // Create a new deletion request using the correct column name
       const { error } = await supabase
         .from('account_deletion_requests')
         .insert({
-          user_id_delete: userId,
+          user_id_delete: actualUserId,
           reason: reason,
           status: 'PENDING'
         });
@@ -52,7 +63,7 @@ export const useAccountActions = (userId: string) => {
       
       toast.success('Your account deletion request has been submitted. An administrator will review your request.');
       return true;
-    } catch (error) {
+    } catch (error: any) {
       console.error('Error in requestAccountDeletion:', error);
       toast.error('An unexpected error occurred. Please try again later.');
       return false;
@@ -61,11 +72,52 @@ export const useAccountActions = (userId: string) => {
     }
   };
 
-  // Other functions...
+  const handleDeleteAccount = async () => {
+    setIsDeleting(true);
+    try {
+      // Show prompt to get reason
+      const reason = prompt('Please provide a reason for disabling your account:');
+      
+      if (!reason) {
+        toast.error('Please provide a reason for account deletion.');
+        return;
+      }
+      
+      const success = await requestAccountDeletion(reason);
+      
+      if (success) {
+        toast.success('Your account deletion request has been submitted');
+      }
+    } catch (error) {
+      console.error('Error in handleDeleteAccount:', error);
+      toast.error('Failed to submit account deletion request');
+    } finally {
+      setIsDeleting(false);
+    }
+  };
+  
+  const handleLogout = async () => {
+    setIsLoggingOut(true);
+    try {
+      await signOut();
+      toast.success('Logged out successfully');
+      if (isNavigate) {
+        (navigateOrUserId as NavigateFunction)('/login');
+      }
+    } catch (error) {
+      console.error('Error logging out:', error);
+      toast.error('Failed to log out');
+    } finally {
+      setIsLoggingOut(false);
+    }
+  };
   
   return {
     requestAccountDeletion,
+    handleDeleteAccount,
+    handleLogout,
     isSubmitting,
-    isDeleting
+    isDeleting,
+    isLoggingOut
   };
 };
