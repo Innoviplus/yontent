@@ -77,11 +77,11 @@ export const useDeletionRequests = () => {
     try {
       console.log(`Disabling account for user ${userId}, request ${requestId}`);
       
-      // 1. Update user reviews to DISABLED status
+      // 1. Update user reviews to DISABLED status - Fix the ambiguous column reference
       const { error: reviewsError } = await supabase
         .from('reviews')
         .update({ status: 'DISABLED' })
-        .eq('user_id', userId);
+        .eq('reviews.user_id', userId); // Fully qualify the column name
         
       if (reviewsError) {
         console.error('Error updating reviews:', reviewsError);
@@ -90,7 +90,7 @@ export const useDeletionRequests = () => {
       
       console.log('Reviews updated successfully');
       
-      // 2. Update request status to approved
+      // 2. Update request status to approved - Fix the ambiguous column reference
       const { error: updateError } = await supabase
         .from('account_deletion_requests')
         .update({ status: 'APPROVED' })

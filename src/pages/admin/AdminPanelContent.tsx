@@ -73,6 +73,7 @@ const AdminPanelContent = ({ state }: AdminPanelContentProps) => {
             addReward={state.addReward}
             updateReward={state.updateReward}
             deleteReward={state.deleteReward}
+            refreshRewards={state.refreshRewards}
             requests={state.requests || []}
             isLoadingRequests={state.isLoadingRequests && !state.maxLoadingTime}
             isRefreshingRequests={state.isRefreshingRequests}

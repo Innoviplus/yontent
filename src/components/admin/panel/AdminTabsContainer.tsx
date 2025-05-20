@@ -10,10 +10,9 @@ import { UserDeletionRequests } from "@/components/admin/panel/users/UserDeletio
 interface AdminRewardsManagementProps {
   rewards: any[];
   isLoading: boolean;
-  addReward: (reward: any) => Promise<boolean>;
-  updateReward: (id: string, updates: any) => Promise<boolean>;
-  deleteReward: (id: string) => Promise<boolean>;
-  refreshRewards: () => Promise<void>;
+  onAdd: (reward: any) => Promise<boolean>;
+  onUpdate: (id: string, updates: any) => Promise<boolean>;
+  onDelete: (id: string) => Promise<boolean>;
 }
 
 interface AdminRequestsManagementProps {
@@ -22,9 +21,9 @@ interface AdminRequestsManagementProps {
   isRefreshing: boolean;
   activeTab: string;
   setActiveTab: (tab: string) => void;
-  refreshRequests: () => Promise<void>;
-  handleApproveRequest: (id: string) => Promise<boolean>;
-  handleRejectRequest: (id: string) => Promise<boolean>;
+  onRefresh: () => Promise<void>;
+  onApprove: (id: string) => Promise<boolean>;
+  onReject: (id: string) => Promise<boolean>;
 }
 
 interface AdminTabsContainerProps {
@@ -35,7 +34,7 @@ interface AdminTabsContainerProps {
   isRefreshingRequests: boolean;
   requestsActiveTab: string;
   setRequestsActiveTab: (tab: string) => void;
-  refreshRequests: any;
+  refreshRequests: () => Promise<void>;
   handleApproveRequest: (id: string) => Promise<boolean>;
   handleRejectRequest: (id: string) => Promise<boolean>;
   missions: any[];
