@@ -12,14 +12,21 @@ export const SocialMediaIcons = ({ user, className }: SocialMediaIconsProps) => 
   
   const { website_url, facebook_url, instagram_url, youtube_url, tiktok_url } = user;
   
-  // If no social links are available, don't render anything
-  if (!website_url && !facebook_url && !instagram_url && !youtube_url && !tiktok_url) {
+  // Check if any social URL has content
+  const hasNoSocialLinks = !website_url?.trim() && 
+                          !facebook_url?.trim() && 
+                          !instagram_url?.trim() && 
+                          !youtube_url?.trim() && 
+                          !tiktok_url?.trim();
+  
+  // If no social links with content are available, don't render anything
+  if (hasNoSocialLinks) {
     return null;
   }
   
   return (
     <div className={cn("flex gap-3", className)}>
-      {website_url && (
+      {website_url && website_url.trim() && (
         <a 
           href={website_url.startsWith('http') ? website_url : `https://${website_url}`} 
           target="_blank" 
@@ -30,7 +37,7 @@ export const SocialMediaIcons = ({ user, className }: SocialMediaIconsProps) => 
         </a>
       )}
       
-      {facebook_url && (
+      {facebook_url && facebook_url.trim() && (
         <a 
           href={facebook_url.startsWith('http') ? facebook_url : `https://${facebook_url}`} 
           target="_blank" 
@@ -41,7 +48,7 @@ export const SocialMediaIcons = ({ user, className }: SocialMediaIconsProps) => 
         </a>
       )}
       
-      {instagram_url && (
+      {instagram_url && instagram_url.trim() && (
         <a 
           href={instagram_url.startsWith('http') ? instagram_url : `https://${instagram_url}`} 
           target="_blank" 
@@ -52,7 +59,7 @@ export const SocialMediaIcons = ({ user, className }: SocialMediaIconsProps) => 
         </a>
       )}
       
-      {youtube_url && (
+      {youtube_url && youtube_url.trim() && (
         <a 
           href={youtube_url.startsWith('http') ? youtube_url : `https://${youtube_url}`} 
           target="_blank" 
@@ -63,7 +70,7 @@ export const SocialMediaIcons = ({ user, className }: SocialMediaIconsProps) => 
         </a>
       )}
       
-      {tiktok_url && (
+      {tiktok_url && tiktok_url.trim() && (
         <a 
           href={tiktok_url.startsWith('http') ? tiktok_url : `https://${tiktok_url}`} 
           target="_blank" 

@@ -29,13 +29,14 @@ const UserProfileHeader = ({ user }: UserProfileHeaderProps) => {
     !!user?.instagram_url || !!user?.youtube_url ||
     !!user?.tiktok_url;
 
-  // Prepare stats for UserStatsCard
-  const userStats: UserStats = {
-    reviewsCount: user.completedReviews,
-    followersCount: user.followersCount || 0,
-    followingCount: user.followingCount || 0,
-    pointsCount: user.points
-  };
+  // Check if any social media URL contains actual content
+  const hasSocialMediaContent = hasSocialMedia && Object.entries({
+    website_url: user?.website_url,
+    facebook_url: user?.facebook_url,
+    instagram_url: user?.instagram_url,
+    youtube_url: user?.youtube_url,
+    tiktok_url: user?.tiktok_url
+  }).some(([_, value]) => value && value.trim().length > 0);
 
   return (
     <div className="bg-white rounded-xl shadow-card p-6 sm:p-8 mb-8 animate-fade-in relative">
@@ -72,7 +73,7 @@ const UserProfileHeader = ({ user }: UserProfileHeaderProps) => {
           )}
 
           {/* Social Media Icons */}
-          {hasSocialMedia ? (
+          {hasSocialMediaContent ? (
             <SocialMediaIcons user={user} className="mb-4" />
           ) : (
             <Link to="/settings" className="block text-brand-teal text-sm mb-4 hover:underline text-left">

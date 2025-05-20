@@ -25,6 +25,13 @@ const Dashboard = () => {
     }
   }, [authUser, navigate]);
 
+  // Log user data to check it contains the expected fields
+  useEffect(() => {
+    if (user) {
+      console.log('Dashboard user data:', user);
+    }
+  }, [user]);
+
   if (loading || isLoading) {
     return (
       <>
