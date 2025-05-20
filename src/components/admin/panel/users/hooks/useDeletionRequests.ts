@@ -1,3 +1,4 @@
+
 import { useState, useEffect } from 'react';
 import { supabase } from '@/integrations/supabase/client';
 import { toast } from 'sonner';
@@ -11,42 +12,48 @@ export const useDeletionRequests = () => {
   const fetchDeletionRequests = async () => {
     setLoading(true);
     try {
-      // Get deletion requests with proper user information
-      const { data, error } = await supabase
+      // First get deletion requests
+      const { data: requestsData, error: requestsError } = await supabase
         .from('account_deletion_requests')
-        .select(`
-          id,
-          user_id,
-          created_at,
-          status,
-          reason,
-          profiles:user_id(
-            username,
-            email,
-            phone_number,
-            phone_country_code
-          )
-        `)
+        .select('*')
         .order('created_at', { ascending: false });
 
-      if (error) throw error;
+      if (requestsError) throw requestsError;
       
-      // Transform data to our expected format
-      const formattedData = data.map(item => ({
-        id: item.id,
-        user_id: item.user_id,
-        created_at: item.created_at,
-        status: item.status as DeletionRequest['status'],
-        reason: item.reason || 'No reason provided',
-        username: item.profiles?.username || 'Unknown user',
-        email: item.profiles?.email || 'No email',
-        phone: item.profiles?.phone_number 
-          ? `${item.profiles.phone_country_code || ''}${item.profiles.phone_number}` 
-          : 'No phone'
+      // Separately get user profiles for each request
+      const userRequests = await Promise.all(requestsData.map(async (request) => {
+        const { data: profileData, error: profileError } = await supabase
+          .from('profiles')
+          .select('username, email, phone_number, phone_country_code')
+          .eq('id', request.user_id)
+          .single();
+          
+        if (profileError) {
+          console.error(`Error fetching profile for user ${request.user_id}:`, profileError);
+          return {
+            ...request,
+            username: 'Unknown user',
+            email: 'No email',
+            phone: 'No phone'
+          };
+        }
+        
+        return {
+          id: request.id,
+          user_id: request.user_id,
+          created_at: request.created_at,
+          status: request.status as DeletionRequest['status'],
+          reason: request.reason || 'No reason provided',
+          username: profileData?.username || 'Unknown user',
+          email: profileData?.email || 'No email',
+          phone: profileData?.phone_number 
+            ? `${profileData?.phone_country_code || ''}${profileData?.phone_number}` 
+            : 'No phone'
+        };
       }));
       
-      console.log('Deletion requests:', formattedData);
-      setRequests(formattedData);
+      console.log('Deletion requests:', userRequests);
+      setRequests(userRequests);
     } catch (error) {
       console.error('Error fetching deletion requests:', error);
       toast.error('Failed to load deletion requests');
@@ -56,7 +63,7 @@ export const useDeletionRequests = () => {
   };
   
   const approveRequest = async (requestId: string, userId: string) => {
-    if (!window.confirm('Are you sure you want to disable this user account? This action cannot be undone.')) {
+    if (!window.confirm('Are you sure you want to disable this user account? This action cannot be undone. The user will no longer be able to log in, but their profile information will be retained.')) {
       return;
     }
     
@@ -78,8 +85,6 @@ export const useDeletionRequests = () => {
         
       if (updateError) throw updateError;
       
-      // 3. Keep the profile record but disable the auth account if possible
-      // Note: This requires admin privileges and would typically be handled by a secure admin function
       toast.success('User account disabled and reviews hidden');
       
       // Update local state
@@ -88,7 +93,7 @@ export const useDeletionRequests = () => {
       );
     } catch (error) {
       console.error('Error approving deletion request:', error);
-      toast.error('Failed to approve deletion request');
+      toast.error('Failed to disable user account');
     } finally {
       setProcessing(null);
     }

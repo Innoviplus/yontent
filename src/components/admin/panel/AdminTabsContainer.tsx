@@ -1,3 +1,4 @@
+
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import RewardsManagement from "@/components/admin/rewards/RewardsManagement";
 import RequestsManagement from "@/components/admin/rewards/RequestsManagement";
@@ -6,7 +7,7 @@ import AdminUsersManagement from "@/components/admin/panel/AdminUsersManagement"
 import { UserDeletionRequests } from "@/components/admin/panel/users/UserDeletionRequests";
 
 // Define proper types for component props to fix TypeScript errors
-interface RewardsManagementProps {
+interface AdminRewardsManagementProps {
   rewards: any[];
   isLoading: boolean;
   addReward: (reward: any) => Promise<boolean>;
@@ -15,7 +16,7 @@ interface RewardsManagementProps {
   refreshRewards?: () => Promise<void>;
 }
 
-interface RequestsManagementProps {
+interface AdminRequestsManagementProps {
   requests: any[];
   isLoading: boolean;
   isRefreshing: boolean;

@@ -1,6 +1,6 @@
 
 import { Button } from '@/components/ui/button';
-import { Loader2, Trash2, X } from 'lucide-react';
+import { Loader2, ShieldBan, X } from 'lucide-react';
 import { DeletionRequest } from '../types/DeletionRequestTypes';
 import { StatusBadge } from './StatusBadge';
 import {
@@ -77,7 +77,7 @@ export const DeletionRequestsTable = ({
                     >
                       {processing === request.id ? 
                         <Loader2 className="h-4 w-4 animate-spin mr-1" /> : 
-                        <Trash2 className="h-4 w-4 mr-1" />
+                        <ShieldBan className="h-4 w-4 mr-1" />
                       }
                       Disable Account
                     </Button>

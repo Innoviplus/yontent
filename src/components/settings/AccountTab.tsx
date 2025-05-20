@@ -76,7 +76,7 @@ export const AccountTab: React.FC<AccountTabProps> = ({
         <CardHeader className="text-red-600">
           <CardTitle>Danger Zone</CardTitle>
           <CardDescription className="text-red-500">
-            Disable your account and remove access to all services
+            Request to disable your account and remove access to all services
           </CardDescription>
         </CardHeader>
         <CardContent>
@@ -91,11 +91,11 @@ export const AccountTab: React.FC<AccountTabProps> = ({
                 Processing...
               </>
             ) : (
-              'Request Account Deletion'
+              'Request Account Disabling'
             )}
           </Button>
           <p className="mt-2 text-xs text-gray-500">
-            This will submit a request for account deactivation. An admin will review your request and disable your account.
+            This will submit a request for account disabling. An admin will review your request and disable your account.
             Your profile data will be retained but you will no longer be able to log in.
           </p>
         </CardContent>
