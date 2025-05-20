@@ -39,16 +39,35 @@ export const useAccountActions = (navigate: ReturnType<typeof useNavigate>) => {
   };
 
   const handleDeleteAccount = async () => {
-    // This is a placeholder as account deletion requires server-side implementation
     try {
+      if (!window.confirm('Are you sure you want to delete your account? This action cannot be undone.')) {
+        return;
+      }
+      
       setIsDeleting(true);
       
-      // Simulated account deletion - in production this should call a secure endpoint
-      await new Promise(resolve => setTimeout(resolve, 1000));
+      // Insert a deletion request into the database
+      const { data: userData } = await supabase.auth.getUser();
+      if (!userData.user) {
+        throw new Error('User not authenticated');
+      }
+
+      // Create account_deletion_requests record
+      const { error: insertError } = await supabase
+        .from('account_deletion_requests')
+        .insert({
+          user_id: userData.user.id,
+          status: 'PENDING',
+          reason: 'User requested account deletion',
+        });
+
+      if (insertError) {
+        throw insertError;
+      }
       
       toast.success('Account scheduled for deletion');
       
-      // Log the user out after deletion
+      // Log the user out after deletion request
       await handleLogout();
       
       // Navigate to home page

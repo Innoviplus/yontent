@@ -3,6 +3,7 @@ import React from 'react';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { UseFormReturn } from 'react-hook-form';
+import { Loader2 } from 'lucide-react';
 
 export interface AccountTabProps {
   handleLogout: () => Promise<void>;
@@ -12,6 +13,8 @@ export interface AccountTabProps {
   onSettingsSubmit?: (values: any) => Promise<void>;
   isUpdating?: boolean;
   isSubmitting?: boolean;
+  isDeleting?: boolean;
+  isLoggingOut?: boolean;
 }
 
 export const AccountTab: React.FC<AccountTabProps> = ({
@@ -21,7 +24,9 @@ export const AccountTab: React.FC<AccountTabProps> = ({
   settingsForm,
   onSettingsSubmit,
   isUpdating,
-  isSubmitting
+  isSubmitting,
+  isDeleting = false,
+  isLoggingOut = false
 }) => {
   return (
     <>
@@ -65,8 +70,14 @@ export const AccountTab: React.FC<AccountTabProps> = ({
               <Button 
                 onClick={handleLogout} 
                 className="w-auto px-8 bg-brand-teal hover:bg-brand-darkTeal"
+                disabled={isLoggingOut}
               >
-                Log out
+                {isLoggingOut ? (
+                  <>
+                    <Loader2 className="mr-2 h-4 w-4 animate-spin" />
+                    Logging out...
+                  </>
+                ) : 'Log out'}
               </Button>
             </div>
           </div>
@@ -76,9 +87,15 @@ export const AccountTab: React.FC<AccountTabProps> = ({
       <div className="mt-8 text-center">
         <button 
           onClick={handleDeleteAccount}
-          className="text-red-500 text-sm hover:underline"
+          disabled={isDeleting}
+          className={`text-red-500 text-sm hover:underline flex items-center justify-center mx-auto ${isDeleting ? 'opacity-50 cursor-not-allowed' : ''}`}
         >
-          Delete Account
+          {isDeleting ? (
+            <>
+              <Loader2 className="mr-2 h-3 w-3 animate-spin" />
+              Processing...
+            </>
+          ) : 'Delete Account'}
         </button>
       </div>
     </>
