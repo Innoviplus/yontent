@@ -16,8 +16,8 @@ export const reviewSchema = z.object({
   content: z
     .string()
     .min(20, { message: "Review must be at least 20 characters" })
-    .refine((value) => validateWordCount(value, 100), {
-      message: "Your review must contain at least 100 words to be submitted"
+    .refine((value) => validateWordCount(value, 50), {
+      message: "Your review must contain at least 50 words to be submitted"
     })
 });
 

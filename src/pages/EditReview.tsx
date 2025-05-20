@@ -27,6 +27,7 @@ const EditReview = () => {
     videoError,
     isDraft,
     isEditing,
+    reviewContent,
     onSubmit,
     saveDraft,
     handleImageSelection,
@@ -36,7 +37,7 @@ const EditReview = () => {
     removeVideo
   } = useSubmitReview();
   
-  // Debug logging
+  // Debug logging to track what's happening
   useEffect(() => {
     console.log('EditReview component rendered with:', {
       id,
@@ -44,9 +45,10 @@ const EditReview = () => {
       isLoading,
       imageCount: imagePreviewUrls.length,
       hasVideo: videoPreviewUrl.length > 0,
-      formContent: form.getValues('content')?.substring(0, 50) || 'No content'
+      reviewContent: reviewContent ? 'Has content' : 'No content',
+      formContent: form.getValues('content')
     });
-  }, [id, isDraft, isLoading, imagePreviewUrls, videoPreviewUrl, form]);
+  }, [id, isDraft, isLoading, imagePreviewUrls, videoPreviewUrl, form, reviewContent]);
 
   if (isLoading) {
     return (
