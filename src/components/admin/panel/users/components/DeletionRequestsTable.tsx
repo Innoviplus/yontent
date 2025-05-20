@@ -1,7 +1,7 @@
 
 import { Button } from '@/components/ui/button';
 import { Loader2, ShieldBan, X } from 'lucide-react';
-import { DeletionRequest } from '../types/DeletionRequestTypes';
+import { DeletionRequest, DeletionRequestStatus } from '../types/DeletionRequestTypes';
 import { StatusBadge } from './StatusBadge';
 import {
   Table,

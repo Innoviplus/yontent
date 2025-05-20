@@ -1,3 +1,4 @@
+
 import React from 'react';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
@@ -50,8 +51,17 @@ export const GeneralTab: React.FC<GeneralTabProps> = ({
               </Button>
               
               <div className="pt-6 border-t">
-                
-                
+                <h4 className="text-sm font-medium text-red-600 mb-2">Danger Zone</h4>
+                <p className="text-sm text-muted-foreground mb-4">
+                  Once you delete your account, there is no going back. Please be certain.
+                </p>
+                <Button 
+                  onClick={handleDeleteAccount} 
+                  variant="destructive" 
+                  className="w-auto"
+                >
+                  Delete My Account
+                </Button>
               </div>
             </div>
           </div>

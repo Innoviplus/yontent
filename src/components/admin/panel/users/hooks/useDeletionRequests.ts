@@ -2,7 +2,7 @@
 import { useState, useCallback, useEffect } from 'react';
 import { toast } from 'sonner';
 import { supabase } from '@/integrations/supabase/client';
-import { DeletionRequest } from '../types/DeletionRequestTypes';
+import { DeletionRequest, DeletionRequestStatus } from '../types/DeletionRequestTypes';
 
 export const useDeletionRequests = () => {
   const [requests, setRequests] = useState<DeletionRequest[]>([]);
@@ -35,11 +35,12 @@ export const useDeletionRequests = () => {
       }
       
       // Transform data to match frontend type (using user_id as the frontend property)
+      // and ensure status is properly typed
       const formattedData: DeletionRequest[] = data.map(item => ({
         id: item.id,
         user_id: item.user_id_delete, // Map to expected property in frontend
         created_at: item.created_at,
-        status: item.status,
+        status: item.status as DeletionRequestStatus, // Cast to our enum type
         reason: item.reason,
         processed_by: item.processed_by,
         profile: item.profiles
@@ -88,7 +89,7 @@ export const useDeletionRequests = () => {
       const { error: updateError } = await supabase
         .from('account_deletion_requests')
         .update({
-          status: 'APPROVED',
+          status: 'APPROVED' as DeletionRequestStatus,
           processed_by: user.id
         })
         .eq('id', requestId);
@@ -127,7 +128,7 @@ export const useDeletionRequests = () => {
       const { error } = await supabase
         .from('account_deletion_requests')
         .update({
-          status: 'REJECTED',
+          status: 'REJECTED' as DeletionRequestStatus,
           processed_by: user.id
         })
         .eq('id', requestId);
