@@ -31,6 +31,8 @@ export const updateMissionDates = async (
       return false;
     }
 
+    console.log('Updating mission dates with:', updateData);
+
     const { error } = await supabase
       .from('missions')
       .update(updateData)
