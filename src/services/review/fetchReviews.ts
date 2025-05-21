@@ -1,4 +1,3 @@
-
 import { supabase } from '@/integrations/supabase/client';
 import { Review } from '@/lib/types';
 
@@ -18,7 +17,7 @@ export const fetchReviews = async (sortBy: string, userId?: string): Promise<Rev
       return cachedResult.data;
     }
     
-    console.log('Cache miss, fetching fresh reviews data');
+    console.log('Cache miss, fetching fresh reviews data with sort:', sortBy);
     
     // Limit the amount of data we're retrieving
     const FETCH_LIMIT = 50; // Fetch fewer items for better performance
@@ -48,10 +47,15 @@ export const fetchReviews = async (sortBy: string, userId?: string): Promise<Rev
     } else if (sortBy === 'popular') {
       query = query.order('views_count', { ascending: false });
     } else if (sortBy === 'trending') {
-      // Trending is a combination of recent and popularity
+      // Trending is a combination of recent activity and popularity
+      // For this implementation, we'll use likes_count as the primary indicator of trending content
       query = query.order('likes_count', { ascending: false });
     } else if (sortBy === 'relevant' && userId) {
+      // For relevant, keep the same implementation as before
       query = query.order('created_at', { ascending: false });
+    } else {
+      // Default fallback to trending
+      query = query.order('likes_count', { ascending: false });
     }
 
     const { data, error } = await query;

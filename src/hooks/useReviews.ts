@@ -1,3 +1,4 @@
+
 import { useState, useEffect } from 'react';
 import { Review } from '@/lib/types';
 import { supabase } from '@/integrations/supabase/client';
@@ -10,7 +11,7 @@ const ITEMS_PER_PAGE = 20;
 export const useReviews = () => {
   const [reviews, setReviews] = useState<Review[]>([]);
   const [loading, setLoading] = useState(true);
-  const [sortBy, setSortBy] = useState<SortOption>('recent');
+  const [sortBy, setSortBy] = useState<SortOption>('relevant');
   const [page, setPage] = useState(0);
   const [hasMore, setHasMore] = useState(true);
   
