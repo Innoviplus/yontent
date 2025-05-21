@@ -31,6 +31,8 @@ export const useUserProfile = (username: string | undefined) => {
         throw profileError;
       }
       
+      console.log("useUserProfile - Raw profile data:", profileData);
+      
       setProfile(profileData);
       
       // Check if current user is following this profile
@@ -154,7 +156,7 @@ export const useUserProfile = (username: string | undefined) => {
 
   useEffect(() => {
     fetchUserProfile();
-  }, [username]);
+  }, [username, user?.id]);
 
   return {
     profile,
