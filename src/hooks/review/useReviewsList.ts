@@ -6,7 +6,7 @@ import { fetchReviews } from '@/services/review';
 export type SortOption = 'recent' | 'popular' | 'trending';
 
 export const useReviewsList = (userId?: string) => {
-  const [sortBy, setSortBy] = useState<SortOption>('recent');
+  const [sortBy, setSortBy] = useState<SortOption>('trending');
   const [page, setPage] = useState(1);
   const itemsPerPage = 10;
 

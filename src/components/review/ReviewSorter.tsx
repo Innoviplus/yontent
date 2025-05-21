@@ -19,7 +19,7 @@ const ReviewSorter = ({ sortBy, onSortChange }: ReviewSorterProps) => {
         </SelectTrigger>
         <SelectContent>
           <SelectItem value="recent">Most Recent</SelectItem>
-          <SelectItem value="popular">Most Popular</SelectItem>
+          <SelectItem value="popular">Most Views</SelectItem>
           <SelectItem value="trending">Trending</SelectItem>
         </SelectContent>
       </Select>

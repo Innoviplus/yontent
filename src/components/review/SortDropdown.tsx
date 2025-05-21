@@ -28,7 +28,7 @@ const SortDropdown = ({ sortBy, onSortChange, labelOverrides }: SortDropdownProp
     
     switch (option) {
       case 'recent': return 'Latest';
-      case 'views': return 'Most Viewed';
+      case 'views': return 'Most Views';
       case 'relevant': return 'Most Relevant';
       default: return '';
     }

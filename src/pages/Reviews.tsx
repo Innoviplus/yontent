@@ -55,6 +55,16 @@ const Reviews = () => {
     setPage(1);
   };
 
+  // Helper function to get the display text for the current sort option
+  const getSortDisplayText = (sort: SortOption): string => {
+    switch (sort) {
+      case 'recent': return 'Recent';
+      case 'popular': return 'Most Views';
+      case 'trending': return 'Trending';
+      default: return 'Trending';
+    }
+  };
+
   return (
     <div className="min-h-screen bg-gray-50">
       <Navbar />
@@ -81,7 +91,7 @@ const Reviews = () => {
                 </SheetContent>
               </Sheet>
               <div className="text-sm font-medium text-gray-500 bg-white px-3 py-2 rounded-lg shadow-sm">
-                {sortBy === 'recent' ? 'Recent' : sortBy === 'popular' ? 'Popular' : 'Trending'}
+                {getSortDisplayText(sortBy)}
               </div>
             </div>
           </div>

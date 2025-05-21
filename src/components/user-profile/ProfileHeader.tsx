@@ -39,6 +39,17 @@ const ProfileHeader = ({
     followingCount: profile.following_count || 0,
     pointsCount: profile.points || 0
   };
+  
+  // Use bio directly from the profile, not from extended_data
+  const displayBio = profile.bio || '';
+  
+  console.log("ProfileHeader - Profile data:", { 
+    username: profile.username, 
+    bio: displayBio,
+    directBio: profile.bio,
+    extendedBio: profile.extended_data?.bio,
+    hasExtendedData: !!profile.extended_data
+  });
 
   return (
     <div className="bg-white rounded-xl overflow-hidden shadow-card mb-8">
@@ -57,15 +68,16 @@ const ProfileHeader = ({
           <div className="flex-1 text-center sm:text-left">
             <h1 className="text-2xl font-bold text-gray-900">{profile.username}</h1>
             
-            {profile.extended_data?.bio && (
-              <p className="text-gray-600 mt-2 mb-4">{profile.extended_data.bio}</p>
+            {/* Display bio directly from profile.bio */}
+            {displayBio && (
+              <p className="text-gray-600 mt-2 mb-4">{displayBio}</p>
             )}
             
             <div className="flex flex-wrap justify-center sm:justify-start gap-4 text-sm text-gray-500 mb-4">
-              {profile.extended_data?.country && (
+              {profile.country && (
                 <div className="flex items-center">
                   <MapPin className="h-4 w-4 mr-1.5" />
-                  <span>{profile.extended_data.country}</span>
+                  <span>{profile.country}</span>
                 </div>
               )}
               <div className="flex items-center">
