@@ -19,38 +19,48 @@ export const useCalendarNavigation = ({
   // Update internal state when month prop changes
   useEffect(() => {
     if (month) {
-      setCurrentMonth(month);
+      setCurrentMonth(new Date(month));
     }
   }, [month]);
 
   // Handle month selection from dropdown
   const handleMonthChange = (value: string) => {
-    const newMonth = new Date(currentMonth);
-    newMonth.setMonth(parseInt(value, 10));
-    setCurrentMonth(newMonth);
+    const monthValue = parseInt(value, 10);
+    const newDate = new Date(currentMonth);
+    newDate.setMonth(monthValue);
+    
+    // Update internal state
+    setCurrentMonth(newDate);
     
     // Call external handlers if provided
     if (onMonthChange) {
-      onMonthChange(newMonth);
+      onMonthChange(newDate);
     }
     if (onMonthSelect) {
-      onMonthSelect(parseInt(value, 10));
+      onMonthSelect(monthValue);
     }
+    
+    console.log('Month changed to:', newDate.toISOString(), 'Month index:', monthValue);
   };
 
   // Handle year selection from dropdown
   const handleYearChange = (value: string) => {
-    const newMonth = new Date(currentMonth);
-    newMonth.setFullYear(parseInt(value, 10));
-    setCurrentMonth(newMonth);
+    const yearValue = parseInt(value, 10);
+    const newDate = new Date(currentMonth);
+    newDate.setFullYear(yearValue);
+    
+    // Update internal state
+    setCurrentMonth(newDate);
     
     // Call external handlers if provided
     if (onMonthChange) {
-      onMonthChange(newMonth);
+      onMonthChange(newDate);
     }
     if (onYearSelect) {
-      onYearSelect(parseInt(value, 10));
+      onYearSelect(yearValue);
     }
+    
+    console.log('Year changed to:', newDate.toISOString(), 'Year value:', yearValue);
   };
 
   return {

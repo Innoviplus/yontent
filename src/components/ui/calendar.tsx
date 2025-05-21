@@ -1,4 +1,3 @@
-
 import * as React from "react";
 import { ChevronLeft, ChevronRight } from "lucide-react";
 import { DayPicker } from "react-day-picker";
@@ -34,6 +33,14 @@ function Calendar({
     }
   }, [month]);
 
+  // Handle the month change from the calendar component
+  const handleMonthChange = (newMonth: Date) => {
+    setCurrentMonth(newMonth);
+    if (onMonthChange) {
+      onMonthChange(newMonth);
+    }
+  };
+
   return (
     <DayPicker
       showOutsideDays={showOutsideDays}
@@ -66,7 +73,6 @@ function Calendar({
         day_disabled: "text-muted-foreground opacity-50",
         day_range_middle: "aria-selected:bg-accent aria-selected:text-accent-foreground",
         day_hidden: "invisible",
-        ...classNames,
       }}
       components={{
         IconLeft: () => <ChevronLeft className="h-4 w-4" />,
@@ -74,19 +80,15 @@ function Calendar({
         Caption: (captionProps) => (
           <CalendarCaption
             {...captionProps}
+            displayMonth={currentMonth}
+            onMonthChange={handleMonthChange}
             onMonthSelect={onMonthSelect}
             onYearSelect={onYearSelect}
-            onMonthChange={onMonthChange}
           />
         )
       }}
       month={currentMonth}
-      onMonthChange={(newMonth) => {
-        setCurrentMonth(newMonth);
-        if (onMonthChange) {
-          onMonthChange(newMonth);
-        }
-      }}
+      onMonthChange={handleMonthChange}
       {...props}
     />
   );

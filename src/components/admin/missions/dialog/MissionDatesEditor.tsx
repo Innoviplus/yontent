@@ -24,9 +24,25 @@ const MissionDatesEditor = ({
   const [expiryDate, setExpiryDate] = useState<Date | null>(initialExpiryDate || null);
   const [isUpdating, setIsUpdating] = useState(false);
 
+  const handleStartDateChange = (date: Date | null) => {
+    if (date) {
+      console.log("Setting start date to:", date.toISOString());
+      setStartDate(date);
+    }
+  };
+
+  const handleExpiryDateChange = (date: Date | null) => {
+    console.log("Setting expiry date to:", date ? date.toISOString() : "null");
+    setExpiryDate(date);
+  };
+
   const handleSave = async () => {
     setIsUpdating(true);
     try {
+      console.log("Saving dates:", {
+        start: startDate.toISOString(),
+        expiry: expiryDate ? expiryDate.toISOString() : null
+      });
       const success = await updateMissionDates(missionId, startDate, expiryDate);
       if (success) {
         onSave();
@@ -42,7 +58,7 @@ const MissionDatesEditor = ({
         <label className="text-sm font-medium">Start Date</label>
         <DatePicker 
           value={startDate} 
-          onChange={(date) => date && setStartDate(date)}
+          onChange={handleStartDateChange}
           placeholder="Select start date" 
         />
       </div>
@@ -51,7 +67,7 @@ const MissionDatesEditor = ({
         <label className="text-sm font-medium">Expiration Date (Optional)</label>
         <DatePicker 
           value={expiryDate} 
-          onChange={setExpiryDate}
+          onChange={handleExpiryDateChange}
           placeholder="Select expiry date (optional)" 
         />
       </div>
