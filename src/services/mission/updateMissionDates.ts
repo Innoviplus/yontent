@@ -16,20 +16,26 @@ export const updateMissionDates = async (
     
     // Only add fields that have values
     if (startDate) {
+      console.log("Updating start date to:", startDate.toISOString());
       updateData.start_date = startDate.toISOString();
     }
     
     // Handle expiry date (can be updated or removed)
     if (expiryDate === null) {
+      console.log("Removing expiry date");
       updateData.expires_at = null; // Remove expiry date
     } else if (expiryDate) {
+      console.log("Updating expiry date to:", expiryDate.toISOString());
       updateData.expires_at = expiryDate.toISOString();
     }
     
     // Only proceed if we have updates
     if (Object.keys(updateData).length === 0) {
+      console.log("No date updates to perform");
       return false;
     }
+
+    console.log('Updating mission dates with:', updateData);
 
     const { error } = await supabase
       .from('missions')
@@ -37,6 +43,7 @@ export const updateMissionDates = async (
       .eq('id', missionId);
 
     if (error) {
+      console.error("Supabase error:", error);
       throw error;
     }
 

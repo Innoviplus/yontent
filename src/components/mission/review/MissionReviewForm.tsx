@@ -65,14 +65,14 @@ const MissionReviewForm = ({ mission, userId }: MissionReviewFormProps) => {
             <FormItem>
               <div className="flex justify-between items-center">
                 <FormLabel>Review</FormLabel>
-                <span className={`text-xs ${wordCount < 100 ? 'text-red-500' : 'text-green-500'}`}>
-                  {wordCount} / 100 words {wordCount < 100 ? 'required' : '✓'}
+                <span className={`text-xs ${wordCount < 50 ? 'text-red-500' : 'text-green-500'}`}>
+                  {wordCount} / 50 words {wordCount < 50 ? 'required' : '✓'}
                 </span>
               </div>
               <FormControl>
                 <Textarea 
                   {...field}
-                  placeholder="Share your experience with the product (minimum 100 words required)..."
+                  placeholder="Share your experience with the product (minimum 50 words required)..."
                   className="min-h-[200px]"
                 />
               </FormControl>

@@ -6,7 +6,7 @@ import { toast } from 'sonner';
 
 export const useReviewFormState = () => {
   const [searchParams] = useSearchParams();
-  const reviewId = searchParams.get('draft') || searchParams.get('edit');
+  const reviewId = searchParams.get('draft') || searchParams.get('edit') || window.location.pathname.split('/edit-review/')[1];
   
   const [isLoading, setIsLoading] = useState<boolean>(!!reviewId);
   const [isDraft, setIsDraft] = useState<boolean>(false);
@@ -15,7 +15,7 @@ export const useReviewFormState = () => {
   const [existingImages, setExistingImages] = useState<string[]>([]);
   const [existingVideo, setExistingVideo] = useState<string | null>(null);
   
-  // Load review data if in edit mode - always executed regardless of reviewId
+  // Load review data if in edit mode
   useEffect(() => {
     const loadReviewData = async () => {
       if (!reviewId) {
@@ -44,6 +44,7 @@ export const useReviewFormState = () => {
           
           // Set the content state
           if (review.content) {
+            console.log('Setting review content:', review.content.substring(0, 50) + '...');
             setReviewContent(review.content);
           }
           
@@ -73,8 +74,11 @@ export const useReviewFormState = () => {
       }
     };
     
-    // Always call loadReviewData - it will early return if no reviewId
-    loadReviewData();
+    if (reviewId) {
+      loadReviewData();
+    } else {
+      setIsLoading(false);
+    }
   }, [reviewId]);
   
   return {

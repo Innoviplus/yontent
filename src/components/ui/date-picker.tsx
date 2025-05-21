@@ -22,6 +22,7 @@ export function DatePicker({ value, onChange, placeholder = "Select date" }: Dat
   const handleMonthChange = (date: Date) => {
     // Update the calendar view without changing the selected date
     setCalendarMonth(date);
+    console.log("DatePicker month changed to:", date.toISOString());
   };
 
   return (

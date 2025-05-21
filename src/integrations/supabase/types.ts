@@ -9,6 +9,36 @@ export type Json =
 export type Database = {
   public: {
     Tables: {
+      account_deletion_requests: {
+        Row: {
+          created_at: string
+          id: string
+          processed_by: string | null
+          reason: string | null
+          status: string
+          updated_at: string
+          user_id_delete: string
+        }
+        Insert: {
+          created_at?: string
+          id?: string
+          processed_by?: string | null
+          reason?: string | null
+          status?: string
+          updated_at?: string
+          user_id_delete: string
+        }
+        Update: {
+          created_at?: string
+          id?: string
+          processed_by?: string | null
+          reason?: string | null
+          status?: string
+          updated_at?: string
+          user_id_delete?: string
+        }
+        Relationships: []
+      }
       mission_participations: {
         Row: {
           created_at: string

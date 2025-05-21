@@ -1,4 +1,3 @@
-
 import React from 'react';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
@@ -15,14 +14,11 @@ export interface GeneralTabProps {
 export const GeneralTab: React.FC<GeneralTabProps> = ({
   handleLogout,
   handleDeleteAccount,
-  // We're not using these props in this component yet, but including them
-  // in the interface to avoid TypeScript errors
   settingsForm,
   onSettingsSubmit,
   isUpdating
 }) => {
-  return (
-    <>
+  return <>
       <Card>
         <CardHeader>
           <CardTitle>General Settings</CardTitle>
@@ -56,15 +52,5 @@ export const GeneralTab: React.FC<GeneralTabProps> = ({
           </div>
         </CardContent>
       </Card>
-      
-      <div className="mt-8 text-center">
-        <button 
-          onClick={handleDeleteAccount}
-          className="text-red-500 text-sm hover:underline"
-        >
-          Delete Account
-        </button>
-      </div>
-    </>
-  );
+    </>;
 };

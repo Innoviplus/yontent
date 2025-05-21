@@ -3,7 +3,6 @@ import { SettingsLayout } from '@/components/settings/SettingsLayout';
 import { useSettings } from '@/hooks/useSettings';
 import Navbar from '@/components/Navbar';
 import { usePageTitle } from '@/hooks/usePageTitle';
-// Remove import for AdminAccessButton
 
 const Settings = () => {
   usePageTitle('Settings');
@@ -24,6 +23,8 @@ const Settings = () => {
     handleResetPassword,
     handleDeleteAccount,
     handleLogout,
+    isDeleting,
+    isLoggingOut
   } = useSettings();
 
   return (
@@ -47,8 +48,9 @@ const Settings = () => {
           handleDeleteAccount={handleDeleteAccount}
           activeTab={activeTab}
           setActiveTab={setActiveTab}
+          isDeleting={isDeleting}
+          isLoggingOut={isLoggingOut}
         />
-        {/* Removed AdminAccessButton */}
       </div>
     </>
   );

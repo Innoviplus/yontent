@@ -60,7 +60,8 @@ export const useAdminPanelState = () => {
     isLoadingRewards,
     addReward,
     updateReward,
-    deleteReward
+    deleteReward,
+    refreshRewards
   } = useRewardsAdmin();
 
   // Missions state/actions
@@ -144,6 +145,7 @@ export const useAdminPanelState = () => {
     addReward,
     updateReward,
     deleteReward,
+    refreshRewards,
     requests,
     isLoadingRequests,
     isRefreshingRequests,

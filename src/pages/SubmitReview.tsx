@@ -17,6 +17,7 @@ const SubmitReview = () => {
     form,
     uploading,
     isLoading,
+    isSavingDraft,
     imagePreviewUrls,
     imageError,
     isDraft,
@@ -143,21 +144,26 @@ const SubmitReview = () => {
                     type="button" 
                     variant="outline"
                     onClick={saveDraft}
-                    disabled={uploading}
+                    disabled={uploading || isSavingDraft}
                     className="order-2 sm:order-1"
                   >
-                    {uploading ? (
-                      <Loader2 className="mr-2 h-4 w-4 animate-spin" />
+                    {isSavingDraft ? (
+                      <>
+                        <Loader2 className="mr-2 h-4 w-4 animate-spin" />
+                        Saving Draft...
+                      </>
                     ) : (
-                      <Save className="mr-2 h-4 w-4" />
+                      <>
+                        <Save className="mr-2 h-4 w-4" />
+                        Save as Draft
+                      </>
                     )}
-                    Save as Draft
                   </Button>
                   
                   <Button 
                     type="submit" 
                     className="order-1 sm:order-2 bg-brand-teal hover:bg-brand-teal/90"
-                    disabled={uploading}
+                    disabled={uploading || isSavingDraft}
                   >
                     {uploading ? (
                       <>

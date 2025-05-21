@@ -25,6 +25,21 @@ const Dashboard = () => {
     }
   }, [authUser, navigate]);
 
+  // Log user data for debugging
+  useEffect(() => {
+    if (user) {
+      console.log('Dashboard user data:', user);
+      console.log('Profile info check:', {
+        bio: user.bio ? `Bio found (${user.bio.length} chars)` : 'No bio',
+        website: user.website_url ? `Website found: ${user.website_url}` : 'No website',
+        facebook: user.facebook_url ? `Facebook found: ${user.facebook_url}` : 'No facebook',
+        instagram: user.instagram_url ? `Instagram found: ${user.instagram_url}` : 'No instagram',
+        youtube: user.youtube_url ? `Youtube found: ${user.youtube_url}` : 'No youtube',
+        tiktok: user.tiktok_url ? `TikTok found: ${user.tiktok_url}` : 'No tiktok',
+      });
+    }
+  }, [user]);
+
   if (loading || isLoading) {
     return (
       <>

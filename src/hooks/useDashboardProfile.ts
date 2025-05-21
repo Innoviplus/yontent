@@ -108,6 +108,8 @@ export const useDashboardProfile = (userId: string | undefined) => {
           ? (profile.extended_data as ExtendedData)
           : {};
 
+        console.log('Raw profile data:', profile);
+
         // Transform the profile data to match the ProfileWithCounts type
         const userWithCounts: ProfileWithCounts = {
           id: profile.id,
@@ -121,9 +123,24 @@ export const useDashboardProfile = (userId: string | undefined) => {
           extendedData: extendedData,
           followersCount: profile.followers_count || 0,
           followingCount: profile.following_count || 0,
-          transactionsCount: totalTransactionsCount || 0
+          transactionsCount: totalTransactionsCount || 0,
+          // Include direct social media fields from profile
+          website_url: profile.website_url || '',
+          facebook_url: profile.facebook_url || '',
+          instagram_url: profile.instagram_url || '',
+          youtube_url: profile.youtube_url || '',
+          tiktok_url: profile.tiktok_url || '',
+          twitter_url: profile.twitter_url || '',
+          // Include other profile fields
+          first_name: profile.first_name || '',
+          last_name: profile.last_name || '',
+          bio: profile.bio || '',
+          gender: profile.gender || '',
+          birth_date: profile.birth_date || '',
+          country: profile.country || ''
         };
 
+        console.log('Transformed user data:', userWithCounts);
         setUser(userWithCounts);
       } catch (error: any) {
         console.error('Error fetching user profile:', error);
