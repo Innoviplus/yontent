@@ -24,14 +24,25 @@ export const useReviewDetail = (id: string | undefined) => {
         ? plainTextContent.substring(0, 147) + '...'
         : plainTextContent;
       
-      // Update document title and meta description
-      document.title = pageTitle;
+      // Use the hook to properly set both title and description
+      usePageTitle(pageTitle, truncatedContent);
       
-      // Update meta description
-      let metaDescription = document.querySelector('meta[name="description"]');
-      if (metaDescription) {
-        metaDescription.setAttribute('content', truncatedContent);
+      // Update Open Graph tags for social sharing
+      let ogTitle = document.querySelector('meta[property="og:title"]');
+      if (!ogTitle) {
+        ogTitle = document.createElement('meta');
+        ogTitle.setAttribute('property', 'og:title');
+        document.head.appendChild(ogTitle);
       }
+      ogTitle.setAttribute('content', `${review.user.username}'s Review | Yontent`);
+      
+      let ogDescription = document.querySelector('meta[property="og:description"]');
+      if (!ogDescription) {
+        ogDescription = document.createElement('meta');
+        ogDescription.setAttribute('property', 'og:description');
+        document.head.appendChild(ogDescription);
+      }
+      ogDescription.setAttribute('content', truncatedContent);
     }
   }, [review]);
   
