@@ -1,6 +1,5 @@
-
 import { useNavigate } from 'react-router-dom';
-import { User, Camera, Eye, Heart } from 'lucide-react';
+import { User, Camera, Eye, Heart, Play } from 'lucide-react';
 import { Review } from '@/lib/types';
 import { cn } from '@/lib/utils';
 import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
