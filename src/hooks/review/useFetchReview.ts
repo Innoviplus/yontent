@@ -56,6 +56,17 @@ export const useFetchReview = (id: string | undefined) => {
         // Explicitly verify likes_count is present in the data
         if (data.likes_count === undefined || data.likes_count === null) {
           console.warn('Likes count is undefined or null in fetched data');
+          
+          // If missing, manually fetch the likes count from the review_likes table
+          const { count, error: countError } = await supabase
+            .from('review_likes')
+            .select('*', { count: 'exact', head: false })
+            .eq('review_id', id);
+            
+          if (!countError && count !== null) {
+            console.log(`Manually counted ${count} likes for review ${id}`);
+            data.likes_count = count;
+          }
         }
         
         const transformedReview: Review = {
@@ -85,7 +96,7 @@ export const useFetchReview = (id: string | undefined) => {
         
         // Log the transformed review data for debugging
         console.log('Transformed review data:', transformedReview);
-        console.log('Video URLs:', data.videos);
+        console.log('Likes count:', transformedReview.likesCount);
         
         // Only track the view if this is not a refresh operation
         if (!skipViewTracking && !isRefetching) {

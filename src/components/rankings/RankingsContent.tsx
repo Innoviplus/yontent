@@ -62,21 +62,30 @@ const RankingsContent = ({ activeTab }: RankingsContentProps) => {
             .slice(0, 20);
         } 
         else if (activeTab === 'likes') {
-          // Fix for the "By Likes" tab - query reviews table and aggregate likes by user
-          const { data: likesData, error: likesError } = await supabase
+          console.log('Fetching users by likes ranking');
+          // Query reviews table and sum likes_count by user
+          const { data: reviewsData, error: reviewsError } = await supabase
             .from('reviews')
             .select(`
               user_id,
               likes_count,
               profiles:user_id (id, username, points, avatar, created_at)
             `)
-            .gte('created_at', new Date(new Date().setDate(1)).toISOString()) // Current month
             .order('likes_count', { ascending: false })
             .limit(100);
             
-          if (likesError) throw likesError;
+          if (reviewsError) {
+            console.error('Error fetching reviews for likes ranking:', reviewsError);
+            throw reviewsError;
+          }
           
-          const userLikes = likesData.reduce((acc: Record<string, any>, review) => {
+          console.log('Total reviews fetched for likes ranking:', reviewsData?.length || 0);
+          
+          // Group by user and sum likes
+          const userLikes = (reviewsData || []).reduce((acc: Record<string, any>, review) => {
+            // Skip reviews with no user or profile data
+            if (!review.user_id || !review.profiles) return acc;
+            
             const userId = review.user_id;
             if (!acc[userId]) {
               acc[userId] = {
@@ -91,6 +100,8 @@ const RankingsContent = ({ activeTab }: RankingsContentProps) => {
           data = Object.values(userLikes)
             .sort((a: any, b: any) => b.totalLikes - a.totalLikes)
             .slice(0, 20);
+            
+          console.log('Processed user likes data:', data);
         }
         
         const transformedUsers = data.map((item, index) => {

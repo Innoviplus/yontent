@@ -33,10 +33,27 @@ export const likeReview = async (reviewId: string, userId: string): Promise<bool
       }
       
       // Call the function to update the likes count
-      const { error: decrementError } = await supabase.rpc('decrement_review_likes', { review_id_param: reviewId });
+      const { error: decrementError } = await supabase.rpc('sync_review_likes_count', { review_id_param: reviewId });
       
       if (decrementError) {
-        console.error('Error decrementing like count:', decrementError);
+        console.error('Error syncing like count:', decrementError);
+        
+        // Fallback: manually update the likes count in the reviews table
+        const { count: newCount, error: countError } = await supabase
+          .from('review_likes')
+          .select('*', { count: 'exact', head: false })
+          .eq('review_id', reviewId);
+          
+        if (!countError && newCount !== null) {
+          const { error: updateError } = await supabase
+            .from('reviews')
+            .update({ likes_count: newCount })
+            .eq('id', reviewId);
+            
+          if (updateError) {
+            console.error('Error manually updating likes count:', updateError);
+          }
+        }
       }
       
       return false; // Return false to indicate the review is now unliked
@@ -57,10 +74,27 @@ export const likeReview = async (reviewId: string, userId: string): Promise<bool
       }
       
       // Call the function to update the likes count
-      const { error: incrementError } = await supabase.rpc('increment_review_likes', { review_id_param: reviewId });
+      const { error: incrementError } = await supabase.rpc('sync_review_likes_count', { review_id_param: reviewId });
       
       if (incrementError) {
-        console.error('Error incrementing like count:', incrementError);
+        console.error('Error syncing like count:', incrementError);
+        
+        // Fallback: manually update the likes count in the reviews table
+        const { count: newCount, error: countError } = await supabase
+          .from('review_likes')
+          .select('*', { count: 'exact', head: false })
+          .eq('review_id', reviewId);
+          
+        if (!countError && newCount !== null) {
+          const { error: updateError } = await supabase
+            .from('reviews')
+            .update({ likes_count: newCount })
+            .eq('id', reviewId);
+            
+          if (updateError) {
+            console.error('Error manually updating likes count:', updateError);
+          }
+        }
       }
       
       return true; // Return true to indicate the review is now liked

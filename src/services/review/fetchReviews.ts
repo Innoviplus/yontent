@@ -1,26 +1,22 @@
+
 import { supabase } from '@/integrations/supabase/client';
 import { Review } from '@/lib/types';
 
 // Cache for review data
 const reviewsCache = new Map<string, { data: Review[], timestamp: number }>();
-const CACHE_EXPIRY = 2 * 60 * 1000; // 2 minutes cache expiry for more frequent updates
+const CACHE_EXPIRY = 30 * 1000; // 30 seconds cache expiry for more frequent updates when testing
 
 export const fetchReviews = async (sortBy: string, userId?: string): Promise<Review[]> => {
   try {
     const cacheKey = `${sortBy}-${userId || 'no-user'}`;
     
-    // Force a cache miss when requested to get fresh data (useful after new review submissions)
-    const cachedResult = reviewsCache.get(cacheKey);
+    // Clear cache to get fresh data
+    reviewsCache.delete(cacheKey);
     
-    // Return cached data if it exists and hasn't expired
-    if (cachedResult && (Date.now() - cachedResult.timestamp) < CACHE_EXPIRY) {
-      return cachedResult.data;
-    }
-    
-    console.log('Cache miss, fetching fresh reviews data with sort:', sortBy);
+    console.log('Fetching fresh reviews data with sort:', sortBy);
     
     // Limit the amount of data we're retrieving
-    const FETCH_LIMIT = 50; // Fetch fewer items for better performance
+    const FETCH_LIMIT = 50;
     
     let query = supabase
       .from('reviews')
@@ -47,14 +43,10 @@ export const fetchReviews = async (sortBy: string, userId?: string): Promise<Rev
     } else if (sortBy === 'popular') {
       query = query.order('views_count', { ascending: false });
     } else if (sortBy === 'trending') {
-      // Trending is a combination of recent activity and popularity
-      // For this implementation, we'll use likes_count as the primary indicator of trending content
       query = query.order('likes_count', { ascending: false });
     } else if (sortBy === 'relevant' && userId) {
-      // For relevant, keep the same implementation as before
       query = query.order('created_at', { ascending: false });
     } else {
-      // Default fallback to trending
       query = query.order('likes_count', { ascending: false });
     }
 
@@ -66,26 +58,31 @@ export const fetchReviews = async (sortBy: string, userId?: string): Promise<Rev
     }
     
     if (data) {
-      const transformedReviews: Review[] = data.map(review => ({
-        id: review.id,
-        userId: review.user_id,
-        productName: "Review",
-        rating: 5,
-        content: review.content,
-        images: review.images || [],
-        videos: review.videos || [],
-        viewsCount: review.views_count || 0,
-        likesCount: review.likes_count || 0,
-        createdAt: new Date(review.created_at),
-        user: review.profiles ? {
-          id: review.profiles.id || review.user_id,
-          username: review.profiles.username || 'Anonymous',
-          email: '',
-          points: 0,
-          createdAt: new Date(),
-          avatar: review.profiles.avatar
-        } : undefined
-      }));
+      const transformedReviews: Review[] = data.map(review => {
+        // Log the likes_count for debugging
+        console.log(`Review ${review.id} has likes_count:`, review.likes_count);
+        
+        return {
+          id: review.id,
+          userId: review.user_id,
+          productName: "Review",
+          rating: 5,
+          content: review.content,
+          images: review.images || [],
+          videos: review.videos || [],
+          viewsCount: review.views_count || 0,
+          likesCount: review.likes_count || 0,
+          createdAt: new Date(review.created_at),
+          user: review.profiles ? {
+            id: review.profiles.id || review.user_id,
+            username: review.profiles.username || 'Anonymous',
+            email: '',
+            points: 0,
+            createdAt: new Date(),
+            avatar: review.profiles.avatar
+          } : undefined
+        };
+      });
       
       // Cache the results
       reviewsCache.set(cacheKey, { 
@@ -103,7 +100,7 @@ export const fetchReviews = async (sortBy: string, userId?: string): Promise<Rev
   }
 };
 
-// Function to clear the cache after a review is submitted
+// Function to clear the cache after a review is submitted or liked/unliked
 export const clearReviewsCache = () => {
   reviewsCache.clear();
 };

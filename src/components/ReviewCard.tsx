@@ -1,3 +1,4 @@
+
 import { useNavigate } from 'react-router-dom';
 import { User, Camera, Eye, Heart, Play } from 'lucide-react';
 import { Review } from '@/lib/types';
@@ -6,6 +7,8 @@ import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
 import { useIsMobile } from '@/hooks/use-mobile';
 import { memo, useState, useEffect } from 'react';
 import { useLikeAction } from '@/hooks/review/useLikeAction';
+import { toast } from 'sonner';
+import { useAuth } from '@/contexts/AuthContext';
 
 interface ReviewCardProps {
   review: Review;
@@ -16,9 +19,13 @@ interface ReviewCardProps {
 const ReviewCard = memo(({ review, className }: ReviewCardProps) => {
   const navigate = useNavigate();
   const isMobile = useIsMobile();
+  const { user } = useAuth();
   const hasVideo = review.videos && review.videos.length > 0;
   const [imageLoaded, setImageLoaded] = useState(false);
   const [videoThumbnail, setVideoThumbnail] = useState<string | null>(null);
+  
+  // Use the useLikeAction hook
+  const { isLiked, likesCount, handleLike, isLoading } = useLikeAction(review.id, review.likesCount);
   
   // Generate video thumbnail when component mounts
   useEffect(() => {
@@ -89,6 +96,17 @@ const ReviewCard = memo(({ review, className }: ReviewCardProps) => {
   
   const handleCardClick = () => {
     navigate(`/review/${review.id}`);
+  };
+  
+  const handleLikeClick = (e: React.MouseEvent) => {
+    e.stopPropagation();
+    
+    if (!user) {
+      toast.error('You must be logged in to like reviews');
+      return;
+    }
+    
+    handleLike();
   };
 
   return (
@@ -185,20 +203,19 @@ const ReviewCard = memo(({ review, className }: ReviewCardProps) => {
           {/* Like count with heart icon */}
           <div className="flex items-center text-xs">
             <button 
-              className="flex items-center hover:text-red-500 transition-colors" 
-              onClick={(e) => {
-                e.stopPropagation();
-                navigate(`/review/${review.id}`);
-              }}
+              className={cn(
+                "flex items-center transition-colors",
+                isLiked ? "text-red-500" : "text-gray-500 hover:text-red-500"
+              )} 
+              onClick={handleLikeClick}
+              disabled={isLoading}
             >
               <Heart className={cn(
                 "h-3 w-3 mr-0.5",
-                review.likesCount > 0 ? "fill-red-500 text-red-500" : "text-gray-500"
+                isLiked ? "fill-red-500 text-red-500" : ""
               )} />
-              <span className={cn(
-                review.likesCount > 0 ? "text-red-500" : "text-gray-500"
-              )}>
-                {review.likesCount || 0}
+              <span>
+                {likesCount || 0}
               </span>
             </button>
           </div>
