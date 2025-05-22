@@ -38,6 +38,7 @@ const ReviewDetail = () => {
       console.log('Review data in component:', review);
       console.log('Review has videos:', review.videos && review.videos.length > 0);
       console.log('Video URLs:', review.videos);
+      console.log('Review likes count:', review.likesCount);
     }
   }, [review]);
   
@@ -103,10 +104,11 @@ const ReviewDetail = () => {
                   <div className="flex items-center justify-between mb-4">
                     <ReviewStats viewsCount={review.viewsCount || 0} />
                     
-                    {/* Action buttons with isAuthor prop */}
+                    {/* Action buttons with isAuthor prop and likes count */}
                     <ReviewActionButtons
                       isAuthor={isAuthor}
                       reviewId={review.id}
+                      likesCount={review.likesCount}
                     />
                   </div>
                   
