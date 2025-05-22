@@ -20,6 +20,9 @@ export const usePageTitle = (title: string, description?: string) => {
       
       // Set the content attribute
       metaDescription.setAttribute('content', description);
+      
+      // Log for debugging
+      console.log('Meta description set to:', description);
     }
     
     return () => {
