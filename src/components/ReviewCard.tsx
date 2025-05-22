@@ -1,11 +1,12 @@
 
 import { useNavigate } from 'react-router-dom';
-import { User, Camera, Eye, Play } from 'lucide-react';
+import { User, Camera, Eye, Heart } from 'lucide-react';
 import { Review } from '@/lib/types';
 import { cn } from '@/lib/utils';
 import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
 import { useIsMobile } from '@/hooks/use-mobile';
 import { memo, useState, useEffect } from 'react';
+import { useLikeAction } from '@/hooks/review/useLikeAction';
 
 interface ReviewCardProps {
   review: Review;
@@ -175,11 +176,32 @@ const ReviewCard = memo(({ review, className }: ReviewCardProps) => {
           </p>
         </div>
         
-        {/* Stats: Views only */}
-        <div className="flex items-center">
+        {/* Stats: Views and Likes */}
+        <div className="flex items-center gap-3 justify-between">
           <div className="flex items-center text-xs text-gray-500">
             <Eye className="h-3 w-3 mr-0.5" />
             <span>{review.viewsCount || 0}</span>
+          </div>
+          
+          {/* Like count with heart icon */}
+          <div className="flex items-center text-xs">
+            <button 
+              className="flex items-center hover:text-red-500 transition-colors" 
+              onClick={(e) => {
+                e.stopPropagation();
+                navigate(`/review/${review.id}`);
+              }}
+            >
+              <Heart className={cn(
+                "h-3 w-3 mr-0.5",
+                review.likesCount > 0 ? "fill-red-500 text-red-500" : "text-gray-500"
+              )} />
+              <span className={cn(
+                review.likesCount > 0 ? "text-red-500" : "text-gray-500"
+              )}>
+                {review.likesCount || 0}
+              </span>
+            </button>
           </div>
         </div>
       </div>

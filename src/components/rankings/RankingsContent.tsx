@@ -62,6 +62,7 @@ const RankingsContent = ({ activeTab }: RankingsContentProps) => {
             .slice(0, 20);
         } 
         else if (activeTab === 'likes') {
+          // Fix for the "By Likes" tab - query reviews table and aggregate likes by user
           const { data: likesData, error: likesError } = await supabase
             .from('reviews')
             .select(`
