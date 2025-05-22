@@ -2,21 +2,26 @@
 import { useAuth } from '@/contexts/AuthContext';
 import { useFetchReview } from './review/useFetchReview';
 import { useReviewNavigation } from './review/useReviewNavigation';
-import { useEffect, useRef } from 'react';
+import { useEffect, useRef, useState } from 'react';
 import { usePageTitle } from './usePageTitle';
 
 export const useReviewDetail = (id: string | undefined) => {
   const { user } = useAuth();
   const initialLoadRef = useRef(false);
+  const [pageTitle, setPageTitle] = useState('Yontent Singapore');
+  const [pageDescription, setPageDescription] = useState('Share reviews. Earn rewards. Get Recognised for Your Brand Love');
   
   const { review, loading, setReview, refetchReview } = useFetchReview(id);
   const { navigateToUserProfile, relatedReviews } = useReviewNavigation(review);
+  
+  // Use the hook at the top level
+  usePageTitle(pageTitle, pageDescription);
   
   // Set the page title and description based on review content
   useEffect(() => {
     if (review?.user?.username && review.content) {
       // Set title to "[username] | Yontent Singapore"
-      const pageTitle = `${review.user.username} | Yontent Singapore`;
+      const newPageTitle = `${review.user.username} | Yontent Singapore`;
       
       // Set description to first 150 characters of review content (strip HTML tags if any)
       const plainTextContent = review.content.replace(/<[^>]*>/g, '');
@@ -24,8 +29,9 @@ export const useReviewDetail = (id: string | undefined) => {
         ? plainTextContent.substring(0, 147) + '...'
         : plainTextContent;
       
-      // Use the hook to properly set both title and description
-      usePageTitle(pageTitle, truncatedContent);
+      // Update the state to trigger usePageTitle
+      setPageTitle(newPageTitle);
+      setPageDescription(truncatedContent);
       
       // Update Open Graph tags for social sharing
       let ogTitle = document.querySelector('meta[property="og:title"]');
