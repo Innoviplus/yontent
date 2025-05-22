@@ -39,6 +39,26 @@ const ReviewDetail = () => {
       console.log('Review data in component:', review);
       console.log('Review has videos:', review.videos && review.videos.length > 0);
       console.log('Video URLs:', review.videos);
+      
+      // Set meta tags for SEO
+      if (review.user?.username && review.content) {
+        // Set Open Graph tags
+        const ogTitle = document.querySelector('meta[property="og:title"]');
+        if (ogTitle) {
+          ogTitle.setAttribute('content', `${review.user.username}'s Review | Yontent`);
+        }
+        
+        const ogDescription = document.querySelector('meta[property="og:description"]');
+        if (ogDescription) {
+          // Strip HTML and limit to 150 chars for OG description
+          const plainTextContent = review.content.replace(/<[^>]*>/g, '');
+          const truncatedContent = plainTextContent.length > 150 
+            ? plainTextContent.substring(0, 147) + '...'
+            : plainTextContent;
+            
+          ogDescription.setAttribute('content', truncatedContent);
+        }
+      }
     }
   }, [review]);
   
