@@ -62,6 +62,17 @@ export const useProfileForm = (
     try {
       console.log('Checking for welcome points eligibility for user:', userId);
       
+      // First check if point_transactions table exists
+      const { error: tableCheckError } = await supabase
+        .from('point_transactions')
+        .select('id', { count: 'exact', head: true })
+        .limit(1);
+        
+      if (tableCheckError) {
+        console.warn('Point transactions table may not exist yet:', tableCheckError.message);
+        return; // Exit early if table doesn't exist
+      }
+      
       // Call the Supabase function
       const { data, error } = await (supabase.rpc as any)(
         'check_and_award_welcome_points',
@@ -123,9 +134,14 @@ export const useProfileForm = (
         // Update local state
         setExtendedProfile(extendedData);
         
-        // Check for welcome points after successful profile update
-        // Add a small delay to ensure database triggers have completed
-        setTimeout(() => checkWelcomePoints(user.id), 500);
+        try {
+          // Check for welcome points after successful profile update
+          // Add a small delay to ensure database triggers have completed
+          setTimeout(() => checkWelcomePoints(user.id), 500);
+        } catch (pointsError) {
+          console.error("Error checking welcome points:", pointsError);
+          // Don't fail the whole operation if points check fails
+        }
         
         // Use debounced toast to prevent duplicates
         debounceToast(() => {
