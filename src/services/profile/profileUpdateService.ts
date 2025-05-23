@@ -26,7 +26,7 @@ export const updateProfileData = async (userId: string, profileData: ExtendedPro
         instagram_url: profileData.instagramUrl || null,
         youtube_url: profileData.youtubeUrl || null,
         tiktok_url: profileData.tiktokUrl || null,
-        twitter_url: profileData.twitterUrl || null,
+        twitter_url: profileData.twitterUrl || null, // Add twitterUrl handling
         country: profileData.country || null,
         phone_number: profileData.phoneNumber || null,
         phone_country_code: profileData.phoneCountryCode || null,

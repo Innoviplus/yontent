@@ -23,10 +23,12 @@ export const formatProfileFormValues = (values: ProfileFormValues, currentExtend
   extendedData.instagramUrl = formatURL(values.instagramUrl);
   extendedData.youtubeUrl = formatURL(values.youtubeUrl);
   extendedData.tiktokUrl = formatURL(values.tiktokUrl);
+  extendedData.twitterUrl = formatURL(values.twitterUrl);  // Add twitterUrl handling
   
   // Phone fields are stored directly in the profile table
   extendedData.phoneNumber = values.phoneNumber;
   extendedData.phoneCountryCode = values.phoneCountryCode;
+  extendedData.country = values.country;  // Make sure country is included
   
   console.log("Formatted profile data:", extendedData);
   

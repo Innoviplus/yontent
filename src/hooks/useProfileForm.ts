@@ -46,7 +46,7 @@ export const useProfileForm = (
       instagramUrl: '',
       youtubeUrl: '',
       tiktokUrl: '',
-      twitterUrl: '',
+      twitterUrl: '', // Add twitterUrl field with empty string default
       phoneNumber: userProfile?.phone_number || '',
       phoneCountryCode: '',
       country: '',

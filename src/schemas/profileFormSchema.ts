@@ -56,8 +56,10 @@ export const profileFormSchema = z.object({
   instagramUrl: urlSchema,
   youtubeUrl: urlSchema,
   tiktokUrl: urlSchema,
+  twitterUrl: urlSchema, // Added twitterUrl field
   phoneNumber: phoneNumberSchema,
   phoneCountryCode: z.string().optional(),
+  country: z.string().optional(),
 });
 
 export type ProfileFormValues = z.infer<typeof profileFormSchema>;
