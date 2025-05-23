@@ -60,12 +60,18 @@ export const useProfileForm = (
     if (!userId) return;
     
     try {
-      // Use a generic type parameter for the response
-      const { data, error } = await supabase.rpc<{
+      // Define the response type structure and the parameters type
+      type WelcomePointsResponse = {
         success: boolean;
         message: string;
         points_awarded?: number;
-      }>(
+      };
+      
+      type WelcomePointsParams = {
+        user_id_param: string;
+      };
+      
+      const { data, error } = await supabase.rpc<WelcomePointsResponse, WelcomePointsParams>(
         // Cast the function name as any to bypass TypeScript's strict checking
         'check_and_award_welcome_points' as any,
         { user_id_param: userId }
