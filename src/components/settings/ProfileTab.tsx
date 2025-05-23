@@ -13,6 +13,7 @@ import { Button } from '@/components/ui/button';
 import { Loader2 } from 'lucide-react';
 import { UseFormReturn } from 'react-hook-form';
 import { ExtendedProfile } from '@/lib/types';
+import { useState } from 'react';
 
 interface ProfileTabProps {
   userProfile: any;
@@ -36,6 +37,7 @@ const ProfileTab = ({
   extendedProfile
 }: ProfileTabProps) => {
   const { user, refreshUserProfile } = useAuth();
+  const [submitAttempted, setSubmitAttempted] = useState(false);
   
   const {
     isLoading,
@@ -60,7 +62,15 @@ const ProfileTab = ({
 
   // Handle form submission
   const onSubmit = async (values: ProfileFormValues) => {
+    setSubmitAttempted(true);
+    console.log("ProfileTab - Form submission with values:", values);
     await handleProfileSubmit(values, onProfileSubmit, profileForm);
+    
+    // Force refresh user profile after successful submission
+    if (user) {
+      console.log("ProfileTab - Refreshing user profile after submission");
+      setTimeout(() => refreshUserProfile(), 500);
+    }
   };
 
   if (isLoading && !userProfile && !initialLoadComplete) {
@@ -132,6 +142,16 @@ const ProfileTab = ({
           )}
         </Button>
       </div>
+      
+      {submitAttempted && !isUpdating && (
+        <div className="text-center text-sm">
+          {profileForm.formState.isSubmitSuccessful ? (
+            <p className="text-green-600">Profile saved successfully!</p>
+          ) : (
+            <p className="text-red-600">There was an error saving your profile. Please try again.</p>
+          )}
+        </div>
+      )}
     </div>
   );
 };

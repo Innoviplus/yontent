@@ -9,6 +9,7 @@ import { formatProfileFormValues, validateBirthDate } from '@/services/profile/p
 import { updateProfileData } from '@/services/profile/profileUpdateService';
 import { supabase } from '@/integrations/supabase/client';
 import { usePoints } from '@/contexts/PointsContext';
+import { useState, useEffect } from 'react';
 
 // Add debounce utility to prevent multiple toast notifications
 const createDebouncer = () => {
@@ -46,7 +47,7 @@ export const useProfileForm = (
       instagramUrl: '',
       youtubeUrl: '',
       tiktokUrl: '',
-      twitterUrl: '', // Add twitterUrl field with empty string default
+      twitterUrl: '', 
       phoneNumber: userProfile?.phone_number || '',
       phoneCountryCode: '',
       country: '',
@@ -54,15 +55,24 @@ export const useProfileForm = (
   });
   
   const { refreshPoints } = usePoints();
+  const [pointsAwardAttempted, setPointsAwardAttempted] = useState(false);
 
   // Initialize form with profile data when it becomes available
   useProfileFormInitialization(profileForm, userProfile);
 
+  // Effect to check if form has been populated with data
+  useEffect(() => {
+    if (userProfile) {
+      console.log("useProfileForm - User profile available, form values:", profileForm.getValues());
+    }
+  }, [userProfile, profileForm]);
+
   // Function to check and award welcome points if needed
   const checkWelcomePoints = async (userId: string) => {
-    if (!userId) return;
+    if (!userId || pointsAwardAttempted) return;
     
     try {
+      setPointsAwardAttempted(true);
       console.log('Checking for welcome points eligibility for user:', userId);
       
       // First check if point_transactions table exists safely
@@ -156,7 +166,7 @@ export const useProfileForm = (
         }, 300);
         
         // Mark form as pristine to indicate data has been saved
-        profileForm.reset(values, { keepValues: true });
+        profileForm.reset(values, { keepValues: true, keepDirty: false });
       } else {
         throw new Error("Failed to update profile data");
       }

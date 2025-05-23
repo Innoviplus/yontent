@@ -45,7 +45,7 @@ export async function fetchUserProfile(userId: string, userEmail?: string | null
       const extendedProfile: ExtendedProfile = {
         firstName: data.first_name || '',
         lastName: data.last_name || '',
-        bio: data.bio || '',  // Directly use the bio field from the database
+        bio: data.bio || '',
         gender: data.gender || '',
         birthDate: data.birth_date ? new Date(data.birth_date) : null,
         websiteUrl: data.website_url || '',

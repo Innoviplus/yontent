@@ -25,57 +25,88 @@ export const ProfileInfoForm: React.FC<ProfileInfoFormProps> = ({
   const formValues = profileForm.watch();
   console.log("Current form values:", formValues);
 
+  const handleSubmit = async (values: ProfileFormValues) => {
+    console.log("ProfileInfoForm - Submit button clicked with values:", values);
+    await onProfileSubmit(values);
+  };
+
   return (
     <Form {...profileForm}>
-      <form onSubmit={profileForm.handleSubmit(onProfileSubmit)} className="space-y-8">
-        <FormField control={profileForm.control} name="username" render={({
-        field
-      }) => <FormItem>
+      <form onSubmit={profileForm.handleSubmit(handleSubmit)} className="space-y-8">
+        <FormField 
+          control={profileForm.control} 
+          name="username" 
+          render={({ field }) => (
+            <FormItem>
               <FormLabel>Username</FormLabel>
               <FormControl>
                 <Input placeholder="username" {...field} disabled />
               </FormControl>
               <FormMessage />
-            </FormItem>} />
+            </FormItem>
+          )} 
+        />
 
         <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-          <FormField control={profileForm.control} name="firstName" render={({
-          field
-        }) => <FormItem>
+          <FormField 
+            control={profileForm.control} 
+            name="firstName" 
+            render={({ field }) => (
+              <FormItem>
                 <FormLabel>First Name</FormLabel>
                 <FormControl>
                   <Input placeholder="Your first name" {...field} />
                 </FormControl>
                 <FormMessage />
-              </FormItem>} />
+              </FormItem>
+            )} 
+          />
           
-          <FormField control={profileForm.control} name="lastName" render={({
-          field
-        }) => <FormItem>
+          <FormField 
+            control={profileForm.control} 
+            name="lastName" 
+            render={({ field }) => (
+              <FormItem>
                 <FormLabel>Last Name</FormLabel>
                 <FormControl>
                   <Input placeholder="Your last name" {...field} />
                 </FormControl>
                 <FormMessage />
-              </FormItem>} />
+              </FormItem>
+            )} 
+          />
         </div>
         
-        <FormField control={profileForm.control} name="bio" render={({
-        field
-      }) => <FormItem>
+        <FormField 
+          control={profileForm.control} 
+          name="bio" 
+          render={({ field }) => (
+            <FormItem>
               <FormLabel>Bio</FormLabel>
               <FormControl>
-                <Textarea placeholder="Tell us a little bit about yourself" className="min-h-[120px]" {...field} value={field.value || ''} />
+                <Textarea 
+                  placeholder="Tell us a little bit about yourself" 
+                  className="min-h-[120px]" 
+                  {...field} 
+                  value={field.value || ''}
+                />
               </FormControl>
               <FormMessage />
-            </FormItem>} />
+            </FormItem>
+          )} 
+        />
 
         <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-          <FormField control={profileForm.control} name="gender" render={({
-          field
-        }) => <FormItem>
+          <FormField 
+            control={profileForm.control} 
+            name="gender" 
+            render={({ field }) => (
+              <FormItem>
                 <FormLabel>Gender</FormLabel>
-                <Select onValueChange={field.onChange} value={field.value || ''}>
+                <Select 
+                  onValueChange={field.onChange} 
+                  value={field.value || ''}
+                >
                   <FormControl>
                     <SelectTrigger>
                       <SelectValue placeholder="Select gender" />
@@ -89,7 +120,9 @@ export const ProfileInfoForm: React.FC<ProfileInfoFormProps> = ({
                   </SelectContent>
                 </Select>
                 <FormMessage />
-              </FormItem>} />
+              </FormItem>
+            )} 
+          />
 
           <BirthDateInput control={profileForm.control} disabled={false} />
         </div>

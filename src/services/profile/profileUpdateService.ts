@@ -26,7 +26,7 @@ export const updateProfileData = async (userId: string, profileData: ExtendedPro
         instagram_url: profileData.instagramUrl || null,
         youtube_url: profileData.youtubeUrl || null,
         tiktok_url: profileData.tiktokUrl || null,
-        twitter_url: profileData.twitterUrl || null, // Add twitterUrl handling
+        twitter_url: profileData.twitterUrl || null,
         country: profileData.country || null,
         phone_number: profileData.phoneNumber || null,
         phone_country_code: profileData.phoneCountryCode || null,
@@ -39,13 +39,25 @@ export const updateProfileData = async (userId: string, profileData: ExtendedPro
       throw updateError;
     }
     
+    // Now also update the extended_data JSON field for backward compatibility
+    const { error: extendedError } = await supabase
+      .from('profiles')
+      .update({
+        extended_data: profileData
+      })
+      .eq('id', userId);
+
+    if (extendedError) {
+      console.error("Supabase extended_data update error:", extendedError);
+      // Don't throw here as the main data has been updated
+    }
+    
     console.log("Profile updated successfully in Supabase!");
     return true;
   } catch (error: any) {
     console.error("Error updating profile:", error.message);
     
     // Check if the error is related to point_transactions table not existing
-    // This shouldn't happen if the table exists, but we'll handle it just in case
     if (error.code === '42P01' && error.message.includes('point_transactions')) {
       console.warn("Issue with point_transactions table, but profile was likely updated");
       toast.warning("Profile updated but points system is currently unavailable");
