@@ -7,6 +7,8 @@ import { profileFormSchema, ProfileFormValues } from '@/schemas/profileFormSchem
 import { useProfileFormInitialization } from './useProfileFormInitialization';
 import { formatProfileFormValues, validateBirthDate } from '@/services/profile/profileFormService';
 import { updateProfileData } from '@/services/profile/profileUpdateService';
+import { supabase } from '@/integrations/supabase/client';
+import { usePoints } from '@/contexts/PointsContext';
 
 // Add debounce utility to prevent multiple toast notifications
 const createDebouncer = () => {
@@ -47,9 +49,36 @@ export const useProfileForm = (
       phoneNumber: userProfile?.phone_number || '',
     },
   });
+  
+  const { refreshPoints } = usePoints();
 
   // Initialize form with profile data when it becomes available
   useProfileFormInitialization(profileForm, userProfile);
+
+  // Function to check and award welcome points if needed
+  const checkWelcomePoints = async (userId: string) => {
+    if (!userId) return;
+    
+    try {
+      const { data, error } = await supabase.rpc(
+        'check_and_award_welcome_points',
+        { user_id_param: userId }
+      );
+      
+      if (error) {
+        console.error('Error checking welcome points:', error);
+        return;
+      }
+      
+      if (data && data.success) {
+        toast.success('You received 100 welcome points for updating your profile!');
+        // Refresh points to update UI
+        await refreshPoints();
+      }
+    } catch (error) {
+      console.error('Error in welcome points check:', error);
+    }
+  };
 
   const onProfileSubmit = async (values: ProfileFormValues) => {
     if (!user) {
@@ -83,6 +112,9 @@ export const useProfileForm = (
       if (success) {
         // Update local state
         setExtendedProfile(extendedData);
+        
+        // Check for welcome points after successful profile update
+        await checkWelcomePoints(user.id);
         
         // Use debounced toast to prevent duplicates
         debounceToast(() => {
