@@ -7,6 +7,8 @@ import { profileFormSchema, ProfileFormValues } from '@/schemas/profileFormSchem
 import { useProfileFormInitialization } from './settings/useProfileFormInitialization';
 import { formatProfileFormValues, validateBirthDate } from '@/services/profile/profileFormService';
 import { updateProfileData } from '@/services/profile/profileUpdateService';
+import { supabase } from '@/integrations/supabase/client';
+import { usePoints } from '@/contexts/PointsContext';
 
 // Add debounce utility to prevent multiple toast notifications
 const createDebouncer = () => {
@@ -48,8 +50,45 @@ export const useProfileForm = (
     },
   });
 
+  const { refreshPoints } = usePoints();
+
   // Initialize form with profile data when it becomes available
   useProfileFormInitialization(profileForm, userProfile);
+
+  // Function to check and award welcome points if needed
+  const checkWelcomePoints = async (userId: string) => {
+    if (!userId) return;
+    
+    try {
+      console.log('Checking for welcome points eligibility for user:', userId);
+      
+      // Call the Supabase function 
+      const { data, error } = await (supabase.rpc as any)(
+        'check_and_award_welcome_points',
+        { user_id_param: userId }
+      );
+      
+      if (error) {
+        console.error('Error checking welcome points:', error);
+        return;
+      }
+      
+      console.log('Welcome points check response:', data);
+      
+      // Check if points were awarded successfully
+      if (data && typeof data === 'object' && 'success' in data && data.success) {
+        toast.success('You received 100 welcome points for updating your profile!');
+        
+        // Refresh points to update UI
+        await refreshPoints();
+      } else if (data && typeof data === 'object' && 'message' in data) {
+        // Log the message but don't show it to the user if points weren't awarded
+        console.log('Welcome points status:', data.message);
+      }
+    } catch (error) {
+      console.error('Error in welcome points check:', error);
+    }
+  };
 
   const onProfileSubmit = async (values: ProfileFormValues) => {
     if (!user) {
@@ -83,6 +122,10 @@ export const useProfileForm = (
       if (success) {
         // Update local state
         setExtendedProfile(extendedData);
+        
+        // Check for welcome points after successful profile update
+        // Add a small delay to ensure database triggers have completed
+        setTimeout(() => checkWelcomePoints(user.id), 500);
         
         // Use debounced toast to prevent duplicates
         debounceToast(() => {

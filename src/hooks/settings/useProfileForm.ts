@@ -62,7 +62,7 @@ export const useProfileForm = (
     try {
       console.log('Checking for welcome points eligibility for user:', userId);
       
-      // Call the Supabase function using type assertion to bypass TypeScript's function name checking
+      // Call the Supabase function
       const { data, error } = await (supabase.rpc as any)(
         'check_and_award_welcome_points',
         { user_id_param: userId }
@@ -78,8 +78,12 @@ export const useProfileForm = (
       // Check if points were awarded successfully
       if (data && typeof data === 'object' && 'success' in data && data.success) {
         toast.success('You received 100 welcome points for updating your profile!');
+        
         // Refresh points to update UI
         await refreshPoints();
+      } else if (data && typeof data === 'object' && 'message' in data) {
+        // Log the message but don't show it to the user if points weren't awarded
+        console.log('Welcome points status:', data.message);
       }
     } catch (error) {
       console.error('Error in welcome points check:', error);
@@ -120,7 +124,8 @@ export const useProfileForm = (
         setExtendedProfile(extendedData);
         
         // Check for welcome points after successful profile update
-        await checkWelcomePoints(user.id);
+        // Add a small delay to ensure database triggers have completed
+        setTimeout(() => checkWelcomePoints(user.id), 500);
         
         // Use debounced toast to prevent duplicates
         debounceToast(() => {
