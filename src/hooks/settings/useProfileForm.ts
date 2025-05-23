@@ -60,18 +60,9 @@ export const useProfileForm = (
     if (!userId) return;
     
     try {
-      // Define the response type structure and the parameters type
-      type WelcomePointsResponse = {
-        success: boolean;
-        message: string;
-        points_awarded?: number;
-      };
+      console.log('Checking for welcome points eligibility for user:', userId);
       
-      type WelcomePointsParams = {
-        user_id_param: string;
-      };
-      
-      // Use type assertion with "as any" to bypass TypeScript's RPC function name checking
+      // Call the Supabase function using type assertion to bypass TypeScript's function name checking
       const { data, error } = await (supabase.rpc as any)(
         'check_and_award_welcome_points',
         { user_id_param: userId }
@@ -82,7 +73,9 @@ export const useProfileForm = (
         return;
       }
       
-      // Type guard to ensure data has the expected structure
+      console.log('Welcome points check response:', data);
+      
+      // Check if points were awarded successfully
       if (data && typeof data === 'object' && 'success' in data && data.success) {
         toast.success('You received 100 welcome points for updating your profile!');
         // Refresh points to update UI

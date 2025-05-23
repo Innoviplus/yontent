@@ -6,21 +6,29 @@ LANGUAGE plpgsql
 SECURITY DEFINER
 SET search_path = ''
 AS $$
+DECLARE
+  has_welcome_points BOOLEAN;
 BEGIN
   -- Only run when a profile is updated (not when created)
   -- Check if this is a real update with changed data (not just timestamps)
-  IF TG_OP = 'UPDATE' AND 
-     (NEW.first_name IS NOT NULL OR NEW.last_name IS NOT NULL OR NEW.bio IS NOT NULL) AND
-     NEW.points = 0 THEN
+  IF TG_OP = 'UPDATE' AND (
+     NEW.first_name IS NOT NULL OR 
+     NEW.last_name IS NOT NULL OR 
+     NEW.bio IS NOT NULL OR
+     NEW.gender IS NOT NULL
+  ) THEN
     
     -- Check if the user has already received welcome points
-    IF NOT EXISTS (
+    SELECT EXISTS (
       SELECT 1 FROM point_transactions
       WHERE user_id_point = NEW.id
       AND type = 'WELCOME'
-    ) THEN
+    ) INTO has_welcome_points;
+    
+    -- Only award points if user hasn't received welcome points yet
+    IF NOT has_welcome_points THEN
       -- Update profile points
-      NEW.points := 100;
+      NEW.points := COALESCE(NEW.points, 0) + 100;
       
       -- Insert welcome points transaction
       INSERT INTO point_transactions (
@@ -35,13 +43,7 @@ BEGIN
         'Welcome Bonus for completing your profile information'
       );
       
-      -- Log the transaction
-      PERFORM create_point_transaction(
-        NEW.id,
-        100,
-        'WELCOME',
-        'Welcome Bonus for completing your profile information'
-      );
+      RAISE NOTICE 'Welcome points (100) awarded to user %', NEW.id;
     END IF;
   END IF;
   
@@ -66,6 +68,7 @@ AS $$
 DECLARE
   profile_exists BOOLEAN;
   has_welcome_points BOOLEAN;
+  has_profile_info BOOLEAN;
   v_result JSONB;
 BEGIN
   -- Check if profile exists
@@ -96,9 +99,27 @@ BEGIN
     RETURN v_result;
   END IF;
   
+  -- Check if profile has enough information to qualify for points
+  SELECT 
+    (first_name IS NOT NULL OR 
+     last_name IS NOT NULL OR 
+     bio IS NOT NULL OR 
+     gender IS NOT NULL)
+  INTO has_profile_info
+  FROM profiles
+  WHERE id = user_id_param;
+  
+  IF NOT has_profile_info THEN
+    v_result := jsonb_build_object(
+      'success', false,
+      'message', 'Profile needs more information before points can be awarded'
+    );
+    RETURN v_result;
+  END IF;
+  
   -- Award points
   UPDATE profiles
-  SET points = points + 100
+  SET points = COALESCE(points, 0) + 100
   WHERE id = user_id_param;
   
   -- Create transaction record
