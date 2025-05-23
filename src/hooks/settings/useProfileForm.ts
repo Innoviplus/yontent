@@ -60,8 +60,14 @@ export const useProfileForm = (
     if (!userId) return;
     
     try {
-      const { data, error } = await supabase.rpc(
-        'check_and_award_welcome_points',
+      // Use a generic type parameter for the response
+      const { data, error } = await supabase.rpc<{
+        success: boolean;
+        message: string;
+        points_awarded?: number;
+      }>(
+        // Cast the function name as any to bypass TypeScript's strict checking
+        'check_and_award_welcome_points' as any,
         { user_id_param: userId }
       );
       
@@ -70,7 +76,8 @@ export const useProfileForm = (
         return;
       }
       
-      if (data && data.success) {
+      // Type guard to ensure data has the expected structure
+      if (data && typeof data === 'object' && 'success' in data && data.success) {
         toast.success('You received 100 welcome points for updating your profile!');
         // Refresh points to update UI
         await refreshPoints();
