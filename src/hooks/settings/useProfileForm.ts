@@ -71,9 +71,10 @@ export const useProfileForm = (
         user_id_param: string;
       };
       
-      const { data, error } = await supabase.rpc<WelcomePointsResponse, WelcomePointsParams>(
-        // Cast the function name as any to bypass TypeScript's strict checking
-        'check_and_award_welcome_points' as any,
+      // Use any for the first type parameter to bypass TypeScript's constraint checking
+      // and specify the return and params types as the generic parameters
+      const { data, error } = await supabase.rpc<any, WelcomePointsResponse, WelcomePointsParams>(
+        'check_and_award_welcome_points',
         { user_id_param: userId }
       );
       
