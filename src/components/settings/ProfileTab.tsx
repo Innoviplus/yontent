@@ -58,6 +58,7 @@ const ProfileTab = ({
     refreshUserProfile
   });
 
+  // Handle form submission
   const onSubmit = async (values: ProfileFormValues) => {
     await handleProfileSubmit(values, onProfileSubmit, profileForm);
   };
@@ -85,56 +86,52 @@ const ProfileTab = ({
         </CardContent>
       </Card>
 
-      <Form {...profileForm}>
-        <form onSubmit={profileForm.handleSubmit(onSubmit)} className="space-y-6">
-          <Card>
-            <CardHeader>
-              <CardTitle>Basic Information</CardTitle>
-              <CardDescription>
-                Update your personal details.
-              </CardDescription>
-            </CardHeader>
-            <CardContent className="grid gap-6">
-              <ProfileInfoForm 
-                profileForm={profileForm}
-                onProfileSubmit={onProfileSubmit}
-                isUpdating={isUpdating}
-              />
-            </CardContent>
-          </Card>
-          
-          <Card>
-            <CardHeader>
-              <CardTitle>Social Media Profiles</CardTitle>
-              <CardDescription>
-                Link your social media accounts to your profile
-              </CardDescription>
-            </CardHeader>
-            <CardContent className="grid gap-6">
-              <SocialMediaSection 
-                profileForm={profileForm}
-              />
-            </CardContent>
-          </Card>
-          
-          <div className="flex justify-end">
-            <Button 
-              type="submit"
-              className="bg-brand-teal hover:bg-brand-darkTeal text-white"
-              disabled={isLoading || isUpdating || !profileForm.formState.isDirty}
-            >
-              {isLoading || isUpdating ? (
-                <>
-                  <Loader2 className="mr-2 h-4 w-4 animate-spin" />
-                  Saving...
-                </>
-              ) : (
-                'Save Profile'
-              )}
-            </Button>
-          </div>
-        </form>
-      </Form>
+      <Card>
+        <CardHeader>
+          <CardTitle>Basic Information</CardTitle>
+          <CardDescription>
+            Update your personal details.
+          </CardDescription>
+        </CardHeader>
+        <CardContent className="grid gap-6">
+          <ProfileInfoForm 
+            profileForm={profileForm}
+            onProfileSubmit={onProfileSubmit}
+            isUpdating={isUpdating}
+          />
+        </CardContent>
+      </Card>
+      
+      <Card>
+        <CardHeader>
+          <CardTitle>Social Media Profiles</CardTitle>
+          <CardDescription>
+            Link your social media accounts to your profile
+          </CardDescription>
+        </CardHeader>
+        <CardContent className="grid gap-6">
+          <SocialMediaSection 
+            profileForm={profileForm}
+          />
+        </CardContent>
+      </Card>
+      
+      <div className="flex justify-end">
+        <Button 
+          onClick={profileForm.handleSubmit(onSubmit)}
+          className="bg-brand-teal hover:bg-brand-darkTeal text-white"
+          disabled={isLoading || isUpdating || !profileForm.formState.isDirty}
+        >
+          {isLoading || isUpdating ? (
+            <>
+              <Loader2 className="mr-2 h-4 w-4 animate-spin" />
+              Saving...
+            </>
+          ) : (
+            'Save All Changes'
+          )}
+        </Button>
+      </div>
     </div>
   );
 };

@@ -46,7 +46,10 @@ export const useProfileForm = (
       instagramUrl: '',
       youtubeUrl: '',
       tiktokUrl: '',
+      twitterUrl: '',
       phoneNumber: userProfile?.phone_number || '',
+      phoneCountryCode: '',
+      country: '',
     },
   });
   
@@ -62,18 +65,18 @@ export const useProfileForm = (
     try {
       console.log('Checking for welcome points eligibility for user:', userId);
       
-      // First check if point_transactions table exists
-      const { error: tableCheckError } = await supabase
-        .from('point_transactions')
-        .select('id', { count: 'exact', head: true })
-        .limit(1);
-        
-      if (tableCheckError) {
-        console.warn('Point transactions table may not exist yet:', tableCheckError.message);
-        return; // Exit early if table doesn't exist
-      }
-      
+      // First check if point_transactions table exists safely
       try {
+        const { error: tableCheckError } = await supabase
+          .from('point_transactions')
+          .select('id', { count: 'exact', head: true })
+          .limit(1);
+          
+        if (tableCheckError) {
+          console.warn('Point transactions table check error:', tableCheckError.message);
+          return; // Exit early if table doesn't exist or there's an error
+        }
+        
         // Call the Supabase function
         const { data, error } = await supabase.rpc(
           'check_and_award_welcome_points',

@@ -45,10 +45,10 @@ export const updateProfileData = async (userId: string, profileData: ExtendedPro
     console.error("Error updating profile:", error.message);
     
     // Check if the error is related to point_transactions table not existing
+    // This shouldn't happen if the table exists, but we'll handle it just in case
     if (error.code === '42P01' && error.message.includes('point_transactions')) {
-      // Still return success since the profile update likely worked,
-      // but log the point_transactions issue for debugging
-      console.warn("Point transactions table issue, but profile was likely updated");
+      console.warn("Issue with point_transactions table, but profile was likely updated");
+      toast.warning("Profile updated but points system is currently unavailable");
       return true;
     }
     
