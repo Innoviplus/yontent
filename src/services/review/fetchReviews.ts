@@ -4,7 +4,7 @@ import { Review } from '@/lib/types';
 
 // Cache for review data
 const reviewsCache = new Map<string, { data: Review[], timestamp: number }>();
-const CACHE_EXPIRY = 5 * 1000; // 5 seconds cache expiry for more frequent updates
+const CACHE_EXPIRY = 2 * 1000; // 2 seconds cache expiry for more frequent updates
 
 export const fetchReviews = async (sortBy: string, userId?: string): Promise<Review[]> => {
   try {
@@ -64,11 +64,11 @@ export const fetchReviews = async (sortBy: string, userId?: string): Promise<Rev
     
     if (data) {
       const transformedReviews: Review[] = await Promise.all(data.map(async review => {
-        // Verify likes_count directly from the review_likes table as a backup
+        // Verify likes_count directly from the review_likes table to ensure accurate count
         let likesCount = review.likes_count;
         
-        if (likesCount === null || likesCount === undefined) {
-          console.log(`Review ${review.id} has missing likes_count, fetching from likes table`);
+        if (likesCount === null || likesCount === undefined || true) { // Always fetch to ensure accuracy
+          console.log(`Fetching actual likes count for review ${review.id}`);
           
           const { count, error: countError } = await supabase
             .from('review_likes')
@@ -77,7 +77,16 @@ export const fetchReviews = async (sortBy: string, userId?: string): Promise<Rev
             
           if (!countError && count !== null) {
             likesCount = count;
-            console.log(`Updated likes count for review ${review.id} to ${count}`);
+            console.log(`Actual likes count for review ${review.id} is ${count}`);
+            
+            // Update the database if the count doesn't match
+            if (review.likes_count !== count) {
+              console.log(`Updating likes count in database for review ${review.id} from ${review.likes_count} to ${count}`);
+              await supabase
+                .from('reviews')
+                .update({ likes_count: count })
+                .eq('id', review.id);
+            }
           }
         }
         

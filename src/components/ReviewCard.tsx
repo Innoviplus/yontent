@@ -24,6 +24,8 @@ const ReviewCard = memo(({ review, className }: ReviewCardProps) => {
   const hasImages = review.images && review.images.length > 0;
   const hasVideos = review.videos && review.videos.length > 0;
   
+  console.log(`ReviewCard: rendering review ${review.id} with likes count:`, review.likesCount);
+  
   // Use the useLikeAction hook
   const { isLiked, likesCount, handleLike, isLoading } = useLikeAction(review.id, review.likesCount);
   
@@ -79,6 +81,7 @@ const ReviewCard = memo(({ review, className }: ReviewCardProps) => {
           isLiked={isLiked}
           isLoading={isLoading}
           onLikeClick={handleLikeClick}
+          reviewId={review.id}
         />
       </div>
     </div>

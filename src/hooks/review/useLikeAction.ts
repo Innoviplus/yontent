@@ -4,6 +4,7 @@ import { useAuth } from '@/contexts/AuthContext';
 import { likeReview, checkIfLiked } from '@/services/review';
 import { clearReviewsCache } from '@/services/review';
 import { toast } from 'sonner';
+import { supabase } from '@/integrations/supabase/client';
 
 export const useLikeAction = (reviewId: string | undefined, initialLikesCount = 0) => {
   const { user } = useAuth();
@@ -12,6 +13,31 @@ export const useLikeAction = (reviewId: string | undefined, initialLikesCount = 
   const [isLoading, setIsLoading] = useState(false);
   
   console.log(`useLikeAction initialized for review ${reviewId} with initial count:`, initialLikesCount);
+  
+  // Function to fetch the actual likes count from the database
+  const fetchActualLikesCount = async () => {
+    if (!reviewId) return;
+    
+    try {
+      const { count, error } = await supabase
+        .from('review_likes')
+        .select('*', { count: 'exact', head: false })
+        .eq('review_id', reviewId);
+      
+      if (!error && count !== null) {
+        console.log(`Actual likes count from database for review ${reviewId}: ${count}`);
+        setLikesCount(count);
+        
+        // Update the reviews table if needed
+        await supabase
+          .from('reviews')
+          .update({ likes_count: count })
+          .eq('id', reviewId);
+      }
+    } catch (err) {
+      console.error('Error fetching actual likes count:', err);
+    }
+  };
   
   // Check if the user has already liked this review
   useEffect(() => {
@@ -22,6 +48,9 @@ export const useLikeAction = (reviewId: string | undefined, initialLikesCount = 
         const liked = await checkIfLiked(reviewId, user.id);
         console.log(`User ${user.id} has liked review ${reviewId}:`, liked);
         setIsLiked(liked);
+        
+        // Get accurate likes count
+        await fetchActualLikesCount();
       } catch (error) {
         console.error('Error checking like status:', error);
       }
@@ -35,6 +64,9 @@ export const useLikeAction = (reviewId: string | undefined, initialLikesCount = 
     if (initialLikesCount !== undefined) {
       console.log(`Updating likes count state from props:`, initialLikesCount);
       setLikesCount(initialLikesCount);
+      
+      // Verify with actual database count to ensure accuracy
+      fetchActualLikesCount();
     }
   }, [initialLikesCount]);
   
@@ -53,18 +85,11 @@ export const useLikeAction = (reviewId: string | undefined, initialLikesCount = 
       // Update the local like state
       setIsLiked(newLikedState);
       
-      // Optimistically update the likes count
-      setLikesCount(prevCount => {
-        const newCount = newLikedState ? prevCount + 1 : Math.max(0, prevCount - 1);
-        console.log(`Updated likes count from ${prevCount} to ${newCount} for review ${reviewId}`);
-        return newCount;
-      });
+      // Fetch the actual count instead of optimistically updating
+      await fetchActualLikesCount();
       
       // Clear the cache to ensure fresh data is fetched next time
       clearReviewsCache();
-      
-      // Force a refresh of the parent component indirectly by clearing cache
-      // This will help ensure consistency across the application
       
     } catch (error) {
       console.error('Error handling like action:', error);

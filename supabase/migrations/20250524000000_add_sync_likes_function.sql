@@ -46,3 +46,18 @@ CREATE TRIGGER review_likes_change_trigger
 AFTER INSERT OR DELETE ON review_likes
 FOR EACH ROW
 EXECUTE FUNCTION sync_review_likes_count_on_change();
+
+-- Add function to force sync all reviews likes counts
+CREATE OR REPLACE FUNCTION public.sync_all_review_likes_counts()
+RETURNS void
+LANGUAGE plpgsql
+AS $function$
+DECLARE
+  review_rec RECORD;
+BEGIN
+  FOR review_rec IN SELECT id FROM reviews
+  LOOP
+    PERFORM sync_review_likes_count(review_rec.id);
+  END LOOP;
+END;
+$function$;
