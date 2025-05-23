@@ -39,21 +39,7 @@ export const likeReview = async (reviewId: string, userId: string): Promise<bool
         console.error('Error syncing like count:', decrementError);
         
         // Fallback: manually update the likes count in the reviews table
-        const { count: newCount, error: countError } = await supabase
-          .from('review_likes')
-          .select('*', { count: 'exact', head: false })
-          .eq('review_id', reviewId);
-          
-        if (!countError && newCount !== null) {
-          const { error: updateError } = await supabase
-            .from('reviews')
-            .update({ likes_count: newCount })
-            .eq('id', reviewId);
-            
-          if (updateError) {
-            console.error('Error manually updating likes count:', updateError);
-          }
-        }
+        await updateLikesCountManually(reviewId);
       }
       
       return false; // Return false to indicate the review is now unliked
@@ -80,21 +66,7 @@ export const likeReview = async (reviewId: string, userId: string): Promise<bool
         console.error('Error syncing like count:', incrementError);
         
         // Fallback: manually update the likes count in the reviews table
-        const { count: newCount, error: countError } = await supabase
-          .from('review_likes')
-          .select('*', { count: 'exact', head: false })
-          .eq('review_id', reviewId);
-          
-        if (!countError && newCount !== null) {
-          const { error: updateError } = await supabase
-            .from('reviews')
-            .update({ likes_count: newCount })
-            .eq('id', reviewId);
-            
-          if (updateError) {
-            console.error('Error manually updating likes count:', updateError);
-          }
-        }
+        await updateLikesCountManually(reviewId);
       }
       
       return true; // Return true to indicate the review is now liked
@@ -103,6 +75,38 @@ export const likeReview = async (reviewId: string, userId: string): Promise<bool
     console.error('Unexpected error in likeReview:', error);
     toast.error('An unexpected error occurred');
     return false;
+  }
+};
+
+// Helper function to manually count and update the likes count
+const updateLikesCountManually = async (reviewId: string) => {
+  try {
+    // Count likes for this review
+    const { count, error: countError } = await supabase
+      .from('review_likes')
+      .select('*', { count: 'exact', head: false })
+      .eq('review_id', reviewId);
+      
+    if (countError) {
+      console.error('Error counting likes:', countError);
+      return;
+    }
+    
+    if (count !== null) {
+      // Update the reviews table with the correct count
+      const { error: updateError } = await supabase
+        .from('reviews')
+        .update({ likes_count: count })
+        .eq('id', reviewId);
+        
+      if (updateError) {
+        console.error('Error manually updating likes count:', updateError);
+      } else {
+        console.log(`Manually updated likes count for review ${reviewId} to ${count}`);
+      }
+    }
+  } catch (error) {
+    console.error('Error in manual likes count update:', error);
   }
 };
 

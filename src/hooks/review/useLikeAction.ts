@@ -47,7 +47,10 @@ export const useLikeAction = (reviewId: string | undefined, initialLikesCount = 
     setIsLoading(true);
     
     try {
+      // The likeReview function toggles the like status and returns the new state
       const newLikedState = await likeReview(reviewId, user.id);
+      
+      // Update the local like state
       setIsLiked(newLikedState);
       
       // Optimistically update the likes count

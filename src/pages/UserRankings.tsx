@@ -9,6 +9,7 @@ import { RankingType } from '@/components/rankings/types';
 
 const UserRankings = () => {
   usePageTitle('Rankings');
+  
   return (
     <div className="min-h-screen bg-gray-50">
       <Navbar />
@@ -18,8 +19,8 @@ const UserRankings = () => {
           User Rankings
         </h1>
 
-        <div className="flex justify-center"> {/* Added this div to center the tabs */}
-          <Tabs defaultValue="points" className="w-full max-w-md"> {/* Added max-w-md to limit width */}
+        <div className="flex justify-center">
+          <Tabs defaultValue="points" className="w-full max-w-md">
             <TabsList className="mb-8 w-full">
               <TabsTrigger value="points">By Points</TabsTrigger>
               <TabsTrigger value="views">By Views</TabsTrigger>

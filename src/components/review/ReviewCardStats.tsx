@@ -27,6 +27,7 @@ const ReviewCardStats = ({ viewsCount, likesCount, isLiked, isLoading, onLikeCli
           )} 
           onClick={onLikeClick}
           disabled={isLoading}
+          aria-label={isLiked ? "Unlike" : "Like"}
         >
           <Heart className={cn(
             "h-3 w-3 mr-0.5",
