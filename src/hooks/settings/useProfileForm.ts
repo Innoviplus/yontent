@@ -71,8 +71,8 @@ export const useProfileForm = (
         user_id_param: string;
       };
       
-      // Use the supabase.rpc function without specifying the generic type parameters
-      const { data, error } = await supabase.rpc(
+      // Use type assertion with "as any" to bypass TypeScript's RPC function name checking
+      const { data, error } = await (supabase.rpc as any)(
         'check_and_award_welcome_points',
         { user_id_param: userId }
       );
