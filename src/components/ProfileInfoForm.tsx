@@ -1,3 +1,4 @@
+
 import React from 'react';
 import { UseFormReturn } from 'react-hook-form';
 import { Button } from '@/components/ui/button';
@@ -8,11 +9,13 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@
 import { BirthDateInput } from '@/components/settings/BirthDateInput';
 import { Loader2 } from 'lucide-react';
 import { ProfileFormValues } from '@/schemas/profileFormSchema';
+
 interface ProfileInfoFormProps {
   profileForm: UseFormReturn<any>;
   onProfileSubmit: (values: ProfileFormValues) => Promise<void>;
   isUpdating: boolean;
 }
+
 export const ProfileInfoForm: React.FC<ProfileInfoFormProps> = ({
   profileForm,
   onProfileSubmit,
@@ -21,6 +24,7 @@ export const ProfileInfoForm: React.FC<ProfileInfoFormProps> = ({
   // For debugging
   const formValues = profileForm.watch();
   console.log("Current form values:", formValues);
+
   return <Form {...profileForm}>
       <form onSubmit={profileForm.handleSubmit(onProfileSubmit)} className="space-y-8">
         <FormField control={profileForm.control} name="username" render={({
@@ -88,8 +92,6 @@ export const ProfileInfoForm: React.FC<ProfileInfoFormProps> = ({
 
           <BirthDateInput control={profileForm.control} disabled={false} />
         </div>
-
-        
       </form>
     </Form>;
 };
