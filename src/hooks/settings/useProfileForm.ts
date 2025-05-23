@@ -71,9 +71,8 @@ export const useProfileForm = (
         user_id_param: string;
       };
       
-      // Use the correct format for RPC call with 2 generic parameters:
-      // First parameter is the return type, second is the params type
-      const { data, error } = await supabase.rpc<WelcomePointsResponse, WelcomePointsParams>(
+      // Use the supabase.rpc function without specifying the generic type parameters
+      const { data, error } = await supabase.rpc(
         'check_and_award_welcome_points',
         { user_id_param: userId }
       );
