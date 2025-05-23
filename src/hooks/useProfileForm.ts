@@ -73,28 +73,32 @@ export const useProfileForm = (
         return; // Exit early if table doesn't exist
       }
       
-      // Call the Supabase function 
-      const { data, error } = await (supabase.rpc as any)(
-        'check_and_award_welcome_points',
-        { user_id_param: userId }
-      );
-      
-      if (error) {
-        console.error('Error checking welcome points:', error);
-        return;
-      }
-      
-      console.log('Welcome points check response:', data);
-      
-      // Check if points were awarded successfully
-      if (data && typeof data === 'object' && 'success' in data && data.success) {
-        toast.success('You received 100 welcome points for updating your profile!');
+      try {
+        // Call the Supabase function
+        const { data, error } = await supabase.rpc(
+          'check_and_award_welcome_points',
+          { user_id_param: userId }
+        );
         
-        // Refresh points to update UI
-        await refreshPoints();
-      } else if (data && typeof data === 'object' && 'message' in data) {
-        // Log the message but don't show it to the user if points weren't awarded
-        console.log('Welcome points status:', data.message);
+        if (error) {
+          console.error('Error checking welcome points:', error);
+          return;
+        }
+        
+        console.log('Welcome points check response:', data);
+        
+        // Check if points were awarded successfully
+        if (data && typeof data === 'object' && 'success' in data && data.success) {
+          toast.success('You received 100 welcome points for updating your profile!');
+          
+          // Refresh points to update UI
+          await refreshPoints();
+        } else if (data && typeof data === 'object' && 'message' in data) {
+          // Log the message but don't show it to the user if points weren't awarded
+          console.log('Welcome points status:', data.message);
+        }
+      } catch (rpcError) {
+        console.error('RPC error in welcome points check:', rpcError);
       }
     } catch (error) {
       console.error('Error in welcome points check:', error);

@@ -25,7 +25,8 @@ export const ProfileInfoForm: React.FC<ProfileInfoFormProps> = ({
   const formValues = profileForm.watch();
   console.log("Current form values:", formValues);
 
-  return <Form {...profileForm}>
+  return (
+    <Form {...profileForm}>
       <form onSubmit={profileForm.handleSubmit(onProfileSubmit)} className="space-y-8">
         <FormField control={profileForm.control} name="username" render={({
         field
@@ -92,6 +93,24 @@ export const ProfileInfoForm: React.FC<ProfileInfoFormProps> = ({
 
           <BirthDateInput control={profileForm.control} disabled={false} />
         </div>
+        
+        <div className="flex justify-end">
+          <Button 
+            type="submit" 
+            className="bg-brand-teal hover:bg-brand-darkTeal text-white"
+            disabled={isUpdating}
+          >
+            {isUpdating ? (
+              <>
+                <Loader2 className="mr-2 h-4 w-4 animate-spin" />
+                Saving...
+              </>
+            ) : (
+              'Save Profile'
+            )}
+          </Button>
+        </div>
       </form>
-    </Form>;
+    </Form>
+  );
 };
