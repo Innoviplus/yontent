@@ -1,6 +1,7 @@
 
 import { Eye, Heart } from 'lucide-react';
 import { cn } from '@/lib/utils';
+import { formatNumber } from '@/lib/formatUtils';
 
 interface ReviewCardStatsProps {
   viewsCount: number;
@@ -15,7 +16,7 @@ const ReviewCardStats = ({ viewsCount, likesCount, isLiked, isLoading, onLikeCli
     <div className="flex items-center gap-3 justify-between">
       <div className="flex items-center text-xs text-gray-500">
         <Eye className="h-3 w-3 mr-0.5" />
-        <span>{viewsCount || 0}</span>
+        <span>{formatNumber(viewsCount || 0)}</span>
       </div>
       
       {/* Like count with heart icon */}
@@ -34,7 +35,7 @@ const ReviewCardStats = ({ viewsCount, likesCount, isLiked, isLoading, onLikeCli
             isLiked ? "fill-red-500 text-red-500" : ""
           )} />
           <span>
-            {likesCount || 0}
+            {formatNumber(likesCount || 0)}
           </span>
         </button>
       </div>

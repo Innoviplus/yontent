@@ -4,14 +4,19 @@ import { Review } from '@/lib/types';
 
 // Cache for review data
 const reviewsCache = new Map<string, { data: Review[], timestamp: number }>();
-const CACHE_EXPIRY = 10 * 1000; // 10 seconds cache expiry for more frequent updates
+const CACHE_EXPIRY = 5 * 1000; // 5 seconds cache expiry for more frequent updates
 
 export const fetchReviews = async (sortBy: string, userId?: string): Promise<Review[]> => {
   try {
     const cacheKey = `${sortBy}-${userId || 'no-user'}`;
+    const now = Date.now();
+    const cachedData = reviewsCache.get(cacheKey);
     
-    // Always clear cache to get fresh data - this ensures like counts are up to date
-    reviewsCache.delete(cacheKey);
+    // Use cached data if it exists and hasn't expired
+    if (cachedData && now - cachedData.timestamp < CACHE_EXPIRY) {
+      console.log('Using cached reviews data');
+      return cachedData.data;
+    }
     
     console.log('Fetching fresh reviews data with sort:', sortBy);
     
@@ -98,7 +103,11 @@ export const fetchReviews = async (sortBy: string, userId?: string): Promise<Rev
         };
       }));
       
-      // No need to cache data as we're always fetching fresh data
+      // Cache the transformed data
+      reviewsCache.set(cacheKey, {
+        data: transformedReviews,
+        timestamp: now
+      });
       
       return transformedReviews;
     }

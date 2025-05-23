@@ -63,6 +63,9 @@ export const useLikeAction = (reviewId: string | undefined, initialLikesCount = 
       // Clear the cache to ensure fresh data is fetched next time
       clearReviewsCache();
       
+      // Force a refresh of the parent component indirectly by clearing cache
+      // This will help ensure consistency across the application
+      
     } catch (error) {
       console.error('Error handling like action:', error);
       toast.error('Failed to process like action');
