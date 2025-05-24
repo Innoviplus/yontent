@@ -1,4 +1,3 @@
-
 import { useState, useEffect } from 'react';
 import { Users, Clock, Target, CheckCircle } from 'lucide-react';
 import { Button } from '@/components/ui/button';
@@ -7,7 +6,6 @@ import { Mission } from '@/lib/types';
 import { supabase } from '@/integrations/supabase/client';
 import { toast } from 'sonner';
 import { useNavigate } from 'react-router-dom';
-
 interface MissionStatsProps {
   mission: Mission;
   participating: boolean;
@@ -16,35 +14,31 @@ interface MissionStatsProps {
   onParticipationUpdate: (isParticipating: boolean, status: string) => void;
   currentSubmissions: number;
 }
-
-const MissionStats = ({ 
-  mission, 
-  participating, 
-  participationStatus, 
+const MissionStats = ({
+  mission,
+  participating,
+  participationStatus,
   userId,
   onParticipationUpdate,
-  currentSubmissions 
+  currentSubmissions
 }: MissionStatsProps) => {
   const navigate = useNavigate();
   const [isJoining, setIsJoining] = useState(false);
 
   // Format dates
   const formatDate = (date: Date) => {
-    return new Intl.DateTimeFormat('en-US', { 
-      year: 'numeric', 
-      month: 'short', 
-      day: 'numeric' 
+    return new Intl.DateTimeFormat('en-US', {
+      year: 'numeric',
+      month: 'short',
+      day: 'numeric'
     }).format(date);
   };
 
   // Check if mission is still active
-  const isActive = mission.status === 'ACTIVE' && 
-    (!mission.expiresAt || new Date() < mission.expiresAt);
+  const isActive = mission.status === 'ACTIVE' && (!mission.expiresAt || new Date() < mission.expiresAt);
 
   // Check if total submissions limit is reached
-  const isAtSubmissionLimit = mission.totalMaxSubmissions && 
-    currentSubmissions >= mission.totalMaxSubmissions;
-
+  const isAtSubmissionLimit = mission.totalMaxSubmissions && currentSubmissions >= mission.totalMaxSubmissions;
   const handleJoinMission = async () => {
     if (!userId) {
       toast.error('You must be logged in to join missions');
@@ -56,7 +50,6 @@ const MissionStats = ({
       navigate(`/mission/${mission.id}/review`);
       return;
     }
-
     if (mission.type === 'RECEIPT') {
       navigate(`/mission/${mission.id}/receipt`);
       return;
@@ -65,20 +58,15 @@ const MissionStats = ({
     // For SOCIAL_PROOF missions, create JOINED status first, then navigate
     if (mission.type === 'SOCIAL_PROOF') {
       setIsJoining(true);
-      
       try {
         // Check if user is already participating
-        const { data: existingParticipation, error: checkError } = await supabase
-          .from('mission_participations')
-          .select('id, status')
-          .eq('mission_id', mission.id)
-          .eq('user_id_p', userId)
-          .single();
-
+        const {
+          data: existingParticipation,
+          error: checkError
+        } = await supabase.from('mission_participations').select('id, status').eq('mission_id', mission.id).eq('user_id_p', userId).single();
         if (checkError && checkError.code !== 'PGRST116') {
           throw checkError;
         }
-
         if (existingParticipation) {
           toast.info('You are already participating in this mission');
           onParticipationUpdate(true, existingParticipation.status);
@@ -90,24 +78,21 @@ const MissionStats = ({
         }
 
         // Create participation record with JOINED status
-        const { error: joinError } = await supabase
-          .from('mission_participations')
-          .insert({
-            mission_id: mission.id,
-            user_id_p: userId,
-            status: 'JOINED'
-          });
-
+        const {
+          error: joinError
+        } = await supabase.from('mission_participations').insert({
+          mission_id: mission.id,
+          user_id_p: userId,
+          status: 'JOINED'
+        });
         if (joinError) {
           throw joinError;
         }
-
         toast.success('Successfully joined the mission!');
         onParticipationUpdate(true, 'JOINED');
-        
+
         // Navigate to social proof submission page
         navigate(`/mission/${mission.id}/social-proof`);
-        
       } catch (error: any) {
         console.error('Error joining mission:', error);
         toast.error(error.message || 'Failed to join mission');
@@ -116,7 +101,6 @@ const MissionStats = ({
       }
     }
   };
-
   const handleStartSubmission = () => {
     // Navigate to the appropriate submission page based on mission type
     if (mission.type === 'REVIEW') {
@@ -127,97 +111,68 @@ const MissionStats = ({
       navigate(`/mission/${mission.id}/social-proof`);
     }
   };
-
   const getStatusBadge = () => {
     if (!participating) return null;
-    
     const statusConfig = {
-      'JOINED': { label: 'Joined', variant: 'secondary' as const },
-      'PENDING': { label: 'Pending Review', variant: 'default' as const },
-      'APPROVED': { label: 'Approved', variant: 'default' as const },
-      'REJECTED': { label: 'Rejected', variant: 'destructive' as const }
+      'JOINED': {
+        label: 'Joined',
+        variant: 'secondary' as const
+      },
+      'PENDING': {
+        label: 'Pending Review',
+        variant: 'default' as const
+      },
+      'APPROVED': {
+        label: 'Approved',
+        variant: 'default' as const
+      },
+      'REJECTED': {
+        label: 'Rejected',
+        variant: 'destructive' as const
+      }
     };
-    
     const config = statusConfig[participationStatus as keyof typeof statusConfig];
     if (!config) return null;
-    
     return <Badge variant={config.variant}>{config.label}</Badge>;
   };
-
   const renderActionButton = () => {
     if (!isActive) {
-      return (
-        <Button disabled className="w-full">
+      return <Button disabled className="w-full">
           Mission Inactive
-        </Button>
-      );
+        </Button>;
     }
-
     if (isAtSubmissionLimit) {
-      return (
-        <Button disabled className="w-full">
+      return <Button disabled className="w-full">
           Submission Limit Reached
-        </Button>
-      );
+        </Button>;
     }
-
     if (!participating) {
-      return (
-        <Button 
-          onClick={handleJoinMission} 
-          disabled={isJoining}
-          className="w-full bg-brand-teal hover:bg-brand-teal/90"
-        >
+      return <Button onClick={handleJoinMission} disabled={isJoining} className="w-full bg-brand-teal hover:bg-brand-teal/90">
           {isJoining ? 'Joining...' : 'Join Mission'}
-        </Button>
-      );
+        </Button>;
     }
-
     if (participationStatus === 'JOINED') {
-      return (
-        <Button 
-          onClick={handleStartSubmission}
-          className="w-full bg-brand-teal hover:bg-brand-teal/90"
-        >
-          Start Submission
-        </Button>
-      );
+      return <Button onClick={handleStartSubmission} className="w-full bg-brand-teal hover:bg-brand-teal/90">Join Mission</Button>;
     }
-
     if (participationStatus === 'PENDING') {
-      return (
-        <Button disabled className="w-full">
+      return <Button disabled className="w-full">
           Submission Under Review
-        </Button>
-      );
+        </Button>;
     }
-
     if (participationStatus === 'APPROVED') {
-      return (
-        <div className="flex items-center justify-center w-full p-3 bg-green-50 text-green-700 rounded-lg">
+      return <div className="flex items-center justify-center w-full p-3 bg-green-50 text-green-700 rounded-lg">
           <CheckCircle className="h-5 w-5 mr-2" />
           Mission Completed
-        </div>
-      );
+        </div>;
     }
-
     if (participationStatus === 'REJECTED') {
-      return (
-        <Button 
-          onClick={handleStartSubmission}
-          variant="outline"
-          className="w-full"
-        >
+      return <Button onClick={handleStartSubmission} variant="outline" className="w-full">
           Resubmit
-        </Button>
-      );
+        </Button>;
     }
-
     return null;
   };
-
-  return (
-    <div className="space-y-6">
+  return <div className="space-y-6">
       {/* Mission Stats Card */}
       <div className="bg-white rounded-lg shadow-sm border p-6">
         <div className="flex items-center justify-between mb-4">
@@ -265,8 +220,6 @@ const MissionStats = ({
 
         {renderActionButton()}
       </div>
-    </div>
-  );
+    </div>;
 };
-
 export default MissionStats;
