@@ -1,9 +1,10 @@
 
 import { Link } from 'react-router-dom';
-import { User, Settings } from 'lucide-react';
+import { User, Settings, Copy } from 'lucide-react';
 import { User as UserType } from '@/lib/types';
 import { SocialMediaIcons } from '@/components/dashboard/SocialMediaIcons';
 import UserStatsCard, { UserStats } from '@/components/user/UserStatsCard';
+import { toast } from 'sonner';
 
 interface UserProfileHeaderProps {
   user: UserType & {
@@ -34,6 +35,18 @@ const UserProfileHeader = ({ user }: UserProfileHeaderProps) => {
     youtube_url: user?.youtube_url,
     tiktok_url: user?.tiktok_url
   }).some(([_, value]) => value && value.trim().length > 0);
+
+  // Generate profile URL
+  const profileUrl = `${window.location.origin}/user/${user.username}`;
+
+  const handleCopyUrl = async () => {
+    try {
+      await navigator.clipboard.writeText(profileUrl);
+      toast.success('Profile URL copied to clipboard!');
+    } catch (error) {
+      toast.error('Failed to copy URL');
+    }
+  };
 
   console.log('User profile header:', { 
     bio, 
@@ -89,6 +102,23 @@ const UserProfileHeader = ({ user }: UserProfileHeaderProps) => {
               Add your social media links
             </Link>
           )}
+
+          {/* Profile URL Section */}
+          <div className="mt-4 p-3 bg-gray-50 rounded-lg border">
+            <div className="flex items-center justify-between">
+              <div>
+                <p className="text-sm text-gray-600 mb-1">Your Profile URL</p>
+                <p className="text-sm font-mono text-gray-800 break-all">{profileUrl}</p>
+              </div>
+              <button
+                onClick={handleCopyUrl}
+                className="ml-4 p-2 text-gray-500 hover:text-brand-teal transition-colors"
+                title="Copy URL"
+              >
+                <Copy className="h-4 w-4" />
+              </button>
+            </div>
+          </div>
 
           {/* No UserStatsCard here - moved to dedicated component */}
         </div>
