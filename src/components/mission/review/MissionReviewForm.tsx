@@ -1,14 +1,17 @@
 
-import React, { useState, useEffect } from 'react';
+import React from 'react';
 import { useForm } from 'react-hook-form';
 import { zodResolver } from '@hookform/resolvers/zod';
 import { Button } from '@/components/ui/button';
-import { Form } from '@/components/ui/form';
+import { Form, FormControl, FormField, FormItem, FormLabel, FormMessage } from '@/components/ui/form';
+import { Textarea } from '@/components/ui/textarea';
 import { toast } from 'sonner';
-import { supabase } from '@/integrations/supabase/client';
+import { useNavigate } from 'react-router-dom';
 import { Mission } from '@/lib/types';
 import { reviewSchema, type ReviewFormValues } from './ReviewFormSchema';
-import ReviewFormButtons from './ReviewFormButtons';
+import { useReviewSubmission } from './useReviewSubmission';
+import ImageUpload from '@/components/review/ImageUpload';
+import VideoUpload from '@/components/review/VideoUpload';
 
 interface MissionReviewFormProps {
   mission: Mission;
@@ -17,50 +20,101 @@ interface MissionReviewFormProps {
 }
 
 const MissionReviewForm = ({ mission, userId, onSubmissionComplete }: MissionReviewFormProps) => {
-  const [isSubmitting, setIsSubmitting] = useState(false);
-  const form = useForm<ReviewFormValues>({
-    resolver: zodResolver(reviewSchema),
-    defaultValues: {
-      content: '',
-    },
-  });
+  const navigate = useNavigate();
+  
+  const {
+    form,
+    isSubmitting,
+    imagePreviewUrls,
+    imageError,
+    videoPreviewUrl,
+    videoError,
+    handleImageSelection,
+    removeImage,
+    handleVideoSelection,
+    removeVideo,
+    onSubmit
+  } = useReviewSubmission(mission, userId);
 
-  const onSubmit = async (data: ReviewFormValues) => {
-    setIsSubmitting(true);
-    try {
-      const { data: participation, error } = await supabase
-        .from('mission_participations')
-        .insert({
-          mission_id: mission.id,
-          user_id_p: userId,
-          status: 'PENDING',
-          submission_data: {
-            content: data.content,
-            submission_type: 'REVIEW'
-          }
-        })
-        .select()
-        .single();
+  const handleCancel = () => {
+    navigate(`/mission/${mission.id}`);
+  };
 
-      if (error) {
-        throw error;
-      }
-
-      toast.success('Review submitted successfully!');
+  const handleSubmitSuccess = (success: boolean) => {
+    if (success) {
       onSubmissionComplete?.(true);
-    } catch (error: any) {
-      console.error('Error submitting review:', error);
-      toast.error(error.message || 'Failed to submit review');
+    } else {
       onSubmissionComplete?.(false);
-    } finally {
-      setIsSubmitting(false);
     }
+  };
+
+  const handleFormSubmit = async (values: ReviewFormValues) => {
+    await onSubmit(values);
+    handleSubmitSuccess(true);
   };
 
   return (
     <Form {...form}>
-      <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-6">
-        <ReviewFormButtons isSubmitting={isSubmitting} missionId={mission.id} />
+      <form onSubmit={form.handleSubmit(handleFormSubmit)} className="space-y-6">
+        {/* Image Upload Section */}
+        <ImageUpload
+          imagePreviewUrls={imagePreviewUrls}
+          onFileSelect={handleImageSelection}
+          onRemoveImage={removeImage}
+          error={imageError}
+          uploading={isSubmitting}
+          maxImages={12}
+        />
+
+        {/* Video Upload Section */}
+        <VideoUpload
+          videoPreviewUrl={videoPreviewUrl ? [videoPreviewUrl] : []}
+          onFileSelect={handleVideoSelection}
+          onRemoveVideo={removeVideo}
+          error={videoError}
+          uploading={isSubmitting}
+        />
+
+        {/* Review Text Content */}
+        <FormField
+          control={form.control}
+          name="content"
+          render={({ field }) => (
+            <FormItem>
+              <FormLabel>Review</FormLabel>
+              <FormControl>
+                <Textarea
+                  placeholder="Share your experience with the product (minimum 50 words required)..."
+                  className="min-h-[120px] resize-y"
+                  {...field}
+                />
+              </FormControl>
+              <div className="flex justify-between items-center text-sm text-gray-500">
+                <span>{field.value?.length || 0} / 50 words required</span>
+              </div>
+              <FormMessage />
+            </FormItem>
+          )}
+        />
+
+        {/* Form Buttons */}
+        <div className="flex justify-end space-x-4">
+          <Button 
+            variant="outline" 
+            onClick={handleCancel}
+            disabled={isSubmitting}
+            type="button"
+          >
+            Cancel
+          </Button>
+          <Button 
+            type="submit" 
+            disabled={isSubmitting}
+            className="bg-brand-teal hover:bg-brand-teal/90"
+          >
+            {isSubmitting ? 'Submitting...' : 'Submit Review'}
+          </Button>
+        </div>
       </form>
     </Form>
   );
