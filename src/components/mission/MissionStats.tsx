@@ -7,9 +7,6 @@ import { Mission } from '@/lib/types';
 import { supabase } from '@/integrations/supabase/client';
 import { toast } from 'sonner';
 import { useNavigate } from 'react-router-dom';
-import MissionReceiptForm from './MissionReceiptForm';
-import MissionReviewForm from './review/MissionReviewForm';
-import SocialProofForm from './SocialProofForm';
 
 interface MissionStatsProps {
   mission: Mission;
@@ -29,7 +26,6 @@ const MissionStats = ({
   currentSubmissions 
 }: MissionStatsProps) => {
   const navigate = useNavigate();
-  const [showSubmissionForm, setShowSubmissionForm] = useState(false);
   const [isJoining, setIsJoining] = useState(false);
 
   // Format dates
@@ -55,105 +51,80 @@ const MissionStats = ({
       return;
     }
 
-    // For REVIEW missions, navigate directly to submission page
+    // For all mission types, navigate directly to submission page
     if (mission.type === 'REVIEW') {
       navigate(`/mission/${mission.id}/review`);
       return;
     }
 
-    // For RECEIPT missions, navigate directly to submission page
     if (mission.type === 'RECEIPT') {
       navigate(`/mission/${mission.id}/receipt`);
       return;
     }
 
-    // For other mission types (SOCIAL_PROOF), create JOINED status first
-    setIsJoining(true);
-    
-    try {
-      // Check if user is already participating
-      const { data: existingParticipation, error: checkError } = await supabase
-        .from('mission_participations')
-        .select('id, status')
-        .eq('mission_id', mission.id)
-        .eq('user_id_p', userId)
-        .single();
-
-      if (checkError && checkError.code !== 'PGRST116') {
-        throw checkError;
-      }
-
-      if (existingParticipation) {
-        toast.info('You are already participating in this mission');
-        onParticipationUpdate(true, existingParticipation.status);
-        return;
-      }
-
-      // Create participation record with JOINED status
-      const { error: joinError } = await supabase
-        .from('mission_participations')
-        .insert({
-          mission_id: mission.id,
-          user_id_p: userId,
-          status: 'JOINED'
-        });
-
-      if (joinError) {
-        throw joinError;
-      }
-
-      toast.success('Successfully joined the mission!');
-      onParticipationUpdate(true, 'JOINED');
+    // For SOCIAL_PROOF missions, create JOINED status first, then navigate
+    if (mission.type === 'SOCIAL_PROOF') {
+      setIsJoining(true);
       
-    } catch (error: any) {
-      console.error('Error joining mission:', error);
-      toast.error(error.message || 'Failed to join mission');
-    } finally {
-      setIsJoining(false);
+      try {
+        // Check if user is already participating
+        const { data: existingParticipation, error: checkError } = await supabase
+          .from('mission_participations')
+          .select('id, status')
+          .eq('mission_id', mission.id)
+          .eq('user_id_p', userId)
+          .single();
+
+        if (checkError && checkError.code !== 'PGRST116') {
+          throw checkError;
+        }
+
+        if (existingParticipation) {
+          toast.info('You are already participating in this mission');
+          onParticipationUpdate(true, existingParticipation.status);
+          // Navigate to submission page if already joined
+          if (existingParticipation.status === 'JOINED') {
+            navigate(`/mission/${mission.id}/social-proof`);
+          }
+          return;
+        }
+
+        // Create participation record with JOINED status
+        const { error: joinError } = await supabase
+          .from('mission_participations')
+          .insert({
+            mission_id: mission.id,
+            user_id_p: userId,
+            status: 'JOINED'
+          });
+
+        if (joinError) {
+          throw joinError;
+        }
+
+        toast.success('Successfully joined the mission!');
+        onParticipationUpdate(true, 'JOINED');
+        
+        // Navigate to social proof submission page
+        navigate(`/mission/${mission.id}/social-proof`);
+        
+      } catch (error: any) {
+        console.error('Error joining mission:', error);
+        toast.error(error.message || 'Failed to join mission');
+      } finally {
+        setIsJoining(false);
+      }
     }
   };
 
   const handleStartSubmission = () => {
-    setShowSubmissionForm(true);
-  };
-
-  const handleSubmissionComplete = (success: boolean) => {
-    if (success) {
-      onParticipationUpdate(true, 'PENDING');
-      setShowSubmissionForm(false);
-    }
-  };
-
-  const renderSubmissionForm = () => {
-    if (!showSubmissionForm) return null;
-
-    switch (mission.type) {
-      case 'RECEIPT':
-        return (
-          <MissionReceiptForm
-            mission={mission}
-            userId={userId}
-            onSubmissionComplete={handleSubmissionComplete}
-          />
-        );
-      case 'REVIEW':
-        return (
-          <MissionReviewForm
-            mission={mission}
-            userId={userId}
-            onSubmissionComplete={handleSubmissionComplete}
-          />
-        );
-      case 'SOCIAL_PROOF':
-        return (
-          <SocialProofForm
-            mission={mission}
-            userId={userId}
-            onSubmissionComplete={handleSubmissionComplete}
-          />
-        );
-      default:
-        return null;
+    // Navigate to the appropriate submission page based on mission type
+    if (mission.type === 'REVIEW') {
+      navigate(`/mission/${mission.id}/review`);
+    } else if (mission.type === 'RECEIPT') {
+      navigate(`/mission/${mission.id}/receipt`);
+    } else if (mission.type === 'SOCIAL_PROOF') {
+      navigate(`/mission/${mission.id}/social-proof`);
     }
   };
 
@@ -294,9 +265,6 @@ const MissionStats = ({
 
         {renderActionButton()}
       </div>
-
-      {/* Submission Form */}
-      {renderSubmissionForm()}
     </div>
   );
 };
