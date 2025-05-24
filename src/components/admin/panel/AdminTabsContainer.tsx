@@ -1,4 +1,3 @@
-
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import RewardsManagement from "@/components/admin/rewards/RewardsManagement";
 import RequestsManagement from "@/components/admin/rewards/RequestsManagement";
@@ -6,6 +5,7 @@ import MissionsManagement from "@/components/admin/missions/MissionsManagement";
 import ParticipationsManagement from "@/components/admin/participations/ParticipationsManagement";
 import AdminUsersManagement from "@/components/admin/panel/AdminUsersManagement";
 import { UserDeletionRequests } from "@/components/admin/panel/users/UserDeletionRequests";
+import PointsManagement from "@/components/admin/points/PointsManagement";
 
 // Define proper types for component props to fix TypeScript errors
 interface AdminRewardsManagementProps {
@@ -86,6 +86,7 @@ const AdminTabsContainer: React.FC<AdminTabsContainerProps> = ({
         <TabsTrigger value="participations">Mission Submissions</TabsTrigger>
         <TabsTrigger value="rewards">Rewards</TabsTrigger>
         <TabsTrigger value="requests">Redemption Requests</TabsTrigger>
+        <TabsTrigger value="points">Points Management</TabsTrigger>
         <TabsTrigger value="users">Users</TabsTrigger>
         <TabsTrigger value="deletionRequests">Deletion Requests</TabsTrigger>
       </TabsList>
@@ -127,6 +128,10 @@ const AdminTabsContainer: React.FC<AdminTabsContainerProps> = ({
           onApprove={handleApproveRequest}
           onReject={handleRejectRequest}
         />
+      </TabsContent>
+
+      <TabsContent value="points" className="pt-2">
+        <PointsManagement />
       </TabsContent>
 
       <TabsContent value="users" className="pt-2">
