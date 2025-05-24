@@ -1,7 +1,6 @@
 
 import { supabase } from '@/integrations/supabase/client';
 import { ExtendedProfile } from '@/lib/types';
-import { toast } from 'sonner';
 
 export const updateProfileData = async (userId: string, profileData: ExtendedProfile): Promise<boolean> => {
   if (!userId) {
