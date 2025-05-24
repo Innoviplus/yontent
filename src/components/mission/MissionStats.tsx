@@ -5,6 +5,7 @@ import { Badge } from '@/components/ui/badge';
 import { Mission } from '@/lib/types';
 import { supabase } from '@/integrations/supabase/client';
 import { toast } from 'sonner';
+import { useNavigate } from 'react-router-dom';
 import MissionReceiptForm from './MissionReceiptForm';
 import MissionReviewForm from './review/MissionReviewForm';
 import SocialProofForm from './SocialProofForm';
@@ -26,6 +27,7 @@ const MissionStats = ({
   onParticipationUpdate,
   currentSubmissions 
 }: MissionStatsProps) => {
+  const navigate = useNavigate();
   const [showSubmissionForm, setShowSubmissionForm] = useState(false);
   const [isJoining, setIsJoining] = useState(false);
 
@@ -52,6 +54,19 @@ const MissionStats = ({
       return;
     }
 
+    // For REVIEW missions, navigate directly to submission page
+    if (mission.type === 'REVIEW') {
+      navigate(`/mission/${mission.id}/review`);
+      return;
+    }
+
+    // For RECEIPT missions, navigate directly to submission page
+    if (mission.type === 'RECEIPT') {
+      navigate(`/mission/${mission.id}/receipt`);
+      return;
+    }
+
+    // For other mission types (SOCIAL_PROOF), create JOINED status first
     setIsJoining(true);
     
     try {
@@ -179,7 +194,7 @@ const MissionStats = ({
         <Button 
           onClick={handleJoinMission} 
           disabled={isJoining}
-          className="w-full"
+          className="w-full bg-brand-teal hover:bg-brand-teal/90"
         >
           {isJoining ? 'Joining...' : 'Join Mission'}
         </Button>
@@ -190,7 +205,7 @@ const MissionStats = ({
       return (
         <Button 
           onClick={handleStartSubmission}
-          className="w-full"
+          className="w-full bg-brand-teal hover:bg-brand-teal/90"
         >
           Start Submission
         </Button>
