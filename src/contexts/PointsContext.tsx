@@ -86,7 +86,7 @@ export const PointsProvider = ({ children }: { children: ReactNode }) => {
       )
       .subscribe();
 
-    // Try to set up subscription to point_transactions with correct column name
+    // Set up subscription to point_transactions with correct column name
     let transactionsChannel;
     try {
       transactionsChannel = supabase
