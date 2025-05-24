@@ -67,19 +67,36 @@ const SubmissionReviewDialog = ({ isOpen, onClose, participation }: SubmissionRe
     window.open(imageUrl, '_blank', 'noopener,noreferrer');
   };
 
+  const openReviewInNewTab = (reviewId: string) => {
+    window.open(`/review/${reviewId}`, '_blank', 'noopener,noreferrer');
+  };
+
   // Handle different submission types
   const renderSubmissionContent = () => {
     if (isReview) {
       return (
         <div className="space-y-6">
-          <div>
-            <h3 className="text-lg font-semibold mb-3">Review Content:</h3>
-            <div className="bg-gray-50 p-4 rounded-lg">
-              <p className="text-gray-700 whitespace-pre-wrap leading-relaxed">
-                {submissionData.content || "No content provided"}
-              </p>
+          {/* Review Link Section */}
+          {submissionData.review_id && (
+            <div>
+              <h3 className="text-lg font-semibold mb-3">Review Post:</h3>
+              <div className="flex items-center justify-between p-3 bg-blue-50 rounded-lg border border-blue-200">
+                <div className="flex items-center space-x-3">
+                  <span className="text-sm font-medium text-blue-700">Review ID:</span>
+                  <span className="text-sm text-blue-900 font-mono">{submissionData.review_id}</span>
+                </div>
+                <Button
+                  variant="outline"
+                  size="sm"
+                  onClick={() => openReviewInNewTab(submissionData.review_id!)}
+                  className="flex items-center space-x-1 border-blue-300 text-blue-700 hover:bg-blue-100"
+                >
+                  <ExternalLink className="h-4 w-4" />
+                  <span>Open Review</span>
+                </Button>
+              </div>
             </div>
-          </div>
+          )}
           
           {submissionData.review_images && 
            Array.isArray(submissionData.review_images) && 
@@ -107,6 +124,28 @@ const SubmissionReviewDialog = ({ isOpen, onClose, participation }: SubmissionRe
                     </Button>
                   </div>
                 ))}
+              </div>
+            </div>
+          )}
+
+          {/* Review Video Section */}
+          {submissionData.review_video && (
+            <div>
+              <h3 className="text-lg font-semibold mb-3">Review Video:</h3>
+              <div className="flex items-center justify-between p-3 bg-gray-50 rounded-lg border hover:bg-gray-100 transition-colors">
+                <div className="flex items-center space-x-3">
+                  <span className="text-sm font-medium text-gray-600">Video:</span>
+                  <span className="text-sm text-gray-800 font-mono truncate max-w-md">{submissionData.review_video}</span>
+                </div>
+                <Button
+                  variant="outline"
+                  size="sm"
+                  onClick={() => openImageInNewTab(submissionData.review_video!)}
+                  className="flex items-center space-x-1"
+                >
+                  <ExternalLink className="h-4 w-4" />
+                  <span>Open</span>
+                </Button>
               </div>
             </div>
           )}
