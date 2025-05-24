@@ -47,28 +47,12 @@ export const updateProfileData = async (userId: string, profileData: ExtendedPro
   }
 };
 
-// Check and award welcome points - with fallback if table doesn't exist
+// Check and award welcome points
 export const checkAndAwardWelcomePoints = async (userId: string): Promise<boolean> => {
   try {
     console.log('Checking for welcome points eligibility for user:', userId);
     
-    // First check if point_transactions table exists by trying to query it
-    try {
-      const { error: tableCheckError } = await supabase
-        .from('point_transactions')
-        .select('id', { count: 'exact', head: true })
-        .limit(1);
-        
-      if (tableCheckError) {
-        console.warn('Point transactions table not available:', tableCheckError.message);
-        return false; // Exit gracefully if table doesn't exist
-      }
-    } catch (tableError) {
-      console.warn('Point transactions table check failed:', tableError);
-      return false;
-    }
-    
-    // Try to call the welcome points function
+    // Call the welcome points function
     const { data, error } = await supabase.rpc('award_welcome_points', {
       user_id_param: userId
     });

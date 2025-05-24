@@ -8,7 +8,6 @@ import { useProfileFormInitialization } from './useProfileFormInitialization';
 import { formatProfileFormValues, validateBirthDate } from '@/services/profile/profileFormService';
 import { updateProfileData, checkAndAwardWelcomePoints } from '@/services/profile/profileUpdateService';
 import { usePoints } from '@/contexts/PointsContext';
-import { useState } from 'react';
 
 export const useProfileForm = (
   user: any, 
