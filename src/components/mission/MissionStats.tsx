@@ -6,6 +6,7 @@ import { Mission } from '@/lib/types';
 import { supabase } from '@/integrations/supabase/client';
 import { toast } from 'sonner';
 import { useNavigate } from 'react-router-dom';
+
 interface MissionStatsProps {
   mission: Mission;
   participating: boolean;
@@ -14,6 +15,7 @@ interface MissionStatsProps {
   onParticipationUpdate: (isParticipating: boolean, status: string) => void;
   currentSubmissions: number;
 }
+
 const MissionStats = ({
   mission,
   participating,
@@ -185,7 +187,7 @@ const MissionStats = ({
             <Target className="h-5 w-5 text-brand-teal" />
             <div>
               <p className="text-sm text-gray-600">Mission Type</p>
-              <p className="font-semibold">{mission.type}</p>
+              <p className="font-semibold">{mission.type.replace(/_/g, ' ').toUpperCase()}</p>
             </div>
           </div>
           
@@ -222,4 +224,5 @@ const MissionStats = ({
       </div>
     </div>;
 };
+
 export default MissionStats;
