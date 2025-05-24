@@ -48,7 +48,7 @@ export const profileFormSchema = z.object({
   email: z.string().email().optional(),
   firstName: z.string().min(1, "First name is required").max(50),
   lastName: z.string().min(1, "Last name is required").max(50),
-  bio: z.string().max(500).optional(),
+  bio: z.string().min(1, "Bio is required").max(500),
   gender: z.string().optional(),
   birthDate: birthDateSchema,
   websiteUrl: urlSchema,
@@ -56,7 +56,7 @@ export const profileFormSchema = z.object({
   instagramUrl: urlSchema,
   youtubeUrl: urlSchema,
   tiktokUrl: urlSchema,
-  twitterUrl: urlSchema, // Added twitterUrl field
+  twitterUrl: urlSchema,
   phoneNumber: phoneNumberSchema,
   phoneCountryCode: z.string().optional(),
   country: z.string().optional(),

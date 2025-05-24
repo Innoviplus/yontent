@@ -549,17 +549,9 @@ export type Database = {
         }
         Returns: Json
       }
-      award_welcome_points: {
-        Args: { user_id_param: string }
-        Returns: Json
-      }
       calculate_relevance_score: {
         Args: { views: number; likes: number; avg_time: number; ctr: number }
         Returns: number
-      }
-      check_and_award_welcome_points: {
-        Args: { user_id_param: string }
-        Returns: Json
       }
       create_point_transaction: {
         Args: {
@@ -597,10 +589,6 @@ export type Database = {
       is_admin_user: {
         Args: Record<PropertyKey, never>
         Returns: boolean
-      }
-      manually_award_welcome_points_if_eligible: {
-        Args: { user_id_param: string }
-        Returns: Json
       }
       sync_review_likes_count: {
         Args: { review_id_param: string }
