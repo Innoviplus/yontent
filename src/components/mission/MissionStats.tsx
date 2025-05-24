@@ -1,3 +1,4 @@
+
 import { useState, useEffect } from 'react';
 import { Users, Clock, Target, CheckCircle } from 'lucide-react';
 import { Button } from '@/components/ui/button';
@@ -257,39 +258,38 @@ const MissionStats = ({
           <div className="flex items-center space-x-3">
             <Target className="h-5 w-5 text-brand-teal" />
             <div>
-              <p className="text-sm text-gray-600">Reward</p>
-              <p className="font-semibold">{mission.pointsReward} points</p>
-            </div>
-          </div>
-          
-          <div className="flex items-center space-x-3">
-            <Users className="h-5 w-5 text-brand-teal" />
-            <div>
-              <p className="text-sm text-gray-600">Participants</p>
-              <p className="font-semibold">
-                {currentSubmissions}
-                {mission.totalMaxSubmissions && ` / ${mission.totalMaxSubmissions}`}
-              </p>
+              <p className="text-sm text-gray-600">Mission Type</p>
+              <p className="font-semibold">{mission.type}</p>
             </div>
           </div>
           
           <div className="flex items-center space-x-3">
             <Clock className="h-5 w-5 text-brand-teal" />
             <div>
-              <p className="text-sm text-gray-600">Start Date</p>
-              <p className="font-semibold">{formatDate(mission.startDate)}</p>
+              <p className="text-sm text-gray-600">Campaign Period</p>
+              <p className="font-semibold">
+                {formatDate(mission.startDate)} - {mission.expiresAt ? formatDate(mission.expiresAt) : 'No end date'}
+              </p>
             </div>
           </div>
           
-          {mission.expiresAt && (
-            <div className="flex items-center space-x-3">
-              <Clock className="h-5 w-5 text-brand-teal" />
-              <div>
-                <p className="text-sm text-gray-600">Expires</p>
-                <p className="font-semibold">{formatDate(mission.expiresAt)}</p>
-              </div>
+          <div className="flex items-center space-x-3">
+            <Users className="h-5 w-5 text-brand-teal" />
+            <div>
+              <p className="text-sm text-gray-600">Max submission(s) per user</p>
+              <p className="font-semibold">{mission.maxSubmissionsPerUser || 1}</p>
             </div>
-          )}
+          </div>
+          
+          <div className="flex items-center space-x-3">
+            <Target className="h-5 w-5 text-brand-teal" />
+            <div>
+              <p className="text-sm text-gray-600">Mission Quota</p>
+              <p className="font-semibold">
+                {mission.totalMaxSubmissions || 'Unlimited'} ({currentSubmissions} user{currentSubmissions !== 1 ? 's' : ''} submitted)
+              </p>
+            </div>
+          </div>
         </div>
 
         {renderActionButton()}
