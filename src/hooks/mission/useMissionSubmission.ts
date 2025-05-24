@@ -8,7 +8,7 @@ import { Mission } from '@/lib/types';
 
 export const useMissionSubmission = (
   id: string | undefined, 
-  missionType: 'REVIEW' | 'RECEIPT'
+  missionType: 'REVIEW' | 'RECEIPT' | 'SOCIAL_PROOF'
 ) => {
   const navigate = useNavigate();
   const { user } = useAuth();
@@ -76,7 +76,7 @@ export const useMissionSubmission = (
           title: data.title,
           description: data.description,
           pointsReward: data.points_reward,
-          type: data.type as 'REVIEW' | 'RECEIPT',
+          type: data.type as 'REVIEW' | 'RECEIPT' | 'SOCIAL_PROOF',
           status: data.status as 'ACTIVE' | 'COMPLETED' | 'DRAFT',
           merchantName: data.merchant_name || undefined,
           merchantLogo: data.merchant_logo || undefined,
