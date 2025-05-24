@@ -7,6 +7,7 @@ export interface ReviewSubmissionData {
   review_id: string;
   content?: string;
   review_images?: string[];
+  review_video?: string;
 }
 
 export interface ReceiptSubmissionData {
