@@ -6,8 +6,7 @@ import { ExtendedProfile } from '@/lib/types';
 import { profileFormSchema, ProfileFormValues } from '@/schemas/profileFormSchema';
 import { useProfileFormInitialization } from './settings/useProfileFormInitialization';
 import { formatProfileFormValues, validateBirthDate } from '@/services/profile/profileFormService';
-import { updateProfileData } from '@/services/profile/profileUpdateService';
-import { supabase } from '@/integrations/supabase/client';
+import { updateProfileData, checkAndAwardWelcomePoints } from '@/services/profile/profileUpdateService';
 import { usePoints } from '@/contexts/PointsContext';
 
 // Add debounce utility to prevent multiple toast notifications
@@ -46,7 +45,7 @@ export const useProfileForm = (
       instagramUrl: '',
       youtubeUrl: '',
       tiktokUrl: '',
-      twitterUrl: '', // Add twitterUrl field with empty string default
+      twitterUrl: '',
       phoneNumber: userProfile?.phone_number || '',
       phoneCountryCode: '',
       country: '',
@@ -57,56 +56,6 @@ export const useProfileForm = (
 
   // Initialize form with profile data when it becomes available
   useProfileFormInitialization(profileForm, userProfile);
-
-  // Function to check and award welcome points if needed
-  const checkWelcomePoints = async (userId: string) => {
-    if (!userId) return;
-    
-    try {
-      console.log('Checking for welcome points eligibility for user:', userId);
-      
-      // First check if point_transactions table exists
-      try {
-        const { error: tableCheckError } = await supabase
-          .from('point_transactions')
-          .select('id', { count: 'exact', head: true })
-          .limit(1);
-          
-        if (tableCheckError) {
-          console.warn('Point transactions table check error:', tableCheckError.message);
-          return; // Exit early if table doesn't exist or there's an error
-        }
-        
-        // Call the Supabase function to award welcome points
-        const { data, error } = await supabase.rpc(
-          'check_and_award_welcome_points',
-          { user_id_param: userId }
-        );
-        
-        if (error) {
-          console.error('Error checking welcome points:', error);
-          return;
-        }
-        
-        console.log('Welcome points check response:', data);
-        
-        // Check if points were awarded successfully
-        if (data && typeof data === 'object' && 'success' in data && data.success) {
-          toast.success('You received 100 welcome points for updating your profile!');
-          
-          // Refresh points to update UI
-          await refreshPoints();
-        } else if (data && typeof data === 'object' && 'message' in data) {
-          // Log the message but don't show it to the user if points weren't awarded
-          console.log('Welcome points status:', data.message);
-        }
-      } catch (rpcError) {
-        console.error('RPC error in welcome points check:', rpcError);
-      }
-    } catch (error) {
-      console.error('Error in welcome points check:', error);
-    }
-  };
 
   const onProfileSubmit = async (values: ProfileFormValues) => {
     if (!user) {
@@ -141,10 +90,15 @@ export const useProfileForm = (
         // Update local state
         setExtendedProfile(extendedData);
         
+        // Try to check for welcome points, but don't fail if it doesn't work
         try {
-          // Check for welcome points after successful profile update
-          // Add a small delay to ensure database triggers have completed
-          setTimeout(() => checkWelcomePoints(user.id), 500);
+          setTimeout(async () => {
+            const pointsAwarded = await checkAndAwardWelcomePoints(user.id);
+            if (pointsAwarded) {
+              // Refresh points to update UI
+              await refreshPoints();
+            }
+          }, 500);
         } catch (pointsError) {
           console.error("Error checking welcome points:", pointsError);
           // Don't fail the whole operation if points check fails
