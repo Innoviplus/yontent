@@ -86,7 +86,7 @@ export const PointsProvider = ({ children }: { children: ReactNode }) => {
       )
       .subscribe();
 
-    // Try to set up subscription to point_transactions, but handle gracefully if table doesn't exist
+    // Try to set up subscription to point_transactions
     let transactionsChannel;
     try {
       transactionsChannel = supabase
