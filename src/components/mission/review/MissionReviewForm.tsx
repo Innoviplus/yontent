@@ -58,6 +58,15 @@ const MissionReviewForm = ({ mission, userId, onSubmissionComplete }: MissionRev
     removeVideo(0);
   };
 
+  // Function to count words in text
+  const countWords = (text: string) => {
+    if (!text || text.trim().length === 0) return 0;
+    // Strip HTML tags if present and split by whitespace
+    const plainText = text.replace(/<[^>]*>?/gm, '');
+    const words = plainText.trim().split(/\s+/).filter(word => word.length > 0);
+    return words.length;
+  };
+
   return (
     <Form {...form}>
       <form onSubmit={form.handleSubmit(handleFormSubmit)} className="space-y-6">
@@ -95,7 +104,7 @@ const MissionReviewForm = ({ mission, userId, onSubmissionComplete }: MissionRev
                 />
               </FormControl>
               <div className="flex justify-between items-center text-sm text-gray-500">
-                <span>{field.value?.length || 0} / 50 words required</span>
+                <span>{countWords(field.value || '')} / 50 words required</span>
               </div>
               <FormMessage />
             </FormItem>
