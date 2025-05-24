@@ -46,3 +46,32 @@ export const updateProfileData = async (userId: string, profileData: ExtendedPro
     throw error;
   }
 };
+
+// Check and award welcome points
+export const checkAndAwardWelcomePoints = async (userId: string): Promise<boolean> => {
+  try {
+    console.log('Checking for welcome points eligibility for user:', userId);
+    
+    const { data, error } = await supabase.rpc('award_welcome_points', {
+      user_id_param: userId
+    });
+    
+    if (error) {
+      console.error('Error checking welcome points:', error);
+      return false;
+    }
+    
+    console.log('Welcome points check response:', data);
+    
+    // Check if points were awarded successfully
+    if (data && data.success) {
+      toast.success('You received 150 welcome points for updating your profile!');
+      return true;
+    }
+    
+    return false;
+  } catch (error) {
+    console.error('Error in welcome points check:', error);
+    return false;
+  }
+};

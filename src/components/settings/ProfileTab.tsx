@@ -37,7 +37,6 @@ const ProfileTab = ({
   extendedProfile
 }: ProfileTabProps) => {
   const { user, refreshUserProfile } = useAuth();
-  const [submitAttempted, setSubmitAttempted] = useState(false);
   
   const {
     isLoading,
@@ -46,7 +45,6 @@ const ProfileTab = ({
     setIsLoading,
     setLoadingAttempts,
     setInitialLoadComplete,
-    handleProfileSubmit
   } = useProfilePageState();
 
   // Initialize profile refresh logic
@@ -62,7 +60,6 @@ const ProfileTab = ({
 
   // Handle form submission
   const onSubmit = async (values: ProfileFormValues) => {
-    setSubmitAttempted(true);
     console.log("ProfileTab - Form submission with values:", values);
     
     try {
@@ -151,16 +148,6 @@ const ProfileTab = ({
           </div>
         </form>
       </Form>
-      
-      {submitAttempted && !isUpdating && (
-        <div className="text-center text-sm">
-          {profileForm.formState.isSubmitSuccessful ? (
-            <p className="text-green-600">Profile saved successfully!</p>
-          ) : (
-            <p className="text-red-600">There was an error saving your profile. Please try again.</p>
-          )}
-        </div>
-      )}
     </div>
   );
 };

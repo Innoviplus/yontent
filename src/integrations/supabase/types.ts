@@ -549,6 +549,10 @@ export type Database = {
         }
         Returns: Json
       }
+      award_welcome_points: {
+        Args: { user_id_param: string }
+        Returns: Json
+      }
       calculate_relevance_score: {
         Args: { views: number; likes: number; avg_time: number; ctr: number }
         Returns: number
