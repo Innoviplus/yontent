@@ -117,18 +117,46 @@ const SocialProofForm = ({ mission, userId, onSubmissionComplete }: SocialProofF
         type: 'SOCIAL_PROOF'
       };
 
-      // Insert mission participation
-      const { error: participationError } = await supabase
+      // Check if user already has a participation record for this mission
+      const { data: existingParticipation, error: checkError } = await supabase
         .from('mission_participations')
-        .insert({
-          mission_id: mission.id,
-          user_id_p: userId,
-          status: 'PENDING',
-          submission_data: submissionData
-        });
+        .select('id, status')
+        .eq('mission_id', mission.id)
+        .eq('user_id_p', userId)
+        .single();
 
-      if (participationError) {
-        throw participationError;
+      if (checkError && checkError.code !== 'PGRST116') {
+        throw checkError;
+      }
+
+      if (existingParticipation) {
+        // Update existing participation record
+        const { error: updateError } = await supabase
+          .from('mission_participations')
+          .update({
+            status: 'PENDING',
+            submission_data: submissionData,
+            updated_at: new Date().toISOString()
+          })
+          .eq('id', existingParticipation.id);
+
+        if (updateError) {
+          throw updateError;
+        }
+      } else {
+        // Insert new mission participation
+        const { error: participationError } = await supabase
+          .from('mission_participations')
+          .insert({
+            mission_id: mission.id,
+            user_id_p: userId,
+            status: 'PENDING',
+            submission_data: submissionData
+          });
+
+        if (participationError) {
+          throw participationError;
+        }
       }
 
       toast.success('Social proof submission completed successfully!');
@@ -223,7 +251,7 @@ const SocialProofForm = ({ mission, userId, onSubmissionComplete }: SocialProofF
           <Button 
             type="submit" 
             disabled={isSubmitting}
-            className="min-w-[150px]"
+            className="min-w-[150px] bg-brand-teal hover:bg-brand-teal/90 text-white"
           >
             {isSubmitting ? 'Submitting...' : 'Upload Proof'}
           </Button>
