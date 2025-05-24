@@ -169,9 +169,6 @@ const MissionDetail = () => {
               onParticipationUpdate={handleParticipationUpdate}
               currentSubmissions={currentSubmissions}
             />
-            {mission.termsConditions && (
-              <MissionTerms termsConditions={mission.termsConditions} />
-            )}
           </div>
           
           <div className="space-y-6">
@@ -180,6 +177,12 @@ const MissionDetail = () => {
           </div>
         </div>
       </div>
+      
+      {mission.termsConditions && (
+        <div className="container mx-auto px-4 pb-8">
+          <MissionTerms termsConditions={mission.termsConditions} />
+        </div>
+      )}
     </div>
   );
 };
