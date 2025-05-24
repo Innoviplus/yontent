@@ -7,6 +7,7 @@ import { Badge } from "@/components/ui/badge";
 import ParticipationSummary from "./components/ParticipationSummary";
 import ReviewSubmissionContent from "./components/ReviewSubmissionContent";
 import ReceiptSubmissionContent from "./components/ReceiptSubmissionContent";
+import SocialProofSubmissionContent from "./components/SocialProofSubmissionContent";
 import ImageCarouselModal from "./components/ImageCarouselModal";
 import { useSubmissionDialogState } from "./hooks/useSubmissionDialogState";
 
@@ -21,6 +22,7 @@ const SubmissionReviewDialog = ({ isOpen, onClose, participation }: SubmissionRe
     submissionData,
     isReview,
     isReceipt,
+    isSocialProof,
     images,
     selectedImageIndex,
     openImageModal,
@@ -53,11 +55,27 @@ const SubmissionReviewDialog = ({ isOpen, onClose, participation }: SubmissionRe
       );
     }
     
+    if (isSocialProof) {
+      return (
+        <SocialProofSubmissionContent
+          submissionData={submissionData as any}
+          openImageInNewTab={openImageInNewTab}
+        />
+      );
+    }
+    
     return (
       <div className="py-8 text-center text-gray-500">
         <p className="text-lg">No submission data available</p>
       </div>
     );
+  };
+
+  const getAltText = () => {
+    if (isReview) return 'Review image';
+    if (isReceipt) return 'Receipt image';
+    if (isSocialProof) return 'Proof image';
+    return 'Image';
   };
 
   return (
@@ -95,7 +113,7 @@ const SubmissionReviewDialog = ({ isOpen, onClose, participation }: SubmissionRe
         images={images}
         currentIndex={selectedImageIndex || 0}
         onNavigate={navigateImage}
-        altText={isReview ? 'Review image' : 'Receipt image'}
+        altText={getAltText()}
       />
     </>
   );

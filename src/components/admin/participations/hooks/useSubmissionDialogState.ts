@@ -1,6 +1,6 @@
 
 import { useState } from "react";
-import { Participation, SubmissionData, ReviewSubmissionData, ReceiptSubmissionData } from "@/hooks/admin/participations/types";
+import { Participation, SubmissionData, ReviewSubmissionData, ReceiptSubmissionData, SocialProofSubmissionData } from "@/hooks/admin/participations/types";
 
 // Type guard functions to safely check submission data types
 const isReviewSubmission = (data: any): data is ReviewSubmissionData => {
@@ -11,6 +11,10 @@ const isReceiptSubmission = (data: any): data is ReceiptSubmissionData => {
   return data && (data.submission_type === 'RECEIPT' || 'receipt_images' in data);
 };
 
+const isSocialProofSubmission = (data: any): data is SocialProofSubmissionData => {
+  return data && (data.type === 'SOCIAL_PROOF' || data.submission_type === 'SOCIAL_PROOF' || 'proofImages' in data);
+};
+
 export const useSubmissionDialogState = (participation?: Participation) => {
   const [selectedImageIndex, setSelectedImageIndex] = useState<number | null>(null);
   
@@ -19,6 +23,7 @@ export const useSubmissionDialogState = (participation?: Participation) => {
       submissionData: {},
       isReview: false,
       isReceipt: false,
+      isSocialProof: false,
       images: [],
       selectedImageIndex,
       openImageModal: () => {},
@@ -32,6 +37,7 @@ export const useSubmissionDialogState = (participation?: Participation) => {
   const submissionData = participation.submission_data as unknown as SubmissionData || {};
   const isReview = isReviewSubmission(submissionData);
   const isReceipt = isReceiptSubmission(submissionData);
+  const isSocialProof = isSocialProofSubmission(submissionData);
   
   // Get all images for the carousel
   const getAllImages = () => {
@@ -40,6 +46,9 @@ export const useSubmissionDialogState = (participation?: Participation) => {
     }
     if (isReceipt && submissionData.receipt_images) {
       return submissionData.receipt_images;
+    }
+    if (isSocialProof && submissionData.proofImages) {
+      return submissionData.proofImages;
     }
     return [];
   };
@@ -76,6 +85,7 @@ export const useSubmissionDialogState = (participation?: Participation) => {
     submissionData,
     isReview,
     isReceipt,
+    isSocialProof,
     images,
     selectedImageIndex,
     openImageModal,
