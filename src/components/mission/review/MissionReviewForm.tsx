@@ -1,3 +1,4 @@
+
 import React, { useState, useEffect } from 'react';
 import { useForm } from 'react-hook-form';
 import { zodResolver } from '@hookform/resolvers/zod';
@@ -6,9 +7,8 @@ import { Form } from '@/components/ui/form';
 import { toast } from 'sonner';
 import { supabase } from '@/integrations/supabase/client';
 import { Mission } from '@/lib/types';
-import { reviewFormSchema, type ReviewFormData } from './ReviewFormSchema';
+import { reviewSchema, type ReviewFormValues } from './ReviewFormSchema';
 import ReviewFormButtons from './ReviewFormButtons';
-import MissionFormFields from '@/components/admin/missions/form/fields/MissionFormFields';
 
 interface MissionReviewFormProps {
   mission: Mission;
@@ -18,18 +18,14 @@ interface MissionReviewFormProps {
 
 const MissionReviewForm = ({ mission, userId, onSubmissionComplete }: MissionReviewFormProps) => {
   const [isSubmitting, setIsSubmitting] = useState(false);
-  const form = useForm<ReviewFormData>({
-    resolver: zodResolver(reviewFormSchema),
+  const form = useForm<ReviewFormValues>({
+    resolver: zodResolver(reviewSchema),
     defaultValues: {
-      productName: '',
-      rating: 5,
       content: '',
-      images: [],
-      videos: [],
     },
   });
 
-  const onSubmit = async (data: ReviewFormData) => {
+  const onSubmit = async (data: ReviewFormValues) => {
     setIsSubmitting(true);
     try {
       const { data: participation, error } = await supabase
@@ -39,11 +35,7 @@ const MissionReviewForm = ({ mission, userId, onSubmissionComplete }: MissionRev
           user_id_p: userId,
           status: 'PENDING',
           submission_data: {
-            productName: data.productName,
-            rating: data.rating,
             content: data.content,
-            images: data.images,
-            videos: data.videos,
             submission_type: 'REVIEW'
           }
         })
@@ -68,7 +60,7 @@ const MissionReviewForm = ({ mission, userId, onSubmissionComplete }: MissionRev
   return (
     <Form {...form}>
       <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-6">
-        <ReviewFormButtons form={form} isSubmitting={isSubmitting} />
+        <ReviewFormButtons isSubmitting={isSubmitting} missionId={mission.id} />
       </form>
     </Form>
   );
