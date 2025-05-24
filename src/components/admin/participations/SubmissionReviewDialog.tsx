@@ -37,7 +37,7 @@ const SubmissionReviewDialog = ({ isOpen, onClose, participation }: SubmissionRe
     if (isReview) {
       return (
         <ReviewSubmissionContent
-          submissionData={submissionData}
+          submissionData={submissionData as any}
           openReviewInNewTab={openReviewInNewTab}
           openImageInNewTab={openImageInNewTab}
         />
@@ -47,7 +47,7 @@ const SubmissionReviewDialog = ({ isOpen, onClose, participation }: SubmissionRe
     if (isReceipt) {
       return (
         <ReceiptSubmissionContent
-          submissionData={submissionData}
+          submissionData={submissionData as any}
           openImageInNewTab={openImageInNewTab}
         />
       );
