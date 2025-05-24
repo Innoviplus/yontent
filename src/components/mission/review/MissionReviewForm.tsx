@@ -1,90 +1,74 @@
-
-import { useState, useEffect } from 'react';
+import React, { useState, useEffect } from 'react';
+import { useForm } from 'react-hook-form';
+import { zodResolver } from '@hookform/resolvers/zod';
+import { Button } from '@/components/ui/button';
+import { Form } from '@/components/ui/form';
+import { toast } from 'sonner';
+import { supabase } from '@/integrations/supabase/client';
 import { Mission } from '@/lib/types';
-import { Form, FormControl, FormField, FormItem, FormLabel, FormMessage } from '@/components/ui/form';
-import { Textarea } from '@/components/ui/textarea';
-import ImageUpload from '@/components/review/ImageUpload';
-import VideoUpload from '@/components/review/VideoUpload';
+import { reviewFormSchema, type ReviewFormData } from './ReviewFormSchema';
 import ReviewFormButtons from './ReviewFormButtons';
-import { useReviewSubmission } from './useReviewSubmission';
+import MissionFormFields from '@/components/admin/missions/form/fields/MissionFormFields';
 
 interface MissionReviewFormProps {
   mission: Mission;
   userId: string;
+  onSubmissionComplete?: (success: boolean) => void;
 }
 
-const MissionReviewForm = ({ mission, userId }: MissionReviewFormProps) => {
-  const {
-    form,
-    isSubmitting,
-    imagePreviewUrls,
-    imageError,
-    videoPreviewUrl,
-    videoError,
-    handleImageSelection,
-    removeImage,
-    handleVideoSelection,
-    removeVideo,
-    onSubmit
-  } = useReviewSubmission(mission, userId);
+const MissionReviewForm = ({ mission, userId, onSubmissionComplete }: MissionReviewFormProps) => {
+  const [isSubmitting, setIsSubmitting] = useState(false);
+  const form = useForm<ReviewFormData>({
+    resolver: zodResolver(reviewFormSchema),
+    defaultValues: {
+      productName: '',
+      rating: 5,
+      content: '',
+      images: [],
+      videos: [],
+    },
+  });
 
-  const [wordCount, setWordCount] = useState(0);
+  const onSubmit = async (data: ReviewFormData) => {
+    setIsSubmitting(true);
+    try {
+      const { data: participation, error } = await supabase
+        .from('mission_participations')
+        .insert({
+          mission_id: mission.id,
+          user_id_p: userId,
+          status: 'PENDING',
+          submission_data: {
+            productName: data.productName,
+            rating: data.rating,
+            content: data.content,
+            images: data.images,
+            videos: data.videos,
+            submission_type: 'REVIEW'
+          }
+        })
+        .select()
+        .single();
 
-  // Calculate word count whenever content changes
-  useEffect(() => {
-    const content = form.watch('content') || '';
-    const plainText = content.replace(/<[^>]*>?/gm, '');
-    const words = plainText.trim().split(/\s+/).filter(word => word.length > 0);
-    setWordCount(words.length);
-  }, [form.watch('content')]);
+      if (error) {
+        throw error;
+      }
+
+      toast.success('Review submitted successfully!');
+      onSubmissionComplete?.(true);
+    } catch (error: any) {
+      console.error('Error submitting review:', error);
+      toast.error(error.message || 'Failed to submit review');
+      onSubmissionComplete?.(false);
+    } finally {
+      setIsSubmitting(false);
+    }
+  };
 
   return (
     <Form {...form}>
       <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-6">
-        <ImageUpload
-          imagePreviewUrls={imagePreviewUrls}
-          onFileSelect={handleImageSelection}
-          onRemoveImage={removeImage}
-          error={imageError}
-          uploading={isSubmitting}
-        />
-        
-        <VideoUpload 
-          videoPreviewUrls={videoPreviewUrl ? [videoPreviewUrl] : []}
-          onFileSelect={handleVideoSelection}
-          onRemoveVideo={() => removeVideo(0)}
-          error={videoError}
-          uploading={isSubmitting}
-          maxDuration={60}
-        />
-        
-        <FormField
-          control={form.control}
-          name="content"
-          render={({ field }) => (
-            <FormItem>
-              <div className="flex justify-between items-center">
-                <FormLabel>Review</FormLabel>
-                <span className={`text-xs ${wordCount < 50 ? 'text-red-500' : 'text-green-500'}`}>
-                  {wordCount} / 50 words {wordCount < 50 ? 'required' : '✓'}
-                </span>
-              </div>
-              <FormControl>
-                <Textarea 
-                  {...field}
-                  placeholder="Share your experience with the product (minimum 50 words required)..."
-                  className="min-h-[200px]"
-                />
-              </FormControl>
-              <FormMessage />
-            </FormItem>
-          )}
-        />
-        
-        <ReviewFormButtons 
-          isSubmitting={isSubmitting} 
-          missionId={mission.id} 
-        />
+        <ReviewFormButtons form={form} isSubmitting={isSubmitting} />
       </form>
     </Form>
   );
