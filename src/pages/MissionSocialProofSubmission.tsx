@@ -48,9 +48,9 @@ const MissionSocialProofSubmission = () => {
       <div className="container mx-auto px-4 pt-28 pb-16 max-w-3xl">
         <Card>
           <CardHeader>
-            <h1 className="text-2xl font-bold">Submit Social Proof for "{mission.title}"</h1>
+            <h1 className="text-2xl font-bold">Submit Proof for "{mission.title}" mission</h1>
             <p className="text-gray-500 mt-2">
-              Share your social media post to complete this mission and earn {mission.pointsReward} points.
+              Submit the required information to complete this mission and earn {mission.pointsReward} points.
             </p>
           </CardHeader>
           
@@ -58,7 +58,7 @@ const MissionSocialProofSubmission = () => {
             <MissionRequirementsList 
               requirements={fallbackRequirements} 
               requirementDescription={mission.requirementDescription}
-              title="Social Proof Requirements:" 
+              title="Requirements:" 
             />
             
             <SocialProofForm 

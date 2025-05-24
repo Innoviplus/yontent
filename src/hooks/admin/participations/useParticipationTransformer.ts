@@ -25,8 +25,8 @@ export const useParticipationTransformer = () => {
             id: item.mission.id,
             title: item.mission.title,
             points_reward: item.mission.points_reward,
-            type: (item.mission.type === 'REVIEW' || item.mission.type === 'RECEIPT') 
-              ? item.mission.type as 'REVIEW' | 'RECEIPT'
+            type: (item.mission.type === 'REVIEW' || item.mission.type === 'RECEIPT' || item.mission.type === 'SOCIAL_PROOF') 
+              ? item.mission.type as 'REVIEW' | 'RECEIPT' | 'SOCIAL_PROOF'
               : 'REVIEW' // Default to 'REVIEW' if type is invalid
           } : undefined;
           
@@ -49,8 +49,8 @@ export const useParticipationTransformer = () => {
               id: item.mission.id,
               title: item.mission.title,
               points_reward: item.mission.points_reward,
-              type: (item.mission.type === 'REVIEW' || item.mission.type === 'RECEIPT') 
-                ? item.mission.type as 'REVIEW' | 'RECEIPT'
+              type: (item.mission.type === 'REVIEW' || item.mission.type === 'RECEIPT' || item.mission.type === 'SOCIAL_PROOF') 
+                ? item.mission.type as 'REVIEW' | 'RECEIPT' | 'SOCIAL_PROOF'
                 : 'REVIEW'
             } : undefined,
             profile: {

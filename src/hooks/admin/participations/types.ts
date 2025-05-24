@@ -15,7 +15,16 @@ export interface ReceiptSubmissionData {
   receipt_images: string[];
 }
 
-export type SubmissionData = ReviewSubmissionData | ReceiptSubmissionData | Record<string, any>;
+export interface SocialProofSubmissionData {
+  submission_type?: 'SOCIAL_PROOF';
+  type: 'SOCIAL_PROOF';
+  proofUrl?: string;
+  additionalRemarks?: string;
+  proofImages: string[];
+  submittedAt: string;
+}
+
+export type SubmissionData = ReviewSubmissionData | ReceiptSubmissionData | SocialProofSubmissionData | Record<string, any>;
 
 export interface Participation {
   id: string;
@@ -29,7 +38,7 @@ export interface Participation {
     id: string;
     title: string;
     points_reward: number;
-    type: 'REVIEW' | 'RECEIPT';
+    type: 'REVIEW' | 'RECEIPT' | 'SOCIAL_PROOF';
   };
   profile?: {
     id: string;
