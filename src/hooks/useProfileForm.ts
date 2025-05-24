@@ -6,22 +6,7 @@ import { ExtendedProfile } from '@/lib/types';
 import { profileFormSchema, ProfileFormValues } from '@/schemas/profileFormSchema';
 import { useProfileFormInitialization } from './settings/useProfileFormInitialization';
 import { formatProfileFormValues, validateBirthDate } from '@/services/profile/profileFormService';
-import { updateProfileData, checkAndAwardWelcomePoints } from '@/services/profile/profileUpdateService';
-import { usePoints } from '@/contexts/PointsContext';
-
-// Add debounce utility to prevent multiple toast notifications
-const createDebouncer = () => {
-  let timeout: NodeJS.Timeout | null = null;
-  return (fn: Function, delay: number) => {
-    if (timeout) clearTimeout(timeout);
-    timeout = setTimeout(() => {
-      timeout = null;
-      fn();
-    }, delay);
-  };
-};
-
-const debounceToast = createDebouncer();
+import { updateProfileData } from '@/services/profile/profileUpdateService';
 
 export const useProfileForm = (
   user: any, 
@@ -51,8 +36,6 @@ export const useProfileForm = (
       country: '',
     },
   });
-
-  const { refreshPoints } = usePoints();
 
   // Initialize form with profile data when it becomes available
   useProfileFormInitialization(profileForm, userProfile);
@@ -90,24 +73,8 @@ export const useProfileForm = (
         // Update local state
         setExtendedProfile(extendedData);
         
-        // Try to check for welcome points, but don't fail if it doesn't work
-        try {
-          setTimeout(async () => {
-            const pointsAwarded = await checkAndAwardWelcomePoints(user.id);
-            if (pointsAwarded) {
-              // Refresh points to update UI
-              await refreshPoints();
-            }
-          }, 500);
-        } catch (pointsError) {
-          console.error("Error checking welcome points:", pointsError);
-          // Don't fail the whole operation if points check fails
-        }
-        
-        // Use debounced toast to prevent duplicates
-        debounceToast(() => {
-          toast.success('Profile updated successfully!');
-        }, 300);
+        // Show success message
+        toast.success('Profile updated successfully!');
         
         // Mark form as pristine to indicate data has been saved
         profileForm.reset(values, { keepValues: true });

@@ -46,39 +46,3 @@ export const updateProfileData = async (userId: string, profileData: ExtendedPro
     throw error;
   }
 };
-
-// Check and award welcome points using the correct RPC function
-export const checkAndAwardWelcomePoints = async (userId: string): Promise<boolean> => {
-  try {
-    console.log('Checking for welcome points eligibility for user:', userId);
-    
-    // Use the correct RPC function that exists in the database
-    const { data, error } = await supabase.rpc('check_and_award_welcome_points', {
-      user_id_param: userId
-    });
-    
-    if (error) {
-      console.error('Error checking welcome points:', error);
-      // Don't throw error, just log it and return false
-      return false;
-    }
-    
-    console.log('Welcome points check response:', data);
-    
-    // Type guard to check if data has success property
-    if (data && typeof data === 'object' && data !== null && 'success' in data) {
-      const result = data as { success: boolean; message?: string; points_awarded?: number };
-      
-      if (result.success) {
-        toast.success('You received welcome points for updating your profile!');
-        return true;
-      }
-    }
-    
-    return false;
-  } catch (error) {
-    console.error('Error in welcome points check:', error);
-    // Don't throw error, just return false to not break profile updates
-    return false;
-  }
-};

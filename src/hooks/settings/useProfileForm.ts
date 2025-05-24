@@ -6,8 +6,7 @@ import { ExtendedProfile } from '@/lib/types';
 import { profileFormSchema, ProfileFormValues } from '@/schemas/profileFormSchema';
 import { useProfileFormInitialization } from './useProfileFormInitialization';
 import { formatProfileFormValues, validateBirthDate } from '@/services/profile/profileFormService';
-import { updateProfileData, checkAndAwardWelcomePoints } from '@/services/profile/profileUpdateService';
-import { usePoints } from '@/contexts/PointsContext';
+import { updateProfileData } from '@/services/profile/profileUpdateService';
 
 export const useProfileForm = (
   user: any, 
@@ -37,8 +36,6 @@ export const useProfileForm = (
       country: '',
     },
   });
-  
-  const { refreshPoints } = usePoints();
 
   // Initialize form with profile data when it becomes available
   useProfileFormInitialization(profileForm, userProfile);
@@ -81,20 +78,6 @@ export const useProfileForm = (
         
         // Mark form as clean after successful save
         profileForm.reset(values, { keepValues: true, keepDirty: false });
-        
-        // Check for welcome points after successful profile update
-        try {
-          setTimeout(async () => {
-            const pointsAwarded = await checkAndAwardWelcomePoints(user.id);
-            if (pointsAwarded) {
-              // Refresh points to update UI
-              await refreshPoints();
-            }
-          }, 500);
-        } catch (pointsError) {
-          console.error("Error checking welcome points:", pointsError);
-          // Don't fail the whole operation if points check fails
-        }
       } else {
         throw new Error("Failed to update profile data");
       }
