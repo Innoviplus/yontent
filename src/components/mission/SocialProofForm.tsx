@@ -13,8 +13,8 @@ import { supabase } from '@/integrations/supabase/client';
 import { Mission } from '@/lib/types';
 
 const socialProofFormSchema = z.object({
-  proofUrl: z.string().url('Please enter a valid URL'),
-  additionalRemarks: z.string().min(10, 'Please provide at least 10 characters of additional remarks'),
+  proofUrl: z.string().optional(),
+  additionalRemarks: z.string().optional(),
   proofImages: z.array(z.string()).min(1, 'Please upload at least one proof image'),
 });
 
@@ -110,8 +110,8 @@ const SocialProofForm = ({ mission, userId, onSubmissionComplete }: SocialProofF
     try {
       // Prepare submission data
       const submissionData = {
-        proofUrl: data.proofUrl,
-        additionalRemarks: data.additionalRemarks,
+        proofUrl: data.proofUrl || '',
+        additionalRemarks: data.additionalRemarks || '',
         proofImages: uploadedImages,
         submittedAt: new Date().toISOString(),
         type: 'SOCIAL_PROOF'
@@ -150,7 +150,7 @@ const SocialProofForm = ({ mission, userId, onSubmissionComplete }: SocialProofF
 
   return (
     <div className="bg-white rounded-lg shadow-sm border p-6">
-      <h3 className="text-lg font-semibold mb-4">Submit Social Proof</h3>
+      <h3 className="text-lg font-semibold mb-4">Upload Proof</h3>
       
       <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-6">
         {/* Proof Images Upload */}
@@ -179,7 +179,7 @@ const SocialProofForm = ({ mission, userId, onSubmissionComplete }: SocialProofF
         {/* Proof URL */}
         <div>
           <Label htmlFor="proofUrl" className="text-sm font-medium">
-            Proof URL *
+            Proof URL
           </Label>
           <p className="text-sm text-gray-600 mb-2">
             Provide the URL that shows your completed work (e.g., social media post URL, review page URL).
@@ -200,7 +200,7 @@ const SocialProofForm = ({ mission, userId, onSubmissionComplete }: SocialProofF
         {/* Additional Remarks */}
         <div>
           <Label htmlFor="additionalRemarks" className="text-sm font-medium">
-            Additional Remarks *
+            Additional Remarks
           </Label>
           <p className="text-sm text-gray-600 mb-2">
             Provide additional context, explanation, or any relevant details about your submission.
@@ -225,7 +225,7 @@ const SocialProofForm = ({ mission, userId, onSubmissionComplete }: SocialProofF
             disabled={isSubmitting}
             className="min-w-[150px]"
           >
-            {isSubmitting ? 'Submitting...' : 'Submit Social Proof'}
+            {isSubmitting ? 'Submitting...' : 'Upload Proof'}
           </Button>
         </div>
       </form>
