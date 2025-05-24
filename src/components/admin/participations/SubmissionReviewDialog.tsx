@@ -5,7 +5,7 @@ import { ScrollArea } from "@/components/ui/scroll-area";
 import { Separator } from "@/components/ui/separator";
 import { Badge } from "@/components/ui/badge";
 import { useState } from "react";
-import { ChevronLeft, ChevronRight, X } from "lucide-react";
+import { ChevronLeft, ChevronRight, X, ExternalLink } from "lucide-react";
 import { Button } from "@/components/ui/button";
 
 interface SubmissionReviewDialogProps {
@@ -63,6 +63,10 @@ const SubmissionReviewDialog = ({ isOpen, onClose, participation }: SubmissionRe
     }
   };
 
+  const openImageInNewTab = (imageUrl: string) => {
+    window.open(imageUrl, '_blank', 'noopener,noreferrer');
+  };
+
   // Handle different submission types
   const renderSubmissionContent = () => {
     if (isReview) {
@@ -82,21 +86,25 @@ const SubmissionReviewDialog = ({ isOpen, onClose, participation }: SubmissionRe
            submissionData.review_images.length > 0 && (
             <div>
               <h3 className="text-lg font-semibold mb-3">Review Images ({submissionData.review_images.length}):</h3>
-              <div className="grid grid-cols-2 md:grid-cols-3 gap-4">
+              <div className="space-y-2">
                 {submissionData.review_images.map((image: string, index: number) => (
                   <div 
                     key={index} 
-                    className="relative aspect-square rounded-lg overflow-hidden border-2 border-gray-200 hover:border-blue-400 cursor-pointer transition-colors"
-                    onClick={() => openImageModal(index)}
+                    className="flex items-center justify-between p-3 bg-gray-50 rounded-lg border hover:bg-gray-100 transition-colors"
                   >
-                    <img 
-                      src={image} 
-                      alt={`Review image ${index + 1}`} 
-                      className="object-cover w-full h-full hover:scale-105 transition-transform" 
-                    />
-                    <div className="absolute bottom-2 right-2 bg-black/60 text-white text-xs py-1 px-2 rounded">
-                      {index + 1}
+                    <div className="flex items-center space-x-3">
+                      <span className="text-sm font-medium text-gray-600">Image {index + 1}:</span>
+                      <span className="text-sm text-gray-800 font-mono truncate max-w-md">{image}</span>
                     </div>
+                    <Button
+                      variant="outline"
+                      size="sm"
+                      onClick={() => openImageInNewTab(image)}
+                      className="flex items-center space-x-1"
+                    >
+                      <ExternalLink className="h-4 w-4" />
+                      <span>Open</span>
+                    </Button>
                   </div>
                 ))}
               </div>
@@ -111,23 +119,27 @@ const SubmissionReviewDialog = ({ isOpen, onClose, participation }: SubmissionRe
         <div className="space-y-6">
           <div>
             <h3 className="text-lg font-semibold mb-3">Receipt Images ({submissionData.receipt_images?.length || 0}):</h3>
-            <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+            <div className="space-y-2">
               {submissionData.receipt_images &&
                Array.isArray(submissionData.receipt_images) &&
                submissionData.receipt_images.map((image: string, index: number) => (
                 <div 
                   key={index} 
-                  className="relative rounded-lg overflow-hidden border-2 border-gray-200 hover:border-blue-400 cursor-pointer transition-colors"
-                  onClick={() => openImageModal(index)}
+                  className="flex items-center justify-between p-3 bg-gray-50 rounded-lg border hover:bg-gray-100 transition-colors"
                 >
-                  <img 
-                    src={image} 
-                    alt={`Receipt image ${index + 1}`} 
-                    className="object-contain w-full max-h-96 hover:scale-105 transition-transform" 
-                  />
-                  <div className="absolute top-2 right-2 bg-black/60 text-white text-xs py-1 px-2 rounded">
-                    Receipt {index + 1}
+                  <div className="flex items-center space-x-3">
+                    <span className="text-sm font-medium text-gray-600">Receipt {index + 1}:</span>
+                    <span className="text-sm text-gray-800 font-mono truncate max-w-md">{image}</span>
                   </div>
+                  <Button
+                    variant="outline"
+                    size="sm"
+                    onClick={() => openImageInNewTab(image)}
+                    className="flex items-center space-x-1"
+                  >
+                    <ExternalLink className="h-4 w-4" />
+                    <span>Open</span>
+                  </Button>
                 </div>
               ))}
             </div>
