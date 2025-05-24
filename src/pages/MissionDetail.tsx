@@ -1,3 +1,4 @@
+
 import { useState, useEffect } from 'react';
 import { useParams, Navigate } from 'react-router-dom';
 import { Mission } from '@/lib/types';
@@ -181,7 +182,7 @@ const MissionDetail = () => {
       
       {mission.termsConditions && (
         <div className="bg-white">
-          <div className="container mx-auto px-4 pb-8">
+          <div className="container mx-auto px-4 py-8">
             <MissionTerms termsConditions={mission.termsConditions} />
           </div>
         </div>
