@@ -39,31 +39,10 @@ export const updateProfileData = async (userId: string, profileData: ExtendedPro
       throw updateError;
     }
     
-    // Now also update the extended_data JSON field for backward compatibility
-    const { error: extendedError } = await supabase
-      .from('profiles')
-      .update({
-        extended_data: profileData
-      })
-      .eq('id', userId);
-
-    if (extendedError) {
-      console.error("Supabase extended_data update error:", extendedError);
-      // Don't throw here as the main data has been updated
-    }
-    
     console.log("Profile updated successfully in Supabase!");
     return true;
   } catch (error: any) {
     console.error("Error updating profile:", error.message);
-    
-    // Check if the error is related to point_transactions table not existing
-    if (error.code === '42P01' && error.message.includes('point_transactions')) {
-      console.warn("Issue with point_transactions table, but profile was likely updated");
-      toast.warning("Profile updated but points system is currently unavailable");
-      return true;
-    }
-    
     throw error;
   }
 };

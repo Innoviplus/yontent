@@ -64,12 +64,17 @@ const ProfileTab = ({
   const onSubmit = async (values: ProfileFormValues) => {
     setSubmitAttempted(true);
     console.log("ProfileTab - Form submission with values:", values);
-    await handleProfileSubmit(values, onProfileSubmit, profileForm);
     
-    // Force refresh user profile after successful submission
-    if (user) {
-      console.log("ProfileTab - Refreshing user profile after submission");
-      setTimeout(() => refreshUserProfile(), 500);
+    try {
+      await onProfileSubmit(values);
+      
+      // Force refresh user profile after successful submission
+      if (user) {
+        console.log("ProfileTab - Refreshing user profile after submission");
+        setTimeout(() => refreshUserProfile(), 1000);
+      }
+    } catch (error) {
+      console.error("ProfileTab - Error during submission:", error);
     }
   };
 
@@ -96,52 +101,56 @@ const ProfileTab = ({
         </CardContent>
       </Card>
 
-      <Card>
-        <CardHeader>
-          <CardTitle>Basic Information</CardTitle>
-          <CardDescription>
-            Update your personal details.
-          </CardDescription>
-        </CardHeader>
-        <CardContent className="grid gap-6">
-          <ProfileInfoForm 
-            profileForm={profileForm}
-            onProfileSubmit={onProfileSubmit}
-            isUpdating={isUpdating}
-          />
-        </CardContent>
-      </Card>
-      
-      <Card>
-        <CardHeader>
-          <CardTitle>Social Media Profiles</CardTitle>
-          <CardDescription>
-            Link your social media accounts to your profile
-          </CardDescription>
-        </CardHeader>
-        <CardContent className="grid gap-6">
-          <SocialMediaSection 
-            profileForm={profileForm}
-          />
-        </CardContent>
-      </Card>
-      
-      <div className="flex justify-end">
-        <Button 
-          onClick={profileForm.handleSubmit(onSubmit)}
-          className="bg-brand-teal hover:bg-brand-darkTeal text-white"
-          disabled={isLoading || isUpdating || !profileForm.formState.isDirty}
-        >
-          {isLoading || isUpdating ? (
-            <>
-              <Loader2 className="mr-2 h-4 w-4 animate-spin" />
-              Saving...
-            </>
-          ) : (
-            'Save All Changes'
-          )}
-        </Button>
-      </div>
+      <Form {...profileForm}>
+        <form onSubmit={profileForm.handleSubmit(onSubmit)} className="space-y-6">
+          <Card>
+            <CardHeader>
+              <CardTitle>Basic Information</CardTitle>
+              <CardDescription>
+                Update your personal details.
+              </CardDescription>
+            </CardHeader>
+            <CardContent className="grid gap-6">
+              <ProfileInfoForm 
+                profileForm={profileForm}
+                onProfileSubmit={onProfileSubmit}
+                isUpdating={isUpdating}
+              />
+            </CardContent>
+          </Card>
+          
+          <Card>
+            <CardHeader>
+              <CardTitle>Social Media Profiles</CardTitle>
+              <CardDescription>
+                Link your social media accounts to your profile
+              </CardDescription>
+            </CardHeader>
+            <CardContent className="grid gap-6">
+              <SocialMediaSection 
+                profileForm={profileForm}
+              />
+            </CardContent>
+          </Card>
+          
+          <div className="flex justify-end">
+            <Button 
+              type="submit"
+              className="bg-brand-teal hover:bg-brand-darkTeal text-white"
+              disabled={isLoading || isUpdating}
+            >
+              {isLoading || isUpdating ? (
+                <>
+                  <Loader2 className="mr-2 h-4 w-4 animate-spin" />
+                  Saving...
+                </>
+              ) : (
+                'Save All Changes'
+              )}
+            </Button>
+          </div>
+        </form>
+      </Form>
       
       {submitAttempted && !isUpdating && (
         <div className="text-center text-sm">

@@ -11,20 +11,6 @@ import { supabase } from '@/integrations/supabase/client';
 import { usePoints } from '@/contexts/PointsContext';
 import { useState, useEffect } from 'react';
 
-// Add debounce utility to prevent multiple toast notifications
-const createDebouncer = () => {
-  let timeout: NodeJS.Timeout | null = null;
-  return (fn: Function, delay: number) => {
-    if (timeout) clearTimeout(timeout);
-    timeout = setTimeout(() => {
-      timeout = null;
-      fn();
-    }, delay);
-  };
-};
-
-const debounceToast = createDebouncer();
-
 export const useProfileForm = (
   user: any, 
   userProfile: any, 
@@ -35,8 +21,8 @@ export const useProfileForm = (
   const profileForm = useForm<ProfileFormValues>({
     resolver: zodResolver(profileFormSchema),
     defaultValues: {
-      username: userProfile?.username || '',
-      email: userProfile?.email || user?.email || '',
+      username: '',
+      email: '',
       firstName: '',
       lastName: '',
       bio: '',
@@ -47,8 +33,8 @@ export const useProfileForm = (
       instagramUrl: '',
       youtubeUrl: '',
       tiktokUrl: '',
-      twitterUrl: '', 
-      phoneNumber: userProfile?.phone_number || '',
+      twitterUrl: '',
+      phoneNumber: '',
       phoneCountryCode: '',
       country: '',
     },
@@ -59,13 +45,6 @@ export const useProfileForm = (
 
   // Initialize form with profile data when it becomes available
   useProfileFormInitialization(profileForm, userProfile);
-
-  // Effect to check if form has been populated with data
-  useEffect(() => {
-    if (userProfile) {
-      console.log("useProfileForm - User profile available, form values:", profileForm.getValues());
-    }
-  }, [userProfile, profileForm]);
 
   // Function to check and award welcome points if needed
   const checkWelcomePoints = async (userId: string) => {
@@ -151,6 +130,12 @@ export const useProfileForm = (
         // Update local state
         setExtendedProfile(extendedData);
         
+        // Show success message
+        toast.success('Profile updated successfully!');
+        
+        // Mark form as clean after successful save
+        profileForm.reset(values, { keepValues: true, keepDirty: false });
+        
         try {
           // Check for welcome points after successful profile update
           // Add a small delay to ensure database triggers have completed
@@ -159,14 +144,6 @@ export const useProfileForm = (
           console.error("Error checking welcome points:", pointsError);
           // Don't fail the whole operation if points check fails
         }
-        
-        // Use debounced toast to prevent duplicates
-        debounceToast(() => {
-          toast.success('Profile updated successfully!');
-        }, 300);
-        
-        // Mark form as pristine to indicate data has been saved
-        profileForm.reset(values, { keepValues: true, keepDirty: false });
       } else {
         throw new Error("Failed to update profile data");
       }
