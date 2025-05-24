@@ -1,3 +1,4 @@
+
 import React, { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { toast } from 'sonner';
@@ -11,9 +12,10 @@ import FileUpload from '@/components/FileUpload';
 interface MissionReceiptFormProps {
   mission: Mission;
   userId: string;
+  onSubmissionComplete?: (success: boolean) => void;
 }
 
-const MissionReceiptForm = ({ mission, userId }: MissionReceiptFormProps) => {
+const MissionReceiptForm = ({ mission, userId, onSubmissionComplete }: MissionReceiptFormProps) => {
   const navigate = useNavigate();
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [files, setFiles] = useState<File[]>([]);
@@ -63,26 +65,62 @@ const MissionReceiptForm = ({ mission, userId }: MissionReceiptFormProps) => {
         uploadedUrls.push(data.publicUrl);
       }
       
-      // Save the participation record with the uploaded images
-      const { error: insertError } = await supabase
+      // Check if user already has a participation record for this mission
+      const { data: existingParticipation, error: checkError } = await supabase
         .from('mission_participations')
-        .insert({
-          mission_id: mission.id,
-          user_id_p: userId,
-          status: 'PENDING',
-          submission_data: {
-            receipt_images: uploadedUrls,
-            submission_type: 'RECEIPT'
-          }
-        });
-        
-      if (insertError) throw insertError;
+        .select('id, status')
+        .eq('mission_id', mission.id)
+        .eq('user_id_p', userId)
+        .single();
+
+      if (checkError && checkError.code !== 'PGRST116') {
+        throw checkError;
+      }
+
+      const submissionData = {
+        receipt_images: uploadedUrls,
+        submission_type: 'RECEIPT'
+      };
+
+      if (existingParticipation) {
+        // Update existing participation record
+        const { error: updateError } = await supabase
+          .from('mission_participations')
+          .update({
+            status: 'PENDING',
+            submission_data: submissionData,
+            updated_at: new Date().toISOString()
+          })
+          .eq('id', existingParticipation.id);
+          
+        if (updateError) throw updateError;
+      } else {
+        // Create new participation record
+        const { error: insertError } = await supabase
+          .from('mission_participations')
+          .insert({
+            mission_id: mission.id,
+            user_id_p: userId,
+            status: 'PENDING',
+            submission_data: submissionData
+          });
+          
+        if (insertError) throw insertError;
+      }
       
       toast.success('Receipt submitted successfully!');
-      navigate(`/mission/${mission.id}`);
+      
+      if (onSubmissionComplete) {
+        onSubmissionComplete(true);
+      } else {
+        navigate(`/mission/${mission.id}`);
+      }
     } catch (error) {
       console.error('Error submitting receipt:', error);
       toast.error('Failed to submit receipt. Please try again.');
+      if (onSubmissionComplete) {
+        onSubmissionComplete(false);
+      }
     } finally {
       setIsSubmitting(false);
     }
@@ -115,7 +153,13 @@ const MissionReceiptForm = ({ mission, userId }: MissionReceiptFormProps) => {
       <CardFooter className="flex justify-end space-x-4 px-0">
         <Button 
           variant="outline" 
-          onClick={() => navigate(`/mission/${mission.id}`)}
+          onClick={() => {
+            if (onSubmissionComplete) {
+              onSubmissionComplete(false);
+            } else {
+              navigate(`/mission/${mission.id}`);
+            }
+          }}
           disabled={isSubmitting}
         >
           Cancel

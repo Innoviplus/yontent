@@ -1,13 +1,12 @@
-import { useState } from 'react';
-import { useNavigate } from 'react-router-dom';
-import { Mission } from '@/lib/types';
-import { Card, CardContent } from '@/components/ui/card';
+
+import { useState, useEffect } from 'react';
+import { Users, Clock, Target, CheckCircle } from 'lucide-react';
 import { Button } from '@/components/ui/button';
-import { Clock, Users, Target, Gauge } from 'lucide-react';
-import { format, isPast } from 'date-fns';
-import { toast } from 'sonner';
+import { Badge } from '@/components/ui/badge';
+import { Mission } from '@/lib/types';
 import { supabase } from '@/integrations/supabase/client';
-import { formatNumber } from '@/lib/formatUtils';
+import { toast } from 'sonner';
+import { useNavigate } from 'react-router-dom';
 
 interface MissionStatsProps {
   mission: Mission;
@@ -18,143 +17,256 @@ interface MissionStatsProps {
   currentSubmissions: number;
 }
 
-const MissionStats = ({
-  mission,
-  participating,
-  participationStatus,
+const MissionStats = ({ 
+  mission, 
+  participating, 
+  participationStatus, 
   userId,
   onParticipationUpdate,
-  currentSubmissions
+  currentSubmissions 
 }: MissionStatsProps) => {
-  const [loading, setLoading] = useState(false);
   const navigate = useNavigate();
-  const isExpired = mission.expiresAt ? isPast(mission.expiresAt) : false;
-  const isCompleted = participationStatus === 'APPROVED';
-  const isQuotaReached = mission.totalMaxSubmissions !== undefined && 
-                        mission.totalMaxSubmissions > 0 && 
-                        currentSubmissions >= mission.totalMaxSubmissions;
+  const [isJoining, setIsJoining] = useState(false);
 
-  const handleMissionParticipation = async () => {
+  // Format dates
+  const formatDate = (date: Date) => {
+    return new Intl.DateTimeFormat('en-US', { 
+      year: 'numeric', 
+      month: 'short', 
+      day: 'numeric' 
+    }).format(date);
+  };
+
+  // Check if mission is still active
+  const isActive = mission.status === 'ACTIVE' && 
+    (!mission.expiresAt || new Date() < mission.expiresAt);
+
+  // Check if total submissions limit is reached
+  const isAtSubmissionLimit = mission.totalMaxSubmissions && 
+    currentSubmissions >= mission.totalMaxSubmissions;
+
+  const handleJoinMission = async () => {
     if (!userId) {
-      toast.error('Please log in to join this mission');
+      toast.error('You must be logged in to join missions');
       return;
     }
-    try {
-      setLoading(true);
 
-      // Check mission quota before proceeding
-      if (isQuotaReached) {
-        toast.error('This mission has reached its maximum number of submissions');
-        return;
-      }
+    // For all mission types, navigate directly to submission page
+    if (mission.type === 'REVIEW') {
+      navigate(`/mission/${mission.id}/review`);
+      return;
+    }
 
-      // For receipt and review type missions, navigate to the appropriate submission page
-      if (mission.type === 'RECEIPT') {
-        navigate(`/mission/${mission.id}/receipt`);
-        return;
-      }
-      if (mission.type === 'REVIEW') {
-        navigate(`/mission/${mission.id}/review`);
-        return;
-      }
+    if (mission.type === 'RECEIPT') {
+      navigate(`/mission/${mission.id}/receipt`);
+      return;
+    }
 
-      // For other mission types, create a participation record directly
-      const {
-        error
-      } = await supabase.from('mission_participations').insert({
-        mission_id: mission.id,
-        user_id_p: userId,
-        status: 'PENDING'
-      });
-      if (error) throw error;
-      onParticipationUpdate(true, 'PENDING');
-      toast.success('You have joined this mission!');
-    } catch (error) {
-      console.error('Error joining mission:', error);
-      toast.error('Failed to join mission. Please try again.');
-    } finally {
-      setLoading(false);
+    // For SOCIAL_PROOF missions, create JOINED status first, then navigate
+    if (mission.type === 'SOCIAL_PROOF') {
+      setIsJoining(true);
+      
+      try {
+        // Check if user is already participating
+        const { data: existingParticipation, error: checkError } = await supabase
+          .from('mission_participations')
+          .select('id, status')
+          .eq('mission_id', mission.id)
+          .eq('user_id_p', userId)
+          .single();
+
+        if (checkError && checkError.code !== 'PGRST116') {
+          throw checkError;
+        }
+
+        if (existingParticipation) {
+          toast.info('You are already participating in this mission');
+          onParticipationUpdate(true, existingParticipation.status);
+          // Navigate to submission page if already joined
+          if (existingParticipation.status === 'JOINED') {
+            navigate(`/mission/${mission.id}/social-proof`);
+          }
+          return;
+        }
+
+        // Create participation record with JOINED status
+        const { error: joinError } = await supabase
+          .from('mission_participations')
+          .insert({
+            mission_id: mission.id,
+            user_id_p: userId,
+            status: 'JOINED'
+          });
+
+        if (joinError) {
+          throw joinError;
+        }
+
+        toast.success('Successfully joined the mission!');
+        onParticipationUpdate(true, 'JOINED');
+        
+        // Navigate to social proof submission page
+        navigate(`/mission/${mission.id}/social-proof`);
+        
+      } catch (error: any) {
+        console.error('Error joining mission:', error);
+        toast.error(error.message || 'Failed to join mission');
+      } finally {
+        setIsJoining(false);
+      }
     }
   };
 
-  const getMissionActionButton = () => {
-    if (isCompleted) {
-      return <Button disabled className="w-full border-brand-teal text-brand-teal bg-white hover:bg-gray-50">
+  const handleStartSubmission = () => {
+    // Navigate to the appropriate submission page based on mission type
+    if (mission.type === 'REVIEW') {
+      navigate(`/mission/${mission.id}/review`);
+    } else if (mission.type === 'RECEIPT') {
+      navigate(`/mission/${mission.id}/receipt`);
+    } else if (mission.type === 'SOCIAL_PROOF') {
+      navigate(`/mission/${mission.id}/social-proof`);
+    }
+  };
+
+  const getStatusBadge = () => {
+    if (!participating) return null;
+    
+    const statusConfig = {
+      'JOINED': { label: 'Joined', variant: 'secondary' as const },
+      'PENDING': { label: 'Pending Review', variant: 'default' as const },
+      'APPROVED': { label: 'Approved', variant: 'default' as const },
+      'REJECTED': { label: 'Rejected', variant: 'destructive' as const }
+    };
+    
+    const config = statusConfig[participationStatus as keyof typeof statusConfig];
+    if (!config) return null;
+    
+    return <Badge variant={config.variant}>{config.label}</Badge>;
+  };
+
+  const renderActionButton = () => {
+    if (!isActive) {
+      return (
+        <Button disabled className="w-full">
+          Mission Inactive
+        </Button>
+      );
+    }
+
+    if (isAtSubmissionLimit) {
+      return (
+        <Button disabled className="w-full">
+          Submission Limit Reached
+        </Button>
+      );
+    }
+
+    if (!participating) {
+      return (
+        <Button 
+          onClick={handleJoinMission} 
+          disabled={isJoining}
+          className="w-full bg-brand-teal hover:bg-brand-teal/90"
+        >
+          {isJoining ? 'Joining...' : 'Join Mission'}
+        </Button>
+      );
+    }
+
+    if (participationStatus === 'JOINED') {
+      return (
+        <Button 
+          onClick={handleStartSubmission}
+          className="w-full bg-brand-teal hover:bg-brand-teal/90"
+        >
+          Start Submission
+        </Button>
+      );
+    }
+
+    if (participationStatus === 'PENDING') {
+      return (
+        <Button disabled className="w-full">
+          Submission Under Review
+        </Button>
+      );
+    }
+
+    if (participationStatus === 'APPROVED') {
+      return (
+        <div className="flex items-center justify-center w-full p-3 bg-green-50 text-green-700 rounded-lg">
+          <CheckCircle className="h-5 w-5 mr-2" />
           Mission Completed
-        </Button>;
+        </div>
+      );
     }
-    if (isExpired) {
-      return <Button disabled className="w-full">
-          Mission Expired
-        </Button>;
+
+    if (participationStatus === 'REJECTED') {
+      return (
+        <Button 
+          onClick={handleStartSubmission}
+          variant="outline"
+          className="w-full"
+        >
+          Resubmit
+        </Button>
+      );
     }
-    if (participating) {
-      return <Button disabled={loading} variant="outline" className="w-full border-brand-teal text-brand-teal bg-white hover:bg-gray-50">
-          {participationStatus === 'PENDING' ? 'Submission Pending' : 'Already Joined'}
-        </Button>;
-    }
-    if (isQuotaReached) {
-      return <Button disabled className="w-full">
-          Mission Quota Reached
-        </Button>;
-    }
-    return <Button onClick={handleMissionParticipation} disabled={loading || !userId || isQuotaReached} className="w-full bg-brand-teal hover:bg-brand-teal/90">
-        {userId ? (isQuotaReached ? 'Mission Quota Reached' : 'Join Mission') : 'Log in to Join'}
-      </Button>;
+
+    return null;
   };
 
-  return <Card className="overflow-hidden border-t-4 border-t-brand-teal">
-      <CardContent className="p-6">
-        <div className="mb-4">
-          <h2 className="text-xl font-semibold">Mission - Key Information</h2>
+  return (
+    <div className="space-y-6">
+      {/* Mission Stats Card */}
+      <div className="bg-white rounded-lg shadow-sm border p-6">
+        <div className="flex items-center justify-between mb-4">
+          <h3 className="text-lg font-semibold">Mission Details</h3>
+          {getStatusBadge()}
         </div>
         
-        <div className="space-y-4">
-          <div className="flex items-center">
-            <Target className="h-5 w-5 text-gray-500 mr-3" />
+        <div className="grid grid-cols-2 gap-4 mb-6">
+          <div className="flex items-center space-x-3">
+            <Target className="h-5 w-5 text-brand-teal" />
             <div>
-              <p className="text-sm text-gray-500">Mission Type</p>
-              <p className="font-medium">{mission.type === 'REVIEW' ? 'Product Review' : 'Receipt Upload'}</p>
+              <p className="text-sm text-gray-600">Mission Type</p>
+              <p className="font-semibold">{mission.type}</p>
             </div>
           </div>
           
-          <div className="flex items-center">
-            <Clock className="h-5 w-5 text-gray-500 mr-3" />
+          <div className="flex items-center space-x-3">
+            <Clock className="h-5 w-5 text-brand-teal" />
             <div>
-              <p className="text-sm text-gray-500">Timeline</p>
-              <p className="font-medium">
-                {mission.startDate && format(mission.startDate, 'MMM d, yyyy')} 
-                {mission.expiresAt && ' - ' + format(mission.expiresAt, 'MMM d, yyyy')}
+              <p className="text-sm text-gray-600">Campaign Period</p>
+              <p className="font-semibold">
+                {formatDate(mission.startDate)} - {mission.expiresAt ? formatDate(mission.expiresAt) : 'No end date'}
               </p>
             </div>
           </div>
           
-          {/* Submission information moved here */}
-          {mission.maxSubmissionsPerUser && <div className="flex items-center">
-              <Users className="h-5 w-5 text-gray-500 mr-3" />
-              <div>
-                <p className="text-sm text-gray-500">Max submission(s) per user</p>
-                <p className="font-medium">{mission.maxSubmissionsPerUser}</p>
-              </div>
-            </div>}
+          <div className="flex items-center space-x-3">
+            <Users className="h-5 w-5 text-brand-teal" />
+            <div>
+              <p className="text-sm text-gray-600">Max submission(s) per user</p>
+              <p className="font-semibold">{mission.maxSubmissionsPerUser || 1}</p>
+            </div>
+          </div>
           
-          {mission.totalMaxSubmissions !== undefined && <div className="flex items-center">
-              <Gauge className="h-5 w-5 text-gray-500 mr-3" />
-              <div>
-                <p className="text-sm text-gray-500">Mission Quota</p>
-                <p className="font-medium">
-                  {mission.totalMaxSubmissions} ({currentSubmissions} {currentSubmissions === 1 ? 'user' : 'users'} submitted)
-                  {isQuotaReached && <span className="text-red-500 ml-2 font-bold">FULL</span>}
-                </p>
-              </div>
-            </div>}
+          <div className="flex items-center space-x-3">
+            <Target className="h-5 w-5 text-brand-teal" />
+            <div>
+              <p className="text-sm text-gray-600">Mission Quota</p>
+              <p className="font-semibold">
+                {mission.totalMaxSubmissions || 'Unlimited'} ({currentSubmissions} user{currentSubmissions !== 1 ? 's' : ''} submitted)
+              </p>
+            </div>
+          </div>
         </div>
-        
-        <div className="mt-6">
-          {getMissionActionButton()}
-        </div>
-      </CardContent>
-    </Card>;
+
+        {renderActionButton()}
+      </div>
+    </div>
+  );
 };
 
 export default MissionStats;

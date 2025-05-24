@@ -1,3 +1,4 @@
+
 import React from "react";
 import { Routes, Route } from "react-router-dom";
 import ProtectedRoute from "@/components/ProtectedRoute";
@@ -17,6 +18,7 @@ import Missions from "@/pages/Missions";
 import MissionDetail from "@/pages/MissionDetail";
 import MissionReviewSubmission from "@/pages/MissionReviewSubmission";
 import MissionReceiptSubmission from "@/pages/MissionReceiptSubmission";
+import MissionSocialProofSubmission from "@/pages/MissionSocialProofSubmission";
 import AdminPanel from "@/pages/admin/AdminPanel"; 
 import AdminLogin from "@/pages/admin/AdminLogin";
 import Settings from "@/pages/Settings";
@@ -58,6 +60,7 @@ const AppRoutes = () => {
       <Route path="/mission/:id" element={<MissionDetail />} />
       <Route path="/mission/:id/review" element={<ProtectedRoute><MissionReviewSubmission /></ProtectedRoute>} />
       <Route path="/mission/:id/receipt" element={<ProtectedRoute><MissionReceiptSubmission /></ProtectedRoute>} />
+      <Route path="/mission/:id/social-proof" element={<ProtectedRoute><MissionSocialProofSubmission /></ProtectedRoute>} />
       <Route path="/my-missions" element={<ProtectedRoute><MyMissions /></ProtectedRoute>} />
       <Route path="/my-reward-transactions" element={<ProtectedRoute><MyRewardTransactions /></ProtectedRoute>} />
       

@@ -5,7 +5,7 @@ export const missionSchema = z.object({
   title: z.string().min(1, { message: 'Title is required' }),
   description: z.string().min(1, { message: 'Description is required' }),
   pointsReward: z.coerce.number().int().positive({ message: 'Points must be a positive number' }),
-  type: z.enum(['REVIEW', 'RECEIPT']).default('RECEIPT'),
+  type: z.enum(['REVIEW', 'RECEIPT', 'SOCIAL_PROOF']).default('SOCIAL_PROOF'),
   status: z.enum(['ACTIVE', 'DRAFT', 'COMPLETED']).default('DRAFT'),
   startDate: z.date(),
   expiresAt: z.date().nullable().optional(), // Update to allow null value for no expiry

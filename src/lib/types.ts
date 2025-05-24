@@ -1,3 +1,4 @@
+
 export interface User {
   id: string;
   username: string;
@@ -59,13 +60,13 @@ export interface ExtendedProfile {
   [key: string]: any; // Add index signature to make it compatible with Json type
 }
 
-// Define Mission type for UI only
+// Define Mission type for UI only - Updated to include SOCIAL_PROOF
 export interface Mission {
   id: string;
   title: string;
   description: string;
   pointsReward: number;
-  type: 'REVIEW' | 'RECEIPT';
+  type: 'REVIEW' | 'RECEIPT' | 'SOCIAL_PROOF';
   status: 'ACTIVE' | 'COMPLETED' | 'DRAFT';
   expiresAt?: Date | null; // Updated to allow null value to explicitly indicate no expiry
   requirementDescription?: string;

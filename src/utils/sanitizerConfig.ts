@@ -4,12 +4,13 @@ export const sanitizerConfig = {
   ALLOWED_TAGS: [
     'p', 'br', 'div', 'span', 'h1', 'h2', 'h3', 'h4', 'h5', 'h6',
     'b', 'i', 'u', 'strong', 'em', 'strike', 'a', 'ul', 'ol', 'li',
-    'blockquote', 'pre', 'code'
+    'blockquote', 'pre', 'code', 'img'
   ],
-  ALLOWED_ATTR: ['href', 'target', 'rel', 'class', 'style'],
+  ALLOWED_ATTR: ['href', 'target', 'rel', 'class', 'style', 'src', 'alt', 'width', 'height', 'title'],
   ALLOWED_STYLES: [
     'color', 'background-color', 'text-align', 'font-size',
-    'font-family', 'margin', 'padding', 'text-decoration'
+    'font-family', 'margin', 'padding', 'text-decoration',
+    'width', 'height', 'max-width', 'max-height'
   ],
   ADD_ATTR: ['target'],  // Allow target attribute (for _blank links)
   FORCE_HTTPS: true,     // Convert http to https for security

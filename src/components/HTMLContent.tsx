@@ -10,7 +10,7 @@ interface HTMLContentProps {
 const HTMLContent = ({ content, className = '' }: HTMLContentProps) => {
   const sanitizedContent = useSanitizedContent(content);
   
-  // Add the CSS styles for links to the document head
+  // Add the CSS styles for links and images to the document head
   useEffect(() => {
     // Create a style element
     const styleElement = document.createElement('style');
@@ -23,13 +23,24 @@ const HTMLContent = ({ content, className = '' }: HTMLContentProps) => {
       .prose a:hover {
         color: #2DAB7E !important;  /* Darker Green on Hover with !important */
       }
+      .prose img {
+        max-width: 100%;
+        height: auto;
+        border-radius: 8px;
+        margin: 16px 0;
+        display: block;
+      }
+      .prose p img {
+        display: inline-block;
+        vertical-align: middle;
+      }
     `;
     
     // Add an id to identify this specific style
-    styleElement.id = 'html-content-link-styles';
+    styleElement.id = 'html-content-styles';
     
     // Check if the style already exists
-    const existingStyle = document.getElementById('html-content-link-styles');
+    const existingStyle = document.getElementById('html-content-styles');
     if (!existingStyle) {
       // If not, append it to the head
       document.head.appendChild(styleElement);
@@ -39,7 +50,7 @@ const HTMLContent = ({ content, className = '' }: HTMLContentProps) => {
     return () => {
       const remainingComponents = document.querySelectorAll('.prose');
       if (remainingComponents.length <= 1) {
-        const style = document.getElementById('html-content-link-styles');
+        const style = document.getElementById('html-content-styles');
         if (style) {
           document.head.removeChild(style);
         }

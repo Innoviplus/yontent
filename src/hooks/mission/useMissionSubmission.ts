@@ -8,7 +8,7 @@ import { Mission } from '@/lib/types';
 
 export const useMissionSubmission = (
   id: string | undefined, 
-  missionType: 'REVIEW' | 'RECEIPT'
+  missionType: 'REVIEW' | 'RECEIPT' | 'SOCIAL_PROOF'
 ) => {
   const navigate = useNavigate();
   const { user } = useAuth();
@@ -31,11 +31,18 @@ export const useMissionSubmission = (
           
         if (participationError) throw participationError;
         
-        // If user has already submitted, redirect to mission detail page
+        // If user has already submitted and it's not rejected, redirect to mission detail page
         if (participations && participations.length > 0) {
-          toast.info(`You have already submitted a ${missionType.toLowerCase()} for this mission`);
-          navigate(`/mission/${id}`);
-          return;
+          const latestParticipation = participations[participations.length - 1];
+          
+          // Only block if the submission is pending or approved
+          // Allow resubmission if rejected
+          if (latestParticipation.status === 'PENDING' || latestParticipation.status === 'APPROVED') {
+            const statusText = latestParticipation.status === 'PENDING' ? 'pending review' : 'approved';
+            toast.info(`You have already submitted a ${missionType.toLowerCase()} for this mission and it is ${statusText}`);
+            navigate(`/mission/${id}`);
+            return;
+          }
         }
         
         // Check the mission quota - count ALL submissions regardless of status
@@ -76,7 +83,7 @@ export const useMissionSubmission = (
           title: data.title,
           description: data.description,
           pointsReward: data.points_reward,
-          type: data.type as 'REVIEW' | 'RECEIPT',
+          type: data.type as 'REVIEW' | 'RECEIPT' | 'SOCIAL_PROOF',
           status: data.status as 'ACTIVE' | 'COMPLETED' | 'DRAFT',
           merchantName: data.merchant_name || undefined,
           merchantLogo: data.merchant_logo || undefined,

@@ -11,20 +11,47 @@ export const submitMissionReceipt = async (
   receiptImages: string[]
 ): Promise<boolean> => {
   try {
-    const { error } = await supabase
+    // Check if user already has a participation record for this mission
+    const { data: existingParticipation, error: checkError } = await supabase
       .from('mission_participations')
-      .insert({
-        mission_id: missionId,
-        user_id_p: userId,
-        status: 'PENDING',
-        submission_data: {
-          receipt_images: receiptImages,
-          submission_type: 'RECEIPT'
-        }
-      });
+      .select('id, status')
+      .eq('mission_id', missionId)
+      .eq('user_id_p', userId)
+      .single();
 
-    if (error) {
-      throw error;
+    if (checkError && checkError.code !== 'PGRST116') {
+      throw checkError;
+    }
+
+    const submissionData = {
+      receipt_images: receiptImages,
+      submission_type: 'RECEIPT'
+    };
+
+    if (existingParticipation) {
+      // Update existing participation record
+      const { error: updateError } = await supabase
+        .from('mission_participations')
+        .update({
+          status: 'PENDING',
+          submission_data: submissionData,
+          updated_at: new Date().toISOString()
+        })
+        .eq('id', existingParticipation.id);
+        
+      if (updateError) throw updateError;
+    } else {
+      // Create new participation record
+      const { error: insertError } = await supabase
+        .from('mission_participations')
+        .insert({
+          mission_id: missionId,
+          user_id_p: userId,
+          status: 'PENDING',
+          submission_data: submissionData
+        });
+        
+      if (insertError) throw insertError;
     }
 
     return true;
