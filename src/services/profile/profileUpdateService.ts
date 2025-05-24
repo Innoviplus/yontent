@@ -63,10 +63,14 @@ export const checkAndAwardWelcomePoints = async (userId: string): Promise<boolea
     
     console.log('Welcome points check response:', data);
     
-    // Check if points were awarded successfully
-    if (data && data.success) {
-      toast.success('You received 150 welcome points for updating your profile!');
-      return true;
+    // Type guard to check if data has success property
+    if (data && typeof data === 'object' && data !== null && 'success' in data) {
+      const result = data as { success: boolean; message?: string; points_awarded?: number };
+      
+      if (result.success) {
+        toast.success('You received 150 welcome points for updating your profile!');
+        return true;
+      }
     }
     
     return false;
