@@ -11,7 +11,7 @@ export const updateProfileData = async (userId: string, profileData: ExtendedPro
   try {
     console.log("Updating profile with data:", profileData);
     
-    // Update the profile with the new column structure
+    // Update the profile with the new column structure - no points or transaction logic
     const { error: updateError } = await supabase
       .from('profiles')
       .update({
