@@ -149,22 +149,50 @@ export const useReviewSubmission = (mission: Mission, userId: string) => {
         
       if (reviewError) throw reviewError;
       
-      // Save the participation record with the review ID
-      const { error: insertError } = await supabase
+      // Check if user already has a participation record for this mission
+      const { data: existingParticipation, error: checkError } = await supabase
         .from('mission_participations')
-        .insert({
-          mission_id: mission.id,
-          user_id_p: userId,
-          status: 'PENDING',
-          submission_data: {
-            review_id: reviewData.id,
-            review_images: uploadedImageUrls,
-            review_video: uploadedVideoUrl,
-            submission_type: 'REVIEW'
-          }
-        });
-        
-      if (insertError) throw insertError;
+        .select('id, status')
+        .eq('mission_id', mission.id)
+        .eq('user_id_p', userId)
+        .single();
+
+      if (checkError && checkError.code !== 'PGRST116') {
+        throw checkError;
+      }
+
+      const submissionData = {
+        review_id: reviewData.id,
+        review_images: uploadedImageUrls,
+        review_video: uploadedVideoUrl,
+        submission_type: 'REVIEW'
+      };
+
+      if (existingParticipation) {
+        // Update existing participation record
+        const { error: updateError } = await supabase
+          .from('mission_participations')
+          .update({
+            status: 'PENDING',
+            submission_data: submissionData,
+            updated_at: new Date().toISOString()
+          })
+          .eq('id', existingParticipation.id);
+          
+        if (updateError) throw updateError;
+      } else {
+        // Create new participation record
+        const { error: insertError } = await supabase
+          .from('mission_participations')
+          .insert({
+            mission_id: mission.id,
+            user_id_p: userId,
+            status: 'PENDING',
+            submission_data: submissionData
+          });
+          
+        if (insertError) throw insertError;
+      }
       
       toast.success('Review submitted successfully!');
       navigate(`/mission/${mission.id}`);
