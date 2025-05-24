@@ -19,7 +19,7 @@ const TransactionsTab = () => {
       try {
         console.log("TransactionsTab: Fetching transactions for user:", user?.id);
         
-        // Fetch all transactions including welcome bonus and redemptions
+        // Fetch all transactions including redemptions
         const { data, error } = await supabase
           .from('point_transactions')
           .select('*')
@@ -136,10 +136,10 @@ const TransactionsTab = () => {
           
           <div className={`font-semibold ${
             transaction.type === 'REDEEMED' ? 'text-red-600' : 
-            transaction.type === 'EARNED' || transaction.type === 'WELCOME' || transaction.type === 'ADJUSTED' ? 'text-green-600' : 
+            transaction.type === 'EARNED' || transaction.type === 'ADJUSTED' ? 'text-green-600' : 
             'text-red-600'
           }`}>
-            {transaction.type === 'EARNED' || transaction.type === 'WELCOME' || transaction.type === 'ADJUSTED' ? '+' : '-'}
+            {transaction.type === 'EARNED' || transaction.type === 'ADJUSTED' ? '+' : '-'}
             {transaction.amount} points
           </div>
         </div>
