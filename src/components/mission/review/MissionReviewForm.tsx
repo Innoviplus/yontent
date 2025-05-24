@@ -53,6 +53,11 @@ const MissionReviewForm = ({ mission, userId, onSubmissionComplete }: MissionRev
     handleSubmitSuccess(true);
   };
 
+  // Create a wrapper function for removeVideo that matches the expected signature
+  const handleRemoveVideo = () => {
+    removeVideo();
+  };
+
   return (
     <Form {...form}>
       <form onSubmit={form.handleSubmit(handleFormSubmit)} className="space-y-6">
@@ -70,7 +75,7 @@ const MissionReviewForm = ({ mission, userId, onSubmissionComplete }: MissionRev
         <VideoUpload
           videoPreviewUrl={videoPreviewUrl ? [videoPreviewUrl] : []}
           onFileSelect={handleVideoSelection}
-          onRemoveVideo={removeVideo}
+          onRemoveVideo={handleRemoveVideo}
           error={videoError}
           uploading={isSubmitting}
         />
