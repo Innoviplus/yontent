@@ -1,4 +1,3 @@
-
 import { useState, useEffect } from 'react';
 import { useParams, Navigate } from 'react-router-dom';
 import { Mission } from '@/lib/types';
@@ -157,23 +156,25 @@ const MissionDetail = () => {
       
       <MissionBanner mission={mission} />
       
-      <div className="container mx-auto px-4 py-6 bg-gray-50">
-        <div className="grid grid-cols-1 lg:grid-cols-3 gap-8">
-          <div className="lg:col-span-2 space-y-6">
-            <MissionDetails mission={mission} />
-            <MissionStats 
-              mission={mission} 
-              participating={participating} 
-              participationStatus={participationStatus}
-              userId={user.id}
-              onParticipationUpdate={handleParticipationUpdate}
-              currentSubmissions={currentSubmissions}
-            />
-          </div>
-          
-          <div className="space-y-6">
-            <SupportSection />
-            {mission.faqContent && <MissionFAQ faqContent={mission.faqContent} />}
+      <div className="bg-gray-50">
+        <div className="container mx-auto px-4 py-6">
+          <div className="grid grid-cols-1 lg:grid-cols-3 gap-8">
+            <div className="lg:col-span-2 space-y-6">
+              <MissionDetails mission={mission} />
+              <MissionStats 
+                mission={mission} 
+                participating={participating} 
+                participationStatus={participationStatus}
+                userId={user.id}
+                onParticipationUpdate={handleParticipationUpdate}
+                currentSubmissions={currentSubmissions}
+              />
+            </div>
+            
+            <div className="space-y-6">
+              <SupportSection />
+              {mission.faqContent && <MissionFAQ faqContent={mission.faqContent} />}
+            </div>
           </div>
         </div>
       </div>
