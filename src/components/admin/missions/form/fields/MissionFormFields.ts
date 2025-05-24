@@ -1,6 +1,6 @@
 
 import { Mission } from '@/lib/types';
-import { MissionFormData } from '../MissionFormSchema';
+import { MissionFormData } from '../../MissionFormSchema';
 
 export const getDefaultValues = (mission?: Mission): MissionFormData => {
   if (!mission) {

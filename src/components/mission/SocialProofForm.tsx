@@ -7,7 +7,7 @@ import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Textarea } from '@/components/ui/textarea';
 import { Label } from '@/components/ui/label';
-import { ImageUpload } from '@/components/review/ImageUpload';
+import ImageUpload from '@/components/review/ImageUpload';
 import { toast } from 'sonner';
 import { supabase } from '@/integrations/supabase/client';
 import { Mission } from '@/lib/types';
@@ -29,6 +29,9 @@ interface SocialProofFormProps {
 const SocialProofForm = ({ mission, userId, onSubmissionComplete }: SocialProofFormProps) => {
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [uploadedImages, setUploadedImages] = useState<string[]>([]);
+  const [imagePreviewUrls, setImagePreviewUrls] = useState<string[]>([]);
+  const [uploading, setUploading] = useState(false);
+  const [error, setError] = useState<string | null>(null);
   
   const form = useForm<SocialProofFormData>({
     resolver: zodResolver(socialProofFormSchema),
@@ -39,9 +42,61 @@ const SocialProofForm = ({ mission, userId, onSubmissionComplete }: SocialProofF
     },
   });
 
-  const handleImageUpload = (newImageUrls: string[]) => {
-    setUploadedImages(newImageUrls);
-    form.setValue('proofImages', newImageUrls);
+  const handleFileSelect = async (files: FileList | null) => {
+    if (!files || files.length === 0) {
+      setError('Please select at least one image');
+      return;
+    }
+
+    setUploading(true);
+    setError(null);
+
+    try {
+      const uploadedUrls: string[] = [];
+      const previewUrls: string[] = [];
+
+      for (const file of Array.from(files)) {
+        // Create preview URL
+        previewUrls.push(URL.createObjectURL(file));
+
+        // Upload to Supabase
+        const fileExt = file.name.split('.').pop();
+        const fileName = `${Math.random().toString(36).substring(2, 15)}.${fileExt}`;
+        const filePath = `social-proof/${userId}/${mission.id}/${fileName}`;
+
+        const { error: uploadError } = await supabase.storage
+          .from('missions')
+          .upload(filePath, file);
+
+        if (uploadError) {
+          throw uploadError;
+        }
+
+        const { data } = supabase.storage
+          .from('missions')
+          .getPublicUrl(filePath);
+
+        uploadedUrls.push(data.publicUrl);
+      }
+
+      setUploadedImages(prev => [...prev, ...uploadedUrls]);
+      setImagePreviewUrls(prev => [...prev, ...previewUrls]);
+      form.setValue('proofImages', [...uploadedImages, ...uploadedUrls]);
+    } catch (error: any) {
+      console.error('Error uploading images:', error);
+      setError('Failed to upload images');
+    } finally {
+      setUploading(false);
+    }
+  };
+
+  const handleRemoveImage = (index: number) => {
+    const newPreviewUrls = imagePreviewUrls.filter((_, i) => i !== index);
+    const newUploadedImages = uploadedImages.filter((_, i) => i !== index);
+    
+    setImagePreviewUrls(newPreviewUrls);
+    setUploadedImages(newUploadedImages);
+    form.setValue('proofImages', newUploadedImages);
   };
 
   const onSubmit = async (data: SocialProofFormData) => {
@@ -82,6 +137,7 @@ const SocialProofForm = ({ mission, userId, onSubmissionComplete }: SocialProofF
       // Reset form
       form.reset();
       setUploadedImages([]);
+      setImagePreviewUrls([]);
       
     } catch (error: any) {
       console.error('Error submitting social proof:', error);
@@ -106,9 +162,12 @@ const SocialProofForm = ({ mission, userId, onSubmissionComplete }: SocialProofF
             Upload screenshots or photos that prove you completed the mission requirements.
           </p>
           <ImageUpload
-            onImagesUploaded={handleImageUpload}
+            imagePreviewUrls={imagePreviewUrls}
+            onFileSelect={handleFileSelect}
+            onRemoveImage={handleRemoveImage}
+            error={error}
+            uploading={uploading}
             maxImages={5}
-            folder="mission-social-proof"
           />
           {form.formState.errors.proofImages && (
             <p className="text-sm text-red-600 mt-1">
