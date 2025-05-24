@@ -45,12 +45,14 @@ export interface ExtendedProfile {
   lastName?: string;
   bio?: string;
   gender?: string;
-  birthDate?: Date;
-  websiteUrl?: string;
-  facebookUrl?: string;
-  instagramUrl?: string;
-  youtubeUrl?: string;
-  tiktokUrl?: string;
+  birthDate?: Date | null;
+  websiteUrl?: string | null;
+  facebookUrl?: string | null;
+  instagramUrl?: string | null;
+  youtubeUrl?: string | null;
+  tiktokUrl?: string | null;
+  twitterUrl?: string | null; // Add twitterUrl
+  email?: string;
   phoneNumber?: string;
   phoneCountryCode?: string;
   country?: string;

@@ -62,38 +62,39 @@ const RankingsContent = ({ activeTab }: RankingsContentProps) => {
             .slice(0, 20);
         } 
         else if (activeTab === 'likes') {
-          console.log('Fetching users by likes ranking');
-          // Query reviews table and sum likes_count by user
-          const { data: reviewsData, error: reviewsError } = await supabase
-            .from('reviews')
+          // For likes ranking, we need to directly query the review_likes table and group by user
+          const { data: likesData, error: likesError } = await supabase
+            .from('review_likes')
             .select(`
-              user_id,
-              likes_count,
-              profiles:user_id (id, username, points, avatar, created_at)
+              review_id,
+              reviews:review_id (user_id, profiles:user_id(id, username, points, avatar, created_at))
             `)
-            .order('likes_count', { ascending: false })
-            .limit(100);
+            .limit(1000);
             
-          if (reviewsError) {
-            console.error('Error fetching reviews for likes ranking:', reviewsError);
-            throw reviewsError;
+          if (likesError) {
+            console.error('Error fetching likes data:', likesError);
+            throw likesError;
           }
           
-          console.log('Total reviews fetched for likes ranking:', reviewsData?.length || 0);
-          
-          // Group by user and sum likes
-          const userLikes = (reviewsData || []).reduce((acc: Record<string, any>, review) => {
-            // Skip reviews with no user or profile data
-            if (!review.user_id || !review.profiles) return acc;
+          // Process the likes data to count likes received per user
+          const userLikes = likesData.reduce((acc: Record<string, any>, like) => {
+            if (!like.reviews || !like.reviews.profiles) return acc;
             
-            const userId = review.user_id;
+            const userId = like.reviews.user_id;
+            const profile = like.reviews.profiles;
+            
             if (!acc[userId]) {
               acc[userId] = {
-                ...review.profiles,
+                id: profile.id,
+                username: profile.username,
+                points: profile.points,
+                avatar: profile.avatar,
+                created_at: profile.created_at,
                 totalLikes: 0
               };
             }
-            acc[userId].totalLikes += review.likes_count || 0;
+            
+            acc[userId].totalLikes += 1;
             return acc;
           }, {});
           

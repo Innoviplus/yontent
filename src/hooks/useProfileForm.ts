@@ -8,20 +8,6 @@ import { useProfileFormInitialization } from './settings/useProfileFormInitializ
 import { formatProfileFormValues, validateBirthDate } from '@/services/profile/profileFormService';
 import { updateProfileData } from '@/services/profile/profileUpdateService';
 
-// Add debounce utility to prevent multiple toast notifications
-const createDebouncer = () => {
-  let timeout: NodeJS.Timeout | null = null;
-  return (fn: Function, delay: number) => {
-    if (timeout) clearTimeout(timeout);
-    timeout = setTimeout(() => {
-      timeout = null;
-      fn();
-    }, delay);
-  };
-};
-
-const debounceToast = createDebouncer();
-
 export const useProfileForm = (
   user: any, 
   userProfile: any, 
@@ -44,7 +30,10 @@ export const useProfileForm = (
       instagramUrl: '',
       youtubeUrl: '',
       tiktokUrl: '',
+      twitterUrl: '',
       phoneNumber: userProfile?.phone_number || '',
+      phoneCountryCode: '',
+      country: '',
     },
   });
 
@@ -84,10 +73,8 @@ export const useProfileForm = (
         // Update local state
         setExtendedProfile(extendedData);
         
-        // Use debounced toast to prevent duplicates
-        debounceToast(() => {
-          toast.success('Profile updated successfully!');
-        }, 300);
+        // Show success message
+        toast.success('Profile updated successfully!');
         
         // Mark form as pristine to indicate data has been saved
         profileForm.reset(values, { keepValues: true });

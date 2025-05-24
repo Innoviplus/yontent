@@ -23,7 +23,10 @@ export const useProfileFormInitialization = (
         instagramUrl: userProfile?.instagram_url || '',
         youtubeUrl: userProfile?.youtube_url || '',
         tiktokUrl: userProfile?.tiktok_url || '',
+        twitterUrl: userProfile?.twitter_url || '', // Add twitterUrl field initialization
         phoneNumber: userProfile?.phone_number || '',
+        phoneCountryCode: userProfile?.phone_country_code || '',
+        country: userProfile?.country || '',
       };
 
       console.log("Profile form initialized with:", formValues);

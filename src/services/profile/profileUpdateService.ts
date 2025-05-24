@@ -1,7 +1,6 @@
 
 import { supabase } from '@/integrations/supabase/client';
 import { ExtendedProfile } from '@/lib/types';
-import { toast } from 'sonner';
 
 export const updateProfileData = async (userId: string, profileData: ExtendedProfile): Promise<boolean> => {
   if (!userId) {
@@ -12,7 +11,7 @@ export const updateProfileData = async (userId: string, profileData: ExtendedPro
   try {
     console.log("Updating profile with data:", profileData);
     
-    // Update the profile with the new column structure
+    // Update the profile with the new column structure - no points or transaction logic
     const { error: updateError } = await supabase
       .from('profiles')
       .update({
@@ -36,15 +35,13 @@ export const updateProfileData = async (userId: string, profileData: ExtendedPro
 
     if (updateError) {
       console.error("Supabase update error:", updateError);
-      toast.error(`Failed to update profile: ${updateError.message}`);
-      return false;
+      throw updateError;
     }
     
     console.log("Profile updated successfully in Supabase!");
     return true;
   } catch (error: any) {
     console.error("Error updating profile:", error.message);
-    toast.error(`Failed to update profile: ${error.message}`);
-    return false;
+    throw error;
   }
 };

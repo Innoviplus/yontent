@@ -38,6 +38,8 @@ export const PointsProvider = ({ children }: { children: ReactNode }) => {
 
     try {
       setIsLoading(true);
+      console.log("Fetching points for user:", user.id);
+      
       const { data, error } = await supabase
         .from('profiles')
         .select('points')
@@ -49,6 +51,7 @@ export const PointsProvider = ({ children }: { children: ReactNode }) => {
         return;
       }
       
+      console.log("Points data received:", data);
       setUserPoints(data?.points || 0);
     } catch (error) {
       console.error('Error fetching user points:', error);
@@ -60,6 +63,8 @@ export const PointsProvider = ({ children }: { children: ReactNode }) => {
   // Set up a subscription to listen for point transactions
   useEffect(() => {
     if (!user) return;
+
+    console.log("Setting up points subscription for user:", user.id);
 
     // Subscribe to the user's profile changes to detect point updates
     const profilesChannel = supabase
@@ -81,22 +86,30 @@ export const PointsProvider = ({ children }: { children: ReactNode }) => {
       )
       .subscribe();
 
-    // Subscribe to point transactions to know when new points are added
-    const transactionsChannel = supabase
-      .channel('point-transactions')
-      .on('postgres_changes', 
-        { 
-          event: 'INSERT', 
-          schema: 'public',
-          table: 'point_transactions',
-          filter: `user_id=eq.${user.id}`
-        }, 
-        () => {
-          // When a new transaction is added, refresh the points
-          fetchUserPoints();
-        }
-      )
-      .subscribe();
+    // Set up subscription to point_transactions with correct column name
+    let transactionsChannel;
+    try {
+      transactionsChannel = supabase
+        .channel('point-transactions')
+        .on('postgres_changes', 
+          { 
+            event: 'INSERT', 
+            schema: 'public',
+            table: 'point_transactions',
+            filter: `user_id_point=eq.${user.id}`
+          }, 
+          (payload) => {
+            console.log('New point transaction:', payload);
+            // When a new transaction is added, refresh the points
+            fetchUserPoints();
+          }
+        )
+        .subscribe((status) => {
+          console.log("Point transactions channel status:", status);
+        });
+    } catch (err) {
+      console.warn("Could not set up point_transactions channel:", err);
+    }
 
     // Fetch initial points
     fetchUserPoints();
@@ -104,7 +117,9 @@ export const PointsProvider = ({ children }: { children: ReactNode }) => {
     return () => {
       // Clean up subscriptions
       supabase.removeChannel(profilesChannel);
-      supabase.removeChannel(transactionsChannel);
+      if (transactionsChannel) {
+        supabase.removeChannel(transactionsChannel);
+      }
     };
   }, [user]); 
 

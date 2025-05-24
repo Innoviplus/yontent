@@ -13,6 +13,7 @@ import { Button } from '@/components/ui/button';
 import { Loader2 } from 'lucide-react';
 import { UseFormReturn } from 'react-hook-form';
 import { ExtendedProfile } from '@/lib/types';
+import { useState } from 'react';
 
 interface ProfileTabProps {
   userProfile: any;
@@ -44,7 +45,6 @@ const ProfileTab = ({
     setIsLoading,
     setLoadingAttempts,
     setInitialLoadComplete,
-    handleProfileSubmit
   } = useProfilePageState();
 
   // Initialize profile refresh logic
@@ -58,8 +58,21 @@ const ProfileTab = ({
     refreshUserProfile
   });
 
+  // Handle form submission
   const onSubmit = async (values: ProfileFormValues) => {
-    await handleProfileSubmit(values, onProfileSubmit, profileForm);
+    console.log("ProfileTab - Form submission with values:", values);
+    
+    try {
+      await onProfileSubmit(values);
+      
+      // Force refresh user profile after successful submission
+      if (user) {
+        console.log("ProfileTab - Refreshing user profile after submission");
+        setTimeout(() => refreshUserProfile(), 1000);
+      }
+    } catch (error) {
+      console.error("ProfileTab - Error during submission:", error);
+    }
   };
 
   if (isLoading && !userProfile && !initialLoadComplete) {
@@ -121,7 +134,7 @@ const ProfileTab = ({
             <Button 
               type="submit"
               className="bg-brand-teal hover:bg-brand-darkTeal text-white"
-              disabled={isLoading || isUpdating || !profileForm.formState.isDirty}
+              disabled={isLoading || isUpdating}
             >
               {isLoading || isUpdating ? (
                 <>
@@ -129,7 +142,7 @@ const ProfileTab = ({
                   Saving...
                 </>
               ) : (
-                'Save Profile'
+                'Save All Changes'
               )}
             </Button>
           </div>

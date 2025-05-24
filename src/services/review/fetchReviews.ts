@@ -4,14 +4,19 @@ import { Review } from '@/lib/types';
 
 // Cache for review data
 const reviewsCache = new Map<string, { data: Review[], timestamp: number }>();
-const CACHE_EXPIRY = 30 * 1000; // 30 seconds cache expiry for more frequent updates when testing
+const CACHE_EXPIRY = 2 * 1000; // 2 seconds cache expiry for more frequent updates
 
 export const fetchReviews = async (sortBy: string, userId?: string): Promise<Review[]> => {
   try {
     const cacheKey = `${sortBy}-${userId || 'no-user'}`;
+    const now = Date.now();
+    const cachedData = reviewsCache.get(cacheKey);
     
-    // Clear cache to get fresh data
-    reviewsCache.delete(cacheKey);
+    // Use cached data if it exists and hasn't expired
+    if (cachedData && now - cachedData.timestamp < CACHE_EXPIRY) {
+      console.log('Using cached reviews data');
+      return cachedData.data;
+    }
     
     console.log('Fetching fresh reviews data with sort:', sortBy);
     
@@ -58,9 +63,32 @@ export const fetchReviews = async (sortBy: string, userId?: string): Promise<Rev
     }
     
     if (data) {
-      const transformedReviews: Review[] = data.map(review => {
-        // Log the likes_count for debugging
-        console.log(`Review ${review.id} has likes_count:`, review.likes_count);
+      const transformedReviews: Review[] = await Promise.all(data.map(async review => {
+        // Verify likes_count directly from the review_likes table to ensure accurate count
+        let likesCount = review.likes_count;
+        
+        if (likesCount === null || likesCount === undefined || true) { // Always fetch to ensure accuracy
+          console.log(`Fetching actual likes count for review ${review.id}`);
+          
+          const { count, error: countError } = await supabase
+            .from('review_likes')
+            .select('*', { count: 'exact', head: false })
+            .eq('review_id', review.id);
+            
+          if (!countError && count !== null) {
+            likesCount = count;
+            console.log(`Actual likes count for review ${review.id} is ${count}`);
+            
+            // Update the database if the count doesn't match
+            if (review.likes_count !== count) {
+              console.log(`Updating likes count in database for review ${review.id} from ${review.likes_count} to ${count}`);
+              await supabase
+                .from('reviews')
+                .update({ likes_count: count })
+                .eq('id', review.id);
+            }
+          }
+        }
         
         return {
           id: review.id,
@@ -71,7 +99,7 @@ export const fetchReviews = async (sortBy: string, userId?: string): Promise<Rev
           images: review.images || [],
           videos: review.videos || [],
           viewsCount: review.views_count || 0,
-          likesCount: review.likes_count || 0,
+          likesCount: likesCount || 0,
           createdAt: new Date(review.created_at),
           user: review.profiles ? {
             id: review.profiles.id || review.user_id,
@@ -82,12 +110,12 @@ export const fetchReviews = async (sortBy: string, userId?: string): Promise<Rev
             avatar: review.profiles.avatar
           } : undefined
         };
-      });
+      }));
       
-      // Cache the results
-      reviewsCache.set(cacheKey, { 
-        data: transformedReviews, 
-        timestamp: Date.now() 
+      // Cache the transformed data
+      reviewsCache.set(cacheKey, {
+        data: transformedReviews,
+        timestamp: now
       });
       
       return transformedReviews;
@@ -103,4 +131,5 @@ export const fetchReviews = async (sortBy: string, userId?: string): Promise<Rev
 // Function to clear the cache after a review is submitted or liked/unliked
 export const clearReviewsCache = () => {
   reviewsCache.clear();
+  console.log('Reviews cache cleared');
 };

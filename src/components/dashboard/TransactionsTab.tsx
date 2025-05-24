@@ -19,11 +19,11 @@ const TransactionsTab = () => {
       try {
         console.log("TransactionsTab: Fetching transactions for user:", user?.id);
         
-        // Fetch all transactions including welcome bonus and redemptions
+        // Fetch all transactions including redemptions
         const { data, error } = await supabase
           .from('point_transactions')
           .select('*')
-          .eq('user_id_point', user?.id)  // Using the correct column name here
+          .eq('user_id_point', user?.id)
           .order('created_at', { ascending: false });
           
         if (error) {
@@ -67,7 +67,7 @@ const TransactionsTab = () => {
           
           return {
             id: item.id,
-            userId: item.user_id_point,  // Using the correct column name here
+            userId: item.user_id_point,
             amount: item.amount,
             type: item.type,
             source,
@@ -136,10 +136,10 @@ const TransactionsTab = () => {
           
           <div className={`font-semibold ${
             transaction.type === 'REDEEMED' ? 'text-red-600' : 
-            transaction.type === 'EARNED' || transaction.type === 'WELCOME' || transaction.type === 'ADJUSTED' ? 'text-green-600' : 
+            transaction.type === 'EARNED' || transaction.type === 'ADJUSTED' ? 'text-green-600' : 
             'text-red-600'
           }`}>
-            {transaction.type === 'EARNED' || transaction.type === 'WELCOME' || transaction.type === 'ADJUSTED' ? '+' : '-'}
+            {transaction.type === 'EARNED' || transaction.type === 'ADJUSTED' ? '+' : '-'}
             {transaction.amount} points
           </div>
         </div>
